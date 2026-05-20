@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pre-Compose window/splash background. Compose owns all in-app theming;
+         these only cover the brief cold-start window before the first frame. -->
+    <color name="sensee_window_background">#FFFFFFFF</color>
+    <color name="sensee_splash_background">#FFFFFFFF</color>
+</resources>

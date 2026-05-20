@@ -1,0 +1,158 @@
+[[client-section-concepts]]
+= Сквозные концепции
+
+Companion reference::
+Более компактная product-first сводка доменных сущностей и их связей вынесена отдельно в `docs/domain-information-model.adoc`.
+
+== Shared Client Core
+
+* Общий app shell, feature UI и reusable libraries живут в shared KMP-модулях.
+* Platform-specific код изолируется в entrypoints, `PlatformEnvironment` и соответствующих source set'ах.
+
+== Module-First Decomposition
+
+* Основной уровень архитектурной декомпозиции в текущем репозитории — модульный, а не layered-диаграмма ради самой диаграммы.
+* Отдельно выделены app shell, feature API/impl, reusable UI, SRS и infrastructure modules.
+
+== Feature Module Convention
+
+* Все feature-модули располагаются под `shared/feature/<feature-name>/`.
+* Имена feature и модулей пишутся в lowercase kebab-case на уровне директорий и Gradle path segments.
+* Подмодули добавляются по необходимости, а не по шаблону: `presentation/api`, `presentation/impl`, `presentation/navigation-api`, `domain`, `data`, `database-schema`.
+* `presentation/api` содержит feature-facing UI contracts и может содержать entry config, если внешний клиент у него только один — host, который создаёт feature component.
+* `presentation/impl` содержит Compose-реализацию feature и platform-agnostic presentation logic текущего сценария.
+* `presentation/navigation-api` считается опциональным выделением и содержит `ScreenConfig`, route contracts и другие navigation entry points, если другие части клиента должны уметь открывать feature без знания её component API.
+* `domain` содержит feature-owned бизнес-модель и контракты вроде `PracticeReviewRepository` или `CatalogRepository`.
+* `data` реализует repository, remote/local data sources и integration logic.
+* `database-schema` выделяется только тогда, когда feature владеет SQLDelight-схемой, которую нужно подключать к общему database-модулю.
+* Если feature участвует в общей root navigation Decompose, её внешние config-типы должны быть сериализуемыми и должны собираться в общий serializer boundary под `shared/core/decompose`, чтобы смешанный stack можно было сохранять и восстанавливать единообразно. Реализовано: root-стек `DefaultRootComponent` персистится через `screenConfigSerializer` (`StartupConfig`/`PrimaryShellConfig` зарегистрированы), поэтому process-death restore возвращает deep-target, минуя splash; одноразовый app-scoped прогрев словаря отделён от splash-экрана.
+* `domain`, `data` и `database-schema` считаются опциональными для каждой отдельной фичи и добавляются только тогда, когда у feature появляется самостоятельная ответственность.
+
+== Decompose Component Boundary
+
+* `RootComponent` задаёт стартовую навигационную границу приложения и открывает `PrimaryShellComponent`.
+* `PrimaryShellComponent` владеет базовой primary navigation shell и открывает section components.
+* Feature поднимается через host/component contracts, а не напрямую из platform entrypoint.
+* Навигация, component capabilities и logic abstractions живут в `shared/core/decompose`.
+* `AppComponentContext` сам реализует capability-интерфейсы `NavigationContext`, `ComponentResultContext` и `ScreenConfigSerializationContext`; отдельный контейнер `AppComponentServices` не используется.
+
+== Metro DI
+
+* App-level wiring собирается через `AppGraph` и assisted factories.
+* DI используется для стабильных shared-графов и постепенного роста модульности.
+
+== Shared Settings
+
+* Пользовательские настройки реализованы как shared capability в `shared/settings/*`, а не как `shared/feature/settings`.
+* `shared/settings/domain` содержит типизированные категории `AppSettings`, `LearningSettings`, `PracticeSettings`, `AiSettings` (провайдер/ключ/модель AI и TTS) и `UserSettingsRepository`; полный набор `UserSettingsCategory` — `App`, `Learning`, `Practice`, `Ai`, `Experimental`.
+* `shared/settings/data` реализует repository через `DefaultUserSettingsRepository`, а SQLDelight-доступ вынесен в `UserSettingsLocalDataSource`.
+* `shared/settings/data` подключается в app-level DI graph; `DefaultUserSettingsRepository` публикуется как binding для `UserSettingsRepository`, а `UserSettingsLocalDataSource` создаётся через constructor injection.
+* `shared/settings/database-schema` владеет таблицей `user_setting`; `shared/database` агрегирует эту schema в общий `SenseeDatabase`.
+* UI-фича настроек, если появится, должна жить отдельно в `shared/feature/settings/presentation/*` и работать через `UserSettingsRepository`, не владея storage.
+
+== Reusable Learning Deck
+
+* `shared/ui/learning-deck` — ключевой reusable UI primitive текущего среза.
+* Deck поддерживает жесты, клавиатуру, программные свайпы и локальный undo.
+* Practice feature использует deck как готовый интерактивный строительный блок и не переносит в него repository/network/database/SRS ответственность.
+
+== Product Semantic Segregation
+
+* Sensee проектируется как AI-assisted learning client: будущий AI-слой должен помогать с объяснениями, подсказками, примерами и уточнениями, но не подменять базовую учебную модель.
+* Карточка не считается одним текстовым blob. В текущем practice-срезе отдельно удерживаются `front`, `back`/meaning, example, `unitType`, grammar tags и review state. Поле транскрипции в модели карты пока отсутствует — планируется (см. `docs/evolution-backlog.adoc`, EB-5).
+* SRS-состояние и история review относятся к процессу повторения, а не к самому значению слова или фразы.
+* Будущие AI-assist артефакты должны добавляться как отдельные доменные понятия, например hint, explanation, generated example или pronunciation hint, а не перезаписывать исходные `front`/`back`.
+* UI может показывать эти смыслы рядом, но data flow должен сохранять их происхождение и ответственность.
+
+== Grammar Taxonomy
+
+* Реализованная practice-модель использует нейтральный `GrammarUnitType`.
+* Многомерные грамматические признаки представлены как `GrammarTag(category, form)`: например `verb_irregular/infinitive`, `transitivity/intransitive`, `countability/uncountable`.
+* Полная текущая таблица unit types, categories и forms зафиксирована в `docs/pos-and-forms.adoc` и отдана mock backend endpoint'ом `practice/grammar/taxonomy`.
+* Practice DTO, локальная SQLDelight-схема и UI работают через `unit_type` и `grammar_tags`.
+
+== Lexical Authoring Model
+
+* Источником учебного материала должен быть не набор карточек, а lexical material, внесённый пользователем.
+* Базовая цепочка доменных понятий выглядит так: `Lexical Entry` -> `Meaning / Sense` -> `Contextual Application` / `Grammar Cue` -> `Derived Learning Card`.
+* Один lexical entry может иметь несколько meanings; один meaning может иметь несколько contextual applications и grammar cues.
+* Карточки, practice и review являются downstream-представлениями подтверждённого материала, а не первичной моделью содержания.
+
+== Candidate versus Confirmed Data
+
+* AI-assisted enrichment не должен сразу становиться canonical content.
+* Candidate meanings, candidate contextual applications и candidate grammar cues должны жить отдельно от confirmed data.
+* Подтверждение пользователем является границей между suggestion layer и canonical lexical content.
+* Это различение нужно как для explainability, так и для предотвращения semantic collapse при неоднозначных AI-ответах.
+
+== Catalog Ownership and Service Sets
+
+* Каталог записей и колоды — library-owned: Library владеет курированием, practice выступает read-only потребителем курируемых колод.
+* Карточка может принадлежать нескольким колодам (many-to-many); удаление карточки из одной колоды не затрагивает другие и каталог, а удаление карточки сохраняет confirmed lexical material записи.
+* Различаются собственный материал пользователя и сервисные наборы (service sets), приходящие через backend-compatible boundary.
+* Добавление сервисного набора целиком реализовано: `CatalogAdoptionRepository` (`library/domain`, реализация `DefaultCatalogAdoptionRepository`) помечает колоду через `practice_deck.adopted_at`; помеченная колода читается как `CatalogOrigin.Personal` и становится собственным материалом. Частичное (по карточкам) добавление — планируется (контракт оставляет место под перегрузку `adopt(deckId, cards)`).
+* Practice видит только собственный материал: связанный `CapturedCatalogRepository.observeOwnedMaterial()` отдаёт стрим из добавленных наборов + производной колоды захваченных слов, но никогда сами сервисные наборы; сервисный каталог приходит из `CatalogMockFixtures` и виден только в `Library`. Синк сервисного кэша вынесен в явный `CatalogRepository.refreshFromRemote()` и не сидит сайд-эффектом в чтении.
+* Каталог library-owned: `CatalogRepository` в `library/domain` (реализация — `library/data`), practice — read-only потребитель; захваченный материал адоптируется декоратором. Решение — ADR-001.
+
+== Settings Scope
+
+* Настройки имеют два planned scope представления над одним `UserSettingsRepository`: локальный экран практики должен показывать только связанное с практикой подмножество, а раздел `Profile` — полный набор, сгруппированный по `UserSettingsCategory`.
+* Кнопка `settings` в practice top bar скрыта, пока локальный экран настроек не реализован; целевое поведение — отдельный практический экран настроек, не переход в `Profile`. См. `docs/arc42/sections/06_runtime_view.adoc`.
+* Объём `Profile` сознательно бережный: реализованная категория `Ai` управляет AI/TTS-настройками; полный settings screen, About, Account/синхронизация, статистика и data management остаются честно planned, не фейковым UI.
+* Storage scope: дефолт `UserSettingsScope.Device`; `User` зарезервирован под будущую per-user синхронизацию, переключатель Device/User не показывается, пока нет auth.
+* Категория `UserSettingsCategory.Experimental` существует, но не имеет data class и поля в `UserSettingsSnapshot` — сознательный разрыв, маркируемый честно.
+
+== Home Aggregation and Ad-hoc Practice Session
+
+* `Home` — стартовый раздел, пока с placeholder UI. Целевое поведение: агрегатор поверх остальных, не владеет доменом, показывает агрегаты и уводит через `NavigationDispatcher.open(...)` в конфиги других разделов. `HomeConfig` остаётся одним `Home`.
+* Today-виджет «Повторить сегодня» показывает агрегаты (due count, прогресс к `dailyGoal`, стрик) без per-card SRS-метаданных; статистика как отдельный экран — в `Profile` (честная заглушка). Это не противоречие: actionable today-виджет и экран статистики — разные ответственности.
+* CTA «Повторить сегодня» уводит сразу в practice по due-подмножеству. Это требует ad-hoc/query practice-сессии: целевой контракт practice расширяется с «гонять готовый `Deck`» до сессии по запросу/подмножеству (та же возможность нужна Library для practice по подмножеству). Сейчас practice гоняет только готовый `Deck` — сознательный planned-разрыв. См. `docs/evolution-backlog.adoc` (EB-3, политика — там же).
+* `tapToFlipEnabled` сейчас живёт только в practice UI state — целевое поведение персистит его в `PracticeSettings`.
+* Транскрипция: `PracticeSettings.showTranscription` существует, но поля транскрипции в модели карты нет — планируется добавить поле; до этого настройка неактивна. Это сознательный разрыв, маркируемый честно. См. `docs/evolution-backlog.adoc` (EB-5, политика — там же).
+* Планируемые practice-настройки: `answerInput` (off/typed; typed имеет смысл только при русском фронте), `practiceFront` override (EN-only/RU-only/mix через `practiceFrontFor`), `contextTranslation` (always/on-tap), реально подключённый `autoPlayAudio`.
+
+== Platform Environment Abstraction
+
+* Платформенные различия сводятся к `PlatformEnvironment` и platform-specific `PlatformContext`.
+* Это позволяет держать корневой UI и root wiring в shared code.
+
+== Database Schema Aggregation
+
+* SQLDelight schema ownership остаётся у feature-модулей вроде `shared/feature/practice/database-schema`.
+* Shared capabilities, которые владеют не feature-specific state, могут иметь собственные schema-модули, например `shared/settings/database-schema`.
+* `shared/database` агрегирует эти feature-owned схемы в корневой `SenseeDatabase` через `sqldelight { databases { register("SenseeDatabase") { dependency(...) } } }`.
+* `SenseeDatabaseProvider` и platform-specific `DriverFactory` живут в `shared/database`, поэтому data-модули получают единый database boundary, не владея platform driver logic.
+* Такая схема позволяет расширять локальное хранилище по feature ownership, не превращая `shared/database` в место, где вручную сосредотачивается вся предметная SQL-схема.
+
+== Primary Navigation Model
+
+* Реализован базовый `PrimaryShellComponent` с target'ами `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`.
+* Каждый раздел имеет собственный набор `ScreenConfig`: `HomeConfig`, `PracticeConfig`, `LibraryConfig`, `VocabularyEditorConfig` и `ProfileConfig`.
+* Публичные feature config'и маркируются как `NavigationTargetConfig`; root использует служебный `PrimaryShellConfig(target)` для primary shell, а section stack внутри primary shell использует служебные `PrimarySectionConfig`, которые маркируются как `HostScreenConfig` и остаются деталью host-реализации.
+* Forward-навигация выражается через `NavigationDispatcher.open(config)`. Конкретный host сам решит, как применить config к своему stack.
+* Обратная навигация выражается отдельно через `NavigationDispatcher.back()`.
+* `NavigationDispatcher.open` возвращает `NavigationRequestStatus.Handled` или `Unhandled`; это статус обработки запроса текущим host, а не результат stack operation.
+* `NavigationDispatcher.back` возвращает результат через `onResult(NavigationRequestStatus)`, потому что для back нет config ownership routing, а `Handled` может означать и закрытие экрана, и сознательную локальную обработку вроде confirm dialog.
+* Навигация распространяется чистыми config'ами вверх по цепочке host components до первого обработчика.
+* Для stack-based host обратная навигация делегируется Decompose `pop`; если `pop` завершился как `NavigationRequestStatus.Unhandled`, `ChainedNavigationDispatcher` автоматически передаёт `back` родительскому dispatcher.
+* Root/primary shell components умеют открыть нужный дочерний раздел и передать target config как initial config при первичном создании host, что оставляет тот же механизм пригодным для будущих deeplink'ов.
+* `PrimarySectionConfig` без target использует стабильный `instanceKey`, поэтому выбор уже открытого раздела не пересоздаёт section component.
+* `PrimarySectionConfig` с target получает новый `instanceKey`, а `PrimaryShellComponent` применяет `bringToFront(recreate = true)` для section component того же класса; поэтому повторное открытие того же target создаёт новый section component instance и не накапливает старые экземпляры этого раздела.
+* Для выбора уже открытого раздела без target используется отдельная stack-операция, которая ищет section host по классу config и переносит существующий config наверх.
+* Для forward-навигации `onComplete(isSuccess)` прокидывается до Decompose stack operation, поэтому вызывающая сторона может дождаться результата самой навигационной операции, не выбирая тип операции сама.
+* Конкретный UI-паттерн может различаться по платформам, но семантика target'ов должна оставаться общей.
+
+== Practice Data Flow
+
+* Deck content для practice приходит из library-owned `CatalogRepository`; practice не владеет catalog/deck content.
+* `PracticeReviewRepository` является границей для отправки review result и обновления SRS-состояния.
+* `CatalogRemoteDataSource` получает fixture-backed catalog/deck данные через общий `HttpClient`, предоставленный `shared/core/network`.
+* `shared/core/mock-backend` предоставляет mock engine и fixture sets для текущего учебного среза без live backend.
+* `CatalogLocalDataSource` и `shared/feature/library/database-schema` используют SQLDelight для catalog/deck/adoption state; `PracticeSrsStorage` и `shared/feature/practice/database-schema` используют SQLDelight для SRS-состояния и review log.
+* `shared/srs/*` остаются самостоятельными библиотеками, но текущий practice data flow уже применяет их для review scheduling.
+
+== Honest Evolution
+
+* Клиент не должен притворяться production-ready продуктом, если текущий flow пока fixture-backed.
+* Документация, LikeC4 и код должны одинаково различать реализованное, подготовленное и планируемое.
+* В `LikeC4` это различение сейчас выражается явно через отдельные view: `current_learning_slice`, `prepared_modules`, `deployment_targets` и reviewer-facing C4-проекции `reviewer_*`.

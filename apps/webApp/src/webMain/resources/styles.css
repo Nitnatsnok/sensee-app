@@ -1,0 +1,68 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Loader palette tuned to the app's light/dark surfaces so the hand-off to
+   Compose doesn't flash a different background. */
+:root {
+    --loader-bg: #faf9fb;
+    --loader-fg: #1c1b1f;
+    --loader-track: rgba(28, 27, 31, 0.12);
+    --loader-accent: #5b4ec7;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --loader-bg: #141318;
+        --loader-fg: #e6e1e9;
+        --loader-track: rgba(230, 225, 233, 0.16);
+        --loader-accent: #b9aeff;
+    }
+}
+
+#app-loader {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    background: var(--loader-bg);
+    color: var(--loader-fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    animation: app-loader-in 240ms ease-out;
+}
+
+.app-loader__brand {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.app-loader__spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--loader-track);
+    border-top-color: var(--loader-accent);
+    animation: app-loader-spin 0.9s linear infinite;
+}
+
+@keyframes app-loader-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes app-loader-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-loader__spinner { animation-duration: 2s; }
+    #app-loader { animation: none; }
+}

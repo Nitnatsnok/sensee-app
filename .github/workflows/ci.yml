@@ -1,0 +1,572 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      run_verify:
+        description: 'Verify gate (Static analysis, Android lint+assemble, Desktop, Tests JVM, Tests Web)'
+        type: boolean
+        default: true
+      run_ios:
+        description: 'iOS app (macOS-26, ×10 billing)'
+        type: boolean
+        default: false
+      run_hooks:
+        description: 'Hook tooling smoke test'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  JAVA_DISTRIBUTION: temurin
+  JAVA_VERSION: '21'
+  # dorny/paths-filter has no Node 24 release yet; opt every JS action into Node 24
+  # so the Node 20 deprecation does not break CI once Node 20 is removed.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-24.04
+    outputs:
+      verify: ${{ steps.filter.outputs.verify || steps.dispatch.outputs.verify }}
+      build_logic: ${{ steps.filter.outputs.build_logic || steps.dispatch.outputs.build_logic }}
+      hooks: ${{ steps.filter.outputs.hooks || steps.dispatch.outputs.hooks }}
+      ios: ${{ steps.filter.outputs.ios || steps.dispatch.outputs.ios }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Dispatch overrides
+        id: dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "verify=${{ inputs.run_verify }}" >> "$GITHUB_OUTPUT"
+          echo "build_logic=${{ inputs.run_verify }}" >> "$GITHUB_OUTPUT"
+          echo "hooks=${{ inputs.run_hooks }}" >> "$GITHUB_OUTPUT"
+          echo "ios=${{ inputs.run_ios }}" >> "$GITHUB_OUTPUT"
+
+      - name: Detect affected paths
+        id: filter
+        if: github.event_name != 'workflow_dispatch'
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        with:
+          filters: |
+            verify:
+              - 'apps/**'
+              - 'shared/**'
+              - 'quality/**'
+              - 'config/**'
+              - 'gradle/**'
+              - 'gradle-plugins/**'
+              - 'gradlew'
+              - 'gradlew.bat'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - 'gradle.properties'
+              - '.editorconfig'
+              - '.github/workflows/ci.yml'
+            build_logic:
+              - 'gradle-plugins/**'
+              - 'config/**'
+              - 'gradle/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - 'gradle.properties'
+              - '.github/workflows/ci.yml'
+            hooks:
+              - '.githooks/**'
+              - 'lefthook.yml'
+              - 'scripts/setup-git-hooks.sh'
+              - 'gradlew'
+              - 'gradlew.bat'
+              - 'gradle/wrapper/**'
+              - '.github/workflows/ci.yml'
+            ios:
+              - 'apps/iosApp/**'
+              - 'apps/iosFramework/**'
+              - 'shared/**'
+              - 'gradle/**'
+              - 'gradle-plugins/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - 'gradle.properties'
+              - '.github/workflows/ci.yml'
+
+  hooks:
+    name: Hook tooling
+    needs: changes
+    if: needs.changes.outputs.hooks == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Smoke test hook tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # gradlew is executed directly (./gradlew) by devs and CI with no
+          # installer step, so its tracked exec bit is load-bearing and has
+          # regressed before. .githooks/* are intentionally tracked 100644:
+          # setup-git-hooks.sh chmods them at install time and lefthook runs
+          # them, so do NOT add a 100755 assertion for those.
+          gradlew_mode=$(git ls-files -s -- gradlew | awk '{print $1}')
+          if [ "$gradlew_mode" != "100755" ]; then
+            echo "::error::gradlew tracked mode is $gradlew_mode, expected 100755" >&2
+            exit 1
+          fi
+
+          mkdir -p .ci-bin
+          cat <<'EOF' > .ci-bin/mock-lefthook
+          #!/bin/sh
+          if [ "$1" = "install" ]; then
+            exit 0
+          fi
+          echo "unexpected lefthook args: $*" >&2
+          exit 1
+          EOF
+          chmod +x .ci-bin/mock-lefthook
+          SENSEE_GIT_HOOKS_LEFTHOOK_BIN="$PWD/.ci-bin/mock-lefthook" \
+            SENSEE_GIT_HOOKS_INSTALL_MISSING_DEPS=never \
+            sh ./scripts/setup-git-hooks.sh
+
+          # Happy path: a clean tracked file passes both hooks.
+          sh ./.githooks/pre-commit README.md
+          SENSEE_GIT_HOOK_SKIP_GRADLE=1 sh ./.githooks/pre-push --files README.md
+
+          # Guard path: a file that trips a pre-commit guard must be rejected,
+          # so the guard logic is exercised — not only the no-op happy path.
+          printf 'trailing space \n' > .ci-bin/guard-probe.txt
+          if sh ./.githooks/pre-commit .ci-bin/guard-probe.txt; then
+            echo "::error::pre-commit accepted a file with trailing whitespace" >&2
+            exit 1
+          fi
+
+          # Decision path: a non-doc change must route pre-push to Gradle
+          # verification (skipped here via the env flag) rather than the
+          # docs-only fast exit, so the classifier itself is covered.
+          out=$(SENSEE_GIT_HOOK_SKIP_GRADLE=1 sh ./.githooks/pre-push --files build.gradle.kts)
+          printf '%s\n' "$out"
+          printf '%s' "$out" | grep -q 'would run' || {
+            echo "::error::pre-push did not route a non-doc change to Gradle verification" >&2
+            exit 1
+          }
+
+          echo "Hook tooling checks passed."
+
+  static-analysis:
+    name: Static analysis
+    needs: changes
+    if: needs.changes.outputs.verify == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          # Opt-in Build Scan publishing (free, no Develocity server). Off by
+          # default so nothing leaks automatically if the sources are ever
+          # closed; enable by setting the repository variable
+          # GRADLE_BUILD_SCAN_PUBLISH to 'true'.
+          build-scan-publish: ${{ vars.GRADLE_BUILD_SCAN_PUBLISH == 'true' }}
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Run static analysis
+        # `buildHealth` intentionally not gated: DAGP findings on this
+        # KMP+Metro graph are mostly false positives already suppressed via
+        # bundles; run locally when needed.
+        run: ./gradlew ktlintCheck detekt konsistCheck --continue
+
+      - name: Upload static-analysis reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: static-analysis-reports
+          path: |
+            **/build/reports/**
+          if-no-files-found: ignore
+
+  android:
+    name: Android lint + assemble
+    needs: changes
+    if: needs.changes.outputs.verify == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          build-scan-publish: ${{ vars.GRADLE_BUILD_SCAN_PUBLISH == 'true' }}
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Run Android lint and assemble
+        # No `testDebugUnitTest`: repo has no `androidUnitTest/` source sets;
+        # add when one appears.
+        timeout-minutes: 15
+        run: >-
+          ./gradlew --no-parallel lint :androidApp:assembleReview --continue
+          -Pkotlin.build.report.output=file
+          -Pkotlin.build.report.file.dir=build/reports/kotlin-build
+
+      - name: Upload Android reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: android-reports
+          path: |
+            **/build/reports/**
+            **/build/outputs/**
+          if-no-files-found: ignore
+
+      - name: Upload Kotlin build report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: kotlin-build-report-android
+          path: build/reports/kotlin-build/**
+          if-no-files-found: ignore
+
+  desktop:
+    name: Desktop
+    needs: changes
+    if: needs.changes.outputs.verify == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # dorny/test-reporter creates a separate check with per-test failures and
+    # stack traces; needs checks:write. Workflow default is contents:read only,
+    # and job-level permissions REPLACE rather than merge, so restate it here.
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          build-scan-publish: ${{ vars.GRADLE_BUILD_SCAN_PUBLISH == 'true' }}
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Verify desktop module
+        run: ./gradlew --no-parallel :desktopApp:check --continue
+
+      - name: Publish desktop test results
+        if: always()
+        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+        with:
+          name: Desktop test results
+          path: apps/desktopApp/build/test-results/test/TEST-*.xml
+          reporter: java-junit
+          fail-on-error: false
+          fail-on-empty: false
+
+      - name: Upload desktop reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: desktop-reports
+          path: |
+            apps/desktopApp/build/reports/**
+            apps/desktopApp/build/test-results/**
+          if-no-files-found: ignore
+
+  tests-jvm:
+    name: Tests (JVM)
+    needs: changes
+    if: needs.changes.outputs.verify == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          build-scan-publish: ${{ vars.GRADLE_BUILD_SCAN_PUBLISH == 'true' }}
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Run JVM tests
+        run: ./gradlew --no-parallel jvmTest --continue
+
+      - name: Publish JVM test results
+        if: always()
+        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+        with:
+          name: JVM test results
+          path: '**/build/test-results/jvmTest/TEST-*.xml'
+          reporter: java-junit
+          fail-on-error: false
+          fail-on-empty: false
+
+      - name: Upload JVM test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tests-jvm-reports
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+
+  tests-web:
+    name: Tests (Web)
+    needs: changes
+    if: needs.changes.outputs.verify == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          build-scan-publish: ${{ vars.GRADLE_BUILD_SCAN_PUBLISH == 'true' }}
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
+
+      - name: Run JS + Wasm browser tests
+        # Kotlin daemon heap above the project default — Wasm test executable
+        # compile is the residual memory hotspot.
+        timeout-minutes: 15
+        run: >-
+          ./gradlew --no-parallel jsBrowserTest wasmJsBrowserTest --continue
+          "-Pkotlin.daemon.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=768m -XX:+UseParallelGC"
+          -Pkotlin.build.report.output=file
+          -Pkotlin.build.report.file.dir=build/reports/kotlin-build
+
+      - name: Publish web test results
+        if: always()
+        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+        with:
+          name: Web test results
+          path: |
+            **/build/test-results/jsBrowserTest/TEST-*.xml
+            **/build/test-results/wasmJsBrowserTest/TEST-*.xml
+          reporter: java-junit
+          fail-on-error: false
+          fail-on-empty: false
+
+      - name: Upload web test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tests-web-reports
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          if-no-files-found: ignore
+
+      - name: Upload Kotlin build report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: kotlin-build-report-tests-web
+          path: build/reports/kotlin-build/**
+          if-no-files-found: ignore
+
+  ios:
+    name: iOS app
+    needs: changes
+    # macOS billing is ×10; opt-in via workflow_dispatch + run_ios checkbox only.
+    if: github.event_name == 'workflow_dispatch' && needs.changes.outputs.ios == 'true'
+    # Compose Multiplatform 1.11 adopts the iOS 26 UIViewLayoutRegion API, so
+    # the framework only links against the iOS 26 SDK. macos-15 ships Xcode
+    # 16.x (iOS 18.5 SDK) and fails with a lone undefined _OBJC_CLASS_$_
+    # UIViewLayoutRegion; macos-26 ships Xcode 26 (iOS 26 SDK).
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Build iOS app (simulator)
+        run: |
+          set -euo pipefail
+          # Generic destination: a concrete simulator device is not required to
+          # compile and link; runner images expose only placeholder devices.
+          # Do NOT pass CODE_SIGNING_ALLOWED=NO: it makes KMP's
+          # embedAndSignAppleFrameworkForXcode skip framework delivery, so the
+          # Kotlin framework never lands where Xcode links. Simulator builds do
+          # not require a signing identity anyway.
+          xcodebuild \
+            -project apps/iosApp/iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios-derived \
+            build
+
+      - name: Smoke launch in simulator
+        run: |
+          set -euo pipefail
+          APP="build/ios-derived/Build/Products/Debug-iphonesimulator/Sensee.app"
+          # The runner has no pre-created simulator; make one with the latest
+          # installed iOS runtime (device-type name not assumed to exist).
+          RUNTIME=$(xcrun simctl list runtimes \
+            | grep -Eo 'com.apple.CoreSimulator.SimRuntime.iOS-[0-9-]+' | tail -1)
+          DEVICE=$(xcrun simctl create ci-sim 'iPhone 16' "$RUNTIME" 2>/dev/null \
+            || xcrun simctl create ci-sim \
+                 "$(xcrun simctl list devicetypes \
+                    | grep -Eo 'com.apple.CoreSimulator.SimDeviceType.iPhone[^ )]*' \
+                    | tail -1)" "$RUNTIME")
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl install "$DEVICE" "$APP"
+          xcrun simctl launch "$DEVICE" app.sensee.Sensee
+          # The app never registers with launchd if it crashed on startup;
+          # poll for registration, bounded so a hung launch fails fast.
+          launched=0
+          for _ in $(seq 1 30); do
+            if xcrun simctl spawn "$DEVICE" launchctl list | grep -q app.sensee.Sensee; then
+              launched=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$launched" != "1" ]; then
+            echo "::error::Sensee did not register with launchd within 30s (startup crash?)" >&2
+            exit 1
+          fi
+
+      - name: Upload iOS reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ios-reports
+          path: |
+            build/ios-derived/Logs/**
+            **/build/reports/**
+          if-no-files-found: ignore
+
+  build-logic:
+    name: Build logic
+    needs: changes
+    if: needs.changes.outputs.build_logic == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Verify local Gradle plugins build
+        run: ./gradlew -p gradle-plugins :plugin:check
+
+      - name: Upload build logic reports on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-logic-reports
+          path: |
+            gradle-plugins/**/build/reports/**
+            gradle-plugins/**/build/test-results/**
+          if-no-files-found: ignore

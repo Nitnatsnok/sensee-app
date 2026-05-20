@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "866722887466",
+    "project_id": "sensee-721f2",
+    "storage_bucket": "sensee-721f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866722887466:android:ee52e098f14b3e79e21053",
+        "android_client_info": {
+          "package_name": "app.sensee"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCE3cS8Rm9P745QXMmfFfEqp2mK2ry3sU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

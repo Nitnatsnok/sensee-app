@@ -1,0 +1,32 @@
+[[client-section-technical-risks]]
+= Технические риски
+
+== Известные риски
+
+TR-1. Documentation drift against code::
+_Влияние: высокое · Вероятность: средняя._ Если arc42 и LikeC4 будут описывать целевую архитектуру вместо фактической, документация быстро перестанет быть полезной для ревью и дальнейшей разработки. _Снижение:_ doc-first правило `docs/AGENTS.md` и обновление docs в одной задаче с кодом; статус — активно контролируется.
+
+TR-2. Web target maturity::
+_Влияние: среднее · Вероятность: средняя._ Compose Multiplatform Web остаётся менее зрелым направлением, чем Mobile и Desktop; возможны platform-specific ограничения для части пользовательских сценариев. _Снижение:_ shared-логика в `commonMain`, web-специфика изолирована в `jsMain`/`wasmJsMain`; статус — принятый риск, отслеживается при апгрейде Compose.
+
+TR-3. Implemented slice perceived as completed service::
+_Влияние: среднее · Вероятность: высокая._ Наличие fixture-backed practice flow может создать ложное впечатление, что уже есть live backend, production sync и готовая AI-оркестрация всего сервиса. _Снижение:_ явная маркировка implemented/prepared/planned в arc42, LikeC4 (`current_learning_slice` и `prepared_modules`) и сценариях; статус — под контролем.
+
+TR-4. AI-assist semantic collapse::
+_Влияние: высокое · Вероятность: низкая._ Если AI-подсказки, объяснения и сгенерированные примеры начнут храниться как тот же текст, что `front`/`back`/example, приложение потеряет управляемость учебной модели и SRS-состояния. _Снижение:_ candidate-слой отделён от confirmed, anti-corruption mapping на границе шва (ADR-005); статус — структурно закрыт в реализованном срезе.
+
+TR-5. Drift between canonical views and arc42 text::
+_Влияние: среднее · Вероятность: средняя._ Если `current_learning_slice`, `database_aggregation`, `prepared_modules` и `deployment_targets` в `LikeC4` перестанут совпадать с текстом arc42, документация снова станет перегруженной и менее надёжной для чтения. _Снижение:_ LikeC4-исходники считаются каноническими, arc42 синхронизируется с ними; статус — активно контролируется.
+
+TR-6. Accessibility coverage gap::
+_Влияние: среднее · Вероятность: средняя._ Пока клиент покрывает только часть продуктового контура, accessibility (screen-reader семантика, фокус-навигация на Desktop/Web) проверена не на всех экранах. _Снижение:_ переиспользуемый `shared/ui/design-system` как единая точка для семантики; статус — частичное покрытие, не завершено.
+
+TR-7. Observability not wired::
+_Влияние: среднее · Вероятность: высокая._ `shared/core/observability` существует как prepared foundation, но ещё не подключён к runtime — диагностика инцидентов вне реализованного среза ограничена. _Снижение:_ модуль уже выделен как отдельная граница интеграции и честно помечен как prepared foundation в `05_building_block_view.adoc` и LikeC4 (`prepared_modules`); статус — подготовлен, не подключён.
+
+TR-8. Security hardening and e2e coverage gap::
+_Влияние: высокое · Вероятность: средняя._ Production security hardening (за пределами device-scoped хранения ключей) и end-to-end тестовое покрытие сквозных user-flow ещё ограничены, потому что live backend и auth — планируемая эволюция. _Снижение:_ секреты device-scoped и вводятся скрытым полем (ADR-005), границы клиента не размываются; статус — растёт вместе с подключением live-контура.
+
+== Конкретные отложенные разрывы
+
+Сквозные снижения зафиксированы для каждого риска выше (`_Снижение:_`). Конкретные сквозные плановые разрывы не переописываются здесь, а консолидированы в `docs/evolution-backlog.adoc` и разбираются по `#`: например вложенный deep-link во `VocabularyEditorConfig.Editor` (EB-7) — точечное плановое проявление общего риска неполного non-functional покрытия (TR-7/TR-8), а не отдельная нерешённая проблема. Observability-not-wired (TR-7) — не backlog-пункт, а prepared foundation: его статус описывают `05_building_block_view.adoc` и LikeC4-view `prepared_modules`.

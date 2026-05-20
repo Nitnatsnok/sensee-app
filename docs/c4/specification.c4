@@ -1,0 +1,56 @@
+specification {
+  element actor {
+    notation 'Actor'
+    style {
+      shape person
+      color green
+    }
+  }
+
+  element client_app {
+    notation 'Client App'
+    style {
+      color primary
+      border solid
+    }
+  }
+
+  element layer {
+    notation 'Client Layer'
+    style {
+      shape component
+      color secondary
+    }
+  }
+
+  element local_storage {
+    notation 'Local Storage'
+    style {
+      shape cylinder
+      color amber
+    }
+  }
+
+  element external_system {
+    notation 'External System'
+    style {
+      color muted
+    }
+  }
+
+  tag prepared {
+    color #F59E0B
+  }
+
+  tag future {
+    color #64748B
+  }
+
+  tag shared {
+    color #6366F1
+  }
+
+  tag deployable {
+    color #2563EB
+  }
+}

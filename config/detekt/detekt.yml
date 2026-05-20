@@ -1,0 +1,417 @@
+config:
+  validation: true
+  warningsAsErrors: false
+  # Compose rules come from the external detekt-compose-rules ruleset.
+  # Excluding this namespace from config validation keeps the rules active
+  # while avoiding "unknown property" errors for plugin-owned settings.
+  # IDE/JSON schema for Detekt 2.0-alpha is out of date and flags this as
+  # "string required" — the runtime requires a YAML list. Ignore the IDE hint.
+  excludes:
+    - "Compose.*"
+    - "sensee.*"
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+
+comments:
+  active: true
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
+complexity:
+  active: true
+  # Built-in Detekt rules keep a broad production-wide ceiling. The stricter
+  # per-shape budgets (ordinary Kotlin vs @Composable, constructor categories)
+  # live in the project-specific Detekt rules below.
+  LongMethod:
+    active: true
+    allowedLines: 120
+    excludes:
+      - "**/src/*Test/**"
+      - "**/*Preview*.kt"
+  CyclomaticComplexMethod:
+    active: true
+    allowedComplexity: 15
+  NestedBlockDepth:
+    active: true
+    allowedDepth: 3
+  # Function parameters are capped at the looser @Composable budget here;
+  # ordinary Kotlin and constructors are tightened further by the profiled
+  # project-specific Detekt rule below.
+  LongParameterList:
+    active: true
+    allowedFunctionParameters: 8
+    # Constructor budgets are profiled by the custom Detekt rule below
+    # (ordinary constructors, data classes, snapshots, design tokens).
+    allowedConstructorParameters: 64
+    ignoreDefaultParameters: true
+    excludes:
+      - "**/src/*Test/**"
+      - "**/*Preview*.kt"
+  TooManyFunctions:
+    active: true
+    allowedFunctionsPerFile: 15
+    allowedFunctionsPerClass: 12
+    allowedFunctionsPerInterface: 10
+    allowedFunctionsPerObject: 10
+    excludes:
+      - "**/src/*Test/**"
+      - "**/*Preview*.kt"
+
+sensee:
+  active: true
+  # Project-specific Detekt rules. Built-in Detekt complexity thresholds are one
+  # value per rule; these rules split budgets by Kotlin shape inside the same
+  # file, especially ordinary functions vs @Composable functions.
+  ProfiledLongMethod:
+    active: true
+    allowedLines: 50
+    allowedComposableLines: 100
+    excludes:
+      - "**/src/*Test/**"
+      - "**/*Preview*.kt"
+  ProfiledCyclomaticComplexMethod:
+    active: true
+    allowedComplexity: 10
+    allowedComposableComplexity: 15
+    excludes:
+      - "**/src/*Test/**"
+      - "**/*Preview*.kt"
+  ProfiledLongParameterList:
+    active: true
+    allowedFunctionParameters: 5
+    allowedProviderFunctionParameters: 6
+    allowedComposableFunctionParameters: 10
+    allowedConstructorParameters: 6
+    allowedLogicConstructorParameters: 8
+    allowedDecomposeComponentConstructorParameters: 8
+    allowedDataClassConstructorParameters: 10
+    allowedDomainModelConstructorParameters: 12
+    allowedUiStateConstructorParameters: 12
+    allowedSnapshotConstructorParameters: 12
+    allowedComponentTokenConstructorParameters: 25
+    allowedThemeTokenConstructorParameters: 60
+    ignoreDefaultParameters: true
+    themeTokenPackagePatterns:
+      - '^app\.sensee\.ui\.designSystem\.theme$'
+    componentTokenPackagePatterns:
+      - '^app\.sensee\.ui\.designSystem\.component\..*'
+    componentTokenClassNamePatterns:
+      - '.*(Colors|Styles)$'
+    snapshotClassNamePatterns:
+      - '.*Snapshot$'
+    snapshotPackagePatterns:
+      - '^app\.sensee\.core\.tracing(\..*)?$'
+    logicClassNamePatterns:
+      - '.*Logic$'
+    logicPackagePatterns:
+      - '.*\.presentation\.impl(\..*)?$'
+    logicAnnotationNames:
+      - 'AssistedInject'
+    decomposeComponentClassNamePatterns:
+      - 'Default.*Component$'
+    decomposeComponentPackagePatterns:
+      - '^app\.sensee\.appShell(\..*)?$'
+      - '.*\.presentation\.impl(\..*)?$'
+    decomposeComponentAnnotationNames:
+      - 'AssistedInject'
+    uiStateClassNamePatterns:
+      - '.*UiState$'
+    domainModelPackagePatterns:
+      - '.*\.domain(\..*)?$'
+    excludes:
+      - "**/src/*Test/**"
+      - "**/*Preview*.kt"
+  ForbiddenRunCatching:
+    active: true
+    excludes:
+      - "**/src/test/**"
+      - "**/src/*Test/**"
+  BroadCatchCancellationGuard:
+    active: true
+    excludes:
+      - "**/src/test/**"
+      - "**/src/*Test/**"
+
+coroutines:
+  active: true
+  GlobalCoroutineUsage:
+    active: true
+  # `shared/core/coroutines` is the dispatcher seam — it is the one place that
+  # is allowed to name `Dispatchers.X` (the AppDispatchers providers literally
+  # construct the values everyone else injects).
+  InjectDispatcher:
+    active: true
+    excludes:
+      - "**/shared/core/coroutines/**"
+  RedundantSuspendModifier:
+    active: true
+  SleepInsteadOfDelay:
+    active: true
+  SuspendFunSwallowedCancellation:
+    active: true
+  SuspendFunInFinallySection:
+    active: true
+  SuspendFunWithCoroutineScopeReceiver:
+    active: true
+  CoroutineLaunchedInTestWithoutRunTest:
+    active: true
+
+exceptions:
+  active: true
+  TooGenericExceptionCaught:
+    active: false
+  TooGenericExceptionThrown:
+    active: true
+  SwallowedException:
+    active: true
+  # Singleton `object : Throwable` shares one stack trace across all throws —
+  # the first throw site is the only one ever reported. TR-only.
+  ObjectExtendsThrowable:
+    active: true
+  # Stray `TODO()` / `NotImplementedError` left in production code.
+  NotImplementedDeclaration:
+    active: true
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - Composable
+  MatchingDeclarationName:
+    active: true
+    # KMP target-suffixed files (matches ktlint's ktlint_standard_filename exclude set):
+    # the filename intentionally encodes the platform, not the declaration.
+    excludes:
+      - "**/*.android.kt"
+      - "**/*.ios.kt"
+      - "**/*.js.kt"
+      - "**/*.jvm.kt"
+      - "**/*.native.kt"
+      - "**/*.wasmJs.kt"
+      - "**/*.web.kt"
+  TopLevelPropertyNaming:
+    active: true
+
+performance:
+  active: true
+  SpreadOperator:
+    active: false
+  # Cheap correctness: `x == true || x == true`, `x && x`, etc.
+  UnnecessaryPartOfBinaryExpression:
+    active: true
+  # Collection chains with several intermediate operations on Iterable are
+  # cheaper as a Sequence. Tuned threshold above the default so short data-
+  # massaging chains (2-3 ops) don't trip it. Test code is excluded — the
+  # konsist guards walk file lists once, perf is not in scope there.
+  CouldBeSequence:
+    active: true
+    allowedOperations: 4
+    excludes:
+      - "**/src/*Test/**"
+
+potential-bugs:
+  active: true
+  # `!!` is legitimate in tests (NPE there *is* a failing assertion that points
+  # at the missing fixture). Material icon path code (auto-imported Vector
+  # builders) unwraps path-segment containers via `!!` everywhere; excluding
+  # the icon subtree avoids a wall of noise on imported assets without
+  # weakening the rule on hand-written production code.
+  UnsafeCallOnNullableType:
+    active: true
+    excludes:
+      - "**/src/*Test/**"
+      - "**/designSystem/icons/**"
+  Deprecation:
+    active: true
+  CastNullableToNonNullableType:
+    active: true
+  # In test code "null" in a debug print / assertion message is fine; the rule
+  # is about production logs accidentally printing the literal "null".
+  NullableToStringCall:
+    active: true
+    excludes:
+      - "**/src/*Test/**"
+  ElseCaseInsteadOfExhaustiveWhen:
+    active: true
+  LateinitUsage:
+    active: true
+
+style:
+  active: true
+  # `BaseLogic` and `BaseStatefulLogic` are intentional inheritance templates
+  # for feature `*Logic` classes (a Decompose-related convention). They expose
+  # no abstract members today but are not meant to be instantiable — leaving
+  # them open is a deliberate design choice, not an oversight.
+  AbstractClassCanBeConcreteClass:
+    active: true
+    excludes:
+      - "**/decompose/logic/Base*.kt"
+  ForbiddenComment:
+    active: true
+  # These suppressions hide cancellation/nullability correctness rules rather
+  # than taste/style rules. Refactor the shape or narrow the rule scope instead.
+  ForbiddenSuppress:
+    active: true
+    excludes:
+      - "**/src/test/**"
+      - "**/src/*Test/**"
+    rules:
+      - CompositionLocalAllowlist
+      - CyclomaticComplexMethod
+      - LongMethod
+      - LongParameterList
+      - SuspendFunSwallowedCancellation
+      - SuspendFunWithCoroutineScopeReceiver
+      - TooManyFunctions
+      - UnsafeCallOnNullableType
+  # Banned call sites: type-resolved fqn match. `Dispatchers.X` and `GlobalScope`
+  # are handled by the dedicated coroutines rules above (avoids double-reporting).
+  # `Clock.System` is a property access, so Konsist owns that text-level guard.
+  ForbiddenMethodCall:
+    active: true
+    excludes:
+      - "**/src/*Test/**"
+      - "**/shared/core/coroutines/**"
+    methods:
+      - reason: "SqlDelight generateAsync=true: use awaitAsList(); executeAs* throws on the async web driver"
+        value: "app.cash.sqldelight.Query.executeAsList"
+      - reason: "SqlDelight generateAsync=true: use awaitAsOne(); executeAs* throws on the async web driver"
+        value: "app.cash.sqldelight.Query.executeAsOne"
+      - reason: "SqlDelight generateAsync=true: use awaitAsOneOrNull(); executeAs* throws on the async web driver"
+        value: "app.cash.sqldelight.Query.executeAsOneOrNull"
+      - reason: "Suspend the caller instead; runBlocking only belongs in jvmTest"
+        value: "kotlinx.coroutines.runBlocking"
+      - reason: "Use delay() in a suspend context; Thread.sleep blocks a real thread"
+        value: "java.lang.Thread.sleep"
+      - reason: "Inject Clock; System.currentTimeMillis is JVM-only and non-deterministic"
+        value: "java.lang.System.currentTimeMillis"
+      - reason: "Inject Clock; Instant.now is JVM-only and non-deterministic"
+        value: "java.time.Instant.now"
+      - reason: "Use the injected AppLogger; println bypasses log routing and severity filtering"
+        value: "kotlin.io.println"
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: false
+  ReturnCount:
+    active: false
+  ThrowsCount:
+    active: false
+  UnusedImport:
+    active: true
+  # `@Preview` composables are invoked by IDE tooling / preview renderers, not
+  # by other Kotlin code, so detekt's reachability scan flags every one. Treat
+  # the annotation as an external entry point. Same for `UnusedPrivateProperty`
+  # so preview helper properties don't have to be hand-suppressed.
+  UnusedPrivateFunction:
+    active: true
+    ignoreAnnotated:
+      - Preview
+  UnusedPrivateProperty:
+    active: true
+    ignoreAnnotated:
+      - Preview
+  WildcardImport:
+    active: true
+
+Compose:
+  ComposableAnnotationNaming:
+    active: true
+  ComposableNaming:
+    active: true
+  ComposableParamOrder:
+    active: true
+  CompositionLocalAllowlist:
+    active: true
+    allowedCompositionLocals:
+      - LocalAdaptiveInfo
+      - LocalTextProvider
+      - LocalSenseeAdaptiveLayoutMetrics
+      - LocalSenseeNavigationItemLayout
+  CompositionLocalNaming:
+    active: true
+  ContentEmitterReturningValues:
+    active: true
+  ContentSlotReused:
+    active: true
+  ContentTrailingLambda:
+    active: true
+  DefaultsVisibility:
+    active: true
+  LambdaParameterEventTrailing:
+    active: true
+  LambdaParameterInRestartableEffect:
+    active: true
+  Material2:
+    active: true
+  ModifierClickableOrder:
+    active: true
+  ModifierComposed:
+    active: true
+  ModifierMissing:
+    active: true
+  ModifierNaming:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
+  ModifierReused:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  MultipleEmitters:
+    active: true
+  MutableParams:
+    active: true
+  MutableStateAutoboxing:
+    active: true
+  MutableStateParam:
+    active: true
+  ParameterNaming:
+    active: true
+  PreviewAnnotationNaming:
+    active: true
+  PreviewNaming:
+    active: true
+  PreviewPublic:
+    active: true
+  RememberContentMissing:
+    active: true
+  RememberMissing:
+    active: true
+  StateParam:
+    active: true
+  UnstableCollections:
+    active: true
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true
+
+# `PreventBannedImports` is the only ban-by-import mechanism in the stack;
+# the rest of Faire's catalog is left at defaults.
+FaireRuleSet:
+  active: true
+  PreventBannedImports:
+    active: true
+    autoCorrect: false
+    withAlternatives:
+      - "java.util.Date=kotlin.time.Instant"
+      - "java.util.Calendar=kotlin.time.Instant"
+      - "java.util.Random=kotlin.random.Random"
+      - "java.lang.Integer.max=kotlin.math.max"
+      - "java.lang.Integer.min=kotlin.math.min"
+      - "java.lang.Math.max=kotlin.math.max"
+      - "java.lang.Math.min=kotlin.math.min"
+    withoutAlternatives:
+      # Locale/time-zone-stateful; no date-format use case in the project.
+      - "java.text.SimpleDateFormat"
+      # Process control / native loading — legitimate JVM-host uses need a
+      # per-file `@Suppress` with a reason.
+      - "java.lang.Runtime"

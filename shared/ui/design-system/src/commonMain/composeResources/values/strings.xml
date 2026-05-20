@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unimplemented_default_description">Экран ещё не реализован, но базовый каркас уже готов для дальнейшей проработки.</string>
+    <string name="text_field_reveal_show">Показать</string>
+    <string name="text_field_reveal_hide">Скрыть</string>
+    <string name="speak_button">Озвучить</string>
+    <string name="nav_rail_expand">Развернуть меню</string>
+    <string name="nav_rail_collapse">Свернуть меню</string>
+</resources>

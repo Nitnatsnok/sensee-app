@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Post-splash host theme. Non-Material, edge-to-edge friendly: Compose
+         draws everything, so this only provides a transparent system-bar host
+         and a background that matches the splash to avoid a flash. -->
+    <style name="Theme.Sensee" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/sensee_window_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Progressive enhancement: ignored by the framework below API 27; Compose
+             handles insets, so no v27 resource split is needed. -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:ignore="NewApi">shortEdges</item>
+    </style>
+
+    <!-- Cold-start system splash (androidx.core:core-splashscreen). -->
+    <style name="Theme.Sensee.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/sensee_splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Sensee</item>
+    </style>
+</resources>

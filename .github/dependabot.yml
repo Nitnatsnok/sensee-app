@@ -1,0 +1,17 @@
+version: 2
+# Only the GitHub Actions ecosystem is delegated to Dependabot: workflow actions
+# are SHA-pinned in ci.yml, and pinning only stays current if something bumps the
+# SHAs. Gradle dependencies are deliberately NOT managed here — the version
+# catalog is audited through `versionCatalogUpdate --interactive` (see the root
+# build.gradle.kts), and a parallel Dependabot would fight that staged workflow.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: ci

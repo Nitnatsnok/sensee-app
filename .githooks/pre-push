@@ -1,0 +1,159 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/sensee-pre-push.XXXXXX")
+trap 'rm -rf "$tmp_dir"' EXIT HUP INT TERM
+
+list_file="$tmp_dir/changed-files.txt"
+stdin_file="$tmp_dir/stdin.txt"
+zero_sha='0000000000000000000000000000000000000000'
+requires_gradle=0
+needs_plugin_check=0
+force_gradle=0
+remote_name="${1:-}"
+
+append_file() {
+    printf '%s\n' "$1" >> "$list_file"
+}
+
+normalize_path() {
+    printf '%s' "$1" | tr '\\' '/'
+}
+
+is_gradle_free_change() {
+    case "$1" in
+        README.md|docs/*|*.md|*.adoc|.gitignore|.gitattributes|.github/*|.githooks/*|scripts/setup-git-hooks.sh|lefthook.yml)
+            return 0
+            ;;
+    esac
+
+    return 1
+}
+
+requires_build_logic_check() {
+    case "$1" in
+        gradle-plugins/*|build.gradle.kts|settings.gradle.kts|gradle/*|config/*|gradle.properties)
+            return 0
+            ;;
+    esac
+
+    return 1
+}
+
+run_gradle() {
+    if [ "${OS:-}" = 'Windows_NT' ]; then
+        ./gradlew.bat "$@"
+    else
+        ./gradlew "$@"
+    fi
+}
+
+if [ "${1:-}" = '--files' ]; then
+    shift
+
+    for file_path in "$@"; do
+        append_file "$file_path"
+    done
+else
+    cat > "$stdin_file" || true
+
+    if [ -s "$stdin_file" ]; then
+        while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+            local_ref=$(printf '%s' "$local_ref" | tr -d '\r')
+            local_sha=$(printf '%s' "$local_sha" | tr -d '\r')
+            remote_ref=$(printf '%s' "$remote_ref" | tr -d '\r')
+            remote_sha=$(printf '%s' "$remote_sha" | tr -d '\r')
+
+            [ -n "$local_sha" ] || continue
+
+            if [ "$remote_sha" = "$zero_sha" ]; then
+                default_remote_head=''
+                merge_base=''
+
+                if [ -n "$remote_name" ]; then
+                    default_remote_head=$(git symbolic-ref --quiet "refs/remotes/$remote_name/HEAD" 2>/dev/null || true)
+                fi
+
+                if [ -n "$default_remote_head" ]; then
+                    merge_base=$(git merge-base "$default_remote_head" "$local_sha" 2>/dev/null || true)
+                elif git rev-parse --verify --quiet '@{upstream}' >/dev/null; then
+                    merge_base=$(git merge-base '@{upstream}' "$local_sha" 2>/dev/null || true)
+                fi
+
+                if [ -n "$merge_base" ]; then
+                    git diff --name-only "$merge_base" "$local_sha" >> "$list_file"
+                else
+                    force_gradle=1
+                fi
+            else
+                git diff --name-only "$remote_sha" "$local_sha" >> "$list_file"
+            fi
+        done < "$stdin_file"
+    elif git rev-parse --verify --quiet '@{upstream}' >/dev/null; then
+        git diff --name-only '@{upstream}'...HEAD > "$list_file"
+    elif git rev-parse --verify --quiet 'HEAD^' >/dev/null; then
+        git diff --name-only 'HEAD^' HEAD > "$list_file"
+    fi
+fi
+
+if [ ! -s "$list_file" ] && [ "$force_gradle" -eq 0 ]; then
+    exit 0
+fi
+
+if [ -s "$list_file" ]; then
+    sort -u "$list_file" > "$tmp_dir/changed-files-sorted.txt"
+else
+    : > "$tmp_dir/changed-files-sorted.txt"
+fi
+
+while IFS= read -r file_path; do
+    [ -n "$file_path" ] || continue
+
+    normalized_path=$(normalize_path "$file_path")
+
+    if ! is_gradle_free_change "$normalized_path"; then
+        requires_gradle=1
+    fi
+
+    if requires_build_logic_check "$normalized_path"; then
+        needs_plugin_check=1
+    fi
+done < "$tmp_dir/changed-files-sorted.txt"
+
+if [ "$force_gradle" -eq 1 ]; then
+    requires_gradle=1
+fi
+
+if [ "$requires_gradle" -eq 0 ]; then
+    printf 'pre-push: only docs or repository metadata changed, skipping Gradle verification.\n'
+    exit 0
+fi
+
+gradle_tasks='ktlintCheck detekt konsistCheck'
+
+if [ "${SENSEE_GIT_HOOK_SKIP_GRADLE:-0}" = '1' ]; then
+    printf 'pre-push: SENSEE_GIT_HOOK_SKIP_GRADLE=1, skipping Gradle execution.\n'
+    printf 'pre-push: would run: %s --continue\n' "$gradle_tasks"
+    if [ "$needs_plugin_check" -eq 1 ]; then
+        printf 'pre-push: would also run: ./gradlew -p gradle-plugins :plugin:check\n'
+    fi
+    exit 0
+fi
+
+printf 'pre-push: running Gradle verification: %s --continue\n' "$gradle_tasks"
+
+run_gradle $gradle_tasks --continue
+
+if [ "$needs_plugin_check" -eq 1 ]; then
+    printf 'pre-push: running Gradle build logic verification: -p gradle-plugins :plugin:check\n'
+
+    run_gradle -p gradle-plugins :plugin:check
+fi
+
+
+
+
+

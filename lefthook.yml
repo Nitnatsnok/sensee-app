@@ -1,0 +1,21 @@
+pre-commit:
+  commands:
+    repository-guards:
+      run: ./.githooks/pre-commit
+
+pre-push:
+  commands:
+    verification:
+      run: ./.githooks/pre-push
+    # Primary secret-leak defense: scan before the push reaches a public remote.
+    # The GitHub Actions workflow is reactive (commits are public by then) —
+    # this is the one place that can still prevent a leak.
+    secrets:
+      run: |
+        if command -v gitleaks >/dev/null 2>&1; then
+          gitleaks detect --redact --no-banner
+        else
+          echo "error: gitleaks not installed; secret scan cannot run." >&2
+          echo "install: https://github.com/gitleaks/gitleaks#installing" >&2
+          exit 1
+        fi

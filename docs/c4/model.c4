@@ -1,0 +1,429 @@
+model {
+  learner = actor 'Пользователь' {
+    description 'Primary actor клиентских приложений Sensee и текущего реализованного учебного среза.'
+    link ../arc42/sections/03_context_and_scope.adoc
+  }
+
+  platform_services = external_system 'Platform Services' {
+    description 'Lifecycle, resources, settings, windowing и прочие platform-specific capabilities.'
+    technology 'OS / Runtime Services'
+    link ../arc42/sections/03_context_and_scope.adoc
+  }
+
+  provider_apis = external_system 'AI/TTS Provider APIs' {
+    description 'OpenAI-compatible LLM APIs, ElevenLabs/OpenAI TTS APIs и другие provider endpoints, доступные только через клиентские seams.'
+    technology 'External provider APIs'
+    link ../arc42/sections/03_context_and_scope.adoc
+  }
+
+  future_backend = external_system 'Future Sensee Backend' {
+    #future
+    description 'Отложенный внешний backend для синхронизации, контента, профиля и общего серверного поведения.'
+    technology 'Ktor Server API'
+    link ../arc42/sections/03_context_and_scope.adoc
+  }
+
+  client = client_app 'Sensee Client Applications' {
+    description 'KMP-клиент с общим app shell, реализованными practice/library/profile/capture срезами и набором shared-библиотек для дальнейшего роста продукта.'
+    technology 'Kotlin Multiplatform + Compose Multiplatform'
+    icon tech:kotlin
+    link ../README.md
+
+    entrypoints = layer 'Platform Entry Logic' {
+      description 'Android activity, desktop/web launchers и iOS bridge-код, который создаёт `PlatformEnvironment` и передаёт управление shared app shell.'
+      technology 'apps/androidApp + apps/desktopApp + apps/webApp + apps/iosFramework + apps/iosApp'
+      style {
+        shape browser
+      }
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    android_app = layer 'Android App' {
+      #deployable
+      description 'Android deployable target, который запускает `MainActivity` и поднимает общий `shared/app-shell`.'
+      technology 'apps/androidApp'
+      style {
+        shape browser
+      }
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    desktop_app = layer 'Desktop App' {
+      #deployable
+      description 'Desktop JVM target в `apps/desktopApp` (Kotlin/JVM + Compose Desktop), использующий общий shared UI/runtime.'
+      technology 'apps/desktopApp'
+      style {
+        shape browser
+      }
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    js_web_app = layer 'JS Web App' {
+      #deployable
+      description 'Browser JS target, публикуемый из `apps/webApp`.'
+      technology 'apps/webApp:js'
+      style {
+        shape browser
+      }
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    wasm_web_app = layer 'Wasm Web App' {
+      #deployable
+      description 'Browser Wasm target, публикуемый из `apps/webApp`.'
+      technology 'apps/webApp:wasmJs'
+      style {
+        shape browser
+      }
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    ios_host_app = layer 'iOS Host App' {
+      #deployable
+      description 'iOS host application в `apps/iosApp`, который линкует фреймворк `SenseeKit` из `apps/iosFramework` с Compose-based shared UI.'
+      technology 'apps/iosApp + apps/iosFramework'
+      style {
+        shape browser
+      }
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    app_shell = layer 'Shared App Shell' {
+      #shared
+      description 'Общая тема, root composition, platform environments, StartupComponent, RootComponent и PrimaryShellComponent.'
+      technology 'shared/app-shell'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    learning_api = layer 'Feature Presentation API' {
+      #shared
+      description 'Component contracts для section host components и feature screens.'
+      technology 'shared/feature/*/presentation/api'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    learning_impl = layer 'Feature Presentation Implementation' {
+      #shared
+      description 'Реализации section host components: practice (deck/home/card detail), library (каталог + adoption), profile (AI/TTS-настройки), capture-экран; раздел Home — placeholder screen.'
+      technology 'shared/feature/*/presentation/impl'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    practice_domain = layer 'Practice Domain' {
+      #shared
+      description 'PracticeSessionPolicy, PracticeCardFront, CardReview и PracticeReviewRepository: feature-owned граница review-сценария. Deck content приходит из library-owned catalog.'
+      technology 'shared/feature/practice/domain'
+      link ../arc42/sections/08_concepts.adoc
+    }
+
+    practice_data = layer 'Practice Data' {
+      #shared
+      description 'PracticeReviewRepository implementation, SRS storage/mappers и review-log integration для practice flow.'
+      technology 'shared/feature/practice/data'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    practice_schema = local_storage 'Practice Database Schema' {
+      #shared
+      description 'SQLDelight-схема карточек, grammar tags и SRS-состояния, принадлежащая practice feature.'
+      technology 'shared/feature/practice/database-schema'
+      icon tech:sqlite
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    settings_domain = layer 'Settings Domain' {
+      #shared
+      description 'Типизированные категории пользовательских настроек и `UserSettingsRepository` contract.'
+      technology 'shared/settings/domain'
+      link ../arc42/sections/08_concepts.adoc
+    }
+
+    settings_data = layer 'Settings Data' {
+      #shared
+      description 'SQLDelight-backed repository и local data source для пользовательских настроек.'
+      technology 'shared/settings/data'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    settings_schema = local_storage 'Settings Database Schema' {
+      #shared
+      description 'SQLDelight-схема `user_setting` для shared пользовательских настроек.'
+      technology 'shared/settings/database-schema'
+      icon tech:sqlite
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    learning_deck = layer 'Learning Deck UI' {
+      #shared
+      description 'Reusable swipeable card deck с flip, keyboard support, programmatic swipe и undo.'
+      technology 'shared/ui/learning-deck'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    core_runtime = layer 'Core Runtime' {
+      #shared
+      description 'Decompose navigation, component context, DI runtime (Metro `AppGraph`) и platform abstractions.'
+      technology 'shared/core/decompose + shared/core/compose; DI — Metro AppGraph в shared/app-shell'
+      link ../arc42/sections/08_concepts.adoc
+    }
+
+    core_presentation = layer 'Core Presentation' {
+      #shared
+      description 'Общие presentation-состояния и утилиты, например DataLoadingState.'
+      technology 'shared/core/presentation'
+      link ../arc42/sections/08_concepts.adoc
+    }
+
+    persistence = local_storage 'Persistence Module' {
+      #shared
+      description 'SQLDelight runtime, database provider и platform drivers, используемые practice data flow и shared settings.'
+      technology 'shared/database'
+      icon tech:sqlite
+      link ../arc42/sections/07_deployment_view.adoc
+    }
+
+    srs = layer 'SRS Libraries' {
+      #shared
+      description 'Cross-platform SRS model, engine и FSRS implementation, используемые practice data flow для review scheduling.'
+      technology 'shared/srs/*'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    network = layer 'Network Foundation' {
+      #shared
+      description 'Multiplatform network boundary на Ktor; предоставляет HttpClient через DI.'
+      technology 'shared/core/network'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    mock_backend = layer 'Mock Backend Foundation' {
+      #shared
+      description 'Fixture-backed Ktor MockEngine и fixture aggregation для текущего учебного client flow без live backend.'
+      technology 'shared/core/mock-backend'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    grammar_taxonomy = layer 'Neutral Grammar Taxonomy' {
+      #shared
+      description 'Нейтральные `GrammarUnitType`, `GrammarTag`, `GrammarCategory/Form`, labels provider и fixtures, не привязанные к конкретному AI-провайдеру.'
+      technology 'shared/grammar/domain + shared/grammar/data'
+      link ../pos-and-forms.adoc
+    }
+
+    ai_enrichment = layer 'AI Enrichment Seam' {
+      #shared
+      description 'Provider-agnostic boundary contract, settings-backed routing и anti-corruption mapping для `MeaningCandidate` (ADR-005).'
+      technology 'shared/ai/core + shared/ai/integration'
+      link ../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc
+    }
+
+    ai_fixture = layer 'AI Fixture Adapter' {
+      #shared
+      description 'Zero-config offline enrichment implementation: deterministic candidates without user key or live provider.'
+      technology 'shared/ai/fixture'
+      link ../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc
+    }
+
+    llm_adapter = layer 'LLM Provider Adapter' {
+      #shared
+      description 'OpenAI-compatible LLM adapter and model catalog used when user settings provide a valid provider/key.'
+      technology 'shared/ai/llm'
+      link ../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc
+    }
+
+    tts_seam = layer 'TTS Seam' {
+      #shared
+      description 'Speech contract, playback/cache and provider-specific adapters for System, ElevenLabs and OpenAI TTS.'
+      technology 'shared/tts/*'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    observability = layer 'Observability Foundation' {
+      #prepared
+      description 'Подготовленный foundation-модуль для logging и дальнейших observability/instrumentation integration points.'
+      technology 'shared/core/observability'
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    primary_navigation = layer 'Primary Navigation Shell' {
+      #shared
+      description 'Базовая navigation shell с PrimaryShellComponent и config-driven переходами между разделами.'
+      technology 'shared/app-shell PrimaryShellComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    splash = layer 'Startup Screen' {
+      #shared
+      description 'Cold-start splash: держится ровно пока идёт реальный прогрев словаря (app-scoped GrammarLabelsProvider), не по фиксированной задержке. При тёплом восстановлении персистентного root-стека минуется — deep-target возвращается без splash.'
+      technology 'StartupComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    home_target = layer 'Home Target' {
+      #shared
+      description 'Стартовый раздел Home, пока с placeholder UI. Планируемый бережный дашборд-агрегатор (3 блока: повторить сегодня → due-сессия, незавершённый capture, быстрый ввод); не владеет доменом, уводит в другие разделы через NavigationDispatcher. Due-CTA опирается на ad-hoc/query practice (планируемое расширение контракта practice).'
+      technology 'HomeSectionComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    review_target = layer 'Practice Target' {
+      #shared
+      description 'Раздел Practice: реализованы PracticeHome, DeckPractice flow и CardDetail (two-pane). Карта остаётся лёгкой (recognition). Планируемое расширение detail-панели — полный хаб исследования (словоформы, грамматические правила, предлоги, добавление связанных в колоду) и отдельный практический экран настроек (подмножество).'
+      technology 'PracticeSectionComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    vocabulary_editor = layer 'Vocabulary Editor Target' {
+      #shared
+      description 'Раздел Vocabulary Editor с реализованным capture-экраном. Хостит компоненты добавления (`QuickCapture`) и редактирования записи (`Editor(entryId)`). Кнопка в primary navigation ведёт в add-path; редактирование открывается deep-link из карточки.'
+      technology 'VocabularyEditorSectionComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    vocabulary_capture = layer 'Vocabulary Capture Capability' {
+      #shared
+      description 'Реализованный primary product capability (ADR-001): ввод → enrich-шов → набор `MeaningCandidate` → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Wizard-стадий нет; выбор и есть подтверждение. Планируемое — lemma-семья и деривация derived-карточек.'
+      technology 'vocabulary authoring flow'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    lexical_model = layer 'Lexical Source Model' {
+      #shared
+      description 'Реализованная canonical source model: `LexicalEntry`, `Meaning`, `ContextualApplication`, `MeaningCandidate`, `EntryStatus` в `shared/feature/vocabulary-editor/domain` (durable через `data`+`database-schema`); нейтральный grammar-словарь (`GrammarUnitType`/`GrammarTag`/`SurfaceForm`) в `shared/grammar/domain`.'
+      technology 'domain model'
+      link ../domain-information-model.adoc
+    }
+
+    vocabulary_storage = local_storage 'Vocabulary Database Schema' {
+      #shared
+      description 'Feature-owned SQLDelight schema для durable `LexicalEntry`/`Meaning` state.'
+      technology 'shared/feature/vocabulary-editor/database-schema'
+      icon tech:sqlite
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    card_derivation = layer 'Card Derivation Capability' {
+      #future
+      description 'Планируемое derivation logic для создания related learning cards из confirmed lexical material.'
+      technology 'future derivation logic'
+      link ../domain-information-model.adoc
+    }
+
+    library_target = layer 'Library Target' {
+      #shared
+      description 'Раздел Library — владелец каталога. Реализовано: Home (отфильтрованный каталог собственного материала + adoption сервисного набора целиком, обратимо). Планируется: курирование колод (many-to-many), `EntryDetail`/`LemmaDetail`/`DeckDetail`, правка/удаление, частичное добавление. Practice — read-only потребитель курируемых колод.'
+      technology 'LibrarySectionComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    library_catalog = layer 'Library Catalog Data' {
+      #shared
+      description 'CatalogRepository, CatalogAdoptionRepository, captured-material derivation and fixture-backed service-set loading.'
+      technology 'shared/feature/library/domain + shared/feature/library/data'
+      link ../arc42/sections/08_concepts.adoc
+    }
+
+    library_schema = local_storage 'Library Database Schema' {
+      #shared
+      description 'Feature-owned SQLDelight schema для catalog/deck/adoption state.'
+      technology 'shared/feature/library/database-schema'
+      icon tech:sqlite
+      link ../arc42/sections/05_building_block_view.adoc
+    }
+
+    service_catalog = layer 'Service Sets Catalog' {
+      #future
+      description 'Планируемые сервисные наборы (curated sets), приходящие через backend-compatible boundary; добавляются в собственный каталог пользователя целиком или частично.'
+      technology 'future service catalog'
+      link ../arc42/sections/08_concepts.adoc
+    }
+
+    profile_target = layer 'Profile Target' {
+      #shared
+      description 'Раздел Profile — владелец пользовательских настроек. Реализовано: категория `Ai` (`ProfileHomeLogic`) — выбор AI/TTS-провайдера, верификация ключа, progressive disclosure модели/голоса над `UserSettingsRepository`. Планируется: экран `Settings` по остальным `UserSettingsCategory` + About. Объём бережный: Account/синхронизация и статистика — честные заглушки. Scope по умолчанию `Device`, `User` — будущий sync без переключателя до auth.'
+      technology 'ProfileSectionComponent'
+      link ../arc42/sections/06_runtime_view.adoc
+    }
+
+    android_app -> entrypoints 'boots the Android launcher' 'Передаёт управление `MainActivity` и Android runtime glue-коду' 'Android runtime'
+    desktop_app -> entrypoints 'boots the desktop launcher' 'Передаёт управление JVM desktop entrypoint' 'JVM runtime'
+    js_web_app -> entrypoints 'boots the JS web launcher' 'Передаёт управление browser JS entrypoint' 'Browser runtime'
+    wasm_web_app -> entrypoints 'boots the Wasm web launcher' 'Передаёт управление browser Wasm entrypoint' 'Browser runtime'
+    ios_host_app -> entrypoints 'boots the iOS host bridge' 'Передаёт управление Swift host app и Compose bridge-коду' 'iOS runtime'
+
+    entrypoints -> app_shell 'launch the shared UI' 'Создают `PlatformEnvironment` и передают управление общему app shell' 'In-process'
+    entrypoints -> platform_services 'use runtime APIs' 'Android, browser, desktop и iOS runtime capabilities' 'Platform APIs'
+    app_shell -> core_runtime 'creates the root component graph' 'AppGraph, RootComponent, navigation и DI wiring' 'In-process'
+    app_shell -> splash 'shows startup splash (cold start only)' '`RootComponent` стартует с `StartupConfig` лишь когда нет сохранённого стека; иначе восстанавливает deep-target' 'Runtime'
+    app_shell -> learning_api 'creates section host contracts' 'PrimaryShellComponent знает feature boundary через component API' 'In-process'
+    app_shell -> learning_impl 'resolves feature implementations' 'Реализации подключены через DI bindings и shared dependencies' 'Metro DI'
+    learning_api -> core_runtime 'depends on app component abstractions' 'Feature components строятся поверх shared navigation/component contracts' 'Decompose abstractions'
+    learning_impl -> learning_api 'implements the feature boundary' 'Compose-реализация следует API-контракту' 'In-process'
+    learning_impl -> core_presentation 'uses loading state' '`DeckPracticeLogic` и API state используют DataLoadingState' 'In-process'
+    learning_impl -> practice_domain 'submits review through practice contract' '`DeckPracticeLogic` отправляет review через PracticeReviewRepository' 'In-process'
+    learning_impl -> library_catalog 'loads deck through catalog contract' '`DeckPracticeLogic` загружает deck через library-owned CatalogRepository' 'In-process'
+    learning_impl -> learning_deck 'renders reusable deck UI' '`DeckPracticeScreen` использует `shared/ui/learning-deck`' 'Compose UI'
+    practice_data -> practice_domain 'implements review repository' '`DefaultPracticeReviewRepository` реализует PracticeReviewRepository' 'In-process'
+    library_catalog -> network 'loads fixture-backed catalog and decks' '`CatalogRemoteDataSource` использует общий HttpClient' 'Ktor client'
+    practice_data -> persistence 'stores review state' '`PracticeSrsStorage` работает через SQLDelight database' 'SQLDelight'
+    practice_data -> practice_schema 'owns practice tables' 'SQLDelight queries для карточек, grammar tags и SRS-состояния' 'SQLDelight'
+    persistence -> practice_schema 'aggregates feature-owned schema' '`shared/database` собирает корневой `SenseeDatabase` через schema dependency' 'SQLDelight aggregation'
+    app_shell -> settings_data 'wires settings repository' '`shared/settings/data` подключён в app-level dependencies' 'Metro DI'
+    app_shell -> ai_enrichment 'wires AI enrichment seam' '`shared/ai/integration` подключает routing и provider selection через настройки' 'Metro DI'
+    app_shell -> tts_seam 'wires speech services' '`shared/tts/integration` подключает speech providers/playback/cache' 'Metro DI'
+    app_shell -> grammar_taxonomy 'warms grammar labels' '`RootComponent` app-scoped прогревает `GrammarLabelsProvider`' 'In-process'
+    settings_data -> settings_domain 'implements settings contract' '`DefaultUserSettingsRepository` реализует `UserSettingsRepository`' 'In-process'
+    settings_data -> persistence 'stores user settings' '`UserSettingsLocalDataSource` работает через SQLDelight database' 'SQLDelight'
+    persistence -> settings_schema 'aggregates shared settings schema' '`shared/database` подключает `shared/settings/database-schema`' 'SQLDelight aggregation'
+    practice_data -> srs 'updates review state' 'SRS engine/storage применяются для review scheduling' 'In-process'
+    practice_data -> grammar_taxonomy 'uses grammar taxonomy' 'Карточки и fixtures используют нейтральные grammar unit types/tags' 'In-process'
+    mock_backend -> network 'provides mock engine' 'MockEngine подключается к общему HttpClient boundary через DI' 'Ktor MockEngine'
+    library_catalog -> mock_backend 'contributes catalog fixtures' '`CatalogMockFixtures` поставляет service sets/decks для mock backend' 'Fixture data'
+    app_shell -> persistence 'depends on shared persistence module' '`shared/database` подключён в общих зависимостях app shell' 'SQLDelight'
+    persistence -> platform_services 'uses platform SQL drivers' '`DriverFactory` создаёт platform-specific `SqlDriver`' 'Platform APIs'
+    vocabulary_editor -> vocabulary_capture 'hosts the authoring flow' 'Vocabulary Editor — host для add (capture, реализовано) и для edit записи (edit-path planned); wizard-стадий нет, выбор и есть подтверждение' 'Runtime shell'
+    review_target -> vocabulary_editor 'opens entry editing from a card' 'Из карточки practice deep-link открывает редактирование соответствующей `LexicalEntry` в Vocabulary Editor (planned)' 'Runtime navigation'
+    vocabulary_capture -> ai_enrichment 'requests candidate enrichment' 'Candidate meanings, contexts и grammar cues приходят через provider-agnostic AI-шов как `MeaningCandidate`; без ключа — offline-fixture, деградация first-class, ручной смысл всё равно доходит до Confirmed' 'In-process'
+    ai_enrichment -> ai_fixture 'falls back offline' 'Zero-config deterministic candidates without user key' 'In-process'
+    ai_enrichment -> llm_adapter 'routes to configured LLM' 'Settings-backed provider/key/model selection' 'In-process'
+    ai_enrichment -> settings_domain 'reads AI settings' '`AiSettings` выбирает provider/key/model и degradation path' 'In-process'
+    llm_adapter -> provider_apis 'calls compatible model APIs' 'OpenAI-compatible models/list/enrichment requests' 'HTTPS'
+    vocabulary_capture -> lexical_model 'confirms lexical material' 'Пользователь подтверждает meanings, contextual applications и grammar cues' 'In-process'
+    vocabulary_capture -> grammar_taxonomy 'uses neutral grammar cues' '`MeaningCandidate`/`Meaning` используют `GrammarUnitType`, `GrammarTag` и structured `SurfaceForm`' 'In-process'
+    lexical_model -> persistence 'stores canonical local state' 'Confirmed lexical material хранится отдельно от review state' 'SQLDelight'
+    persistence -> vocabulary_storage 'aggregates vocabulary schema' '`shared/database` подключает feature-owned `lexical_entry` schema' 'SQLDelight aggregation'
+    lexical_model -> vocabulary_storage 'owns lexical schema' '`DurableVocabularyRepository` хранит `LexicalEntry`/`Meaning` durable' 'SQLDelight'
+    lexical_model -> card_derivation 'derives learning artifacts' 'Cards и будущие exercise artifacts создаются из confirmed source data' 'In-process'
+    card_derivation -> review_target 'feeds practice target' 'Practice использует derived learning cards, а не raw authoring data' 'Runtime data flow'
+    library_target -> library_catalog 'uses catalog repositories' 'Library Home читает собственный материал и adoption-состояние сервисных наборов' 'In-process'
+    library_catalog -> lexical_model 'derives captured material' 'Захваченный материал попадает в catalog projection без передачи ownership в practice' 'In-process'
+    library_catalog -> persistence 'stores catalog state' 'Catalog/adoption state сохраняется через SQLDelight' 'SQLDelight'
+    persistence -> library_schema 'aggregates library schema' '`shared/database` подключает feature-owned catalog schema' 'SQLDelight aggregation'
+    library_catalog -> library_schema 'owns catalog tables' 'SQLDelight queries для catalog/deck/adoption state' 'SQLDelight'
+    library_target -> vocabulary_editor 'edits an entry from a card' 'Из карточки/записи Library deep-link открывает edit-path в Vocabulary Editor (planned)' 'Runtime navigation'
+    library_target -> review_target 'launches practice on a curated deck' 'Library запускает `PracticeConfig.DeckPractice` по своей курируемой колоде или подмножеству' 'Runtime navigation'
+    library_target -> service_catalog 'browses service sets' 'Сервисные наборы показываются отдельно от собственного материала' 'In-process'
+    service_catalog -> library_catalog 'loads service-set fixtures' 'Текущий Library slice получает сервисные наборы fixture-backed через catalog data layer' 'In-process'
+    service_catalog -> future_backend 'fetches curated sets' 'Сервисные наборы приходят через backend-compatible boundary' 'API'
+    service_catalog -> library_target 'adopted fully or partially' 'Выбранные записи/карточки набора попадают в каталог пользователя как его собственный материал' 'In-process'
+    review_target -> library_target 'curates related cards into a deck' 'Из detail practice выбранные связанные карточки добавляются в курируемую Library колоду (planned)' 'Runtime navigation'
+    review_target -> settings_domain 'reads practice-scoped settings' 'Локальный экран настроек practice показывает только своё подмножество над `UserSettingsRepository` (planned)' 'In-process'
+    profile_target -> settings_domain 'edits user settings' 'Profile владеет пользовательскими настройками над `UserSettingsRepository`; категория `Ai` реализована (`ProfileHomeLogic`: верификация ключа, выбор модели/голоса), остальной набор — planned' 'In-process'
+    profile_target -> ai_enrichment 'verifies AI key and models' '`ProfileHomeLogic` проверяет AI credentials/model catalog через provider seam' 'In-process'
+    profile_target -> tts_seam 'verifies TTS key and voices' '`ProfileHomeLogic` проверяет TTS provider metadata and voice/model options' 'In-process'
+    tts_seam -> settings_domain 'reads speech settings' '`AiSettings.tts*` управляет provider/key/model/voice selection' 'In-process'
+    tts_seam -> provider_apis 'calls speech provider APIs' 'Provider-specific model/voice/key checks and speech synthesis' 'HTTPS'
+    home_target -> review_target 'opens a due session' 'CTA «Повторить сегодня» уводит сразу в practice по due-подмножеству; опирается на ad-hoc/query practice-сессию (planned)' 'Runtime navigation'
+    home_target -> vocabulary_editor 'resumes capture / quick capture' 'Незавершённый capture уводит в refinement, быстрый ввод — в `QuickCapture` (planned)' 'Runtime navigation'
+
+    splash -> primary_navigation 'opens primary shell' '`navigation.open(HomeConfig.Home)`' 'Runtime navigation'
+    app_shell -> primary_navigation 'hosts primary navigation' '`RootComponent` открывает `PrimaryShellComponent`' 'Runtime'
+    primary_navigation -> home_target 'shows target' 'Постоянный root target' 'Runtime navigation'
+    primary_navigation -> review_target 'shows target' 'Постоянный root target' 'Runtime navigation'
+    primary_navigation -> vocabulary_editor 'shows target' 'Постоянный root target; кнопка ведёт пока только в add-path (capture)' 'Runtime navigation'
+    primary_navigation -> library_target 'shows target' 'Постоянный root target' 'Runtime navigation'
+    primary_navigation -> profile_target 'shows target' 'Постоянный root target' 'Runtime navigation'
+  }
+
+  learner -> client.entrypoints 'launches the client' 'Открывает Android, Desktop, Web или iOS-приложение' 'UI interaction'
+}

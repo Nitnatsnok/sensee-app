@@ -1,0 +1,13 @@
+package app.sensee.feature.practice.presentation.impl.text
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import app.sensee.core.compose.text.LocalTextProvider
+import app.sensee.core.presentation.text.TextProvider
+import app.sensee.core.presentation.text.withFallback
+
+@Composable
+internal fun rememberPracticeTextProvider(): TextProvider {
+    val parent = LocalTextProvider.current
+    return remember(parent) { DefaultPracticeTextProvider.withFallback(parent) }
+}

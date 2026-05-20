@@ -1,0 +1,86 @@
+CREATE TABLE practice_srs_card (
+    card_id TEXT NOT NULL PRIMARY KEY,
+    state TEXT NOT NULL,
+    due_at_epoch_ms INTEGER,
+    last_reviewed_at_epoch_ms INTEGER,
+    scheduled_interval_ms INTEGER,
+    review_count INTEGER NOT NULL,
+    lapse_count INTEGER NOT NULL,
+    step_index INTEGER,
+    algorithm_name TEXT,
+    algorithm_version TEXT,
+    fsrs_difficulty REAL,
+    fsrs_stability REAL,
+    parameters_id TEXT
+);
+
+CREATE TABLE practice_srs_review_log (
+    id TEXT NOT NULL PRIMARY KEY,
+    card_id TEXT NOT NULL,
+    rating TEXT NOT NULL,
+    reviewed_at_epoch_ms INTEGER NOT NULL
+);
+
+selectPracticeSrsCardById:
+SELECT *
+FROM practice_srs_card
+WHERE card_id = ?;
+
+selectPracticeSrsCardsByIds:
+SELECT *
+FROM practice_srs_card
+WHERE card_id IN ?;
+
+upsertPracticeSrsCard:
+INSERT OR REPLACE INTO practice_srs_card(
+    card_id,
+    state,
+    due_at_epoch_ms,
+    last_reviewed_at_epoch_ms,
+    scheduled_interval_ms,
+    review_count,
+    lapse_count,
+    step_index,
+    algorithm_name,
+    algorithm_version,
+    fsrs_difficulty,
+    fsrs_stability,
+    parameters_id
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertPracticeSrsCardIfAbsent:
+INSERT OR IGNORE INTO practice_srs_card(
+    card_id,
+    state,
+    due_at_epoch_ms,
+    last_reviewed_at_epoch_ms,
+    scheduled_interval_ms,
+    review_count,
+    lapse_count,
+    step_index,
+    algorithm_name,
+    algorithm_version,
+    fsrs_difficulty,
+    fsrs_stability,
+    parameters_id
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectDuePracticeSrsCards:
+SELECT *
+FROM practice_srs_card
+WHERE state != 'Suspended'
+  AND due_at_epoch_ms IS NOT NULL
+  AND due_at_epoch_ms <= ?
+ORDER BY due_at_epoch_ms ASC
+LIMIT ?;
+
+insertPracticeSrsReviewLog:
+INSERT OR REPLACE INTO practice_srs_review_log(
+    id,
+    card_id,
+    rating,
+    reviewed_at_epoch_ms
+)
+VALUES (?, ?, ?, ?);

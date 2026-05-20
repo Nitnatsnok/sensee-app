@@ -1,0 +1,44 @@
+= Доменная информационная модель клиента Sensee
+
+Этот документ описывает product-first информационную модель Sensee на уровне доменных понятий.
+Он нужен для снижения когнитивной нагрузки: сначала понять, какие сущности важны для продукта, и только потом смотреть на модули, runtime flow и технические интеграции.
+
+Важно::
+Ядро authoring-first модели реализовано capture-вертикалью (`shared/feature/vocabulary-editor`) и durable-персистентностью; деривация lemma-семьи и derived-карточек пока на уровне concept/practice slice. Документ описывает продуктовый язык клиента целиком и служит reference при эволюции feature boundaries, persistence и AI-assisted сценариев; статус каждой сущности отмечен ниже честно.
+
+== Основные сущности
+
+[options="header",cols="1,3,1"]
+|===
+|Сущность|Смысл|Статус в коде
+|Lexical Entry|Слово, выражение или фраза, которую пользователь добавляет как единицу изучения|implemented (capture vertical, durable)
+|Meaning / Sense|Отдельный смысл lexical entry, не смешиваемый с другими значениями|implemented (`vocabulary-editor/domain`)
+|Contextual Application|Отдельное контекстное употребление, устойчивое сочетание или смысловой вариант использования|implemented (структурная `StudiedSentence`)
+|Grammar Cue|Часть речи, форма, управление, предлог или другое грамматическое уточнение|implemented (`shared/grammar/domain`)
+|Meaning Candidate|Неподтверждённый смысл, предложенный AI-assisted или другим внешним источником|implemented (AI-шов, ADR-005)
+|Confirmed Meaning|Смысл, который пользователь подтвердил и который можно использовать для дальнейшего derivation|implemented (выбор и есть подтверждение, ADR-001)
+|Derived Learning Card|Учебная карточка, производная от подтверждённого материала|implemented conceptually in current practice slice
+|Review State|Состояние повторения и история review для учебного артефакта|implemented in current practice slice
+|===
+
+== Связи между сущностями
+
+[options="header",cols="1,3"]
+|===
+|Связь|Описание
+|`Lexical Entry` -> `Meaning / Sense`|Одна lexical entry может иметь несколько meanings
+|`Meaning / Sense` -> `Contextual Application`|Один смысл может иметь несколько контекстных употреблений
+|`Meaning / Sense` -> `Grammar Cue`|К смыслу могут быть привязаны grammar cues и usage constraints
+|`Meaning Candidate` -> `Confirmed Meaning`|Candidate layer превращается в canonical content только после подтверждения
+|`Confirmed Meaning` -> `Derived Learning Card`|Из подтверждённого материала создаются учебные карточки и другие exercise artifacts
+|`Derived Learning Card` -> `Review State`|Review state относится к учебному артефакту, а не к самому значению
+|===
+
+== Ключевые правила модели
+
+* Карточка не является source of truth для смысла.
+* AI-подсказка не становится canonical content автоматически.
+* Grammar cues и contextual applications моделируются отдельно, а не теряются внутри текстового описания; полный перечень POS, категорий и форм ведётся в `pos-and-forms.adoc`.
+* Review state не должен смешиваться с lexical meaning.
+* Добавление новых упражнений не должно требовать смены source model.
+

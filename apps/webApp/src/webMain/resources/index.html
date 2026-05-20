@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <!-- Decompose Web Navigation puts the route in the URL path (e.g. /practice/deck/x),
+         so relative URLs would otherwise resolve against that sub-path. Compose Resources
+         fetches with a relative path (./composeResources/...) and the JS bundle is
+         referenced relatively too; <base href="/"> pins both to the site root. -->
+    <base href="/">
+    <title>Sensee</title>
+    <link type="text/css" rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Pre-bundle loader: shown while the Kotlin/Wasm bundle downloads and boots,
+     before Compose mounts. Compose paints its canvas over this. -->
+<div id="app-loader" role="status" aria-label="Loading Sensee">
+    <div class="app-loader__brand">Sensee</div>
+    <div class="app-loader__spinner" aria-hidden="true"></div>
+</div>
+<script type="application/javascript" src="webApp.js"></script>
+</body>
+</html>

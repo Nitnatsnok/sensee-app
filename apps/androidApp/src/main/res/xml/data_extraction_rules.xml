@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12+ (API 31+) backup and device-to-device transfer scope.
+
+    The `app.sensee.secure_storage` SharedPreferences file holds AES-GCM
+    ciphertext for user-supplied API keys; the master key sits in the Android
+    Keystore and never leaves the device, so backed-up blobs would already be
+    undecryptable on a restored device. Excluding the file outright is
+    defense-in-depth: even an unreadable blob has no business riding the
+    backup wire.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="app.sensee.secure_storage.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="app.sensee.secure_storage.xml" />
+    </device-transfer>
+</data-extraction-rules>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="AddJavascriptInterface" severity="error" />
+    <issue id="AllowAllHostnameVerifier" severity="error" />
+    <issue id="TrustAllX509TrustManager" severity="error" />
+    <issue id="BadHostnameVerifier" severity="error" />
+    <issue id="CustomX509TrustManager" severity="error" />
+    <issue id="SetJavaScriptEnabled" severity="error" />
+    <issue id="ExportedReceiver" severity="error" />
+    <issue id="ExportedService" severity="error" />
+    <issue id="UnsafeProtectedBroadcastReceiver" severity="error" />
+
+    <issue id="NewApi" severity="error" />
+    <issue id="InlinedApi" severity="warning" />
+    <issue id="Override" severity="error" />
+
+    <issue id="MissingTranslation" severity="warning" />
+    <issue id="ExtraTranslation" severity="warning" />
+    <issue id="StringFormatInvalid" severity="error" />
+    <issue id="StringFormatMatches" severity="error" />
+    <issue id="PluralsCandidate" severity="warning" />
+
+    <issue id="ContentDescription" severity="warning" />
+    <issue id="ClickableViewAccessibility" severity="warning" />
+    <issue id="LabelFor" severity="warning" />
+
+    <!-- Compose Modifier / state-read correctness is enforced by the detekt-compose
+         ruleset (see config/detekt/detekt.yml), not Android lint: the compose-lint
+         checks are not on this project's lint classpath. Do not re-add them here. -->
+
+    <issue id="UnusedResources" severity="warning" />
+    <issue id="UnusedIds" severity="warning" />
+    <issue id="ObsoleteSdkInt" severity="warning" />
+</lint>

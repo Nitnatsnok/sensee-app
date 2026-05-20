@@ -1,0 +1,53 @@
+CREATE TABLE tts_audio_cache (
+    cache_key TEXT NOT NULL PRIMARY KEY,
+    bytes BLOB NOT NULL,
+    format TEXT NOT NULL,
+    bytes_size INTEGER NOT NULL,
+    created_at_epoch_ms INTEGER NOT NULL,
+    last_accessed_at_epoch_ms INTEGER NOT NULL
+);
+
+CREATE INDEX tts_audio_cache_last_accessed
+    ON tts_audio_cache(last_accessed_at_epoch_ms);
+
+selectByKey:
+SELECT bytes, format
+FROM tts_audio_cache
+WHERE cache_key = ?;
+
+upsert:
+INSERT OR REPLACE INTO tts_audio_cache(
+    cache_key,
+    bytes,
+    format,
+    bytes_size,
+    created_at_epoch_ms,
+    last_accessed_at_epoch_ms
+)
+VALUES (?, ?, ?, ?, ?, ?);
+
+touchAccess:
+UPDATE tts_audio_cache
+SET last_accessed_at_epoch_ms = ?
+WHERE cache_key = ?;
+
+aggregateBytes:
+SELECT COALESCE(SUM(bytes_size), 0) AS total_bytes
+FROM tts_audio_cache;
+
+countEntries:
+SELECT COUNT(*) AS entry_count
+FROM tts_audio_cache;
+
+selectOldestKeys:
+SELECT cache_key, bytes_size
+FROM tts_audio_cache
+ORDER BY last_accessed_at_epoch_ms ASC
+LIMIT ?;
+
+deleteByKey:
+DELETE FROM tts_audio_cache
+WHERE cache_key = ?;
+
+deleteAll:
+DELETE FROM tts_audio_cache;

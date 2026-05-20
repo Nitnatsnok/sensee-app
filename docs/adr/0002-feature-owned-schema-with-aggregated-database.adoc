@@ -1,0 +1,27 @@
+= ADR-002: Feature-owned schema with aggregated shared database — feature-схемы остаются в feature-модулях, агрегация в `shared/database`
+:revdate: 2026-05-12
+
+Статус:: Accepted
+Дата:: 2026-05-12
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Maintainability (CS-3: расширение хранилища feature-owned схемой без централизации SQL)
+
+Контекст::
+Клиент уже использует `SQLDelight`, а доменные данные начинают принадлежать отдельным feature. Нужно расширять локальное хранилище без превращения `shared/database` в модуль, где вручную сосредотачивается вся предметная SQL-схема.
+
+Решение::
+Feature-owned schema остаётся в feature-модулях (`shared/feature/practice/database-schema`, `shared/feature/library/database-schema`, `shared/feature/vocabulary-editor/database-schema`, `shared/settings/database-schema`, `shared/tts/database-schema`), а `shared/database` агрегирует их в общий `SenseeDatabase`, предоставляет `SenseeDatabaseProvider` и platform-specific `DriverFactory`. SQLDelight требует, чтобы агрегирующий модуль владел хотя бы одной `.sq`, поэтому в `shared/database` остаётся пустой `SenseeDatabaseMarker.sq` (плюс dev-fingerprint таблица; dev-reset механизм описан в `shared/database/AGENTS.md`).
+
+Альтернативы::
+* Хранить всю SQLDelight schema только в `shared/database`. Отклонено: централизованная SQL-свалка размывает ownership — изменение таблицы одной feature требует трогать общий модуль, рост схемы превращает `shared/database` в неявную точку связности всех feature.
+* Дать каждому feature собственный полностью отдельный runtime database boundary (свой файл/драйвер). Отклонено: множественные базы и драйверы на клиенте дают cross-feature консистентность и транзакции только ценой ручной координации; накладные расходы не оправданы для локального клиента.
+
+Последствия (реализованные)::
+* Ownership таблиц и schema evolution остаются ближе к feature responsibility: каждая `.sq` живёт в своём `database-schema` модуле.
+* Platform drivers и runtime database wiring централизованы в одном модуле (`shared/database`): один `DriverFactory`/`SenseeDatabaseProvider` на все feature.
+* Все feature-owned `.sq` компилируются в один namespace `app.sensee.core.database` единого `SenseeDatabase`. Изоляция ownership — **конвенциональная, не принудительная**: дисциплина имён таблиц/колонок (префиксы `practice_`/`lexical_`/`user_`/`tts_`) удерживает отсутствие коллизий, но компилятор её не гарантирует. Это сознательно принятая цена выбранной агрегации, а не недосмотр.
+
+Последствия (ожидаемые)::
+* Новая feature подключает свой `database-schema` в агрегирующий модуль одной зависимостью; app shell и навигация не переписываются (CS-3).
+* При росте числа feature-схем дисциплина префиксов должна поддерживаться ревью/конвенцией (потенциальный кандидат на konsist-проверку имён таблиц, если набор схем существенно вырастет).
+

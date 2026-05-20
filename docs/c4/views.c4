@@ -1,0 +1,343 @@
+views 'Sensee Client' {
+  view index {
+    title 'Обзор / Ландшафт клиента'
+    description 'Контекст клиентских приложений Sensee в текущем фактическом состоянии репозитория.'
+    include learner
+    include client
+    include platform_services
+    include provider_apis
+    include future_backend
+    autoLayout LeftRight 160 120
+
+    style provider_apis {
+      color muted
+    }
+
+    style future_backend {
+      color muted
+    }
+  }
+
+  view shared_modules of client {
+    title 'Структура / Shared-модули клиента'
+    description 'Основные shared-модули клиента и их реальные compile-time и feature-level зависимости.'
+    include app_shell
+    include core_runtime
+    include splash
+    include learning_api
+    include learning_impl
+    include practice_domain
+    include practice_data
+    include practice_schema
+    include settings_domain
+    include settings_data
+    include settings_schema
+    include grammar_taxonomy
+    include ai_enrichment
+    include ai_fixture
+    include llm_adapter
+    include tts_seam
+    include learning_deck
+    include core_presentation
+    include persistence
+    include srs
+    include network
+    include mock_backend
+    include observability
+    autoLayout LeftRight 170 120
+
+    style observability {
+      border dashed
+    }
+  }
+
+  view capability_map of client {
+    title 'Структура / Product Capabilities'
+    description 'Capability-first view клиента: какие продуктовые возможности уже реализованы, а какие являются planned evolution.'
+    include app_shell
+    include vocabulary_editor
+    include vocabulary_capture
+    include lexical_model
+    include ai_enrichment
+    include library_catalog
+    include card_derivation
+    include library_target
+    include service_catalog
+    include review_target
+    include persistence
+    include provider_apis
+    include future_backend
+    autoLayout LeftRight 170 120
+
+    style card_derivation, service_catalog, provider_apis, future_backend {
+      color muted
+    }
+  }
+
+  view current_learning_slice of client {
+    title 'Структура / Текущий учебный срез'
+    description 'Части, которые реально участвуют в текущем app shell: practice, library adoption, vocabulary capture, profile AI/TTS settings, local persistence и provider seams.'
+    include entrypoints
+    include app_shell
+    include core_runtime
+    include core_presentation
+    include learning_api
+    include learning_impl
+    include practice_domain
+    include practice_data
+    include practice_schema
+    include vocabulary_editor
+    include vocabulary_capture
+    include lexical_model
+    include vocabulary_storage
+    include library_target
+    include library_catalog
+    include library_schema
+    include profile_target
+    include settings_domain
+    include settings_data
+    include settings_schema
+    include grammar_taxonomy
+    include ai_enrichment
+    include ai_fixture
+    include llm_adapter
+    include tts_seam
+    include learning_deck
+    include persistence
+    include srs
+    include network
+    include mock_backend
+    include platform_services
+    include provider_apis
+    autoLayout LeftRight 170 120
+
+    style platform_services, provider_apis {
+      color muted
+    }
+  }
+
+  view database_aggregation of client {
+    title 'Структура / Агрегация БД'
+    description 'Как `shared/database` агрегирует SQLDelight schema и предоставляет единый database boundary текущему implemented slice.'
+    include practice_data
+    include persistence
+    include practice_schema
+    include vocabulary_storage
+    include library_catalog
+    include library_schema
+    include settings_data
+    include settings_schema
+    include platform_services
+    autoLayout LeftRight 170 120
+
+    style platform_services {
+      color muted
+    }
+  }
+
+  view prepared_modules of client {
+    title 'Структура / Подготовленные модули'
+    description 'Реально существующие в коде shared-модули, которые ещё не формируют основной пользовательский flow.'
+    include observability
+    include future_backend
+    autoLayout LeftRight 170 120
+
+    style observability {
+      border dashed
+    }
+
+    style future_backend {
+      color muted
+      opacity 25%
+      border dotted
+    }
+  }
+
+  view deployment_targets of client {
+    title 'Развёртывание / Платформенные артефакты'
+    description 'Реальные deployable targets клиента и общий shared runtime, который они поднимают.'
+    include android_app
+    include desktop_app
+    include js_web_app
+    include wasm_web_app
+    include ios_host_app
+    include entrypoints
+    include app_shell
+    include platform_services
+    autoLayout LeftRight 170 120
+
+    style platform_services {
+      color muted
+    }
+  }
+
+  view reviewer_system_context {
+    title 'C4 / System Context для ревью'
+    description 'Вспомогательная C4-проекция: Sensee Client как система в окружении пользователя, platform services, provider APIs и будущего backend. Не заменяет module/capability-first view.'
+    include learner
+    include client
+    include platform_services
+    include provider_apis
+    include future_backend
+    autoLayout LeftRight 170 120
+
+    style platform_services, provider_apis, future_backend {
+      color muted
+    }
+  }
+
+  view reviewer_container_overview of client {
+    title 'C4 / Container Overview для ревью'
+    description 'Вспомогательная проекция контейнерного уровня внутри одного KMP-клиента: deployables, shared shell, feature modules, shared services and storage.'
+    include android_app
+    include desktop_app
+    include js_web_app
+    include wasm_web_app
+    include ios_host_app
+    include entrypoints
+    include app_shell
+    include learning_api
+    include learning_impl
+    include core_runtime
+    include persistence
+    include network
+    include mock_backend
+    include ai_enrichment
+    include tts_seam
+    include provider_apis
+    include platform_services
+    autoLayout LeftRight 170 120
+
+    style platform_services, provider_apis {
+      color muted
+    }
+  }
+
+  view reviewer_component_slices of client {
+    title 'C4 / Component Slices для ревью'
+    description 'Вспомогательная component-level проекция реализованных срезов: practice, vocabulary capture, library, profile/settings и shared domain/integration seams.'
+    include primary_navigation
+    include review_target
+    include practice_domain
+    include practice_data
+    include srs
+    include vocabulary_editor
+    include vocabulary_capture
+    include lexical_model
+    include grammar_taxonomy
+    include ai_enrichment
+    include ai_fixture
+    include llm_adapter
+    include library_target
+    include library_catalog
+    include profile_target
+    include settings_domain
+    include settings_data
+    include tts_seam
+    include persistence
+    include provider_apis
+    autoLayout LeftRight 170 120
+
+    style provider_apis {
+      color muted
+    }
+  }
+
+  dynamic view startup_flow {
+    title 'Runtime / Startup Flow'
+    description 'Запуск приложения: app-scoped прогрев словаря, cold-start splash либо тёплое восстановление deep-target, открытие PrimaryShellComponent.'
+
+    learner -> client.entrypoints 'запускает приложение'
+    client.entrypoints -> platform_services 'использует platform runtime'
+    client.entrypoints -> client.app_shell 'создаёт PlatformEnvironment и вызывает createAppRoot(...)'
+    client.app_shell -> client.core_runtime 'поднимает AppGraph и RootComponent; RootComponent app-scoped прогревает словарь'
+    client.app_shell -> client.splash 'cold start: splash, пока идёт прогрев (awaitReady)'
+    client.splash -> client.primary_navigation 'по готовности открывает `PrimaryShellComponent`'
+    client.app_shell -> client.primary_navigation 'тёплый старт: восстановленный deep-target без splash'
+    client.primary_navigation -> client.home_target 'показывает стартовый `Home` target'
+    client.app_shell -> client.learning_api 'создаёт section host contracts через feature API'
+  }
+
+  dynamic view deck_interaction_flow {
+    title 'Runtime / Deck Interaction Flow'
+    description 'Текущее интерактивное поведение practice deck через fixture-backed data flow, database и SRS orchestration.'
+
+    learner -> client.learning_impl 'открывает practice deck screen'
+    client.learning_impl -> client.library_catalog 'запрашивает deck через `CatalogRepository`'
+    client.library_catalog -> client.network 'загружает fixture-backed каталог/колоды через `HttpClient`'
+    client.mock_backend -> client.network 'обслуживает запрос через Ktor MockEngine'
+    client.library_catalog -> client.persistence 'сохраняет catalog/deck/adoption state локально'
+    client.practice_data -> client.srs 'подготавливает и обновляет review state'
+    client.library_catalog -> client.learning_impl 'возвращает разделённые карточки и состояние загрузки'
+    client.learning_impl -> client.learning_deck 'передаёт карточки и локальный `LearningDeckState`'
+    learner -> client.learning_deck 'тапает, свайпает, использует кнопки и клавиатуру'
+    client.learning_deck -> client.learning_impl 'возвращает swipe callbacks и локально ведёт историю undo'
+    client.learning_impl -> client.practice_domain 'отправляет review result через `PracticeReviewRepository`'
+    client.practice_data -> client.srs 'пересчитывает SRS-состояние'
+    client.learning_impl -> client.learning_deck 'обновляет текущую карточку и состояние колоды'
+  }
+
+  dynamic view vocabulary_capture_flow {
+    title 'Vocabulary Capture Flow'
+    description 'Реализованный основной продуктовый сценарий: ввод → enrich через AI-шов → набор `MeaningCandidate` → мультивыбор + ручной смысл → подтверждение → durable persist. Wizard-стадий нет. Planned: edit-path из карточки и деривация derived-карточек (см. `card_derivation_flow`).'
+
+    learner -> client.primary_navigation 'нажимает кнопку `Vocabulary Editor` (add-path)'
+    client.primary_navigation -> client.vocabulary_editor 'открывает `QuickCapture`'
+    learner -> client.vocabulary_editor 'вводит слово/фразу; создаётся `Draft`'
+    client.vocabulary_editor -> client.ai_enrichment 'запрашивает `MeaningCandidate` через AI-шов (ADR-005)'
+    client.ai_enrichment -> client.ai_fixture 'без ключа использует offline fixture'
+    client.ai_enrichment -> client.llm_adapter 'при настроенном ключе маршрутизирует в LLM adapter'
+    client.llm_adapter -> provider_apis 'вызывает provider API'
+    client.ai_enrichment -> client.vocabulary_editor 'возвращает набор смыслов (или пусто/недоступно → ручной режим, деградация first-class)'
+    learner -> client.vocabulary_editor 'мультивыбор смыслов и/или ручной смысл (опц. «дополнить ассистентом»)'
+    client.vocabulary_editor -> client.vocabulary_capture 'выбор и есть подтверждение → `EntryStatus.Confirmed`'
+    client.vocabulary_editor -> client.persistence 'сохраняет `Draft` и confirmed `LexicalEntry`/`Meaning` durable'
+  }
+
+  dynamic view planned_card_derivation_flow {
+    title 'Planned / Card Derivation Flow'
+    description 'Планируемый переход от confirmed lexical material к related learning cards и downstream practice flow.'
+
+    learner -> client.vocabulary_editor 'подтверждает lexical material'
+    client.vocabulary_editor -> client.vocabulary_capture 'завершает authoring flow'
+    client.vocabulary_capture -> client.lexical_model 'формирует confirmed lexical source model'
+    client.lexical_model -> client.card_derivation 'запускает derivation of learning cards'
+    client.card_derivation -> client.persistence 'сохраняет derived cards и canonical source state'
+    client.card_derivation -> client.review_target 'передаёт карточки в practice capability'
+  }
+
+  dynamic view planned_library_curation_flow {
+    title 'Planned / Library Curation Flow'
+    description 'Планируемое поведение Library как владельца каталога: браузер записей/карточек, правка/удаление своей карточки, курирование колод, сервисные наборы и запуск practice.'
+
+    learner -> client.library_target 'открывает `Library`, смотрит записи/карточки со статусами'
+    client.library_target -> client.lexical_model 'читает собственный каталог записей и колод'
+    learner -> client.library_target 'правит или удаляет свою карточку'
+    client.library_target -> client.vocabulary_editor 'deep-link на edit-path соответствующей `LexicalEntry`'
+    learner -> client.library_target 'курирует колоду (карточка в нескольких колодах)'
+    learner -> client.library_target 'открывает сервисные наборы'
+    client.library_target -> client.service_catalog 'запрашивает список сервисных наборов'
+    client.service_catalog -> future_backend 'загружает curated sets'
+    client.service_catalog -> client.library_target 'добавляет набор целиком или частично в собственный каталог'
+    learner -> client.library_target 'запускает practice по курируемой колоде'
+    client.library_target -> client.review_target 'открывает `PracticeConfig.DeckPractice` (read-only consumer)'
+  }
+
+  view primary_navigation_shell of client {
+    title 'Runtime / Primary Navigation Shell'
+    description 'Базовая root/primary navigation model: пять постоянных targets и config-driven переходы.'
+    include app_shell
+    include splash
+    include primary_navigation
+    include home_target
+    include review_target
+    include vocabulary_editor
+    include library_target
+    include profile_target
+    autoLayout LeftRight 170 120
+
+    style home_target {
+      border dashed
+    }
+  }
+}

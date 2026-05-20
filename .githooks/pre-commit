@@ -1,0 +1,123 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/sensee-pre-commit.XXXXXX")
+trap 'rm -rf "$tmp_dir"' EXIT HUP INT TERM
+
+list_file="$tmp_dir/files.txt"
+max_file_size_bytes="${SENSEE_GIT_HOOK_MAX_FILE_SIZE_BYTES:-2097152}"
+had_errors=0
+snapshot_index=0
+
+print_error() {
+    printf '%s\n' "$1" >&2
+    had_errors=1
+}
+
+is_text_file() {
+    file_path="$1"
+
+    if [ ! -s "$file_path" ]; then
+        return 0
+    fi
+
+    if LC_ALL=C grep -Iq . "$file_path"; then
+        return 0
+    fi
+
+    return 1
+}
+
+if [ "$#" -gt 0 ]; then
+    for file_path in "$@"; do
+        printf '%s\n' "$file_path" >> "$list_file"
+    done
+else
+    git diff --cached --name-only --diff-filter=ACMR > "$list_file"
+fi
+
+if [ ! -s "$list_file" ]; then
+    exit 0
+fi
+
+while IFS= read -r file_path; do
+    [ -n "$file_path" ] || continue
+
+    normalized_path=$(printf '%s' "$file_path" | tr '\\' '/')
+
+    case "$normalized_path" in
+        .idea/*|*/.idea/*|.gradle/*|*/.gradle/*|.kotlin/*|*/.kotlin/*|kotlin-js-store/*)
+            print_error "pre-commit: staged file '$normalized_path' is generated or machine-local and must not be committed."
+            continue
+            ;;
+        build/*|*/build/*)
+            case "$normalized_path" in
+                */src/*)
+                    ;;
+                *)
+                    print_error "pre-commit: staged file '$normalized_path' is under a build output directory and must not be committed."
+                    continue
+                    ;;
+            esac
+            ;;
+    esac
+
+    case "$normalized_path" in
+        local.properties|*.jks|*.keystore|*.p12|*.mobileprovision|*.pem|*.key|.env|.env.*)
+            print_error "pre-commit: staged file '$normalized_path' looks like a local or secret-bearing artifact. Keep it out of git."
+            continue
+            ;;
+    esac
+
+    snapshot_index=$((snapshot_index + 1))
+    snapshot_path="$tmp_dir/snapshot-$snapshot_index"
+
+    if git cat-file -e ":$file_path" 2>/dev/null; then
+        git show ":$file_path" > "$snapshot_path"
+    elif [ -f "$file_path" ]; then
+        cat -- "$file_path" > "$snapshot_path"
+    else
+        continue
+    fi
+
+    file_size_bytes=$(wc -c < "$snapshot_path" | tr -d '[:space:]')
+    if [ "$file_size_bytes" -gt "$max_file_size_bytes" ]; then
+        print_error "pre-commit: staged file '$normalized_path' is ${file_size_bytes} bytes, above the ${max_file_size_bytes}-byte guardrail."
+        continue
+    fi
+
+    if ! is_text_file "$snapshot_path"; then
+        continue
+    fi
+
+    if grep -nE '[[:blank:]]+\r?$' "$snapshot_path" >/dev/null 2>&1; then
+        print_error "pre-commit: staged file '$normalized_path' contains trailing whitespace."
+        grep -nE '[[:blank:]]+\r?$' "$snapshot_path" | head -n 5 >&2
+    fi
+
+    if grep -nE '^(<<<<<<<|=======|>>>>>>>)' "$snapshot_path" >/dev/null 2>&1; then
+        print_error "pre-commit: staged file '$normalized_path' still contains merge conflict markers."
+        grep -nE '^(<<<<<<<|=======|>>>>>>>)' "$snapshot_path" | head -n 5 >&2
+    fi
+
+    last_byte=$(tail -c 1 "$snapshot_path" 2>/dev/null || true)
+    if [ -n "$last_byte" ]; then
+        print_error "pre-commit: staged file '$normalized_path' is missing a final newline."
+    fi
+
+    if grep -nE '(gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|-----BEGIN ([A-Z0-9]+ )?PRIVATE KEY-----)' "$snapshot_path" >/dev/null 2>&1; then
+        print_error "pre-commit: staged file '$normalized_path' matches a common secret pattern."
+        grep -nE '(gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|-----BEGIN ([A-Z0-9]+ )?PRIVATE KEY-----)' "$snapshot_path" | head -n 5 >&2
+    fi
+done < "$list_file"
+
+if [ "$had_errors" -ne 0 ]; then
+    printf '\npre-commit: commit aborted. Fix the issues above or unstage the affected files.\n' >&2
+    exit 1
+fi
+
+printf 'pre-commit: repository guards passed.\n'
+

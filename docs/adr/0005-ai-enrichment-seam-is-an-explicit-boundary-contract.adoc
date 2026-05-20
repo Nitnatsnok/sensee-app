@@ -1,0 +1,30 @@
+= ADR-005: Шов AI-enrichment — явный versioned boundary contract с anti-corruption mapping
+:revdate: 2026-05-17
+
+Статус:: Accepted
+Дата:: 2026-05-15
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Maintainability (QG-3: смена провайдера без переписывания feature), Reliability (FS-1/FS-2: деградация и неоднозначность как first-class), Functional Suitability (candidate-слой ADR-001 как реальный артефакт, не future-box)
+
+Контекст::
+ADR-001 фиксирует, что AI-подсказки — это candidates, не canonical content. Без явного контракта границы это «будущий прямоугольник»: вызов конкретного AI-SDK прямо из feature, маппинг сырого AI-текста в UI-поля, протечка модели провайдера в домен и semantic corruption.
+
+Решение::
+Шов AI-enrichment — **явный typed versioned client-side boundary contract** за backend-compatible boundary. Feature/UI зависят только от собственного домена; запрос/ответ — отдельные versioned DTO; между DTO и доменом обязателен **anti-corruption mapping** в candidate-модель. Контракт provider-agnostic; недоступность/частичность — first-class состояние (деградация в ручной режим), не исключение.
+
+Модель ответа единая и не зависит от типа ввода (слово/фраза/идиома) и языка ввода: `availability` + список смыслов-кандидатов. Форму смысла и инвариант грамматики здесь не дублируем — канон в ADR-001, `docs/scenarios/vocabulary-capture.feature` и `docs/pos-and-forms.adoc`. Конфигурация провайдера — ограниченный выбор, не свободный ввод (провайдер из списка → его базовый URL; модель из списка API провайдера с офлайн-fallback); шов предоставляет перечисление моделей; ключи device-scoped, вводятся скрытым полем дизайн-системы. Поле версии DTO — forward-design, не история миграции.
+
+Альтернативы::
+* Вызывать AI-SDK провайдера напрямую из feature. Отклонено: провайдер протекает в домен, мок/деградацию/тестируемость не изолировать.
+* Маппить сырой AI-ответ в UI-поля без candidate-домена. Отклонено: разрушает provenance/explainability (ADR-001), semantic collapse.
+* Жёстко зашить одного провайдера. Отклонено: vendor lock-in на архитектурном уровне.
+
+Последствия (реализованные, 2026-05-17)::
+* В коде `shared/ai/{core,fixture,llm,integration}`: provider/feature-agnostic контракт, zero-config fixture (работает без ключа), OpenAI-совместимый LLM, settings-backed routing с наблюдаемой деградацией. Anti-corruption (`EnrichmentSuggestion → MeaningCandidate`) — на границе фичи. `HttpClient` — app-синглтон на реальном per-platform движке (best practice Ktor), отделён от mock-движка. Покрыто тестами на границе.
+
+Последствия (ожидаемые)::
+* Провайдера можно заменить/замокать, не трогая feature/домен; fixture-путь переиспользуем.
+* Цена: versioned contract + mapping-слой и контрактные тесты на границе.
+
+Связанные ADR::
+* link:0001-sense-first-lexical-model.adoc[ADR-001] (refines) — concretizes candidate-модель из ADR-001 как client-side boundary contract.

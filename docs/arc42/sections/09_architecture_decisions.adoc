@@ -1,0 +1,27 @@
+[[client-section-architecture-decisions]]
+= Архитектурные решения
+
+В этом разделе собраны только architecturally significant decisions. Чтобы не перегружать основной текст arc42, сами решения фиксируются как отдельные ADR в `docs/adr/`, а здесь остаётся центральный индекс. Связанные схемы эволюции клиента и product flow поддерживаются в `docs/c4/`, включая `vocabulary_capture_flow`.
+
+Стратегические решения высокого уровня по-прежнему кратко отражаются в `04_solution_strategy.adoc`; section 9 нужен для retraceability: почему решение принято, какие альтернативы рассматривались и какие последствия оно несёт.
+
+== Индекс ADR
+
+[options="header",cols="1,3,1,2"]
+|===
+|ID|Решение|Статус|Ссылка
+|ADR-001|Sense-first capture model — низкофрикционный ввод, разделение смыслов, отдельные derived-карточки под выбор пользователя (единый ADR продуктовой модели)|Accepted|link:../../adr/0001-sense-first-lexical-model.adoc[Открыть ADR]
+|ADR-002|Feature-owned schema with aggregated shared database|Accepted|link:../../adr/0002-feature-owned-schema-with-aggregated-database.adoc[Открыть ADR]
+|ADR-003|Navigation target configs stay separate from component-hosting API|Accepted|link:../../adr/0003-navigation-target-configs-stay-separate-from-component-api.adoc[Открыть ADR]
+|ADR-004|FSRS — единственный source of truth планирования; in-session reinjection как presentation-проекция|Accepted|link:../../adr/0004-fsrs-is-single-scheduling-source-of-truth.adoc[Открыть ADR]
+|ADR-005|Шов AI-enrichment — явный versioned boundary contract с anti-corruption mapping|Accepted|link:../../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc[Открыть ADR]
+|===
+
+NOTE: Документационно-процессные политики (ведение planned-разрывов) — не ADR; политика planned-backlog зафиксирована в `docs/evolution-backlog.adoc` рядом со списком, которым управляет.
+
+== Правила ведения решений
+
+* В ADR фиксируются только важные, дорогостоящие, рискованные или архитектурно масштабные решения.
+* Для каждого решения важно хранить не только итог, но и контекст, альтернативы и последствия.
+* Решения со статусом `Proposed` не должны описываться в runtime или building block view как уже реализованные.
+* Если решение локально и касается только одного строительного блока, его допустимо документировать рядом с этим блоком, а не выносить в центральный индекс.

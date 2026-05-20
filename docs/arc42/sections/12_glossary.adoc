@@ -1,0 +1,39 @@
+[[client-section-glossary]]
+= Глоссарий
+
+[options="header",cols="1,3"]
+|===
+|Термин|Определение
+|Client arc42|Отдельный arc42-документ, описывающий только клиентские приложения Sensee
+|Shared Client Core|Общая KMP-часть клиента, содержащая shared app shell, feature UI и reusable библиотеки
+|App Shell|Модуль `shared/app-shell`, собирающий общую тему, root UI и стартовую навигацию приложения
+|RootComponent|Корневая Decompose-компонента, управляющая child stack приложения
+|StartupComponent|Root-level компонент базового startup/splash screen перед открытием `PrimaryShellComponent`
+|PrimaryShellComponent|Decompose-компонент базовой primary navigation shell
+|Section Component|Feature-level компонент раздела, который владеет своим набором `ScreenConfig`
+|Learning Deck|Переиспользуемый swipeable карточный UI из `shared/ui/learning-deck`
+|Lexical Entry|Исходное слово, выражение или фраза, которое пользователь добавляет в систему как единицу изучения
+|Meaning / Sense|Отдельное значение слова или выражения, которое не должно смешиваться с другими значениями той же lexical entry
+|Meaning Candidate|Неподтверждённый смысл или вариант интерпретации, предложенный AI-assisted или другим внешним источником
+|Confirmed Meaning|Смысл, который прошёл явное подтверждение пользователем и может использоваться как источник для учебных артефактов
+|Contextual Application|Отдельное контекстное употребление, устойчивое сочетание или вариант использования с дополнительным смысловым оттенком
+|Entry Status|Статус `LexicalEntry`: `Draft` (захвачено, возможно обогащено, не подтверждено — незавершённый capture) или `Confirmed` (есть подтверждённые `Meaning`, годен как catalog/practice-материал). Богатый triage-лайфцикл (in-refinement/has-candidates) отложен до Library-inbox, где у статусов появится реальный потребитель (`docs/evolution-backlog.adoc`, EB-6)
+|Catalog Origin|First-class тип происхождения материала в каталоге: собственный (captured/adopted) vs сервисный набор; определяет detachable-семантику adoption
+|Service Set|Курируемый набор записей/карточек, приходящий через backend-compatible boundary; добавляется (adopt) в собственный каталог целиком или частично
+|NavigationDispatcher|Контракт распространения навигации: `open(config)`/`back()` с подъёмом запроса по цепочке `local -> parent` и результатом `NavigationRequestStatus`
+|ScreenConfig|Сериализуемый navigation target config раздела (например `PracticeConfig`, `LibraryConfig`); живёт в `presentation/navigation-api`, отделён от component-hosting API (ADR-003)
+|Ad-hoc/query practice|Планируемое расширение контракта practice: запуск сессии по произвольному due-подмножеству, а не только по готовому `Deck` (нужно для home due-CTA)
+|Grammar Cue|Структурированное грамматическое уточнение, например часть речи, форма слова, управление или используемый предлог
+|Derived Learning Card|Учебная карточка, производная от подтверждённого лексического материала, а не первичный источник смысла
+|Practice Flow|Текущий пользовательский срез Practice: загрузка deck из library-owned catalog, прохождение deck и обновление SRS-состояния
+|Practice Review Repository|Feature-owned boundary `PracticeReviewRepository`, через который presentation logic отправляет результаты review; deck content приходит через `CatalogRepository`
+|AI-assisted learning|Продуктовая идея Sensee: AI должен помогать объяснениями, подсказками и примерами, но не подменять базовую учебную модель
+|Сегрегация смыслов|Разделение учебных понятий карточки: `front`, `back`/meaning, example, transcription, review state и будущие AI-assist результаты имеют разные ответственности
+|PlatformEnvironment|Абстракция платформенного окружения, передаваемая в shared app shell при запуске приложения
+|Persistence Module|`shared/database` с SQLDelight schema и platform-specific driver factories
+|SRS Libraries|Набор модулей `shared/srs/*`, содержащих модели, engine и FSRS-реализацию
+|Fixture-backed Integration|Текущая интеграция через `shared/core/network` и `shared/core/mock-backend`, которая сохраняет клиентские границы без live backend
+|Prepared Foundation|Существующий модуль foundation-уровня, который ещё не образует основной пользовательский workflow
+|Implemented Client Slice|Текущий реально работающий пользовательский срез: запуск, навигация, practice (deck/home/card detail), library catalog + adoption, profile AI/TTS-настройки и capture-вертикаль
+|Planned Integration|Будущая интеграция live backend, sync, profile workflow и server-side AI, которая ещё не подключена к основному UI-сценарию
+|===

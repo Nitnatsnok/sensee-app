@@ -1,0 +1,43 @@
+package app.sensee.feature.vocabularyEditor.domain
+
+import kotlinx.coroutines.flow.Flow
+
+/**
+ * Owns captured lexical entries. Capture is upstream of the catalog (ADR-001);
+ * this contract never depends on Library/Practice.
+ */
+public interface VocabularyRepository {
+    public suspend fun createDraft(term: String): LexicalEntry
+
+    /**
+     * Keeps the current capture session's draft aligned with edited input.
+     * Returns `null` if the draft disappeared or is no longer editable.
+     */
+    public suspend fun updateDraftTerm(
+        id: EntryId,
+        term: String,
+    ): LexicalEntry?
+
+    public suspend fun getEntry(id: EntryId): LexicalEntry?
+
+    public suspend fun listEntries(): List<LexicalEntry>
+
+    /** Reactive stream of all entries; emissions fire whenever an entry is upserted or deleted. */
+    public fun observeEntries(): Flow<List<LexicalEntry>>
+
+    /**
+     * Adds the user-selected meanings and moves the entry to
+     * [EntryStatus.Confirmed]. The selection IS the confirmation (ADR-001):
+     * there is no separate confirm stage. An empty list is a no-op.
+     */
+    public suspend fun confirmMeanings(
+        id: EntryId,
+        meanings: List<Meaning>,
+    ): LexicalEntry
+
+    /**
+     * Discards an entry (e.g. an abandoned [EntryStatus.Draft]) so the catalog
+     * does not accumulate junk. Idempotent: deleting an absent id is a no-op.
+     */
+    public suspend fun deleteEntry(id: EntryId)
+}

@@ -1,0 +1,239 @@
+package app.sensee.ai.llm.client
+
+import app.sensee.ai.core.EnrichmentAvailability
+import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.SenseCoverage
+import app.sensee.ai.llm.config.LlmConfig
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockRequestHandleScope
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.toByteArray
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+// jvmTest + runBlocking (not commonTest + runTest): the client factory installs
+// Ktor's HttpTimeout plugin, whose real-time delay watcher is incompatible with
+// runTest's virtual time — same constraint as ElevenLabsSynthesizerTest.
+class LlmAiEnrichmentClientTest {
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private val request = EnrichmentRequest(term = "run")
+
+    @Test
+    fun `missing api key degrades to unavailable without calling the provider`() =
+        runBlocking {
+            var called = false
+            val engine =
+                MockEngine {
+                    called = true
+                    respond("{}")
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { null },
+                    configProvider = { LlmConfig() },
+                    json = json,
+                )
+
+            val result = client.enrich(request)
+
+            assertTrue(result.availability is EnrichmentAvailability.Unavailable)
+            assertEquals(false, called)
+        }
+
+    @Test
+    fun `well-formed provider answer is mapped through the seam`() =
+        runBlocking {
+            val content = """{"version":1,"items":[{"translation":"бежать","definition":"to move fast"}]}"""
+            val engine =
+                MockEngine {
+                    val encoded = json.encodeToString(content)
+                    respond(
+                        content = """{"choices":[{"message":{"role":"assistant","content":$encoded}}]}""",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                    )
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { "sk-test" },
+                    configProvider = { LlmConfig() },
+                    json = json,
+                )
+
+            val result = client.enrich(request)
+
+            assertEquals(EnrichmentAvailability.Available, result.availability)
+            assertEquals(listOf("бежать"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `default config requests a plain json_object response format`() =
+        runBlocking {
+            var body = ""
+            val engine =
+                MockEngine { httpRequest ->
+                    body = httpRequest.body.toByteArray().decodeToString()
+                    respondCompletion()
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { "sk-test" },
+                    configProvider = { LlmConfig() },
+                    json = json,
+                )
+
+            client.enrich(request)
+
+            assertTrue(body.contains("\"response_format\":{\"type\":\"json_object\"}"))
+        }
+
+    @Test
+    fun `structured output config sends the schema as a json_schema response format`() =
+        runBlocking {
+            var body = ""
+            val engine =
+                MockEngine { httpRequest ->
+                    body = httpRequest.body.toByteArray().decodeToString()
+                    respondCompletion()
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { "sk-test" },
+                    configProvider = { LlmConfig(structuredOutput = true) },
+                    json = json,
+                )
+
+            client.enrich(request)
+
+            assertTrue(body.contains("\"type\":\"json_schema\""))
+            assertTrue(body.contains("\"name\":\"enrichment_response\""))
+            assertTrue(body.contains("\"surface_form\""))
+        }
+
+    @Test
+    fun `single sense under common coverage triggers one corrective retry`() =
+        runBlocking {
+            var calls = 0
+            val engine =
+                MockEngine {
+                    calls++
+                    respondItems(if (calls == 1) listOf("первый") else listOf("a", "b", "c"))
+                }
+            val client = client(engine)
+
+            val result = client.enrich(EnrichmentRequest(term = "come across"))
+
+            assertEquals(2, calls)
+            assertEquals(listOf("a", "b", "c"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `minimal coverage does not retry a single-sense answer`() =
+        runBlocking {
+            var calls = 0
+            val engine =
+                MockEngine {
+                    calls++
+                    respondItems(listOf("один"))
+                }
+            val client = client(engine)
+
+            val result =
+                client.enrich(
+                    EnrichmentRequest(term = "look after", senseCoverage = SenseCoverage.Minimal),
+                )
+
+            assertEquals(1, calls)
+            assertEquals(listOf("один"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `a genuine single sense is kept when the retry adds nothing`() =
+        runBlocking {
+            var calls = 0
+            val engine =
+                MockEngine {
+                    calls++
+                    respondItems(listOf("единственный"))
+                }
+            val client = client(engine)
+
+            val result = client.enrich(EnrichmentRequest(term = "a piece of cake"))
+
+            assertEquals(2, calls)
+            assertEquals(listOf("единственный"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `a multi-sense first answer is not retried`() =
+        runBlocking {
+            var calls = 0
+            val engine =
+                MockEngine {
+                    calls++
+                    respondItems(listOf("раз", "два"))
+                }
+            val client = client(engine)
+
+            val result = client.enrich(EnrichmentRequest(term = "come across"))
+
+            assertEquals(1, calls)
+            assertEquals(listOf("раз", "два"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `the prompt asks for the sense inventory and hints come across on retry`() =
+        runBlocking {
+            val bodies = mutableListOf<String>()
+            val engine =
+                MockEngine { httpRequest ->
+                    bodies += httpRequest.body.toByteArray().decodeToString()
+                    respondItems(listOf("only"))
+                }
+            val client = client(engine)
+
+            client.enrich(EnrichmentRequest(term = "come across"))
+
+            assertTrue(bodies[0].contains("sense inventory"))
+            assertTrue(bodies[0].contains("Coverage: usually return 2-5"))
+            assertTrue(bodies[1].contains("returned only one sense"))
+            assertTrue(bodies[1].contains("come across as <adjective/noun>"))
+        }
+
+    private fun client(engine: MockEngine) =
+        LlmAiEnrichmentClientFactory.create(
+            engine = engine,
+            credentials = { "sk-test" },
+            configProvider = { LlmConfig() },
+            json = json,
+        )
+
+    private fun MockRequestHandleScope.respondItems(translations: List<String>) =
+        respond(
+            content = """{"choices":[{"message":{"role":"assistant","content":${
+                json.encodeToString(
+                    buildString {
+                        append("{\"version\":1,\"items\":[")
+                        append(translations.joinToString(",") { "{\"translation\":\"$it\"}" })
+                        append("]}")
+                    },
+                )
+            }}}]}""",
+            status = HttpStatusCode.OK,
+            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+        )
+
+    private fun MockRequestHandleScope.respondCompletion() = respondItems(listOf("x"))
+}

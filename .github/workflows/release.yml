@@ -1,0 +1,282 @@
+name: Release
+
+# Reviewer-facing artifacts. Web is deployed to GitHub Pages (live demo);
+# Android APK and desktop installers are attached to the GitHub Release for the
+# tag. On a tag push: Web + Android build automatically. Desktop (MSI/DEB) is
+# workflow_dispatch only. Every target can also be rebuilt via dispatch.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        type: string
+        required: true
+        description: "Existing tag to attach assets to, e.g. v0.1.0"
+      build_web:
+        type: boolean
+        default: true
+        description: "Deploy web to GitHub Pages"
+      build_android:
+        type: boolean
+        default: true
+        description: "Build & attach Android review APK"
+      build_desktop:
+        type: boolean
+        default: true
+        description: "Build & attach Windows MSI + Linux Deb"
+
+# Least-privilege by default; asset/pages jobs escalate locally.
+permissions:
+  contents: read
+
+env:
+  JAVA_DISTRIBUTION: temurin
+  JAVA_VERSION: '21'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+# Serialize runs for one release so concurrent re-runs do not race asset
+# uploads; do not cancel an in-flight upload.
+concurrency:
+  group: release-${{ (github.event_name == 'push' && github.ref_name) || github.event.inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve release tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Resolve and validate tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            tag="${{ github.ref_name }}"
+          else
+            tag="${{ inputs.release_tag }}"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          # API check (not local git): checkout fetch-depth 1 has no tags, so a
+          # dispatch from a branch would falsely fail a git rev-parse. This
+          # guarantees dispatch only augments an existing release tag.
+          if ! gh api "repos/${{ github.repository }}/git/ref/tags/$tag" >/dev/null 2>&1; then
+            echo "::error::tag '$tag' does not exist — create and push it first" >&2
+            exit 1
+          fi
+          # On tag push only — dispatch reuses an already-validated tag.
+          if [ "${{ github.event_name }}" = "push" ]; then
+            v=$(grep -E '^sensee\.version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+            if [ "${tag#v}" != "$v" ]; then
+              echo "::error::tag '$tag' does not match sensee.version '$v'" >&2
+              exit 1
+            fi
+          fi
+
+  ensure-release:
+    # Owns the GitHub Release body, deterministically. Asset jobs only upload
+    # files — they no longer race to set the description. Body is rewritten on
+    # every run from the template below so changes here propagate to existing
+    # releases on the next dispatch; if you want per-release hand-edited notes,
+    # change this template and re-run, or stop running this job for that tag.
+    name: Ensure release exists
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      # write needed for the Release API (create/edit). Job is otherwise
+      # minimal — checkout + one shell step.
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Render release body and create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: |
+          set -euo pipefail
+          v=$(grep -E '^sensee\.version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          owner="${GITHUB_REPOSITORY_OWNER}"
+          repo="${GITHUB_REPOSITORY##*/}"
+          pages_url="https://${owner}.github.io/${repo}/"
+          readme_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/${TAG}/README.md#try-it-without-building"
+          # Single-quoted heredoc keeps backticks literal; placeholders are
+          # substituted by sed below so the template stays readable.
+          cat >notes.md <<'EOF'
+          WIP build for reviewers — review/debug-signed, not product-tested.
+
+          **Live web demo:** @PAGES_URL@
+
+          **Assets**
+          - `sensee-@VERSION@-review.apk` — Android, release-like review build, debug-signed. Stable signature across builds; reviewers can update in place.
+          - `app.sensee-@VERSION@.msi` — Windows. Unsigned → SmartScreen shows *Unknown publisher*; installation proceeds.
+          - `*.deb` — Linux: `sudo apt install ./<file>.deb`.
+
+          iOS is not distributed (Apple Developer ID signing out of scope for this WIP).
+
+          See the [reviewer guide](@README_URL@) for context.
+          EOF
+          sed -i \
+            -e "s|@VERSION@|${v}|g" \
+            -e "s|@PAGES_URL@|${pages_url}|g" \
+            -e "s|@README_URL@|${readme_url}|g" \
+            notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TAG" --notes-file notes.md
+          else
+            gh release create "$TAG" --title "$TAG" --notes-file notes.md
+          fi
+
+  web:
+    name: Web (GitHub Pages)
+    needs: resolve
+    if: github.event_name == 'push' || inputs.build_web == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    # GitHub Pages allows one deployment at a time; separate from the
+    # workflow-level release-<tag> group.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Build Wasm distribution
+        timeout-minutes: 15
+        run: ./gradlew :webApp:wasmJsBrowserDistribution
+
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: apps/webApp/build/dist/wasmJs/productionExecutable
+
+      - name: Deploy to Pages
+        id: deploy
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+
+  android:
+    name: Android APK
+    needs: [resolve, ensure-release]
+    if: github.event_name == 'push' || inputs.build_android == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Build review APK
+        timeout-minutes: 15
+        run: ./gradlew :androidApp:assembleReview
+
+      - name: Attach APK to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          v=$(grep -E '^sensee\.version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          tag="${{ needs.resolve.outputs.tag }}"
+          asset="sensee-$v-review.apk"
+          cp apps/androidApp/build/outputs/apk/review/androidApp-review.apk "$asset"
+          # Release body is owned by the ensure-release job; here we only attach.
+          gh release upload "$tag" "$asset" --clobber
+
+  desktop:
+    name: Desktop (${{ matrix.task }})
+    needs: [resolve, ensure-release]
+    # Manual-only: windows-latest bills ×2 and the .msi/.deb is rarely the
+    # critical artifact for reviewers. Web + Android still build on tag push.
+    if: github.event_name == 'workflow_dispatch' && inputs.build_desktop == true
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            task: ':desktopApp:packageMsi'
+            glob: 'apps/desktopApp/build/compose/binaries/main/msi/*.msi'
+          - os: ubuntu-24.04
+            task: ':desktopApp:packageDeb'
+            glob: 'apps/desktopApp/build/compose/binaries/main/deb/*.deb'
+    defaults:
+      run:
+        # bash on windows-latest too, so ./gradlew + globbing are uniform.
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+
+      - name: Build desktop package
+        timeout-minutes: 20
+        run: ./gradlew ${{ matrix.task }}
+
+      - name: Attach package to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${{ needs.resolve.outputs.tag }}"
+          file=$(ls ${{ matrix.glob }} | head -n1)
+          # Release body is owned by the ensure-release job; here we only attach.
+          gh release upload "$tag" "$file" --clobber

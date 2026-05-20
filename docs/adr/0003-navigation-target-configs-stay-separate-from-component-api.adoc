@@ -1,0 +1,27 @@
+= ADR-003: Navigation target configs stay separate from component-hosting API — navigation entry contracts живут в отдельном `presentation/navigation-api`
+:revdate: 2026-05-12
+
+Статус:: Accepted
+Дата:: 2026-05-12
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Maintainability (QG-3: модульность навигации), минимальная зависимость инициаторов навигации
+
+Контекст::
+Клиент использует Decompose-based navigation и feature section components. При росте числа feature важно, чтобы модули, которые не хостят конкретный экран, могли открывать feature через лёгкий navigation contract и не зависели от component-hosting API. Иначе внешние модули вынуждены тянуть лишние API, связанные с созданием и управлением section component.
+
+Решение::
+Публичные `NavigationTargetConfig` и другие navigation entry contracts должны жить отдельно от component-hosting API, в `presentation/navigation-api`, когда они нужны внешним модулям. Модуль, который только инициирует навигацию, не должен зависеть ни от `presentation/impl`, ни от component-hosting `presentation/api`, если ему нужен только typed config для открытия экрана.
+
+Альтернативы::
+* Хранить navigation config в `presentation/api` рядом с component-hosting API. Отклонено: инициатор навигации вынужден тянуть весь component-hosting API ради typed config — лишняя связность.
+* Хранить navigation config рядом с Compose-реализацией экрана в `presentation/impl`. Отклонено: внешний модуль зависел бы от UI-реализации feature только чтобы открыть экран.
+* Позволить root shell и другим вызывающим модулям напрямую зависеть от component-hosting типов конкретной feature. Отклонено: shell связывается с внутренним API каждой feature; добавление feature ломает изоляцию навигации.
+
+Последствия (реализованные)::
+* Модули, которые только инициируют навигацию, получают минимальную зависимость на `navigation-api`; реализовано для пяти feature (`home`/`library`/`practice`/`profile`/`vocabulary-editor`).
+* Component-hosting API остаётся доступным только тем модулям, которые реально создают и хостят экран.
+
+Последствия (ожидаемые)::
+* На каждую feature с внешними точками входа появляется маленький `navigation-api` модуль, который нужно поддерживать как публичный contract и serializer boundary — принятая цена изоляции навигации.
+
+

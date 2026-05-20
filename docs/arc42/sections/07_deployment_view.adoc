@@ -1,0 +1,33 @@
+[[client-section-deployment-view]]
+= Представление развёртывания
+
+== Текущее состояние
+
+На текущем этапе клиентские приложения поставляются как самостоятельные клиентские артефакты текущего реализованного продуктового среза без обязательной зависимости от backend.
+
+Актуальная deployment topology поддерживается в view `deployment_targets` в `docs/c4/`. Подготовленные, но ещё не flow-driving shared-модули вынесены отдельно в view `prepared_modules`.
+
+[options="header",cols="1,3"]
+|===
+|Узел / артефакт|Описание
+| Android app | `apps/androidApp` собирает Android-приложение и запускает общий `shared/app-shell`
+| Desktop app | `apps/desktopApp` собирает Desktop JVM-приложение (Kotlin/JVM + Compose Desktop) с тем же shared UI и root wiring
+| JS web app | `apps/webApp` публикует JS browser target
+| Wasm web app | `apps/webApp` публикует Wasm browser target
+| iOS host app | `apps/iosApp` хостит iOS-приложение, линкуя фреймворк `SenseeKit` из `apps/iosFramework` с Compose-based shared UI
+| Shared app shell runtime | `shared/app-shell` не является отдельным deployable artifact, но именно его поднимают все платформенные targets
+|===
+
+== Целевая эволюция
+
+При расширении клиента topology может усложниться, но базовая декомпозиция не должна ломаться:
+
+* клиентские приложения остаются отдельными deployable units;
+* backend становится внешней системой, а не частью клиентского runtime;
+* fixture-backed backend может быть заменён live backend без смены platform entry logic;
+* `shared/database`, `shared/srs/*`, `shared/core/network`, `shared/ai/*`, `shared/tts/*` и `shared/settings/*` могут расширяться от текущих implemented flow к sync/cache/live-provider сценариям;
+* `shared/core/observability` может подключаться постепенно, не ломая app shell и deployable targets.
+
+== Вывод
+
+Deployment view для клиента intentionally simple: уже сейчас существует набор реально запускаемых platform targets, а дальнейшее усложнение должно происходить поверх существующего shared shell и модульных границ.
