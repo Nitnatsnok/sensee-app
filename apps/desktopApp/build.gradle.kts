@@ -26,11 +26,26 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "app.sensee"
+            packageName = "Sensee"
             packageVersion = providers.gradleProperty("sensee.version").get()
             // jpackage runtime image strips unused JPMS modules; sqlite-jdbc
             // needs java.sql at runtime via JdbcSqliteDriver → DriverManager.
             modules("java.sql")
+
+            windows {
+                shortcut = true
+                menuGroup = "Sensee"
+                upgradeUuid = "0C8ABF27-4750-4516-B785-270FD06CA3E0"
+                perUserInstall = true
+            }
+
+            linux {
+                packageName = "sensee"
+            }
+
+            macOS {
+                bundleID = "app.sensee"
+            }
         }
     }
 }

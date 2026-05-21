@@ -1,7 +1,7 @@
 TEAM_ID=
 
 PRODUCT_NAME=Sensee
-PRODUCT_BUNDLE_IDENTIFIER=app.sensee.Sensee$(TEAM_ID)
+PRODUCT_BUNDLE_IDENTIFIER=app.sensee
 
 // MARKETING_VERSION mirrors `sensee.version` in the repo-root gradle.properties.
 // Keep these in sync manually when bumping the app version.
