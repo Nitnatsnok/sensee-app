@@ -275,12 +275,8 @@ jobs:
     if: needs.changes.outputs.verify == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    # dorny/test-reporter creates a separate check with per-test failures and
-    # stack traces; needs checks:write. Workflow default is contents:read only,
-    # and job-level permissions REPLACE rather than merge, so restate it here.
     permissions:
       contents: read
-      checks: write
 
     steps:
       - name: Checkout
@@ -304,16 +300,6 @@ jobs:
 
       - name: Verify desktop module
         run: ./gradlew --no-parallel :desktopApp:check --continue
-
-      - name: Publish desktop test results
-        if: always()
-        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
-        with:
-          name: Desktop test results
-          path: apps/desktopApp/build/test-results/test/TEST-*.xml
-          reporter: java-junit
-          fail-on-error: false
-          fail-on-empty: false
 
       - name: Upload desktop reports on failure
         if: failure()
