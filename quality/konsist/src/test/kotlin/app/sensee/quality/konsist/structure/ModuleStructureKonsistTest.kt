@@ -35,9 +35,10 @@ class ModuleStructureKonsistTest {
                     if (actualPackage.matchesPackagePrefix(expectedPrefix)) {
                         null
                     } else {
+                        val actual = actualPackage.orEmpty()
                         violation(
                             subject = path,
-                            message = "expected package starting with '$expectedPrefix', was '${actualPackage.orEmpty()}'",
+                            message = "expected package starting with '$expectedPrefix', was '$actual'",
                         )
                     }
                 }

@@ -220,7 +220,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.verify == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -245,7 +245,7 @@ jobs:
       - name: Run Android lint and assemble
         # No `testDebugUnitTest`: repo has no `androidUnitTest/` source sets;
         # add when one appears.
-        timeout-minutes: 15
+        timeout-minutes: 22
         run: >-
           ./gradlew --no-parallel lint :androidApp:assembleReview --continue
           -Pkotlin.build.report.output=file
@@ -409,12 +409,9 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Run JS + Wasm browser tests
-        # Kotlin daemon heap above the project default — Wasm test executable
-        # compile is the residual memory hotspot.
         timeout-minutes: 15
         run: >-
           ./gradlew --no-parallel jsBrowserTest wasmJsBrowserTest --continue
-          "-Pkotlin.daemon.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=768m -XX:+UseParallelGC"
           -Pkotlin.build.report.output=file
           -Pkotlin.build.report.file.dir=build/reports/kotlin-build
 

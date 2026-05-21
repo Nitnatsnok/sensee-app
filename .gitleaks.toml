@@ -1,0 +1,10 @@
+# gitleaks v8+ config — extends the bundled default ruleset.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Firebase google-services.json holds a public Android API key (bundled into every APK); security comes from GCP key restrictions, not from hiding the value."
+paths = [
+    '''apps/androidApp/google-services\.json''',
+]
