@@ -28,6 +28,9 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "app.sensee"
             packageVersion = providers.gradleProperty("sensee.version").get()
+            // jpackage runtime image strips unused JPMS modules; sqlite-jdbc
+            // needs java.sql at runtime via JdbcSqliteDriver → DriverManager.
+            modules("java.sql")
         }
     }
 }
