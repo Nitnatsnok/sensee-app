@@ -23,8 +23,10 @@ import app.sensee.ui.designSystem.icons.CheckBox
 import app.sensee.ui.designSystem.icons.CheckBoxOutlineBlank
 import app.sensee.ui.designSystem.icons.CheckCircle24px
 import app.sensee.ui.designSystem.icons.Close24px
+import app.sensee.ui.designSystem.icons.CollapseContent24px
 import app.sensee.ui.designSystem.icons.Delete24px
 import app.sensee.ui.designSystem.icons.Exercise24px
+import app.sensee.ui.designSystem.icons.ExpandContent24px
 import app.sensee.ui.designSystem.icons.Flip24px
 import app.sensee.ui.designSystem.icons.Handyman24px
 import app.sensee.ui.designSystem.icons.Help24px
@@ -32,6 +34,7 @@ import app.sensee.ui.designSystem.icons.Home24px
 import app.sensee.ui.designSystem.icons.Info24px
 import app.sensee.ui.designSystem.icons.Language24px
 import app.sensee.ui.designSystem.icons.LibraryBooks24px
+import app.sensee.ui.designSystem.icons.Minimize24px
 import app.sensee.ui.designSystem.icons.Person24px
 import app.sensee.ui.designSystem.icons.Psychology24px
 import app.sensee.ui.designSystem.icons.Search24px
@@ -102,8 +105,10 @@ private val SenseeIconCatalogEntries: List<Pair<String, ImageVector>> =
         "CheckBoxBlank" to CheckBoxOutlineBlank,
         "CheckCircle" to CheckCircle24px,
         "Close" to Close24px,
+        "CollapseContent" to CollapseContent24px,
         "Delete" to Delete24px,
         "Exercise" to Exercise24px,
+        "ExpandContent" to ExpandContent24px,
         "Flip" to Flip24px,
         "Handyman" to Handyman24px,
         "Help" to Help24px,
@@ -111,6 +116,7 @@ private val SenseeIconCatalogEntries: List<Pair<String, ImageVector>> =
         "Info" to Info24px,
         "Language" to Language24px,
         "LibraryBooks" to LibraryBooks24px,
+        "Minimize" to Minimize24px,
         "Person" to Person24px,
         "Psychology" to Psychology24px,
         "Search" to Search24px,

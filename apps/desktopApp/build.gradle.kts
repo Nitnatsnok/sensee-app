@@ -18,11 +18,22 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutines.swing)
+
+    // Win32 calls for the custom window chrome (native min/max animations).
+    // No-op at runtime on macOS/Linux — see WindowsWindowDecoration.
+    implementation(libs.jna)
+    implementation(libs.jna.platform)
 }
 
 compose.desktop {
     application {
         mainClass = "app.sensee.MainKt"
+
+        // ProGuard runs for release packaging; JNA resolves Win32 bindings
+        // reflectively, so its classes must survive shrinking.
+        buildTypes.release.proguard {
+            configurationFiles.from(project.file("proguard-rules.pro"))
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
@@ -31,6 +42,10 @@ compose.desktop {
             // jpackage runtime image strips unused JPMS modules; sqlite-jdbc
             // needs java.sql at runtime via JdbcSqliteDriver → DriverManager.
             modules("java.sql")
+
+            description = "Language learning desktop app"
+            vendor = "Sensee"
+            copyright = "© 2026 Sensee"
 
             windows {
                 shortcut = true
@@ -41,10 +56,14 @@ compose.desktop {
 
             linux {
                 packageName = "sensee"
+                menuGroup = "Education"
+                appCategory = "education"
             }
 
             macOS {
                 bundleID = "app.sensee"
+                dockName = "Sensee"
+                appCategory = "education"
             }
         }
     }

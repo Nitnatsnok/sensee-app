@@ -50,6 +50,9 @@ mp3spi = "1.9.5.4"
 # Secure storage (desktop JVM)
 java-keyring = "1.0.4"
 
+# Native interop (desktop JVM, Windows-only custom window chrome)
+jna = "5.14.0"
+
 # Testing
 # JUnit 5 ecosystem version; consumers pull it via the junit-bom platform so
 # jupiter and platform-launcher never drift apart.
@@ -136,6 +139,11 @@ audio-mp3spi = { module = "com.googlecode.soundlibs:mp3spi", version.ref = "mp3s
 # Secure storage (desktop JVM): wraps Windows Credential Vault, macOS Keychain,
 # and Linux libsecret behind a single Java API.
 java-keyring = { module = "com.github.javakeyring:java-keyring", version.ref = "java-keyring" }
+
+# JNA (desktop JVM): Win32 calls for the custom undecorated-window chrome that
+# keeps native minimize/maximize animations. -jpms variants ship a module-info.
+jna = { module = "net.java.dev.jna:jna-jpms", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform-jpms", version.ref = "jna" }
 
 # Compose
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
