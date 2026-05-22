@@ -2,7 +2,7 @@ package app.sensee.feature.practice.presentation.impl.deck
 
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
-import app.sensee.core.decompose.context.withComponentContextOverride
+import app.sensee.core.decompose.context.appChildPanels
 import app.sensee.core.decompose.logic.LogicKey
 import app.sensee.core.decompose.logic.getOrCreateLogic
 import app.sensee.core.decompose.navigation.NavigationDispatcher
@@ -22,7 +22,6 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.router.panels.Panels
 import com.arkivanov.decompose.router.panels.PanelsNavigation
-import com.arkivanov.decompose.router.panels.childPanels
 import com.arkivanov.decompose.router.panels.navigate
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnDestroy
@@ -61,7 +60,7 @@ public class DefaultDeckPracticeComponent(
     override val uiState: StateFlow<DeckPracticeUiState> = logic.uiState
 
     override val panels: Value<DeckPracticeChildPanels> =
-        childPanels(
+        appChildPanels(
             source = panelsNavigation,
             serializers = null,
             initialPanels = {
@@ -72,13 +71,11 @@ public class DefaultDeckPracticeComponent(
                 )
             },
             handleBackButton = true,
+            navigation = PanelOpenCardNavigation { cardId -> focusCard(cardId) },
             mainFactory = { _, _ -> deckPanelHost },
             detailsFactory = { config, childContext ->
                 cardDetailFactory.create(
-                    componentContext =
-                        childContext.withComponentContextOverride(
-                            navigation = PanelOpenCardNavigation { cardId -> focusCard(cardId) },
-                        ),
+                    componentContext = childContext,
                     args = CardDetailComponent.Args(cardId = config.cardId),
                 )
             },

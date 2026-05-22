@@ -1,4 +1,4 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.aisettings
 
 import app.sensee.ai.core.AiKeyCheck
 import app.sensee.ai.core.AiModelCatalog
@@ -8,9 +8,9 @@ import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.profile.presentation.api.AiVerifyTarget
 import app.sensee.feature.profile.presentation.api.KeyCheckStatus
-import app.sensee.feature.profile.presentation.api.ProfileHomeAction
-import app.sensee.feature.profile.presentation.api.ProfileHomeUiState
-import app.sensee.feature.profile.presentation.api.ProfileSettingsSnapshot
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsAction
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsSnapshot
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsUiState
 import app.sensee.feature.profile.presentation.api.TtsVerifyTarget
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.AiSettings
@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @AssistedInject
-public class ProfileHomeLogic(
+public class ProfileAiSettingsLogic(
     private val settingsRepository: UserSettingsRepository,
     private val saveIntegrationSettings: SaveIntegrationSettingsUseCase,
     private val modelCatalog: AiModelCatalog,
@@ -44,12 +44,12 @@ public class ProfileHomeLogic(
 ) : BaseLogic(appDispatchers, appDiagnostics) {
     @AssistedFactory
     public fun interface Factory {
-        public fun create(): ProfileHomeLogic
+        public fun create(): ProfileAiSettingsLogic
     }
 
-    private val mutableUiState = MutableStateFlow(ProfileHomeUiState())
+    private val mutableUiState = MutableStateFlow(ProfileAiSettingsUiState())
 
-    public val uiState: StateFlow<ProfileHomeUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<ProfileAiSettingsUiState> = mutableUiState.asStateFlow()
 
     // A slow verify must not resurrect a stale Valid/model list after the user
     // changed the provider (or the inherit choice); cancel the in-flight one.
@@ -60,25 +60,25 @@ public class ProfileHomeLogic(
         load()
     }
 
-    public fun onAction(action: ProfileHomeAction) {
+    public fun onAction(action: ProfileAiSettingsAction) {
         when (action) {
-            ProfileHomeAction.VerifyAiKey -> verifyAiKey()
-            ProfileHomeAction.VerifyTtsKey -> verifyTtsKey()
-            ProfileHomeAction.Save -> save()
-            is ProfileHomeAction.Draft -> applyDraftAction(action)
+            ProfileAiSettingsAction.VerifyAiKey -> verifyAiKey()
+            ProfileAiSettingsAction.VerifyTtsKey -> verifyTtsKey()
+            ProfileAiSettingsAction.Save -> save()
+            is ProfileAiSettingsAction.Draft -> applyDraftAction(action)
         }
     }
 
-    private fun applyDraftAction(action: ProfileHomeAction.Draft) {
+    private fun applyDraftAction(action: ProfileAiSettingsAction.Draft) {
         when (action) {
-            is ProfileHomeAction.SetAiApiKey -> updateDraft { it.copy(aiApiKey = action.value) }
-            is ProfileHomeAction.SetAiModel -> updateDraft { it.copy(aiModel = action.value) }
-            is ProfileHomeAction.SetTtsApiKey -> updateDraft { it.copy(ttsApiKey = action.value) }
-            is ProfileHomeAction.SetTtsModel -> updateDraft { it.copy(ttsModel = action.value) }
-            is ProfileHomeAction.SetTtsVoiceId -> updateDraft { it.copy(ttsVoiceId = action.value) }
-            is ProfileHomeAction.SetAiProvider -> applyAiProviderChange(action.provider)
-            is ProfileHomeAction.SetTtsProvider -> applyTtsProviderChange(action.provider)
-            is ProfileHomeAction.SetTtsSeparateKey -> applyTtsSeparateKeyChange(action.value)
+            is ProfileAiSettingsAction.SetAiApiKey -> updateDraft { it.copy(aiApiKey = action.value) }
+            is ProfileAiSettingsAction.SetAiModel -> updateDraft { it.copy(aiModel = action.value) }
+            is ProfileAiSettingsAction.SetTtsApiKey -> updateDraft { it.copy(ttsApiKey = action.value) }
+            is ProfileAiSettingsAction.SetTtsModel -> updateDraft { it.copy(ttsModel = action.value) }
+            is ProfileAiSettingsAction.SetTtsVoiceId -> updateDraft { it.copy(ttsVoiceId = action.value) }
+            is ProfileAiSettingsAction.SetAiProvider -> applyAiProviderChange(action.provider)
+            is ProfileAiSettingsAction.SetTtsProvider -> applyTtsProviderChange(action.provider)
+            is ProfileAiSettingsAction.SetTtsSeparateKey -> applyTtsSeparateKeyChange(action.value)
         }
     }
 
@@ -89,7 +89,7 @@ public class ProfileHomeLogic(
                 .onSuccess { ai ->
                     val snapshot = ai.toProfileSnapshot()
                     mutableUiState.update {
-                        ProfileHomeUiState(
+                        ProfileAiSettingsUiState(
                             loadingState = DataLoadingState.Success,
                             draftSnapshot = snapshot,
                             savedSnapshot = snapshot,
@@ -331,7 +331,7 @@ public class ProfileHomeLogic(
     //  - drop no-op writes so the UI binding's upstream echo of a freshly-saved
     //    value (downstream → TextFieldState → snapshotFlow → upstream Set*) is
     //    idempotent for isSaved.
-    private inline fun updateDraft(transform: (ProfileSettingsSnapshot) -> ProfileSettingsSnapshot) {
+    private inline fun updateDraft(transform: (ProfileAiSettingsSnapshot) -> ProfileAiSettingsSnapshot) {
         mutableUiState.update { state ->
             val newDraft = transform(state.draftSnapshot).normalizedForInherit()
             if (newDraft == state.draftSnapshot) {
@@ -350,10 +350,10 @@ public class ProfileHomeLogic(
  * that to leak back into the visible TTS field when the user opts out of
  * inheriting later.
  */
-private fun ProfileSettingsSnapshot.normalizedForInherit(): ProfileSettingsSnapshot =
+private fun ProfileAiSettingsSnapshot.normalizedForInherit(): ProfileAiSettingsSnapshot =
     if (ttsInheritsAiKey && ttsApiKey.isNotEmpty()) copy(ttsApiKey = "") else this
 
-private fun ProfileSettingsSnapshot.toIntegrationDraft(): IntegrationSettingsDraft =
+private fun ProfileAiSettingsSnapshot.toIntegrationDraft(): IntegrationSettingsDraft =
     IntegrationSettingsDraft(
         aiApiKey = aiApiKey,
         aiProvider = aiProvider,
@@ -365,9 +365,9 @@ private fun ProfileSettingsSnapshot.toIntegrationDraft(): IntegrationSettingsDra
         ttsSeparateKey = ttsSeparateKey,
     )
 
-private fun AiSettings.toProfileSnapshot(): ProfileSettingsSnapshot {
+private fun AiSettings.toProfileSnapshot(): ProfileAiSettingsSnapshot {
     val inherits = ttsInheritsAiKey(aiProvider, ttsProvider, ttsSeparateKey)
-    return ProfileSettingsSnapshot(
+    return ProfileAiSettingsSnapshot(
         aiApiKey = aiApiKey.orEmpty(),
         aiProvider = aiProvider,
         aiModel = aiModel.orEmpty(),

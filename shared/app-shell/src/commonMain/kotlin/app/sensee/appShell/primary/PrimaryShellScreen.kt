@@ -37,7 +37,7 @@ import app.sensee.feature.library.presentation.impl.LibrarySectionScreen
 import app.sensee.feature.practice.presentation.api.PracticeSectionComponent
 import app.sensee.feature.practice.presentation.impl.section.PracticeSectionScreen
 import app.sensee.feature.profile.presentation.api.ProfileSectionComponent
-import app.sensee.feature.profile.presentation.impl.ProfileSectionScreen
+import app.sensee.feature.profile.presentation.impl.section.ProfileSectionScreen
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyEditorSectionComponent
 import app.sensee.feature.vocabularyEditor.presentation.impl.VocabularyEditorSectionScreen
 import app.sensee.ui.adaptive.LocalAdaptiveInfo

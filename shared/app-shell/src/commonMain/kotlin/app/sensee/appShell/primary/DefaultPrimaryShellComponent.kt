@@ -262,12 +262,11 @@ public class DefaultPrimaryShellComponent(
     }
 }
 
-public class PrimarySectionComponentFactories
-    @Inject
-    constructor(
-        public val home: HomeSectionComponent.Factory,
-        public val practice: PracticeSectionComponent.Factory,
-        public val library: LibrarySectionComponent.Factory,
-        public val vocabularyEditor: VocabularyEditorSectionComponent.Factory,
-        public val profile: ProfileSectionComponent.Factory,
-    )
+@Inject
+public class PrimarySectionComponentFactories(
+    public val home: HomeSectionComponent.Factory,
+    public val practice: PracticeSectionComponent.Factory,
+    public val library: LibrarySectionComponent.Factory,
+    public val vocabularyEditor: VocabularyEditorSectionComponent.Factory,
+    public val profile: ProfileSectionComponent.Factory,
+)

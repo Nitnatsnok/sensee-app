@@ -1,4 +1,4 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.aisettings
 
 import app.sensee.ai.core.AiKeyCheck
 import app.sensee.ai.core.AiModelCatalog
@@ -7,7 +7,7 @@ import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
 import app.sensee.feature.profile.presentation.api.AiVerifyTarget
 import app.sensee.feature.profile.presentation.api.KeyCheckStatus
-import app.sensee.feature.profile.presentation.api.ProfileHomeAction
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsAction
 import app.sensee.feature.profile.presentation.api.TtsVerifyTarget
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.SaveIntegrationSettingsUseCase
@@ -29,42 +29,43 @@ import kotlin.test.assertTrue
 
 /**
  * Tests dispatch through the public action interface — the per-field setter
- * methods on [ProfileHomeLogic] are private and routed via [ProfileHomeLogic.onAction].
- * These extensions are typed shortcuts used only by tests.
+ * methods on [ProfileAiSettingsLogic] are private and routed via
+ * [ProfileAiSettingsLogic.onAction]. These extensions are typed shortcuts used
+ * only by tests.
  */
-private fun ProfileHomeLogic.setAiApiKey(value: String) {
-    onAction(ProfileHomeAction.SetAiApiKey(value))
+private fun ProfileAiSettingsLogic.setAiApiKey(value: String) {
+    onAction(ProfileAiSettingsAction.SetAiApiKey(value))
 }
 
-private fun ProfileHomeLogic.setAiModel(value: String) {
-    onAction(ProfileHomeAction.SetAiModel(value))
+private fun ProfileAiSettingsLogic.setAiModel(value: String) {
+    onAction(ProfileAiSettingsAction.SetAiModel(value))
 }
 
-private fun ProfileHomeLogic.setTtsApiKey(value: String) {
-    onAction(ProfileHomeAction.SetTtsApiKey(value))
+private fun ProfileAiSettingsLogic.setTtsApiKey(value: String) {
+    onAction(ProfileAiSettingsAction.SetTtsApiKey(value))
 }
 
-private fun ProfileHomeLogic.setTtsModel(value: String) {
-    onAction(ProfileHomeAction.SetTtsModel(value))
+private fun ProfileAiSettingsLogic.setTtsModel(value: String) {
+    onAction(ProfileAiSettingsAction.SetTtsModel(value))
 }
 
-private fun ProfileHomeLogic.setTtsVoiceId(value: String) {
-    onAction(ProfileHomeAction.SetTtsVoiceId(value))
+private fun ProfileAiSettingsLogic.setTtsVoiceId(value: String) {
+    onAction(ProfileAiSettingsAction.SetTtsVoiceId(value))
 }
 
-private fun ProfileHomeLogic.setAiProvider(provider: AiProvider) {
-    onAction(ProfileHomeAction.SetAiProvider(provider))
+private fun ProfileAiSettingsLogic.setAiProvider(provider: AiProvider) {
+    onAction(ProfileAiSettingsAction.SetAiProvider(provider))
 }
 
-private fun ProfileHomeLogic.setTtsProvider(provider: TtsProvider) {
-    onAction(ProfileHomeAction.SetTtsProvider(provider))
+private fun ProfileAiSettingsLogic.setTtsProvider(provider: TtsProvider) {
+    onAction(ProfileAiSettingsAction.SetTtsProvider(provider))
 }
 
-private fun ProfileHomeLogic.setTtsSeparateKey(value: Boolean) {
-    onAction(ProfileHomeAction.SetTtsSeparateKey(value))
+private fun ProfileAiSettingsLogic.setTtsSeparateKey(value: Boolean) {
+    onAction(ProfileAiSettingsAction.SetTtsSeparateKey(value))
 }
 
-class ProfileHomeLogicTest {
+class ProfileAiSettingsLogicTest {
     private class FakeSettings(
         var snapshot: UserSettingsSnapshot = UserSettingsSnapshot(),
     ) : UserSettingsRepository {
@@ -102,7 +103,7 @@ class ProfileHomeLogicTest {
         settings: UserSettingsRepository = FakeSettings(),
         modelCatalog: AiModelCatalog = FakeModelCatalog(),
         ttsCatalog: TtsCatalog = FakeTtsCatalog(),
-    ) = ProfileHomeLogic(
+    ) = ProfileAiSettingsLogic(
         settingsRepository = settings,
         saveIntegrationSettings = SaveIntegrationSettingsUseCase(settings),
         modelCatalog = modelCatalog,

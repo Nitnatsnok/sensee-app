@@ -3,10 +3,14 @@
 Функция: Профиль и полный набор пользовательских настроек
 
   Profile — владелец пользовательских настроек над `UserSettingsRepository`.
-  Реализованный срез — категория `Ai`: `ProfileHomeLogic`/`ProfileHomeScreen`
-  ведут выбор AI/TTS-провайдера, верификацию ключа и progressive disclosure
-  полей. Группировка остальных категорий в отдельный экран `Settings`,
-  навигация `About`, Account/синхронизация и статистика — планируемое.
+  Раздел открывается экраном-меню `ProfileHome` с группой «Настройки» и
+  пунктами по категориям `UserSettingsCategory`. На широких экранах меню и
+  экран категории показаны рядом (двухпанельный режим), на узких — по очереди.
+  Реализованный экран категории — `Ai` (`ProfileAiSettingsScreen`): выбор
+  AI/TTS-провайдера, верификация ключа и progressive disclosure полей.
+  Категории `App`/`Learning`/`Practice`/`Experimental` пока открывают честный
+  экран-заглушку. Навигация `About`, Account/синхронизация и статистика —
+  планируемое.
 
   Сценарии без тега описывают текущий код; `@planned` — спроектированное,
   но ещё не реализованное. Объём сознательно бережный: ядро — настройки и
@@ -17,26 +21,56 @@
   - `capability_map`
 
   Источники реализации:
-  - `shared/feature/profile/presentation/impl`: `ProfileHomeLogic`,
-    `DefaultProfileHomeComponent`, `ProfileHomeScreen` (категория `Ai`)
-  - `shared/feature/profile/presentation/api`: `ProfileHomeUiState`,
-    `ProfileHomeAction`, `KeyCheckStatus`
+  - `shared/feature/profile/presentation/impl`: `DefaultProfileSectionComponent`
+    (двухпанельная навигация через `appChildPanels`), `DefaultProfileHomeComponent`
+    /`ProfileHomeScreen` (меню категорий), `ProfileAiSettingsLogic`/
+    `ProfileAiSettingsScreen` (категория `Ai`), `ProfileSettingsPlaceholderScreen`
+    (честная заглушка остальных категорий)
+  - `shared/feature/profile/presentation/api`: `ProfileSectionComponent`,
+    `ProfileHomeComponent`, `ProfileAiSettingsUiState`, `ProfileAiSettingsAction`,
+    `KeyCheckStatus`
+  - `shared/feature/profile/presentation/navigation-api`: `ProfileConfig`
+    (`Home` + конфиги категорий `AppSettings`/`LearningSettings`/
+    `PracticeSettings`/`AiSettings`/`ExperimentalSettings`)
   - `shared/settings/domain`: `UserSettingsRepository`,
     `UserSettingsCategory{App, Learning, Practice, Ai, Experimental}`,
     `UserSettingsScope{Device, User}`, `AiSettings` (ключи/провайдер)
   - design-system: `SenseeTextField` со скрытым (secure) режимом для ключей
   - AI-шов `shared/ai/*` / TTS-шов `shared/tts/*` (ADR-005): список
     совместимых провайдеров и выбор модели (из API провайдера, офлайн-fallback)
-  - Планируемое: `ProfileConfig` -> `Settings(category?)`, `About`
+  - Планируемое: экраны категорий `App`/`Learning`/`Practice`, `About`
 
   Предыстория:
     Допустим пользователь открыл раздел `Profile`
 
+  @implemented
+  Сценарий: Меню Profile с группой настроек
+    Когда пользователь открывает раздел `Profile`
+    Тогда показан экран-меню `ProfileHome` с группой «Настройки»
+    И в группе по пункту на каждую `UserSettingsCategory`: `App`, `Learning`, `Practice`, `Ai`, `Experimental`
+    Когда пользователь выбирает пункт
+    Тогда открывается экран этой категории
+
+  @implemented
+  Сценарий: Двухпанельная раскладка Profile на широких экранах
+    Допустим окно достаточно широкое (`supportsTwoPanes`)
+    Когда пользователь открывает раздел `Profile`
+    Тогда показано меню; при выборе пункта экран категории открывается рядом во второй панели
+    И открытый экран категории закрывается кнопкой в его верхней панели
+    Если окно узкое (компактная раскладка)
+    Тогда показано меню; выбор пункта открывает экран категории на весь экран
+    И кнопка «Назад» в верхней панели возвращает к меню
+    И открытие и закрытие экрана категории анимированы
+
+  @implemented
+  Сценарий: Нереализованные категории показывают честную заглушку
+    Когда пользователь выбирает категорию `App`, `Learning`, `Practice` или `Experimental`
+    Тогда показан честный экран «раздел появится позже» без фейковых полей
+
   @planned
-  Сценарий: Настройки сгруппированы по категориям
-    Когда пользователь открывает `Settings`
-    Тогда настройки сгруппированы по `UserSettingsCategory`: `App`, `Learning`, `Practice`, `Ai`, `Experimental`
-    И каждая категория показывает свои поля из `UserSettingsSnapshot`
+  Сценарий: Настройки категории показывают свои поля
+    Когда пользователь открывает экран категории `App`, `Learning` или `Practice`
+    Тогда показаны поля категории из `UserSettingsSnapshot`
 
   @planned
   Сценарий: Правка настроек App

@@ -47,7 +47,7 @@ internal fun DeckPracticeDetailPane(
             title = {
                 Text(text = textProvider.text(PracticeTextKeys.CardDetailSheetTitle))
             },
-            actions = {
+            navigation = {
                 SenseeTopBarIconButton(
                     onClick = onDismiss,
                     accessibilityLabel = textProvider.text(PracticeTextKeys.ActionClose),

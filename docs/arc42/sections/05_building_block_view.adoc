@@ -129,7 +129,7 @@
 * `PracticeHomeLogic` / `DeckPracticeLogic` / `CardDetailLogic`
 * `PracticeHomeScreen` / `DeckPracticeScreen` / `CardDetailScreen`
 * `DefaultLibrarySectionComponent`, `DefaultLibraryHomeComponent`, `LibraryHomeLogic`, `LibrarySectionScreen`
-* `DefaultProfileSectionComponent`, `DefaultProfileHomeComponent`, `ProfileHomeLogic`, `ProfileHomeScreen`
+* `DefaultProfileSectionComponent` (двухпанельная навигация по категориям), `DefaultProfileHomeComponent` / `ProfileHomeScreen` (меню категорий), `ProfileAiSettingsLogic` / `ProfileAiSettingsScreen` (категория `Ai`), `ProfileSettingsPlaceholderScreen` (заглушка остальных категорий)
 * `DefaultVocabularyEditorSectionComponent` (хостит реализованный `VocabularyCaptureComponent`)
 * `DefaultVocabularyCaptureComponent` / `VocabularyCaptureLogic` / `VocabularyCaptureScreen` / `SenseSelectionCard`
 * `DefaultHomeSectionComponent` / `DefaultHomeComponent` (раздел `Home` пока рендерит `UnimplementedScreen`)

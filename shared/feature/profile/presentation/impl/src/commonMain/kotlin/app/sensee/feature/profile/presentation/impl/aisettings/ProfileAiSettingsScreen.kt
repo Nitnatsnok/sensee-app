@@ -1,4 +1,4 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.aisettings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -7,25 +7,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import app.sensee.core.compose.text.LocalTextProvider
 import app.sensee.core.presentation.text.TextProvider
-import app.sensee.feature.profile.presentation.api.ProfileHomeAction
-import app.sensee.feature.profile.presentation.api.ProfileHomeComponent
-import app.sensee.feature.profile.presentation.api.ProfileHomeUiState
+import app.sensee.core.presentation.text.withFallback
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsAction
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsComponent
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsUiState
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.TtsProvider
 import app.sensee.ui.designSystem.component.button.SenseeButton
@@ -37,16 +31,15 @@ import app.sensee.ui.designSystem.theme.SenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import app.sensee.ui.designSystem.theme.senseeCompactLayoutMetrics
 import com.composeunstyled.Text
-import kotlinx.coroutines.flow.drop
 
 @Composable
-public fun ProfileHomeScreen(
-    component: ProfileHomeComponent,
+public fun ProfileAiSettingsScreen(
+    component: ProfileAiSettingsComponent,
     modifier: Modifier = Modifier,
-    textProvider: TextProvider = rememberProfileHomeTextProvider(),
+    textProvider: TextProvider = rememberProfileAiSettingsTextProvider(),
 ) {
     val uiState by component.uiState.collectAsState()
-    val formState = rememberProfileFormState()
+    val formState = rememberProfileAiSettingsFormState()
     val colors = SenseeTheme.colors
     val spacing = SenseeTheme.spacing
     val layoutMetrics = LocalSenseeAdaptiveLayoutMetrics.current ?: senseeCompactLayoutMetrics()
@@ -59,8 +52,7 @@ public fun ProfileHomeScreen(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(colors.background)
-                .statusBarsPadding(),
+                .background(colors.background),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -74,7 +66,7 @@ public fun ProfileHomeScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.medium),
         ) {
             val listContext =
-                ProfileHomeListContext(
+                ProfileAiSettingsListContext(
                     component = component,
                     uiState = uiState,
                     formState = formState,
@@ -88,91 +80,13 @@ public fun ProfileHomeScreen(
     }
 }
 
-/**
- * TextFieldState mirrors for the five text fields the design-system requires us
- * to drive with [TextFieldState] ([app.sensee.ui.designSystem.component.textField.SenseeTextField]
- * has no value/onValueChange overload). All draft values live in
- * [ProfileHomeUiState.draftSnapshot] — this class is the UI-side handle only,
- * not the source of truth.
- */
-@Stable
-internal class ProfileFormState(
-    val aiApiKey: TextFieldState,
-    val aiModel: TextFieldState,
-    val ttsApiKey: TextFieldState,
-    val ttsModel: TextFieldState,
-    val ttsVoiceId: TextFieldState,
-)
-
 @Composable
-internal fun rememberProfileFormState(): ProfileFormState {
-    val aiApiKey = rememberTextFieldState()
-    val aiModel = rememberTextFieldState()
-    val ttsApiKey = rememberTextFieldState()
-    val ttsModel = rememberTextFieldState()
-    val ttsVoiceId = rememberTextFieldState()
-    return remember { ProfileFormState(aiApiKey, aiModel, ttsApiKey, ttsModel, ttsVoiceId) }
+internal fun rememberProfileAiSettingsTextProvider(): TextProvider {
+    val parent = LocalTextProvider.current
+    return remember(parent) { DefaultProfileAiSettingsTextProvider.withFallback(parent) }
 }
 
-@Composable
-private fun SyncProfileForm(
-    uiState: ProfileHomeUiState,
-    formState: ProfileFormState,
-    onAction: (ProfileHomeAction) -> Unit,
-) {
-    formState.aiApiKey.bindToDraft(uiState.draftSnapshot.aiApiKey) {
-        onAction(ProfileHomeAction.SetAiApiKey(it))
-    }
-    formState.aiModel.bindToDraft(uiState.draftSnapshot.aiModel) {
-        onAction(ProfileHomeAction.SetAiModel(it))
-    }
-    formState.ttsApiKey.bindToDraft(uiState.draftSnapshot.ttsApiKey) {
-        onAction(ProfileHomeAction.SetTtsApiKey(it))
-    }
-    formState.ttsModel.bindToDraft(uiState.draftSnapshot.ttsModel) {
-        onAction(ProfileHomeAction.SetTtsModel(it))
-    }
-    formState.ttsVoiceId.bindToDraft(uiState.draftSnapshot.ttsVoiceId) {
-        onAction(ProfileHomeAction.SetTtsVoiceId(it))
-    }
-}
-
-/**
- * Two-way binding between a [TextFieldState] (UI-owned, required by the
- * design-system) and a draft string in [ProfileHomeUiState]. Downstream: any
- * `draftValue` change (load, save, Logic reset) is applied to [TextFieldState];
- * `setTextIfDifferent` keeps echoes from re-triggering the upstream. Upstream:
- * every keystroke becomes an action; `drop(1)` skips the first snapshot which
- * is the value the downstream just placed, not a user edit.
- *
- * `rememberUpdatedState` is required because the upstream effect is keyed on
- * the stable receiver and never restarts; without it the captured callback
- * would hold the first composition's reference.
- */
-@Composable
-private fun TextFieldState.bindToDraft(
-    draftValue: String,
-    onChange: (String) -> Unit,
-) {
-    val currentOnChange by rememberUpdatedState(onChange)
-
-    LaunchedEffect(this, draftValue) {
-        setTextIfDifferent(draftValue)
-    }
-    LaunchedEffect(this) {
-        snapshotFlow { text.toString() }
-            .drop(1)
-            .collect { currentOnChange(it) }
-    }
-}
-
-private fun TextFieldState.setTextIfDifferent(value: String) {
-    if (text.toString() != value) {
-        setTextAndPlaceCursorAtEnd(value)
-    }
-}
-
-private fun LazyListScope.aiSection(context: ProfileHomeListContext) {
+private fun LazyListScope.aiSection(context: ProfileAiSettingsListContext) {
     val component = context.component
     val uiState = context.uiState
     val formState = context.formState
@@ -181,25 +95,25 @@ private fun LazyListScope.aiSection(context: ProfileHomeListContext) {
 
     frameItem(layoutMetrics) {
         SectionHeader(
-            title = textProvider.text(ProfileHomeTextKeys.SectionAi),
-            hint = textProvider.text(ProfileHomeTextKeys.AiHint),
+            title = textProvider.text(ProfileAiSettingsTextKeys.SectionAi),
+            hint = textProvider.text(ProfileAiSettingsTextKeys.AiHint),
         )
     }
     frameItem(layoutMetrics) {
         SenseeSelectField(
-            label = textProvider.text(ProfileHomeTextKeys.AiProvider),
+            label = textProvider.text(ProfileAiSettingsTextKeys.AiProvider),
             selected = uiState.draftSnapshot.aiProvider,
             options = uiState.providers,
             optionLabel = { it.displayName },
-            onSelect = { component.onAction(ProfileHomeAction.SetAiProvider(it)) },
+            onSelect = { component.onAction(ProfileAiSettingsAction.SetAiProvider(it)) },
             modifier = Modifier.fillMaxWidth(),
         )
     }
     frameItem(layoutMetrics) {
         SenseeTextField(
             state = formState.aiApiKey,
-            accessibilityLabel = textProvider.text(ProfileHomeTextKeys.AiApiKey),
-            label = { Text(textProvider.text(ProfileHomeTextKeys.AiApiKey)) },
+            accessibilityLabel = textProvider.text(ProfileAiSettingsTextKeys.AiApiKey),
+            label = { Text(textProvider.text(ProfileAiSettingsTextKeys.AiApiKey)) },
             secure = true,
         )
     }
@@ -207,13 +121,13 @@ private fun LazyListScope.aiSection(context: ProfileHomeListContext) {
         VerifyRow(
             status = uiState.effectiveAiKeyCheck(),
             textProvider = textProvider,
-            onVerify = { component.onAction(ProfileHomeAction.VerifyAiKey) },
+            onVerify = { component.onAction(ProfileAiSettingsAction.VerifyAiKey) },
         )
     }
     aiResultItems(context)
 }
 
-private fun LazyListScope.aiResultItems(context: ProfileHomeListContext) {
+private fun LazyListScope.aiResultItems(context: ProfileAiSettingsListContext) {
     val uiState = context.uiState
     val formState = context.formState
     val textProvider = context.textProvider
@@ -227,7 +141,7 @@ private fun LazyListScope.aiResultItems(context: ProfileHomeListContext) {
         frameItem(layoutMetrics) {
             ModelField(
                 status = aiCheck,
-                label = textProvider.text(ProfileHomeTextKeys.AiModel),
+                label = textProvider.text(ProfileAiSettingsTextKeys.AiModel),
                 options = uiState.availableAiModels,
                 state = formState.aiModel,
             )
@@ -235,7 +149,7 @@ private fun LazyListScope.aiResultItems(context: ProfileHomeListContext) {
     }
 }
 
-private fun LazyListScope.ttsSection(context: ProfileHomeListContext) {
+private fun LazyListScope.ttsSection(context: ProfileAiSettingsListContext) {
     val component = context.component
     val uiState = context.uiState
     val formState = context.formState
@@ -243,15 +157,15 @@ private fun LazyListScope.ttsSection(context: ProfileHomeListContext) {
     val layoutMetrics = context.layoutMetrics
 
     frameItem(layoutMetrics) {
-        SectionHeader(title = textProvider.text(ProfileHomeTextKeys.SectionTts))
+        SectionHeader(title = textProvider.text(ProfileAiSettingsTextKeys.SectionTts))
     }
     frameItem(layoutMetrics) {
         SenseeSelectField(
-            label = textProvider.text(ProfileHomeTextKeys.TtsProvider),
+            label = textProvider.text(ProfileAiSettingsTextKeys.TtsProvider),
             selected = uiState.draftSnapshot.ttsProvider,
             options = uiState.ttsProviders,
             optionLabel = { it.displayName },
-            onSelect = { component.onAction(ProfileHomeAction.SetTtsProvider(it)) },
+            onSelect = { component.onAction(ProfileAiSettingsAction.SetTtsProvider(it)) },
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -265,7 +179,7 @@ private fun LazyListScope.ttsSection(context: ProfileHomeListContext) {
     ttsResultItems(context)
 }
 
-private fun LazyListScope.ttsResultItems(context: ProfileHomeListContext) {
+private fun LazyListScope.ttsResultItems(context: ProfileAiSettingsListContext) {
     val uiState = context.uiState
     val formState = context.formState
     val textProvider = context.textProvider
@@ -276,7 +190,7 @@ private fun LazyListScope.ttsResultItems(context: ProfileHomeListContext) {
         frameItem(layoutMetrics) {
             ModelField(
                 status = ttsCheck,
-                label = textProvider.text(ProfileHomeTextKeys.TtsModel),
+                label = textProvider.text(ProfileAiSettingsTextKeys.TtsModel),
                 options = uiState.effectiveAvailableTtsModels(),
                 state = formState.ttsModel,
             )
@@ -284,7 +198,7 @@ private fun LazyListScope.ttsResultItems(context: ProfileHomeListContext) {
         frameItem(layoutMetrics) {
             ModelField(
                 status = ttsCheck,
-                label = textProvider.text(ProfileHomeTextKeys.TtsVoice),
+                label = textProvider.text(ProfileAiSettingsTextKeys.TtsVoice),
                 options = uiState.effectiveAvailableTtsVoices(),
                 state = formState.ttsVoiceId,
             )
@@ -292,22 +206,22 @@ private fun LazyListScope.ttsResultItems(context: ProfileHomeListContext) {
     }
 }
 
-internal data class ProfileHomeListContext(
-    val component: ProfileHomeComponent,
-    val uiState: ProfileHomeUiState,
-    val formState: ProfileFormState,
+internal data class ProfileAiSettingsListContext(
+    val component: ProfileAiSettingsComponent,
+    val uiState: ProfileAiSettingsUiState,
+    val formState: ProfileAiSettingsFormState,
     val textProvider: TextProvider,
     val layoutMetrics: SenseeAdaptiveLayoutMetrics,
 )
 
 private fun LazyListScope.ttsInheritedKeyBlock(
-    component: ProfileHomeComponent,
-    uiState: ProfileHomeUiState,
+    component: ProfileAiSettingsComponent,
+    uiState: ProfileAiSettingsUiState,
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
     frameItem(layoutMetrics) {
-        BodyMutedText(textProvider.text(ProfileHomeTextKeys.TtsUsesAiKey))
+        BodyMutedText(textProvider.text(ProfileAiSettingsTextKeys.TtsUsesAiKey))
     }
     val aiCheck = uiState.effectiveAiKeyCheck()
     if (aiCheck.hasResult()) {
@@ -317,26 +231,26 @@ private fun LazyListScope.ttsInheritedKeyBlock(
     }
     frameItem(layoutMetrics) {
         SenseeButton(
-            onClick = { component.onAction(ProfileHomeAction.SetTtsSeparateKey(true)) },
+            onClick = { component.onAction(ProfileAiSettingsAction.SetTtsSeparateKey(true)) },
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(textProvider.text(ProfileHomeTextKeys.TtsUseSeparateKey))
+            Text(textProvider.text(ProfileAiSettingsTextKeys.TtsUseSeparateKey))
         }
     }
 }
 
 private fun LazyListScope.ttsSeparateKeyBlock(
-    component: ProfileHomeComponent,
-    uiState: ProfileHomeUiState,
-    formState: ProfileFormState,
+    component: ProfileAiSettingsComponent,
+    uiState: ProfileAiSettingsUiState,
+    formState: ProfileAiSettingsFormState,
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
     frameItem(layoutMetrics) {
         SenseeTextField(
             state = formState.ttsApiKey,
-            accessibilityLabel = textProvider.text(ProfileHomeTextKeys.TtsApiKey),
-            label = { Text(textProvider.text(ProfileHomeTextKeys.TtsApiKey)) },
+            accessibilityLabel = textProvider.text(ProfileAiSettingsTextKeys.TtsApiKey),
+            label = { Text(textProvider.text(ProfileAiSettingsTextKeys.TtsApiKey)) },
             secure = true,
         )
     }
@@ -344,7 +258,7 @@ private fun LazyListScope.ttsSeparateKeyBlock(
         VerifyRow(
             status = uiState.effectiveTtsKeyCheck(),
             textProvider = textProvider,
-            onVerify = { component.onAction(ProfileHomeAction.VerifyTtsKey) },
+            onVerify = { component.onAction(ProfileAiSettingsAction.VerifyTtsKey) },
         )
     }
     val ttsCheck = uiState.effectiveTtsKeyCheck()
@@ -357,10 +271,10 @@ private fun LazyListScope.ttsSeparateKeyBlock(
     if (draft.ttsProvider == TtsProvider.OpenAi && draft.aiProvider == AiProvider.OpenAi) {
         frameItem(layoutMetrics) {
             SenseeButton(
-                onClick = { component.onAction(ProfileHomeAction.SetTtsSeparateKey(false)) },
+                onClick = { component.onAction(ProfileAiSettingsAction.SetTtsSeparateKey(false)) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(textProvider.text(ProfileHomeTextKeys.TtsUseAiKey))
+                Text(textProvider.text(ProfileAiSettingsTextKeys.TtsUseAiKey))
             }
         }
     }

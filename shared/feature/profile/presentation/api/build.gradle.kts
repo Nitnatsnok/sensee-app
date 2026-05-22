@@ -9,6 +9,7 @@ kotlin {
                 implementation(projects.shared.core.decompose)
                 api(projects.shared.core.presentation)
                 api(projects.shared.settings.domain)
+                api(libs.decompose)
                 api(libs.kotlinx.collections.immutable)
                 implementation(projects.shared.feature.profile.presentation.navigationApi)
                 implementation(libs.kotlinx.coroutines.core)

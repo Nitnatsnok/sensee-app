@@ -17,13 +17,16 @@ import app.sensee.ui.designSystem.icons.ArrowDownwardAlt24px
 import app.sensee.ui.designSystem.icons.ArrowLeftAlt24px
 import app.sensee.ui.designSystem.icons.ArrowRightAlt24px
 import app.sensee.ui.designSystem.icons.ArrowUpwardAlt24px
+import app.sensee.ui.designSystem.icons.Autoplay24px
 import app.sensee.ui.designSystem.icons.Check
 import app.sensee.ui.designSystem.icons.CheckBox
 import app.sensee.ui.designSystem.icons.CheckBoxOutlineBlank
 import app.sensee.ui.designSystem.icons.CheckCircle24px
 import app.sensee.ui.designSystem.icons.Close24px
 import app.sensee.ui.designSystem.icons.Delete24px
+import app.sensee.ui.designSystem.icons.Exercise24px
 import app.sensee.ui.designSystem.icons.Flip24px
+import app.sensee.ui.designSystem.icons.Handyman24px
 import app.sensee.ui.designSystem.icons.Help24px
 import app.sensee.ui.designSystem.icons.Home24px
 import app.sensee.ui.designSystem.icons.Info24px
@@ -37,6 +40,7 @@ import app.sensee.ui.designSystem.icons.SentimentSatisfied24px
 import app.sensee.ui.designSystem.icons.SentimentVeryDissatisfied24px
 import app.sensee.ui.designSystem.icons.SentimentVerySatisfied24px
 import app.sensee.ui.designSystem.icons.Settings24px
+import app.sensee.ui.designSystem.icons.SettingsApplications24px
 import app.sensee.ui.designSystem.icons.SoundSampler24px
 import app.sensee.ui.designSystem.icons.Star24px
 import app.sensee.ui.designSystem.icons.StarFilled24px
@@ -92,13 +96,16 @@ private val SenseeIconCatalogEntries: List<Pair<String, ImageVector>> =
         "ArrowLeft" to ArrowLeftAlt24px,
         "ArrowRight" to ArrowRightAlt24px,
         "ArrowUpward" to ArrowUpwardAlt24px,
+        "Autoplay" to Autoplay24px,
         "Check" to Check,
         "CheckBox" to CheckBox,
         "CheckBoxBlank" to CheckBoxOutlineBlank,
         "CheckCircle" to CheckCircle24px,
         "Close" to Close24px,
         "Delete" to Delete24px,
+        "Exercise" to Exercise24px,
         "Flip" to Flip24px,
+        "Handyman" to Handyman24px,
         "Help" to Help24px,
         "Home" to Home24px,
         "Info" to Info24px,
@@ -112,6 +119,7 @@ private val SenseeIconCatalogEntries: List<Pair<String, ImageVector>> =
         "VerySad" to SentimentVeryDissatisfied24px,
         "VeryHappy" to SentimentVerySatisfied24px,
         "Settings" to Settings24px,
+        "SettingsApplications" to SettingsApplications24px,
         "SoundSampler" to SoundSampler24px,
         "Star" to Star24px,
         "StarFilled" to StarFilled24px,

@@ -12,7 +12,7 @@ import kotlinx.collections.immutable.toPersistentList
  * current user-edited values, `savedSnapshot` is the last persisted values, and
  * `isDirty` is structural equality between the two. The screen renders from
  * `draftSnapshot` and sends typed actions on every change (see
- * [ProfileHomeAction]); it does not own draft values.
+ * [ProfileAiSettingsAction]); it does not own draft values.
  *
  * Verification state ([aiKeyCheck] / [ttsKeyCheck]) carries the key/provider it
  * was tagged against ([aiKeyCheckedAgainst] / [ttsKeyCheckedAgainst]); the UI
@@ -25,10 +25,10 @@ import kotlinx.collections.immutable.toPersistentList
  * user has not opted into a separate key — UI composes the effective TTS lists
  * from the AI verify result in that case.
  */
-public data class ProfileHomeUiState(
+public data class ProfileAiSettingsUiState(
     val loadingState: DataLoadingState = DataLoadingState.Idle,
-    val draftSnapshot: ProfileSettingsSnapshot = ProfileSettingsSnapshot(),
-    val savedSnapshot: ProfileSettingsSnapshot = ProfileSettingsSnapshot(),
+    val draftSnapshot: ProfileAiSettingsSnapshot = ProfileAiSettingsSnapshot(),
+    val savedSnapshot: ProfileAiSettingsSnapshot = ProfileAiSettingsSnapshot(),
     val aiKeyCheck: KeyCheckStatus = KeyCheckStatus.Idle,
     val aiKeyCheckedAgainst: AiVerifyTarget? = null,
     val availableAiModels: PersistentList<String> = persistentListOf(),

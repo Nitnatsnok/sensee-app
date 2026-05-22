@@ -5,9 +5,9 @@ import app.sensee.settings.domain.TtsProvider
 import app.sensee.settings.domain.ttsInheritsAiKey
 
 /**
- * Draft/saved snapshot of every field on the profile form. The screen owns one
- * `draftSnapshot` (current user input) and one `savedSnapshot` (last persisted
- * values); `isDirty` is just structural equality between the two.
+ * Draft/saved snapshot of every field on the AI/TTS settings form. The screen
+ * owns one `draftSnapshot` (current user input) and one `savedSnapshot` (last
+ * persisted values); `isDirty` is just structural equality between the two.
  *
  * [ttsInheritsAiKey] is the same rule as the domain function — when both
  * providers are OpenAI and the user has not opted into a separate TTS key, the
@@ -15,7 +15,7 @@ import app.sensee.settings.domain.ttsInheritsAiKey
  * regardless of what's on disk (the use case stores the AI key as effective
  * ttsApiKey for TTS routing — see B3 in the plan).
  */
-public data class ProfileSettingsSnapshot(
+public data class ProfileAiSettingsSnapshot(
     val aiApiKey: String = "",
     val aiProvider: AiProvider = AiProvider.Default,
     val aiModel: String = "",

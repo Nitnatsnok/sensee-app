@@ -1,8 +1,8 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.aisettings
 
 import app.sensee.feature.profile.presentation.api.AiVerifyTarget
 import app.sensee.feature.profile.presentation.api.KeyCheckStatus
-import app.sensee.feature.profile.presentation.api.ProfileHomeUiState
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsUiState
 import app.sensee.feature.profile.presentation.api.TtsVerifyTarget
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.TtsProvider
@@ -10,7 +10,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
-// UI-derived projections over [ProfileHomeUiState]. They live next to the
+// UI-derived projections over [ProfileAiSettingsUiState]. They live next to the
 // screen because they encode UI decisions (stale-verify detection,
 // inherit-derived TTS lists), not domain state.
 
@@ -20,7 +20,7 @@ import kotlinx.collections.immutable.toPersistentList
  * edited the key or changed provider), the stored `Valid`/`Invalid` is stale
  * and we render as `Idle` until a fresh verify lands.
  */
-internal fun ProfileHomeUiState.effectiveAiKeyCheck(): KeyCheckStatus {
+internal fun ProfileAiSettingsUiState.effectiveAiKeyCheck(): KeyCheckStatus {
     val target = aiKeyCheckedAgainst ?: return KeyCheckStatus.Idle
     return if (target.matches(draftSnapshot.aiApiKey, draftSnapshot.aiProvider)) {
         aiKeyCheck
@@ -29,7 +29,7 @@ internal fun ProfileHomeUiState.effectiveAiKeyCheck(): KeyCheckStatus {
     }
 }
 
-internal fun ProfileHomeUiState.effectiveTtsKeyCheck(): KeyCheckStatus {
+internal fun ProfileAiSettingsUiState.effectiveTtsKeyCheck(): KeyCheckStatus {
     if (draftSnapshot.ttsInheritsAiKey) return effectiveAiKeyCheck()
     val target = ttsKeyCheckedAgainst ?: return KeyCheckStatus.Idle
     return if (target.matches(draftSnapshot.ttsApiKey, draftSnapshot.ttsProvider)) {
@@ -39,14 +39,14 @@ internal fun ProfileHomeUiState.effectiveTtsKeyCheck(): KeyCheckStatus {
     }
 }
 
-internal fun ProfileHomeUiState.effectiveAvailableTtsModels(): PersistentList<String> =
+internal fun ProfileAiSettingsUiState.effectiveAvailableTtsModels(): PersistentList<String> =
     when {
         draftSnapshot.ttsInheritsAiKey && effectiveAiKeyCheck() == KeyCheckStatus.Valid -> OpenAiTtsModels
         effectiveTtsKeyCheck() == KeyCheckStatus.Valid -> availableTtsModels
         else -> persistentListOf()
     }
 
-internal fun ProfileHomeUiState.effectiveAvailableTtsVoices(): PersistentList<String> =
+internal fun ProfileAiSettingsUiState.effectiveAvailableTtsVoices(): PersistentList<String> =
     when {
         draftSnapshot.ttsInheritsAiKey && effectiveAiKeyCheck() == KeyCheckStatus.Valid -> OpenAiTtsVoices
         effectiveTtsKeyCheck() == KeyCheckStatus.Valid -> availableTtsVoices

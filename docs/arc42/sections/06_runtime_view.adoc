@@ -89,12 +89,12 @@ Library — владелец каталога лексического мате�
 
 == Реализованный срез и планируемое расширение. Profile и настройки
 
-Статус:: реализованный срез (`ProfileHomeLogic`: настройки + верификация AI/TTS-ключа над `UserSettingsRepository`); planned — `Settings(category)`/`About`-навигация, Account/синхронизация, статистика
+Статус:: реализованный срез (меню категорий `ProfileHome` + двухпанельный режим; экран категории `Ai` — `ProfileAiSettingsLogic`: настройки + верификация AI/TTS-ключа над `UserSettingsRepository`); planned — экраны категорий `App`/`Learning`/`Practice`, `About`-навигация, Account/синхронизация, статистика
 
 Объём сознательно бережный: ядро — настройки и About; Account/синхронизация, статистика и data management остаются честными заглушками. Пошаговое поведение — в `docs/scenarios/profile.feature`.
 
-1. Пользователь открывает `Profile`; `ProfileHomeLogic` читает `UserSettingsRepository.readSettings()` и, если AI/TTS-ключ сохранён, верифицирует его метаданным-вызовом провайдера (бесплатный, без расхода квоты; офлайн деградирует к ручному вводу с сохранённым значением).
-2. Поля настроек сгруппированы по `UserSettingsCategory` (`App`, `Learning`, `Practice`, `Ai`, `Experimental`); изменения сохраняются через `UserSettingsRepository` (`updateAppSettings`/`updateLearningSettings`/`updatePracticeSettings`). Планируется отдельная навигация `ProfileConfig` → `Home`/`Settings(category?)`/`About`.
+1. Пользователь открывает `Profile`; раздел показывает меню `ProfileHome` с группой «Настройки» и пунктами по `UserSettingsCategory`. `ProfileConfig` содержит `Home` и конфиги категорий (`AppSettings`/`LearningSettings`/`PracticeSettings`/`AiSettings`/`ExperimentalSettings`); `DefaultProfileSectionComponent` через `appChildPanels` показывает меню и экран категории рядом на широких экранах, по очереди — на узких.
+2. Категория `Ai` реализована: `ProfileAiSettingsLogic` читает `UserSettingsRepository.readSettings()` и, если AI/TTS-ключ сохранён, верифицирует его метаданным-вызовом провайдера (бесплатный, без расхода квоты; офлайн деградирует к ручному вводу с сохранённым значением). Категории `App`/`Learning`/`Practice`/`Experimental` пока открывают честный экран-заглушку.
 3. Категория `Practice` показывает полный набор practice-настроек; локальный practice-экран — то же подмножество над тем же репозиторием (единый источник).
 4. Категория `Experimental` пока без data class и полей в `UserSettingsSnapshot` — честно помечается как разрыв, без фейковых тумблеров.
 5. Настройки сохраняются в scope `Device` по умолчанию; `UserSettingsScope.User` зарезервирован под будущую per-user синхронизацию; переключатель Device/User не показывается, пока нет auth.

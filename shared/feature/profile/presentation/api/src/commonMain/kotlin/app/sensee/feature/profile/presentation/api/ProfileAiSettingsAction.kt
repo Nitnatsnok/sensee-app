@@ -3,10 +3,10 @@ package app.sensee.feature.profile.presentation.api
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.TtsProvider
 
-public sealed interface ProfileHomeAction {
-    public sealed interface Draft : ProfileHomeAction
+public sealed interface ProfileAiSettingsAction {
+    public sealed interface Draft : ProfileAiSettingsAction
 
-    /** Push a keystroke into [ProfileHomeUiState.draftSnapshot]. */
+    /** Push a keystroke into [ProfileAiSettingsUiState.draftSnapshot]. */
     public data class SetAiApiKey(
         val value: String,
     ) : Draft
@@ -43,11 +43,11 @@ public sealed interface ProfileHomeAction {
     ) : Draft
 
     /** Verify the AI key currently in the draft against the chosen provider. */
-    public data object VerifyAiKey : ProfileHomeAction
+    public data object VerifyAiKey : ProfileAiSettingsAction
 
     /** Verify the TTS key currently in the draft against the chosen provider. */
-    public data object VerifyTtsKey : ProfileHomeAction
+    public data object VerifyTtsKey : ProfileAiSettingsAction
 
     /** Persist the current draft snapshot. */
-    public data object Save : ProfileHomeAction
+    public data object Save : ProfileAiSettingsAction
 }

@@ -1,5 +1,3 @@
-import org.jetbrains.compose.ComposePlugin
-
 plugins {
     alias(libs.plugins.sensee.kmpLibrary)
     alias(libs.plugins.sensee.composeMultiplatform)
@@ -23,6 +21,7 @@ kotlin {
                 implementation(projects.shared.feature.profile.presentation.api)
                 implementation(projects.shared.feature.profile.presentation.navigationApi)
                 implementation(projects.shared.ui.designSystem)
+                implementation(projects.shared.ui.adaptive)
             }
         }
 
@@ -42,8 +41,8 @@ kotlin {
                 // runtime with LibraryLoadException without skiko-awt-runtime,
                 // which currentOs pulls for the host platform.
                 implementation(libs.compose.uiTest)
-                implementation(ComposePlugin.DesktopDependencies.uiTestJUnit4)
-                implementation(ComposePlugin.DesktopDependencies.currentOs)
+                implementation(libs.compose.uiTest.junit4)
+                implementation(compose.desktop.currentOs)
             }
         }
     }

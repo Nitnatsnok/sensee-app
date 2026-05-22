@@ -1,33 +1,27 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.home
 
 import app.sensee.core.decompose.context.AppComponentContext
-import app.sensee.core.decompose.logic.LogicKey
-import app.sensee.core.decompose.logic.getOrCreateLogic
-import app.sensee.feature.profile.presentation.api.ProfileHomeAction
 import app.sensee.feature.profile.presentation.api.ProfileHomeComponent
-import app.sensee.feature.profile.presentation.api.ProfileHomeUiState
+import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @AssistedInject
 public class DefaultProfileHomeComponent(
     @Assisted componentContext: AppComponentContext,
-    private val profileHomeLogicFactory: ProfileHomeLogic.Factory,
 ) : ProfileHomeComponent,
     AppComponentContext by componentContext {
-    private val logic =
-        getOrCreateLogic(LogicKey("ProfileHomeLogic")) {
-            profileHomeLogicFactory.create()
-        }
+    override val items: ImmutableList<ProfileConfig> = SettingsCategoryConfigs
 
-    override val uiState: StateFlow<ProfileHomeUiState> = logic.uiState
-
-    override fun onAction(action: ProfileHomeAction): Unit = logic.onAction(action)
+    override fun onItemSelected(config: ProfileConfig) {
+        navigation.open(config)
+    }
 
     @AssistedFactory
     @ContributesBinding(
@@ -38,3 +32,12 @@ public class DefaultProfileHomeComponent(
         override fun create(componentContext: AppComponentContext): DefaultProfileHomeComponent
     }
 }
+
+private val SettingsCategoryConfigs: ImmutableList<ProfileConfig> =
+    persistentListOf(
+        ProfileConfig.AppSettings,
+        ProfileConfig.LearningSettings,
+        ProfileConfig.PracticeSettings,
+        ProfileConfig.AiSettings,
+        ProfileConfig.ExperimentalSettings,
+    )

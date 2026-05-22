@@ -11,6 +11,16 @@ kotlin {
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.ui)
                 implementation(libs.compose.adaptive)
+                implementation(libs.decompose)
+                implementation(libs.decompose.extensions.compose)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.compose.uiTest)
+                implementation(libs.compose.uiTest.junit4)
+                implementation(compose.desktop.currentOs)
             }
         }
     }

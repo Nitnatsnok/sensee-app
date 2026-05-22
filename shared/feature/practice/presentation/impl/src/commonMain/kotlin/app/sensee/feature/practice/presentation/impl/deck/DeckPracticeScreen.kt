@@ -5,9 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,7 +36,7 @@ import app.sensee.feature.practice.presentation.api.DeckPracticeComponent
 import app.sensee.feature.practice.presentation.api.DeckPracticeUiState
 import app.sensee.feature.practice.presentation.impl.text.PracticeTextKeys
 import app.sensee.feature.practice.presentation.impl.text.rememberPracticeTextProvider
-import app.sensee.ui.adaptive.LocalAdaptiveInfo
+import app.sensee.ui.adaptive.AppChildPanels
 import app.sensee.ui.designSystem.component.SenseeIcon
 import app.sensee.ui.designSystem.component.button.SenseeButton
 import app.sensee.ui.designSystem.component.layout.SenseeErrorState
@@ -57,7 +55,6 @@ import app.sensee.ui.learningDeck.LearningSwipeDeck
 import app.sensee.ui.learningDeck.LearningSwipeDirection
 import app.sensee.ui.learningDeck.rememberLearningDeckState
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import com.composeunstyled.Text
 import kotlinx.collections.immutable.persistentSetOf
 
@@ -69,52 +66,43 @@ public fun DeckPracticeScreen(
     textProvider: TextProvider = rememberPracticeTextProvider(),
 ) {
     val uiState by component.uiState.collectAsState()
-    val panels by component.panels.subscribeAsState()
-    val adaptiveInfo = LocalAdaptiveInfo.current
-    val showSidePanel = adaptiveInfo.supportsTwoPanes && panels.details != null
 
     // Help glossary is purely presentational (static legend), so its visibility is local
     // state — no decompose component or business logic needed.
     var helpVisible by remember { mutableStateOf(false) }
 
-    Row(modifier = modifier.fillMaxSize()) {
-        DeckPracticePane(
-            uiState = uiState,
-            onAction = component::onAction,
-            onHelpRequest = { helpVisible = true },
-            modifier =
-                Modifier
-                    .weight(if (showSidePanel) 0.55f else 1f)
-                    .fillMaxHeight(),
-            textProvider = textProvider,
-        )
-        if (showSidePanel) {
-            val detailsComponent = panels.details?.instance
-            if (detailsComponent != null) {
-                DeckPracticeDetailPane(
-                    component = detailsComponent,
-                    onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
-                    modifier =
-                        Modifier
-                            .weight(0.45f)
-                            .fillMaxHeight(),
-                    textProvider = textProvider,
-                )
-            }
-        }
-    }
-
-    if (!showSidePanel) {
-        // Decompose drives the slot via panels.details; we keep the sheet always composed in
-        // single-pane mode so the bottom-sheet enter and exit animations both play.
-        val activeDetails = panels.details?.instance
-        DeckPracticeDetailSheet(
-            component = activeDetails,
-            visible = activeDetails != null,
-            onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
-            textProvider = textProvider,
-        )
-    }
+    AppChildPanels(
+        panels = component.panels,
+        modifier = modifier,
+        detailPaneWidthFraction = DETAIL_PANE_WIDTH_FRACTION,
+        main = { _, _ ->
+            DeckPracticePane(
+                uiState = uiState,
+                onAction = component::onAction,
+                onHelpRequest = { helpVisible = true },
+                modifier = Modifier.fillMaxSize(),
+                textProvider = textProvider,
+            )
+        },
+        detail = { detailChild, _ ->
+            DeckPracticeDetailPane(
+                component = detailChild.instance,
+                onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
+                modifier = Modifier.fillMaxSize(),
+                textProvider = textProvider,
+            )
+        },
+        compactDetail = {
+            // The sheet is always composed (visibility toggled) so its enter/exit animations play.
+            MainPane()
+            DeckPracticeDetailSheet(
+                component = detail?.instance,
+                visible = detail != null,
+                onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
+                textProvider = textProvider,
+            )
+        },
+    )
 
     DeckPracticeHelpSheet(
         visible = helpVisible,
@@ -122,6 +110,8 @@ public fun DeckPracticeScreen(
         textProvider = textProvider,
     )
 }
+
+private const val DETAIL_PANE_WIDTH_FRACTION = 0.45f
 
 @Composable
 internal fun DeckPracticePane(

@@ -1,4 +1,4 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.aisettings
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.input.TextFieldState
@@ -28,9 +28,9 @@ internal fun VerifyRow(
         Text(
             textProvider.text(
                 if (status == KeyCheckStatus.Checking) {
-                    ProfileHomeTextKeys.Verifying
+                    ProfileAiSettingsTextKeys.Verifying
                 } else {
-                    ProfileHomeTextKeys.Verify
+                    ProfileAiSettingsTextKeys.Verify
                 },
             ),
         )
@@ -47,14 +47,14 @@ internal fun KeyCheckMessage(
     when (status) {
         is KeyCheckStatus.Valid ->
             Text(
-                text = textProvider.text(ProfileHomeTextKeys.KeyValid),
+                text = textProvider.text(ProfileAiSettingsTextKeys.KeyValid),
                 color = colors.textSecondary,
                 style = typography.bodyMedium,
             )
 
         is KeyCheckStatus.Invalid ->
             Text(
-                text = textProvider.text(ProfileHomeTextKeys.KeyInvalid, status.reason),
+                text = textProvider.text(ProfileAiSettingsTextKeys.KeyInvalid, status.reason),
                 color = colors.textSecondary,
                 style = typography.bodyMedium,
             )

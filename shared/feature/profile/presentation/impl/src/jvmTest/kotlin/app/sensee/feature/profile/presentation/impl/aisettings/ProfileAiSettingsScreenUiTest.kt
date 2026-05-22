@@ -1,4 +1,4 @@
-package app.sensee.feature.profile.presentation.impl
+package app.sensee.feature.profile.presentation.impl.aisettings
 
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -25,10 +25,10 @@ import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
 import app.sensee.feature.profile.presentation.api.AiVerifyTarget
 import app.sensee.feature.profile.presentation.api.KeyCheckStatus
-import app.sensee.feature.profile.presentation.api.ProfileHomeAction
-import app.sensee.feature.profile.presentation.api.ProfileHomeComponent
-import app.sensee.feature.profile.presentation.api.ProfileHomeUiState
-import app.sensee.feature.profile.presentation.api.ProfileSettingsSnapshot
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsAction
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsComponent
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsSnapshot
+import app.sensee.feature.profile.presentation.api.ProfileAiSettingsUiState
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.SaveIntegrationSettingsUseCase
 import app.sensee.settings.domain.TtsProvider
@@ -51,22 +51,22 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
-class ProfileHomeScreenUiTest {
+class ProfileAiSettingsScreenUiTest {
     @Test
     fun `editing ai api key hides stale verified state`() =
         runComposeUiTest {
             val tp = TestTextProvider
             val component =
-                FakeProfileHomeComponent(
-                    ProfileHomeUiState(
+                FakeProfileAiSettingsComponent(
+                    ProfileAiSettingsUiState(
                         loadingState = DataLoadingState.Success,
                         draftSnapshot =
-                            ProfileSettingsSnapshot(
+                            ProfileAiSettingsSnapshot(
                                 aiApiKey = "sk-old",
                                 aiProvider = AiProvider.OpenAi,
                             ),
                         savedSnapshot =
-                            ProfileSettingsSnapshot(
+                            ProfileAiSettingsSnapshot(
                                 aiApiKey = "sk-old",
                                 aiProvider = AiProvider.OpenAi,
                             ),
@@ -78,14 +78,14 @@ class ProfileHomeScreenUiTest {
 
             setContent {
                 SenseeTheme {
-                    ProfileHomeScreen(component = component, textProvider = tp)
+                    ProfileAiSettingsScreen(component = component, textProvider = tp)
                 }
             }
 
-            onNodeWithText(tp.text(ProfileHomeTextKeys.KeyValid)).assertIsDisplayed()
-            onNodeWithText(tp.text(ProfileHomeTextKeys.AiModel)).assertIsDisplayed()
+            onNodeWithText(tp.text(ProfileAiSettingsTextKeys.KeyValid)).assertIsDisplayed()
+            onNodeWithText(tp.text(ProfileAiSettingsTextKeys.AiModel)).assertIsDisplayed()
 
-            onNodeWithContentDescription(tp.text(ProfileHomeTextKeys.AiApiKey))
+            onNodeWithContentDescription(tp.text(ProfileAiSettingsTextKeys.AiApiKey))
                 .performTextReplacement("sk-new")
 
             // Reflect the action in component state (mirrors what Logic would do).
@@ -96,8 +96,8 @@ class ProfileHomeScreenUiTest {
 
             // Stale Valid + model picker disappear because the verified target
             // no longer matches the draft (effectiveAiKeyCheck → Idle).
-            assertNotDisplayed(tp.text(ProfileHomeTextKeys.KeyValid))
-            assertNotDisplayed(tp.text(ProfileHomeTextKeys.AiModel))
+            assertNotDisplayed(tp.text(ProfileAiSettingsTextKeys.KeyValid))
+            assertNotDisplayed(tp.text(ProfileAiSettingsTextKeys.AiModel))
         }
 
     @Test
@@ -105,13 +105,13 @@ class ProfileHomeScreenUiTest {
         runComposeUiTest {
             val tp = TestTextProvider
             val initialSnapshot =
-                ProfileSettingsSnapshot(
+                ProfileAiSettingsSnapshot(
                     aiApiKey = "sk-x",
                     aiProvider = AiProvider.OpenAi,
                 )
             val component =
-                FakeProfileHomeComponent(
-                    ProfileHomeUiState(
+                FakeProfileAiSettingsComponent(
+                    ProfileAiSettingsUiState(
                         loadingState = DataLoadingState.Success,
                         draftSnapshot = initialSnapshot,
                         savedSnapshot = initialSnapshot,
@@ -120,11 +120,11 @@ class ProfileHomeScreenUiTest {
                 )
             setContent {
                 SenseeTheme {
-                    ProfileHomeScreen(component = component, textProvider = tp)
+                    ProfileAiSettingsScreen(component = component, textProvider = tp)
                 }
             }
 
-            onNodeWithText(tp.text(ProfileHomeTextKeys.Saved)).assertIsDisplayed()
+            onNodeWithText(tp.text(ProfileAiSettingsTextKeys.Saved)).assertIsDisplayed()
 
             // Simulate Logic effect of switching to OpenRouter (in real flow
             // it's dispatched via SetAiProvider action from the SelectField).
@@ -136,8 +136,8 @@ class ProfileHomeScreenUiTest {
             }
             waitForIdle()
 
-            onNodeWithText(tp.text(ProfileHomeTextKeys.Save)).assertIsDisplayed()
-            assertNotDisplayed(tp.text(ProfileHomeTextKeys.Saved))
+            onNodeWithText(tp.text(ProfileAiSettingsTextKeys.Save)).assertIsDisplayed()
+            assertNotDisplayed(tp.text(ProfileAiSettingsTextKeys.Saved))
         }
 
     @Test
@@ -147,34 +147,34 @@ class ProfileHomeScreenUiTest {
             val settings = TestUserSettingsRepository()
             val catalog = TestModelCatalog(AiKeyCheck.Valid(listOf("gpt-4o")))
             val logic = buildLogic(settings, catalog)
-            val component = LiveProfileHomeComponent(logic)
+            val component = LiveProfileAiSettingsComponent(logic)
 
             setContent {
                 SenseeTheme {
-                    ProfileHomeScreen(component = component, textProvider = tp)
+                    ProfileAiSettingsScreen(component = component, textProvider = tp)
                 }
             }
 
-            assertNotDisplayed(tp.text(ProfileHomeTextKeys.KeyValid))
-            assertNotDisplayed(tp.text(ProfileHomeTextKeys.AiModel))
+            assertNotDisplayed(tp.text(ProfileAiSettingsTextKeys.KeyValid))
+            assertNotDisplayed(tp.text(ProfileAiSettingsTextKeys.AiModel))
 
-            onNodeWithContentDescription(tp.text(ProfileHomeTextKeys.AiApiKey))
+            onNodeWithContentDescription(tp.text(ProfileAiSettingsTextKeys.AiApiKey))
                 .performTextInput("sk-good")
             waitForIdle()
 
             // Default TtsProvider is ElevenLabs, so the TTS block is in
             // separate-mode and shows its own Verify button — disambiguate by
             // taking the first (AI) one.
-            onAllNodesWithText(tp.text(ProfileHomeTextKeys.Verify)).onFirst().performClick()
+            onAllNodesWithText(tp.text(ProfileAiSettingsTextKeys.Verify)).onFirst().performClick()
             waitUntil(timeoutMillis = 3_000) {
-                onAllNodesWithText(tp.text(ProfileHomeTextKeys.KeyValid)).fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithText(tp.text(ProfileAiSettingsTextKeys.KeyValid)).fetchSemanticsNodes().isNotEmpty()
             }
 
-            onNodeWithText(tp.text(ProfileHomeTextKeys.AiModel)).assertIsDisplayed()
+            onNodeWithText(tp.text(ProfileAiSettingsTextKeys.AiModel)).assertIsDisplayed()
 
-            scrollToAndClick(hasText(tp.text(ProfileHomeTextKeys.Save)))
+            scrollToAndClick(hasText(tp.text(ProfileAiSettingsTextKeys.Save)))
             waitUntil(timeoutMillis = 3_000) {
-                onAllNodesWithText(tp.text(ProfileHomeTextKeys.Saved)).fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithText(tp.text(ProfileAiSettingsTextKeys.Saved)).fetchSemanticsNodes().isNotEmpty()
             }
 
             assertEquals("sk-good", settings.snapshot.ai.aiApiKey)
@@ -187,33 +187,33 @@ class ProfileHomeScreenUiTest {
             val settings = TestUserSettingsRepository()
             val catalog = TestModelCatalog(AiKeyCheck.Valid(listOf("gpt-4o")))
             val logic = buildLogic(settings, catalog)
-            val component = LiveProfileHomeComponent(logic)
+            val component = LiveProfileAiSettingsComponent(logic)
 
             setContent {
                 SenseeTheme {
-                    ProfileHomeScreen(component = component, textProvider = tp)
+                    ProfileAiSettingsScreen(component = component, textProvider = tp)
                 }
             }
 
             // Inherit kicks in only when both providers are OpenAI. AI side is
             // OpenAI by default; TTS we set explicitly via the action (the
             // SelectField popup is non-trivial to drive in a headless test).
-            component.onAction(ProfileHomeAction.SetTtsProvider(TtsProvider.OpenAi))
+            component.onAction(ProfileAiSettingsAction.SetTtsProvider(TtsProvider.OpenAi))
             waitForIdle()
 
-            onNodeWithContentDescription(tp.text(ProfileHomeTextKeys.AiApiKey))
+            onNodeWithContentDescription(tp.text(ProfileAiSettingsTextKeys.AiApiKey))
                 .performTextInput("sk-shared")
             waitForIdle()
             // In inherit-mode the TTS block has no Verify button — there's
             // exactly one Verify (AI) — but call .onFirst() for symmetry with
             // the happy-path test and robustness if the TTS block grows.
-            onAllNodesWithText(tp.text(ProfileHomeTextKeys.Verify)).onFirst().performClick()
+            onAllNodesWithText(tp.text(ProfileAiSettingsTextKeys.Verify)).onFirst().performClick()
             waitUntil(timeoutMillis = 3_000) {
-                onAllNodesWithText(tp.text(ProfileHomeTextKeys.KeyValid)).fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithText(tp.text(ProfileAiSettingsTextKeys.KeyValid)).fetchSemanticsNodes().isNotEmpty()
             }
-            scrollToAndClick(hasText(tp.text(ProfileHomeTextKeys.Save)))
+            scrollToAndClick(hasText(tp.text(ProfileAiSettingsTextKeys.Save)))
             waitUntil(timeoutMillis = 3_000) {
-                onAllNodesWithText(tp.text(ProfileHomeTextKeys.Saved)).fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithText(tp.text(ProfileAiSettingsTextKeys.Saved)).fetchSemanticsNodes().isNotEmpty()
             }
 
             // Disk now has ttsApiKey == aiApiKey (the use case persists the AI
@@ -224,12 +224,12 @@ class ProfileHomeScreenUiTest {
 
             // Toggle into separate-key mode. The TTS API key field becomes
             // visible — and must be empty, not pre-filled with the AI key.
-            scrollToAndClick(hasText(tp.text(ProfileHomeTextKeys.TtsUseSeparateKey)))
+            scrollToAndClick(hasText(tp.text(ProfileAiSettingsTextKeys.TtsUseSeparateKey)))
             waitForIdle()
 
             onNode(hasScrollToNodeAction())
-                .performScrollToNode(hasContentDescription(tp.text(ProfileHomeTextKeys.TtsApiKey)))
-            onNodeWithContentDescription(tp.text(ProfileHomeTextKeys.TtsApiKey)).assertIsDisplayed()
+                .performScrollToNode(hasContentDescription(tp.text(ProfileAiSettingsTextKeys.TtsApiKey)))
+            onNodeWithContentDescription(tp.text(ProfileAiSettingsTextKeys.TtsApiKey)).assertIsDisplayed()
             assertEquals("", logic.uiState.value.draftSnapshot.ttsApiKey)
         }
 
@@ -250,35 +250,35 @@ class ProfileHomeScreenUiTest {
         onNode(matcher).performClick()
     }
 
-    private class FakeProfileHomeComponent(
-        initialState: ProfileHomeUiState = ProfileHomeUiState(loadingState = DataLoadingState.Success),
-    ) : ProfileHomeComponent {
+    private class FakeProfileAiSettingsComponent(
+        initialState: ProfileAiSettingsUiState = ProfileAiSettingsUiState(loadingState = DataLoadingState.Success),
+    ) : ProfileAiSettingsComponent {
         private val state = MutableStateFlow(initialState)
-        val dispatched: MutableList<ProfileHomeAction> = mutableListOf()
+        val dispatched: MutableList<ProfileAiSettingsAction> = mutableListOf()
 
-        override val uiState: StateFlow<ProfileHomeUiState> = state.asStateFlow()
+        override val uiState: StateFlow<ProfileAiSettingsUiState> = state.asStateFlow()
 
-        override fun onAction(action: ProfileHomeAction) {
+        override fun onAction(action: ProfileAiSettingsAction) {
             dispatched += action
         }
 
-        fun update(transform: (ProfileHomeUiState) -> ProfileHomeUiState) = state.update(transform)
+        fun update(transform: (ProfileAiSettingsUiState) -> ProfileAiSettingsUiState) = state.update(transform)
     }
 
-    private class LiveProfileHomeComponent(
-        private val logic: ProfileHomeLogic,
-    ) : ProfileHomeComponent {
-        override val uiState: StateFlow<ProfileHomeUiState> = logic.uiState
+    private class LiveProfileAiSettingsComponent(
+        private val logic: ProfileAiSettingsLogic,
+    ) : ProfileAiSettingsComponent {
+        override val uiState: StateFlow<ProfileAiSettingsUiState> = logic.uiState
 
-        override fun onAction(action: ProfileHomeAction) = logic.onAction(action)
+        override fun onAction(action: ProfileAiSettingsAction) = logic.onAction(action)
     }
 
     private fun buildLogic(
         settings: UserSettingsRepository,
         modelCatalog: AiModelCatalog,
         ttsCatalog: TtsCatalog = TestTtsCatalog(),
-    ): ProfileHomeLogic =
-        ProfileHomeLogic(
+    ): ProfileAiSettingsLogic =
+        ProfileAiSettingsLogic(
             settingsRepository = settings,
             saveIntegrationSettings = SaveIntegrationSettingsUseCase(settings),
             modelCatalog = modelCatalog,
@@ -315,30 +315,30 @@ class ProfileHomeScreenUiTest {
         override suspend fun verifyKey(request: TtsKeyVerificationRequest): TtsKeyCheck = result
     }
 
-    /** Stable English copy of [DefaultProfileHomeTextProvider] for assertion stability. */
+    /** Stable English copy of [DefaultProfileAiSettingsTextProvider] for assertion stability. */
     private companion object {
         val TestTextProvider: TextProvider =
             MapTextProvider(
                 mapOf(
-                    ProfileHomeTextKeys.SectionAi to "AI",
-                    ProfileHomeTextKeys.AiHint to "AI hint",
-                    ProfileHomeTextKeys.AiProvider to "AI provider",
-                    ProfileHomeTextKeys.AiApiKey to "AI API key",
-                    ProfileHomeTextKeys.AiModel to "AI model",
-                    ProfileHomeTextKeys.SectionTts to "TTS",
-                    ProfileHomeTextKeys.TtsProvider to "TTS provider",
-                    ProfileHomeTextKeys.TtsUsesAiKey to "Uses AI key",
-                    ProfileHomeTextKeys.TtsUseSeparateKey to "Use separate key",
-                    ProfileHomeTextKeys.TtsApiKey to "TTS API key",
-                    ProfileHomeTextKeys.TtsUseAiKey to "Use AI key",
-                    ProfileHomeTextKeys.TtsModel to "TTS model",
-                    ProfileHomeTextKeys.TtsVoice to "TTS voice",
-                    ProfileHomeTextKeys.Save to "Save",
-                    ProfileHomeTextKeys.Saved to "Saved",
-                    ProfileHomeTextKeys.Verify to "Verify",
-                    ProfileHomeTextKeys.Verifying to "Verifying",
-                    ProfileHomeTextKeys.KeyValid to "Key valid",
-                    ProfileHomeTextKeys.KeyInvalid to "Key invalid: {0}",
+                    ProfileAiSettingsTextKeys.SectionAi to "AI",
+                    ProfileAiSettingsTextKeys.AiHint to "AI hint",
+                    ProfileAiSettingsTextKeys.AiProvider to "AI provider",
+                    ProfileAiSettingsTextKeys.AiApiKey to "AI API key",
+                    ProfileAiSettingsTextKeys.AiModel to "AI model",
+                    ProfileAiSettingsTextKeys.SectionTts to "TTS",
+                    ProfileAiSettingsTextKeys.TtsProvider to "TTS provider",
+                    ProfileAiSettingsTextKeys.TtsUsesAiKey to "Uses AI key",
+                    ProfileAiSettingsTextKeys.TtsUseSeparateKey to "Use separate key",
+                    ProfileAiSettingsTextKeys.TtsApiKey to "TTS API key",
+                    ProfileAiSettingsTextKeys.TtsUseAiKey to "Use AI key",
+                    ProfileAiSettingsTextKeys.TtsModel to "TTS model",
+                    ProfileAiSettingsTextKeys.TtsVoice to "TTS voice",
+                    ProfileAiSettingsTextKeys.Save to "Save",
+                    ProfileAiSettingsTextKeys.Saved to "Saved",
+                    ProfileAiSettingsTextKeys.Verify to "Verify",
+                    ProfileAiSettingsTextKeys.Verifying to "Verifying",
+                    ProfileAiSettingsTextKeys.KeyValid to "Key valid",
+                    ProfileAiSettingsTextKeys.KeyInvalid to "Key invalid: {0}",
                 ),
             )
     }
