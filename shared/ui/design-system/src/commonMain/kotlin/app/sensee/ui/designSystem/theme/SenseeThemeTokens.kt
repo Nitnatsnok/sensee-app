@@ -106,6 +106,7 @@ public object SenseeLayoutTokens {
     public val paneGap: ThemeToken<Dp> = ThemeToken("paneGap")
     public val navigationRailWidth: ThemeToken<Dp> = ThemeToken("navigationRailWidth")
     public val bottomNavigationHeight: ThemeToken<Dp> = ThemeToken("bottomNavigationHeight")
+    public val topNavigationHeight: ThemeToken<Dp> = ThemeToken("topNavigationHeight")
 }
 
 public object SenseeShapeTokens {

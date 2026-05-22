@@ -22,4 +22,5 @@ internal val SenseeLayoutScale: Map<ThemeToken<Dp>, Dp> =
         SenseeLayoutTokens.paneGap to 24.dp,
         SenseeLayoutTokens.navigationRailWidth to 96.dp,
         SenseeLayoutTokens.bottomNavigationHeight to 72.dp,
+        SenseeLayoutTokens.topNavigationHeight to 80.dp,
     )

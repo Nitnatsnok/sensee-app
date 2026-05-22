@@ -332,6 +332,7 @@ Compose:
     active: true
     allowedCompositionLocals:
       - LocalAdaptiveInfo
+      - LocalPlatform
       - LocalTextProvider
       - LocalSenseeAdaptiveLayoutMetrics
       - LocalSenseeNavigationItemLayout

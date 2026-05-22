@@ -21,7 +21,7 @@ public fun App(
     modifier: Modifier = Modifier,
     contentFrame: AppContentFrame = { content -> content() },
 ) {
-    AppComposeEnvironment {
+    AppComposeEnvironment(platform = rootComponent.platform) {
         contentFrame {
             RootScreen(
                 component = rootComponent,

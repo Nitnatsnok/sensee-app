@@ -16,6 +16,7 @@
   - `shared/core/decompose/.../NavigationDispatcher.kt`
   - `shared/app-shell/.../root/DefaultRootComponent.kt`
   - `shared/app-shell/.../primary/DefaultPrimaryShellComponent.kt`
+  - `shared/app-shell/.../primary/PrimaryNavLayout.kt` (`selectPrimaryNavLayout`)
   - `shared/app-shell/.../primary/PrimarySectionConfig.kt` (`WebSectionRoute`)
   - `shared/feature/practice/presentation/impl/DefaultPracticeSectionComponent.kt`
   - `shared/feature/practice/presentation/navigation-api/.../PracticeWebRoute.kt`
@@ -71,6 +72,15 @@
     Тогда `showBottomBar` равен `true`
     Когда top of stack — `PracticeConfig.DeckPractice` или `PracticeConfig.CardDetail`
     Тогда `showBottomBar` равен `false`
+
+  Сценарий: Навигационный chrome primary shell выбирается по платформе и размеру окна
+    Допустим primary shell выбирает chrome через `selectPrimaryNavLayout`
+    Когда окно широкое (`showNavigationRail == true`) и платформа — `JS` или `Wasm`
+    Тогда отрисовывается горизонтальный top bar (`SenseeTopNavigationBar`)
+    Когда окно широкое и платформа — `Android`, `Ios` или `Desktop`
+    Тогда отрисовывается вертикальный rail (`SenseeNavigationRail`)
+    Когда окно компактное (`showNavigationRail == false`)
+    Тогда на любой платформе отрисовывается нижняя панель (`SenseeBottomNavigationBar`)
 
   Сценарий: URL отражает активную секцию (section-tab режим)
     Допустим клиент запущен на `JS`/`Wasm` с `withWebHistory`

@@ -73,11 +73,13 @@ public data class SenseeNavigationItemColors(
  * - [BottomBar]: icon over a short label (compact, fixed height).
  * - [RailCollapsed]: icon only; the label is exposed to accessibility, not drawn.
  * - [RailExpanded]: icon followed by the full label in a row — long labels get horizontal room.
+ * - [TopBar]: icon followed by the label in a row, sized to content — for a horizontal bar.
  */
 public enum class SenseeNavigationItemLayout {
     BottomBar,
     RailCollapsed,
     RailExpanded,
+    TopBar,
 }
 
 public val LocalSenseeNavigationItemLayout: ProvidableCompositionLocal<SenseeNavigationItemLayout> =

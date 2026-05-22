@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
+import app.sensee.appShell.LocalPlatform
 import app.sensee.core.compose.text.LocalTextProvider
 import app.sensee.core.compose.thenIf
 import app.sensee.core.presentation.text.TextKey
@@ -45,6 +47,7 @@ import app.sensee.ui.designSystem.component.navigation.SenseeBottomNavigationBar
 import app.sensee.ui.designSystem.component.navigation.SenseeNavigationActionButton
 import app.sensee.ui.designSystem.component.navigation.SenseeNavigationItem
 import app.sensee.ui.designSystem.component.navigation.SenseeNavigationRail
+import app.sensee.ui.designSystem.component.navigation.SenseeTopNavigationBar
 import app.sensee.ui.designSystem.icons.Add24px
 import app.sensee.ui.designSystem.icons.Home24px
 import app.sensee.ui.designSystem.icons.LibraryBooks24px
@@ -56,10 +59,12 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 
 /**
- * Ordered list of primary navigation entries. Used by both the rail (large screens) and the
- * bottom-bar (compact) layouts so each entry is declared exactly once. [PrimarySection.VocabularyEditor]
- * sits in the list at its visual position and is rendered as the Add action button instead of a
- * regular nav item — see [BOTTOM_BAR_ACTION_INSERT_INDEX] and the bottom-bar/rail bodies.
+ * Ordered list of primary navigation entries. Shared by the rail, bottom-bar, and top-bar
+ * layouts so each entry is declared exactly once. [PrimarySection.VocabularyEditor] is the
+ * Add action — its position in this list ([PRIMARY_ACTION_INDEX]) is used differently by
+ * each layout: the bottom bar splices the action button inline between the two halves of
+ * the items, while the rail and top bar render it in their dedicated action slot (FAB at
+ * the rail's bottom; trailing edge of the top bar) and skip the index during iteration.
  */
 private data class PrimaryNavDestination(
     val section: PrimarySection,
@@ -99,9 +104,9 @@ private val PrimaryNavDestinations: List<PrimaryNavDestination> =
 /**
  * Position of the Add action in [PrimaryNavDestinations]. Derived from the entry whose section
  * is [PrimarySection.VocabularyEditor], so reordering the list (or moving VocabularyEditor)
- * keeps the splice position correct without manual bookkeeping.
+ * keeps the splice/skip position correct without manual bookkeeping.
  */
-private val BOTTOM_BAR_ACTION_INSERT_INDEX: Int =
+private val PRIMARY_ACTION_INDEX: Int =
     PrimaryNavDestinations.indexOfFirst { it.section == PrimarySection.VocabularyEditor }
 
 @Composable
@@ -111,23 +116,34 @@ public fun PrimaryShellScreen(
     textProvider: TextProvider = rememberPrimaryShellTextProvider(),
 ) {
     val adaptiveInfo = LocalAdaptiveInfo.current
+    val platform = LocalPlatform.current
     val selectedSection by component.selectedSection.collectAsState()
 
     CompositionLocalProvider(LocalTextProvider provides textProvider) {
-        if (adaptiveInfo.showNavigationRail) {
-            PrimaryShellNavigationRailLayout(
-                component = component,
-                selectedSection = selectedSection,
-                modifier = modifier,
-                textProvider = textProvider,
-            )
-        } else {
-            PrimaryShellBottomNavigationLayout(
-                component = component,
-                selectedSection = selectedSection,
-                modifier = modifier,
-                textProvider = textProvider,
-            )
+        when (selectPrimaryNavLayout(platform, adaptiveInfo)) {
+            PrimaryNavLayout.TopBar ->
+                PrimaryShellTopBarLayout(
+                    component = component,
+                    selectedSection = selectedSection,
+                    modifier = modifier,
+                    textProvider = textProvider,
+                )
+
+            PrimaryNavLayout.NavigationRail ->
+                PrimaryShellNavigationRailLayout(
+                    component = component,
+                    selectedSection = selectedSection,
+                    modifier = modifier,
+                    textProvider = textProvider,
+                )
+
+            PrimaryNavLayout.BottomBar ->
+                PrimaryShellBottomNavigationLayout(
+                    component = component,
+                    selectedSection = selectedSection,
+                    modifier = modifier,
+                    textProvider = textProvider,
+                )
         }
     }
 }
@@ -152,7 +168,7 @@ private fun PrimaryShellNavigationRailLayout(
                 .background(SenseeTheme.colors.background),
     ) {
         var railExpanded by rememberSaveable { mutableStateOf(false) }
-        val addAction = PrimaryNavDestinations[BOTTOM_BAR_ACTION_INSERT_INDEX]
+        val addAction = PrimaryNavDestinations[PRIMARY_ACTION_INDEX]
         SenseeNavigationRail(
             modifier = Modifier.fillMaxHeight(),
             expanded = railExpanded,
@@ -175,7 +191,7 @@ private fun PrimaryShellNavigationRailLayout(
             // in the bottom bar, just expressed via Column's main axis.
             Spacer(modifier = Modifier.weight(1f))
             PrimaryNavDestinations.forEachIndexed { index, destination ->
-                if (index == BOTTOM_BAR_ACTION_INSERT_INDEX) return@forEachIndexed
+                if (index == PRIMARY_ACTION_INDEX) return@forEachIndexed
                 PrimaryNavigationItem(
                     destination = destination,
                     selected = selectedSection == destination.section,
@@ -192,6 +208,60 @@ private fun PrimaryShellNavigationRailLayout(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight(),
+        ) {
+            PrimaryShellChildren(component = component)
+        }
+    }
+}
+
+@Composable
+private fun PrimaryShellTopBarLayout(
+    component: PrimaryShellComponent,
+    selectedSection: PrimarySection,
+    textProvider: TextProvider,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(SenseeTheme.colors.background),
+    ) {
+        val addAction = PrimaryNavDestinations[PRIMARY_ACTION_INDEX]
+        val layout = SenseeTheme.layout
+        val statusBarsTopPadding: Dp = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        SenseeTopNavigationBar(
+            modifier = Modifier.fillMaxWidth(),
+            action = {
+                SenseeNavigationActionButton(
+                    icon = addAction.icon,
+                    onClick = { component.selectSection(addAction.section) },
+                    contentDescription = textProvider.text(addAction.labelKey),
+                )
+            },
+        ) {
+            PrimaryNavDestinations.forEachIndexed { index, destination ->
+                if (index == PRIMARY_ACTION_INDEX) return@forEachIndexed
+                PrimaryNavigationItem(
+                    destination = destination,
+                    selected = selectedSection == destination.section,
+                    onSelect = component::selectSection,
+                    textProvider = textProvider,
+                )
+            }
+        }
+
+        // Tell descendants the top inset (status bar + bar height) is already consumed —
+        // mirrors what PrimaryShellBottomNavigationLayout does for the bottom inset.
+        // Dormant on web (statusBars == 0) but defensive if TopBar ever runs elsewhere.
+        Box(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .consumeWindowInsets(
+                        PaddingValues(top = layout.topNavigationHeight + statusBarsTopPadding),
+                    ),
         ) {
             PrimaryShellChildren(component = component)
         }
@@ -236,7 +306,7 @@ private fun PrimaryShellBottomNavigationLayout(
         if (showBottomBar) {
             SenseeBottomNavigationBar(modifier = Modifier.fillMaxWidth()) {
                 PrimaryNavDestinations.forEachIndexed { index, destination ->
-                    if (index == BOTTOM_BAR_ACTION_INSERT_INDEX) {
+                    if (index == PRIMARY_ACTION_INDEX) {
                         SenseeNavigationActionButton(
                             icon = destination.icon,
                             onClick = { component.selectSection(destination.section) },

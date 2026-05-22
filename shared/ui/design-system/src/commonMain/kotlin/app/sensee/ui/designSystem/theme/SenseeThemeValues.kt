@@ -90,6 +90,7 @@ public data class SenseeLayout(
     val paneGap: Dp,
     val navigationRailWidth: Dp,
     val bottomNavigationHeight: Dp,
+    val topNavigationHeight: Dp,
 )
 
 public data class SenseeShapes(
@@ -214,6 +215,7 @@ public object SenseeTheme {
                 paneGap = layout[SenseeLayoutTokens.paneGap],
                 navigationRailWidth = layout[SenseeLayoutTokens.navigationRailWidth],
                 bottomNavigationHeight = layout[SenseeLayoutTokens.bottomNavigationHeight],
+                topNavigationHeight = layout[SenseeLayoutTokens.topNavigationHeight],
             )
         }
 

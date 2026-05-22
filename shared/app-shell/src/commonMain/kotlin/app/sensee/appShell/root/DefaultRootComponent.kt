@@ -11,6 +11,8 @@ import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.core.decompose.navigation.TargetedScreenConfig
 import app.sensee.core.decompose.navigation.pop
+import app.sensee.core.platform.Platform
+import app.sensee.core.platform.PlatformEnvironment
 import app.sensee.feature.home.presentation.navigationApi.HomeConfig
 import app.sensee.feature.library.presentation.navigationApi.LibraryConfig
 import app.sensee.feature.practice.presentation.navigationApi.PracticeConfig
@@ -46,9 +48,12 @@ public class DefaultRootComponent(
     private val startupComponentFactory: StartupComponent.Factory,
     private val primaryShellComponentFactory: PrimaryShellComponent.Factory,
     private val grammarLabelsProvider: GrammarLabelsProvider,
+    platformEnvironment: PlatformEnvironment,
     appDispatchers: AppDispatchers,
 ) : RootComponent,
     AppComponentContext by componentContext {
+    override val platform: Platform = platformEnvironment.platform
+
     private val stackNavigation = StackNavigation<ScreenConfig>()
     private val componentScope = CoroutineScope(appDispatchers.main.immediate + SupervisorJob())
 

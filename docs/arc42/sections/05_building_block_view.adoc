@@ -268,6 +268,6 @@ NOTE: Каталог записей и колоды library-owned: `CatalogRepos
 Разделы открываются через сериализуемые config-типы, а не через прямые вызовы Compose UI.
 
 Форма представления::
-Сейчас shell рендерится как базовая нижняя навигация. На Desktop/Web тот же набор target'ов может быть позднее представлен как navigation rail, sidebar или другой target-oriented shell без смены config-модели.
+Один и тот же набор target'ов рендерится разным навигационным chrome, выбираемым адаптивно (`selectPrimaryNavLayout`): нижняя панель в компактном окне, вертикальный `navigation rail` в широком окне на `Android`/`iOS`/`Desktop` и горизонтальный top bar в широком окне на `JS`/`Wasm`. Выбор зависит от размера окна и платформы; config-модель при этом не меняется.
 
 NOTE: На следующем уровне детализации стоит отдельно документировать public API модулей `shared/ui/learning-deck`, `shared/feature/practice/domain`, `shared/feature/vocabulary-editor/domain`, `shared/feature/library/domain`, `shared/srs/*`, `shared/ai/*`, `shared/tts/*`, `shared/database` и `shared/core/decompose`. Для текущей фазы достаточно зафиксировать устойчивые модульные границы и реально существующие flow.

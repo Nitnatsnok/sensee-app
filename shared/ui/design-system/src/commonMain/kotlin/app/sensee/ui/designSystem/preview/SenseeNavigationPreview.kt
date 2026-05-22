@@ -11,6 +11,7 @@ import app.sensee.ui.designSystem.component.navigation.SenseeBottomNavigationBar
 import app.sensee.ui.designSystem.component.navigation.SenseeNavigationActionButton
 import app.sensee.ui.designSystem.component.navigation.SenseeNavigationItem
 import app.sensee.ui.designSystem.component.navigation.SenseeNavigationRail
+import app.sensee.ui.designSystem.component.navigation.SenseeTopNavigationBar
 import app.sensee.ui.designSystem.icons.Add24px
 import app.sensee.ui.designSystem.icons.Home24px
 import app.sensee.ui.designSystem.icons.LibraryBooks24px
@@ -63,6 +64,21 @@ private fun SenseeNavigationRailCollapsedPreview() =
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+
+@Preview(widthDp = 1280)
+@Composable
+private fun SenseeTopNavigationBarPreview() =
+    SenseePreview {
+        SenseeTopNavigationBar(
+            modifier = Modifier.fillMaxWidth(),
+            action = { SenseeNavigationActionButton(icon = Add24px, onClick = {}, contentDescription = "Add") },
+        ) {
+            SenseeNavigationItem(label = "Home", icon = Home24px, selected = false, onClick = {})
+            SenseeNavigationItem(label = "Practice", icon = Psychology24px, selected = true, onClick = {})
+            SenseeNavigationItem(label = "Library", icon = LibraryBooks24px, selected = false, onClick = {})
+            SenseeNavigationItem(label = "Profile", icon = Person24px, selected = false, onClick = {})
         }
     }
 

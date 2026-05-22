@@ -12,3 +12,7 @@ public enum class Platform {
     Js,
     WasmJs,
 }
+
+/** Whether the host is a browser target — the `Js` or `WasmJs` build of the web app. */
+public val Platform.isWeb: Boolean
+    get() = this == Platform.Js || this == Platform.WasmJs
