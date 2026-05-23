@@ -52,18 +52,21 @@ compose.desktop {
                 menuGroup = "Sensee"
                 upgradeUuid = "0C8ABF27-4750-4516-B785-270FD06CA3E0"
                 perUserInstall = true
+                iconFile.set(project.file("icons/icon.ico"))
             }
 
             linux {
                 packageName = "sensee"
                 menuGroup = "Education"
                 appCategory = "education"
+                iconFile.set(project.file("icons/icon.png"))
             }
 
             macOS {
                 bundleID = "app.sensee"
                 dockName = "Sensee"
                 appCategory = "education"
+                iconFile.set(project.file("icons/icon.icns"))
             }
         }
     }

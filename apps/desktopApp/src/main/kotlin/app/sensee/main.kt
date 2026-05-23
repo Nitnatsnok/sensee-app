@@ -3,6 +3,9 @@ package app.sensee
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
@@ -13,10 +16,10 @@ import app.sensee.appShell.DesktopPlatformEnvironment
 import app.sensee.appShell.desktop.SenseeDesktopWindowFrame
 import app.sensee.appShell.root.RootComponent
 import app.sensee.appShell.root.createAppRoot
+import app.sensee.database.DatabaseConfig
 import app.sensee.desktop.installWindowsWindowDecoration
 import app.sensee.desktop.isWindows
 import app.sensee.desktop.minimizeWindow
-import app.sensee.database.DatabaseConfig
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
@@ -55,6 +58,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             state = windowState,
             title = WINDOW_TITLE,
+            icon = classpathPainter("icon.png"),
             // Custom chrome only on Windows; macOS and Linux keep their native
             // window decorations — the reliable, idiomatic look there.
             undecorated = isWindows,
@@ -98,3 +102,18 @@ private fun FrameWindowScope.SenseeWindowContent(
         App(rootComponent = rootComponent)
     }
 }
+
+// Compose Resources is wired only in shared/ui/design-system for fonts, so a single
+// classpath PNG is loaded directly via Skia — the migration target suggested by
+// https://github.com/JetBrains/compose-multiplatform-core/pull/1457.
+private object ResourceLoader
+
+@Composable
+private fun classpathPainter(path: String): Painter =
+    remember(path) {
+        val bytes =
+            checkNotNull(ResourceLoader.javaClass.classLoader.getResourceAsStream(path)) {
+                "Resource '$path' not found on classpath"
+            }.use { it.readBytes() }
+        BitmapPainter(bytes.decodeToImageBitmap())
+    }
