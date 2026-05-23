@@ -11,7 +11,7 @@ import app.sensee.ui.designSystem.component.UnimplementedScreen
 
 @Composable
 internal fun ProfileSettingsPlaceholderScreen(
-    config: ProfileConfig,
+    config: ProfileConfig.Settings,
     modifier: Modifier = Modifier,
     textProvider: TextProvider = rememberProfileHomeTextProvider(),
 ) {

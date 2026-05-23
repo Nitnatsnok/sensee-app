@@ -55,22 +55,22 @@ class ProfileHomeScreenUiTest {
             onNode(hasScrollToNodeAction()).performScrollToNode(hasText("AI and speech"))
             onNodeWithText("AI and speech").performClick()
 
-            assertEquals(listOf<ProfileConfig>(ProfileConfig.AiSettings), component.selected)
+            assertEquals(listOf<ProfileConfig.Settings>(ProfileConfig.Settings.Ai), component.selected)
         }
 
     private class FakeProfileHomeComponent : ProfileHomeComponent {
-        val selected: MutableList<ProfileConfig> = mutableListOf()
+        val selected: MutableList<ProfileConfig.Settings> = mutableListOf()
 
-        override val items: ImmutableList<ProfileConfig> =
+        override val items: ImmutableList<ProfileConfig.Settings> =
             persistentListOf(
-                ProfileConfig.AppSettings,
-                ProfileConfig.LearningSettings,
-                ProfileConfig.PracticeSettings,
-                ProfileConfig.AiSettings,
-                ProfileConfig.ExperimentalSettings,
+                ProfileConfig.Settings.App,
+                ProfileConfig.Settings.Learning,
+                ProfileConfig.Settings.Practice,
+                ProfileConfig.Settings.Ai,
+                ProfileConfig.Settings.Experimental,
             )
 
-        override fun onItemSelected(config: ProfileConfig) {
+        override fun onItemSelected(config: ProfileConfig.Settings) {
             selected += config
         }
     }

@@ -212,6 +212,42 @@ class LlmAiEnrichmentClientTest {
             assertTrue(bodies[1].contains("come across as <adjective/noun>"))
         }
 
+    @Test
+    fun `topic preferences are injected into the prompt`() =
+        runBlocking {
+            var body = ""
+            val engine =
+                MockEngine { httpRequest ->
+                    body = httpRequest.body.toByteArray().decodeToString()
+                    respondCompletion()
+                }
+
+            client(engine).enrich(
+                EnrichmentRequest(
+                    term = "run",
+                    topicPreferences = listOf("travel and tourism", "food and cooking"),
+                ),
+            )
+
+            assertTrue(body.contains("The learner is interested in these topics"))
+            assertTrue(body.contains("travel and tourism, food and cooking"))
+        }
+
+    @Test
+    fun `an empty topic preference list leaves the prompt without topic guidance`() =
+        runBlocking {
+            var body = ""
+            val engine =
+                MockEngine { httpRequest ->
+                    body = httpRequest.body.toByteArray().decodeToString()
+                    respondCompletion()
+                }
+
+            client(engine).enrich(EnrichmentRequest(term = "run"))
+
+            assertTrue(!body.contains("The learner is interested in these topics"))
+        }
+
     private fun client(engine: MockEngine) =
         LlmAiEnrichmentClientFactory.create(
             engine = engine,

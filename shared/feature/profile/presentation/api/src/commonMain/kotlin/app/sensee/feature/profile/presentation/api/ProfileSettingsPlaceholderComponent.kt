@@ -8,5 +8,5 @@ import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
  * only its [config] so the screen can render an honest "coming later" state.
  */
 public interface ProfileSettingsPlaceholderComponent : AppComponent {
-    public val config: ProfileConfig
+    public val config: ProfileConfig.Settings
 }

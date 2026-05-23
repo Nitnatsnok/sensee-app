@@ -21,9 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import app.sensee.ui.designSystem.component.button.SenseeIconButton
 import app.sensee.ui.designSystem.component.button.SenseeIconButtonDefaults
+import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.Text
-import com.composeunstyled.minimumInteractiveComponentSize
 
 /**
  * Selectable destination item used inside both [SenseeBottomNavigationBar] and
@@ -52,7 +52,7 @@ public fun SenseeNavigationItem(
 
     val base =
         modifier
-            .minimumInteractiveComponentSize()
+            .senseeMinTouchTargetSize()
             .clip(shapes.large)
             .selectable(selected = selected, onClick = onClick, role = Role.Tab)
 

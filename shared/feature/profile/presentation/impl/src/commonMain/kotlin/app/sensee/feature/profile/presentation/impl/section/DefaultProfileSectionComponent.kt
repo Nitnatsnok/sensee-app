@@ -8,15 +8,19 @@ import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.feature.profile.presentation.api.ProfileAiSettingsComponent
 import app.sensee.feature.profile.presentation.api.ProfileChildPanels
 import app.sensee.feature.profile.presentation.api.ProfileHomeComponent
+import app.sensee.feature.profile.presentation.api.ProfileLearningSettingsComponent
 import app.sensee.feature.profile.presentation.api.ProfileSectionComponent
+import app.sensee.feature.profile.presentation.api.ProfileTopicPickerComponent
 import app.sensee.feature.profile.presentation.impl.placeholder.DefaultProfileSettingsPlaceholderComponent
 import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
+import app.sensee.feature.profile.presentation.navigationApi.ProfileExtraConfig
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.router.panels.Panels
 import com.arkivanov.decompose.router.panels.PanelsNavigation
 import com.arkivanov.decompose.router.panels.navigate
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.value.subscribe
 import com.arkivanov.essenty.backhandler.BackCallback
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
@@ -35,20 +39,28 @@ public class DefaultProfileSectionComponent(
     @Assisted private val target: ProfileConfig?,
     private val profileHomeComponentFactory: ProfileHomeComponent.Factory,
     private val profileAiSettingsComponentFactory: ProfileAiSettingsComponent.Factory,
+    private val profileLearningSettingsComponentFactory: ProfileLearningSettingsComponent.Factory,
+    private val profileTopicPickerComponentFactory: ProfileTopicPickerComponent.Factory,
 ) : ProfileSectionComponent,
     AppComponentContext by componentContext {
     private val panelsNavigation =
-        PanelsNavigation<ProfileConfig.Home, ProfileConfig, Nothing>()
+        PanelsNavigation<ProfileConfig.Home, ProfileConfig.Settings, ProfileExtraConfig>()
     private val showBottomBarState = MutableStateFlow(true)
 
     override val panels: Value<ProfileChildPanels> =
         appChildPanels(
             source = panelsNavigation,
-            serializers = ProfileConfig.Home.serializer() to ProfileConfig.serializer(),
+            serializers =
+                Triple(
+                    ProfileConfig.Home.serializer(),
+                    ProfileConfig.Settings.serializer(),
+                    ProfileExtraConfig.serializer(),
+                ),
             initialPanels = {
                 Panels(
                     main = ProfileConfig.Home,
-                    details = target?.takeIf { it != ProfileConfig.Home },
+                    details = target as? ProfileConfig.Settings,
+                    extra = null,
                     mode = ChildPanelsMode.DUAL,
                 )
             },
@@ -58,19 +70,27 @@ public class DefaultProfileSectionComponent(
                 profileHomeComponentFactory.create(childContext)
             },
             detailsFactory = ::createDetails,
+            extraFactory = ::createExtra,
         )
 
     override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
 
-    // System back closes an open category panel before the section itself is
-    // left. appChildPanels' own handleBackButton stays off so this is the
-    // single back handler — otherwise the press falls through to the shell and
-    // exits Profile instead of returning to the menu.
-    private val detailsBackCallback =
-        BackCallback(isEnabled = panels.value.details != null) { closeSettings() }
+    // System back cascades through the panels: close extra (picker) first, then
+    // detail, before letting the press fall through to the shell. appChildPanels'
+    // own handleBackButton stays off so this stays the single source.
+    private val panelsBackCallback =
+        BackCallback(isEnabled = false) {
+            when {
+                panels.value.extra != null -> closeTopicPicker()
+                panels.value.details != null -> closeSettings()
+            }
+        }
 
     init {
-        backHandler.register(detailsBackCallback)
+        backHandler.register(panelsBackCallback)
+        panels.subscribe(lifecycle) { state ->
+            panelsBackCallback.isEnabled = state.details != null || state.extra != null
+        }
     }
 
     override fun open(
@@ -83,8 +103,13 @@ public class DefaultProfileSectionComponent(
                 onComplete(true)
                 NavigationRequestStatus.Handled
             }
-            is ProfileConfig -> {
+            is ProfileConfig.Settings -> {
                 openSettings(target)
+                onComplete(true)
+                NavigationRequestStatus.Handled
+            }
+            ProfileExtraConfig.TopicPicker -> {
+                openTopicPicker()
                 onComplete(true)
                 NavigationRequestStatus.Handled
             }
@@ -92,36 +117,59 @@ public class DefaultProfileSectionComponent(
         }
 
     override fun back(onResult: (NavigationRequestStatus) -> Unit) {
-        if (panels.value.details != null) {
-            closeSettings()
-            onResult(NavigationRequestStatus.Handled)
-        } else {
-            onResult(NavigationRequestStatus.Unhandled)
+        when {
+            panels.value.extra != null -> {
+                closeTopicPicker()
+                onResult(NavigationRequestStatus.Handled)
+            }
+            panels.value.details != null -> {
+                closeSettings()
+                onResult(NavigationRequestStatus.Handled)
+            }
+            else -> onResult(NavigationRequestStatus.Unhandled)
         }
     }
 
-    private fun openSettings(config: ProfileConfig) {
+    private fun openSettings(config: ProfileConfig.Settings) {
         panelsNavigation.navigate(details = config, extra = null)
-        detailsBackCallback.isEnabled = true
     }
 
     private fun closeSettings() {
         panelsNavigation.navigate(details = null, extra = null)
-        detailsBackCallback.isEnabled = false
+    }
+
+    private fun openTopicPicker() {
+        panelsNavigation.navigate(extra = ProfileExtraConfig.TopicPicker)
+    }
+
+    private fun closeTopicPicker() {
+        panelsNavigation.navigate(extra = null)
     }
 
     private fun createDetails(
-        config: ProfileConfig,
+        config: ProfileConfig.Settings,
         componentContext: AppComponentContext,
     ): AppComponent =
         when (config) {
-            ProfileConfig.AiSettings -> profileAiSettingsComponentFactory.create(componentContext)
-            ProfileConfig.AppSettings,
-            ProfileConfig.LearningSettings,
-            ProfileConfig.PracticeSettings,
-            ProfileConfig.ExperimentalSettings,
+            ProfileConfig.Settings.Ai -> profileAiSettingsComponentFactory.create(componentContext)
+            ProfileConfig.Settings.Learning ->
+                profileLearningSettingsComponentFactory.create(componentContext)
+            ProfileConfig.Settings.App,
+            ProfileConfig.Settings.Practice,
+            ProfileConfig.Settings.Experimental,
             -> DefaultProfileSettingsPlaceholderComponent(componentContext, config)
-            ProfileConfig.Home -> error("Profile Home is the menu panel, not a detail: $config")
+        }
+
+    private fun createExtra(
+        config: ProfileExtraConfig,
+        componentContext: AppComponentContext,
+    ): AppComponent =
+        when (config) {
+            ProfileExtraConfig.TopicPicker ->
+                profileTopicPickerComponentFactory.create(
+                    componentContext = componentContext,
+                    onClose = ::closeTopicPicker,
+                )
         }
 
     @AssistedFactory

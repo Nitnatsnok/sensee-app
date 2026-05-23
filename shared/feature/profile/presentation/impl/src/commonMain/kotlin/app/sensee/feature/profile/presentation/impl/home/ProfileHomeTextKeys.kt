@@ -16,14 +16,13 @@ internal object ProfileHomeTextKeys {
     val Close = TextKey("profile.home.close")
 }
 
-internal fun ProfileConfig.categoryTitleKey(): TextKey =
+internal fun ProfileConfig.Settings.categoryTitleKey(): TextKey =
     when (this) {
-        ProfileConfig.AppSettings -> ProfileHomeTextKeys.CategoryApp
-        ProfileConfig.LearningSettings -> ProfileHomeTextKeys.CategoryLearning
-        ProfileConfig.PracticeSettings -> ProfileHomeTextKeys.CategoryPractice
-        ProfileConfig.AiSettings -> ProfileHomeTextKeys.CategoryAi
-        ProfileConfig.ExperimentalSettings -> ProfileHomeTextKeys.CategoryExperimental
-        ProfileConfig.Home -> error("Profile Home is the menu itself, not a category row: $this")
+        ProfileConfig.Settings.App -> ProfileHomeTextKeys.CategoryApp
+        ProfileConfig.Settings.Learning -> ProfileHomeTextKeys.CategoryLearning
+        ProfileConfig.Settings.Practice -> ProfileHomeTextKeys.CategoryPractice
+        ProfileConfig.Settings.Ai -> ProfileHomeTextKeys.CategoryAi
+        ProfileConfig.Settings.Experimental -> ProfileHomeTextKeys.CategoryExperimental
     }
 
 internal val DefaultProfileHomeTextProvider =

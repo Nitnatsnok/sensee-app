@@ -147,6 +147,7 @@ public class LlmAiEnrichmentClient internal constructor(
             senseSplittingPrompt() +
             languagePrompt(request) + "\n" +
             coverageRule(request.senseCoverage) + "\n" +
+            topicPreferencePrompt(request) +
             "For example, \"come across\" should normally include separate " +
             "senses for: find or meet by chance; seem or give a particular " +
             "impression, often \"come across as <adjective/noun>\"; be " +
@@ -194,6 +195,20 @@ public class LlmAiEnrichmentClient internal constructor(
             append("Term: ${request.term}")
             request.userNote?.takeIf { it.isNotBlank() }?.let { append("\nUser note: $it") }
         }
+
+    // Soft steering of 'examples' only. Topic keywords come from the learner's
+    // settings (see RoutingAiEnrichmentClient); an empty list leaves the prompt
+    // unchanged so unset preferences cost nothing.
+    private fun topicPreferencePrompt(request: EnrichmentRequest): String {
+        val topics = request.topicPreferences.filter { it.isNotBlank() }
+        if (topics.isEmpty()) {
+            return ""
+        }
+        return "The learner is interested in these topics: ${topics.joinToString(", ")}. " +
+            "When a sense naturally allows it, prefer 'examples' set in those topics; " +
+            "never force an unnatural or misleading context, and never let topic " +
+            "steering distort the sense, translation, grammar or any non-example field.\n"
+    }
 
     private fun coverageRule(coverage: SenseCoverage): String =
         when (coverage) {

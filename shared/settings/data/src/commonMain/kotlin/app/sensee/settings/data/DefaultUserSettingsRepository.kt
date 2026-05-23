@@ -119,6 +119,8 @@ public class DefaultUserSettingsRepository(
                 LearningSettings(
                     studyLanguageTag = codec.stringValue(values, LearningKeys.StudyLanguageTag, null),
                     translationLanguageTag = codec.stringValue(values, LearningKeys.TranslationLanguageTag, null),
+                    preferredTopicIds =
+                        codec.stringListValue(values, LearningKeys.PreferredTopicIds, emptyList()).toSet(),
                 ),
             practice =
                 PracticeSettings(
@@ -169,6 +171,7 @@ public class DefaultUserSettingsRepository(
             codec.entry(AppKeys.InterfaceLanguageTag, app.interfaceLanguageTag),
             codec.entry(LearningKeys.StudyLanguageTag, learning.studyLanguageTag),
             codec.entry(LearningKeys.TranslationLanguageTag, learning.translationLanguageTag),
+            codec.entry(LearningKeys.PreferredTopicIds, learning.preferredTopicIds.sorted()),
             codec.entry(PracticeKeys.AutoPlayAudio, practice.autoPlayAudio),
             codec.entry(PracticeKeys.DailyGoal, practice.dailyGoal),
             codec.entry(PracticeKeys.ShowTranscription, practice.showTranscription),
@@ -203,6 +206,7 @@ private enum class LearningKeys(
 ) : SettingKey {
     StudyLanguageTag("study_language_tag"),
     TranslationLanguageTag("translation_language_tag"),
+    PreferredTopicIds("preferred_topic_ids"),
     ;
 
     override val category: UserSettingsCategory = UserSettingsCategory.Learning

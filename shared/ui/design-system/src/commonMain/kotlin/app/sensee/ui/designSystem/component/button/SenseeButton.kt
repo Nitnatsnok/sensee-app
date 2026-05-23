@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
+import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
-import com.composeunstyled.minimumInteractiveComponentSize
 
 @Composable
 public fun SenseeButton(
@@ -41,7 +41,7 @@ public fun SenseeButton(
         contentPadding = contentPadding,
         modifier =
             modifier
-                .minimumInteractiveComponentSize()
+                .senseeMinTouchTargetSize()
                 .defaultMinSize(
                     minWidth = minWidth,
                     minHeight = minHeight,

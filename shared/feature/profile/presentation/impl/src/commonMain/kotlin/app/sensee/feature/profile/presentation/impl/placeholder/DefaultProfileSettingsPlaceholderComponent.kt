@@ -6,6 +6,6 @@ import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
 
 internal class DefaultProfileSettingsPlaceholderComponent(
     componentContext: AppComponentContext,
-    override val config: ProfileConfig,
+    override val config: ProfileConfig.Settings,
 ) : ProfileSettingsPlaceholderComponent,
     AppComponentContext by componentContext

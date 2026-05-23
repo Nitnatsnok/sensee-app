@@ -157,8 +157,7 @@ private fun WindowControlButton(
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = onClick,
-                )
-                .semantics { contentDescription = accessibilityLabel }
+                ).semantics { contentDescription = accessibilityLabel }
                 .background(container),
         contentAlignment = Alignment.Center,
     ) {

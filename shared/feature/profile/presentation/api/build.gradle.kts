@@ -11,7 +11,7 @@ kotlin {
                 api(projects.shared.settings.domain)
                 api(libs.decompose)
                 api(libs.kotlinx.collections.immutable)
-                implementation(projects.shared.feature.profile.presentation.navigationApi)
+                api(projects.shared.feature.profile.presentation.navigationApi)
                 implementation(libs.kotlinx.coroutines.core)
             }
         }

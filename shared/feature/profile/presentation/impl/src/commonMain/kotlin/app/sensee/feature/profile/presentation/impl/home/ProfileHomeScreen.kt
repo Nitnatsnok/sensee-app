@@ -132,12 +132,11 @@ private fun ProfileMenuRow(
 
 private val MenuRowMinHeight = 48.dp
 
-private fun ProfileConfig.categoryIcon(): ImageVector =
+private fun ProfileConfig.Settings.categoryIcon(): ImageVector =
     when (this) {
-        ProfileConfig.AppSettings -> SettingsApplications24px
-        ProfileConfig.LearningSettings -> Language24px
-        ProfileConfig.PracticeSettings -> Exercise24px
-        ProfileConfig.AiSettings -> WandStars24px
-        ProfileConfig.ExperimentalSettings -> Handyman24px
-        ProfileConfig.Home -> error("Profile Home is the menu itself, not a category row: $this")
+        ProfileConfig.Settings.App -> SettingsApplications24px
+        ProfileConfig.Settings.Learning -> Language24px
+        ProfileConfig.Settings.Practice -> Exercise24px
+        ProfileConfig.Settings.Ai -> WandStars24px
+        ProfileConfig.Settings.Experimental -> Handyman24px
     }

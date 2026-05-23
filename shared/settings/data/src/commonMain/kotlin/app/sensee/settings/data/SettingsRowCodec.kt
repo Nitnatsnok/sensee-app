@@ -3,6 +3,7 @@ package app.sensee.settings.data
 import app.sensee.core.database.User_setting
 import app.sensee.settings.domain.UserSettingsCategory
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -45,6 +46,16 @@ internal class SettingsRowCodec(
             valueJson = json.encodeToString(Int.serializer(), value),
         )
 
+    fun entry(
+        key: SettingKey,
+        value: List<String>,
+    ): UserSettingEntry =
+        UserSettingEntry(
+            category = key.category,
+            key = key.key,
+            valueJson = json.encodeToString(ListSerializer(String.serializer()), value),
+        )
+
     fun stringValue(
         rows: Map<UserSettingId, User_setting>,
         settingKey: SettingKey,
@@ -70,6 +81,15 @@ internal class SettingsRowCodec(
     ): Int =
         settingKey.rawValue(rows)?.let { valueJson ->
             decodeOrNull { json.decodeFromString(Int.serializer(), valueJson) }
+        } ?: defaultValue
+
+    fun stringListValue(
+        rows: Map<UserSettingId, User_setting>,
+        settingKey: SettingKey,
+        defaultValue: List<String>,
+    ): List<String> =
+        settingKey.rawValue(rows)?.let { valueJson ->
+            decodeOrNull { json.decodeFromString(ListSerializer(String.serializer()), valueJson) }
         } ?: defaultValue
 
     inline fun <reified T : Enum<T>> enumValue(

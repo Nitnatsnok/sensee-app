@@ -17,9 +17,9 @@ public class DefaultProfileHomeComponent(
     @Assisted componentContext: AppComponentContext,
 ) : ProfileHomeComponent,
     AppComponentContext by componentContext {
-    override val items: ImmutableList<ProfileConfig> = SettingsCategoryConfigs
+    override val items: ImmutableList<ProfileConfig.Settings> = SettingsCategoryConfigs
 
-    override fun onItemSelected(config: ProfileConfig) {
+    override fun onItemSelected(config: ProfileConfig.Settings) {
         navigation.open(config)
     }
 
@@ -33,11 +33,11 @@ public class DefaultProfileHomeComponent(
     }
 }
 
-private val SettingsCategoryConfigs: ImmutableList<ProfileConfig> =
+private val SettingsCategoryConfigs: ImmutableList<ProfileConfig.Settings> =
     persistentListOf(
-        ProfileConfig.AppSettings,
-        ProfileConfig.LearningSettings,
-        ProfileConfig.PracticeSettings,
-        ProfileConfig.AiSettings,
-        ProfileConfig.ExperimentalSettings,
+        ProfileConfig.Settings.App,
+        ProfileConfig.Settings.Learning,
+        ProfileConfig.Settings.Practice,
+        ProfileConfig.Settings.Ai,
+        ProfileConfig.Settings.Experimental,
     )

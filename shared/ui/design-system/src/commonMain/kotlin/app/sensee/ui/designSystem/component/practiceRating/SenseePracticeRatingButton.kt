@@ -14,11 +14,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import app.sensee.ui.designSystem.component.SenseeIcon
+import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.Text
 import com.composeunstyled.UnstyledButton
-import com.composeunstyled.minimumInteractiveComponentSize
 
 /**
  * A rating button used in the practice deck swipe-rating row.
@@ -60,7 +60,7 @@ public fun SenseePracticeRatingButton(
             ),
         modifier =
             modifier
-                .minimumInteractiveComponentSize()
+                .senseeMinTouchTargetSize()
                 .defaultMinSize(minWidth = minWidth, minHeight = minHeight)
                 .clip(shape)
                 .background(colors.containerColor(enabled)),

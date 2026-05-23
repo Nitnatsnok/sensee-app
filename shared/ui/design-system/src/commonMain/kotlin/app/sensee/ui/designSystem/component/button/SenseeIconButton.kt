@@ -17,9 +17,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
-import com.composeunstyled.minimumInteractiveComponentSize
 
 @Composable
 public fun SenseeIconButton(
@@ -48,7 +48,7 @@ public fun SenseeIconButton(
         modifier =
             modifier
                 .then(accessibilityModifier)
-                .minimumInteractiveComponentSize()
+                .senseeMinTouchTargetSize()
                 .size(size)
                 .clip(shape)
                 .background(colors.containerColor(enabled))

@@ -33,13 +33,13 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
+import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.Text
 import com.composeunstyled.TextFieldScope
 import com.composeunstyled.TextInput
 import com.composeunstyled.UnstyledTextField
-import com.composeunstyled.minimumInteractiveComponentSize
 import org.jetbrains.compose.resources.stringResource
 import sensee.shared.ui.design_system.generated.resources.Res
 import sensee.shared.ui.design_system.generated.resources.text_field_reveal_hide
@@ -99,7 +99,7 @@ public fun SenseeTextField(
                     text = revealToggleLabel,
                     modifier =
                         Modifier
-                            .minimumInteractiveComponentSize()
+                            .senseeMinTouchTargetSize()
                             .clickable(
                                 enabled = enabled,
                                 role = Role.Button,
@@ -220,7 +220,7 @@ private fun TextFieldScope.SenseeTextFieldInputRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .minimumInteractiveComponentSize()
+                .senseeMinTouchTargetSize()
                 .defaultMinSize(minHeight = SenseeTextFieldDefaults.MinHeight)
                 .clip(shape)
                 .background(resolvedStyle.container)

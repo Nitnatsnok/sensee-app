@@ -10,12 +10,14 @@ kotlin {
             dependencies {
                 api(projects.shared.settings.domain)
                 implementation(projects.shared.core.coroutines)
+                implementation(projects.shared.core.mockBackend)
                 implementation(projects.shared.core.network)
                 implementation(projects.shared.core.platform)
                 implementation(projects.shared.core.secureStorage)
                 implementation(projects.shared.database)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.ktor.client.core)
                 implementation(libs.metro.runtime)
                 implementation(libs.sqldelight.extensions.coroutines)
             }

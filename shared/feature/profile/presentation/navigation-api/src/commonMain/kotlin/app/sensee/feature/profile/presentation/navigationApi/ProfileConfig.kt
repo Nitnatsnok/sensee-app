@@ -9,18 +9,22 @@ public sealed interface ProfileConfig : ScreenConfig {
     @Serializable
     public object Home : ProfileConfig
 
+    /** Detail-pane targets — one per `UserSettingsCategory`. */
     @Serializable
-    public object AppSettings : ProfileConfig
+    public sealed interface Settings : ProfileConfig {
+        @Serializable
+        public object App : Settings
 
-    @Serializable
-    public object LearningSettings : ProfileConfig
+        @Serializable
+        public object Learning : Settings
 
-    @Serializable
-    public object PracticeSettings : ProfileConfig
+        @Serializable
+        public object Practice : Settings
 
-    @Serializable
-    public object AiSettings : ProfileConfig
+        @Serializable
+        public object Ai : Settings
 
-    @Serializable
-    public object ExperimentalSettings : ProfileConfig
+        @Serializable
+        public object Experimental : Settings
+    }
 }

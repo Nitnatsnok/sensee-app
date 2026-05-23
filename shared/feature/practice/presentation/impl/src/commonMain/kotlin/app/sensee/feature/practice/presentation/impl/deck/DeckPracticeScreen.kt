@@ -74,7 +74,8 @@ public fun DeckPracticeScreen(
     AppChildPanels(
         panels = component.panels,
         modifier = modifier,
-        detailPaneWidthFraction = DETAIL_PANE_WIDTH_FRACTION,
+        mainPaneWeight = MAIN_PANE_WEIGHT,
+        detailPaneWeight = DETAIL_PANE_WEIGHT,
         main = { _, _ ->
             DeckPracticePane(
                 uiState = uiState,
@@ -111,7 +112,8 @@ public fun DeckPracticeScreen(
     )
 }
 
-private const val DETAIL_PANE_WIDTH_FRACTION = 0.45f
+private const val MAIN_PANE_WEIGHT = 0.55f
+private const val DETAIL_PANE_WEIGHT = 0.45f
 
 @Composable
 internal fun DeckPracticePane(

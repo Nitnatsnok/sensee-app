@@ -202,6 +202,23 @@ class DefaultUserSettingsRepositoryTest {
         }
 
     @Test
+    fun `learning settings round-trip preserves preferred topic ids`() =
+        runTest {
+            val harness = Harness()
+
+            harness.repository.updateLearningSettings {
+                it.copy(preferredTopicIds = setOf("travel", "technology", "food-cooking"))
+            }
+
+            assertEquals(
+                setOf("travel", "technology", "food-cooking"),
+                harness.repository
+                    .readSettings()
+                    .learning.preferredTopicIds,
+            )
+        }
+
+    @Test
     fun `clearing the AI api key deletes it from secure storage`() =
         runTest {
             val harness = Harness()

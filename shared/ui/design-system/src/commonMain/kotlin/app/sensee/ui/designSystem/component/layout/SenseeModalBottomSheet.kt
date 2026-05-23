@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -44,10 +45,10 @@ public object SenseeModalBottomSheetDefaults {
     public val DragIndicatorWidth: Dp = 40.dp
     public val DragIndicatorHeight: Dp = 4.dp
 
-    // Fraction of the container height the sheet rests at when it first opens,
-    // before the user drags it to full. Capped by the content height so short
-    // sheets don't leave an empty gap.
-    public const val PARTIAL_HEIGHT_FRACTION: Float = 0.6f
+    // Resting fraction of the container the sheet occupies when it first opens.
+    // The user can drag up to `SheetDetent.FullyExpanded` (full container) or
+    // down to dismiss. Mirrors M3 bottom-sheet "half-expanded" semantics.
+    public const val PARTIAL_HEIGHT_FRACTION: Float = 0.5f
 
     @Composable
     public fun contentPadding(): PaddingValues {
@@ -60,11 +61,13 @@ public object SenseeModalBottomSheetDefaults {
     }
 }
 
-// Initial resting position: the sheet opens partway, then the user can drag it
-// up to FullyExpanded or down to dismiss.
+// Half-container detent — always 50% regardless of the content size. The
+// surface inside fills this allocated height (see fillMaxHeight below) so the
+// scrim never bleeds through under the content. Content longer than the
+// detent scrolls inside; drag-up goes to FullyExpanded.
 private val PARTIAL_DETENT =
-    SheetDetent(identifier = "partial") { containerHeight, sheetHeight ->
-        minOf(sheetHeight, containerHeight * SenseeModalBottomSheetDefaults.PARTIAL_HEIGHT_FRACTION)
+    SheetDetent(identifier = "partial") { containerHeight, _ ->
+        containerHeight * SenseeModalBottomSheetDefaults.PARTIAL_HEIGHT_FRACTION
     }
 
 /**
@@ -76,6 +79,12 @@ private val PARTIAL_DETENT =
  * Caller-controlled `visible` is pushed into the sheet detent state. When the user dismisses
  * by drag or tap-outside, the sheet animates itself to Hidden internally; the redundant
  * `animateTo(Hidden)` from the visibility effect is suppressed to avoid scrim flicker.
+ *
+ * The sheet opens at half-container height ([SenseeModalBottomSheetDefaults.PARTIAL_HEIGHT_FRACTION])
+ * and can be dragged up to fully expanded. The surface fills the allocated detent height —
+ * content shorter than the detent leaves the rest as surface color (M3 behavior); content
+ * taller than the current detent scrolls inside its own scroll container (the caller is
+ * expected to use `LazyColumn` or `Modifier.verticalScroll`).
  */
 @Composable
 public fun SenseeModalBottomSheet(
@@ -140,6 +149,14 @@ public fun SenseeModalBottomSheet(
                             // only caps the content, killing centering.
                             .widthIn(max = maxWidth)
                             .fillMaxWidth()
+                            // Fill the detent's allocated height so the surface
+                            // is the full sheet area on every detent — without
+                            // this the surface wraps inner content height and a
+                            // `LazyColumn` (whose `maxIntrinsicHeight` is 0)
+                            // collapses the surface, exposing the scrim below
+                            // the inner content while the anchor still sits at
+                            // the partial-detent offset.
+                            .fillMaxHeight()
                             .clip(sheetShape)
                             .background(colors.surfaceContainerHigh),
                 ) {
