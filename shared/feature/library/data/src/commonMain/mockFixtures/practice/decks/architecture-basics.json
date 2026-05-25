@@ -1,0 +1,140 @@
+{
+  "id": "architecture-basics",
+  "title": "Architecture vocabulary",
+  "description": "Базовая лексика для разговоров об архитектуре ПО.",
+  "cards": [
+        {
+      "id": "card-resilient",
+      "lemma_id": "lemma-resilient",
+      "headword": "resilient",
+      "translation": "устойчивый, способный быстро восстановиться",
+      "context_sentence": "A resilient system keeps working even when some parts fail.",
+      "unit_type": "adjective",
+      "grammar_tags": [
+        { "category": "degree", "form": "positive" }
+      ],
+      "sense_summary": "о системе — способна продолжать работу при отказах",
+      "explanation": "Часто противопоставляется fragile: после ударов система возвращается к работе."
+    },
+    {
+      "id": "card-trade-off",
+      "lemma_id": "lemma-trade-off",
+      "headword": "trade-off",
+      "translation": "компромисс между вариантами",
+      "context_sentence": "Every architecture decision has a trade-off.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "баланс между альтернативами при выборе решения",
+      "explanation": "Подразумевает, что выгоду в одном измерении мы оплачиваем в другом."
+    },
+    {
+      "id": "card-cohesion",
+      "lemma_id": "lemma-cohesion",
+      "headword": "cohesion",
+      "translation": "связность внутри модуля или компонента",
+      "context_sentence": "High cohesion makes a module easier to understand.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "countability", "form": "uncountable" }
+      ],
+      "sense_summary": "степень логической связанности элементов модуля",
+      "explanation": "Высокая cohesion = одна ответственность; низкая = «свалка»."
+    },
+    {
+      "id": "card-boundary",
+      "lemma_id": "lemma-boundary",
+      "headword": "boundary",
+      "translation": "граница ответственности",
+      "context_sentence": "A clear boundary protects the domain model.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "разделение зон ответственности между частями системы",
+      "explanation": "Архитектурная метафора: внутри boundary действуют свои правила, снаружи — другие."
+    },
+        {
+      "id": "card-eventually",
+      "lemma_id": "lemma-eventually",
+      "headword": "eventually",
+      "translation": "в конечном итоге",
+      "context_sentence": "The cache will eventually become consistent.",
+      "unit_type": "adverb",
+      "grammar_tags": [
+        { "category": "degree", "form": "positive" }
+      ],
+      "sense_summary": "о наступлении результата спустя некоторое время",
+      "explanation": "Не «потенциально», а «через какое-то время, но обязательно»."
+    },
+    {
+      "id": "card-coupling",
+      "lemma_id": "lemma-coupling",
+      "headword": "coupling",
+      "translation": "связанность между модулями",
+      "context_sentence": "Tight coupling makes change expensive.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "countability", "form": "uncountable" }
+      ],
+      "sense_summary": "степень зависимости модулей друг от друга",
+      "explanation": "Цель — loose coupling: модули знают друг о друге как можно меньше."
+    },
+    {
+      "id": "card-scalable",
+      "lemma_id": "lemma-scalable",
+      "headword": "scalable",
+      "translation": "масштабируемый",
+      "context_sentence": "We need a scalable design before traffic grows.",
+      "unit_type": "adjective",
+      "grammar_tags": [
+        { "category": "degree", "form": "positive" }
+      ],
+      "sense_summary": "о системе — растёт под нагрузкой без переписывания",
+      "explanation": "Способность выдержать рост нагрузки добавлением ресурсов."
+    },
+    {
+      "id": "card-latency",
+      "lemma_id": "lemma-latency",
+      "headword": "latency",
+      "translation": "задержка отклика",
+      "context_sentence": "Caching reduces read latency.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "countability", "form": "uncountable" }
+      ],
+      "sense_summary": "время между запросом и ответом",
+      "explanation": "Не путать с throughput: latency — про задержку одного запроса."
+    },
+    {
+      "id": "card-throughput",
+      "lemma_id": "lemma-throughput",
+      "headword": "throughput",
+      "translation": "пропускная способность",
+      "context_sentence": "Batching improved throughput tenfold.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "countability", "form": "uncountable" }
+      ],
+      "sense_summary": "объём работы в единицу времени",
+      "explanation": "Сколько запросов система обрабатывает за секунду."
+    },
+    {
+      "id": "card-bottleneck",
+      "lemma_id": "lemma-bottleneck",
+      "headword": "bottleneck",
+      "translation": "узкое место",
+      "context_sentence": "The database is the current bottleneck.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "самый медленный участок, ограничивающий систему",
+      "explanation": "Оптимизировать имеет смысл именно bottleneck, а не всё подряд."
+    }
+  ]
+}

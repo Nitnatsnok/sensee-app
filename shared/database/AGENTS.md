@@ -36,6 +36,15 @@ Current wiring:
 
 ## Adding a schema change
 
+While the schema is churning (current state), edit the `.sq` file directly and let
+`reconcileDevSchema` recreate the dev DB on the next launch. No `.sqm` and no version
+bump. Do not create placeholder migrations just for churn.
+
+Once real users ship and we have data worth keeping, switch to the production path
+below and drop `resetOnSchemaMigration` from all callers.
+
+Production path (not active yet):
+
 1. **Edit the `.sq` file** in the relevant `database-schema` module. Add/modify
    `CREATE TABLE`, columns, indexes, etc.
 2. **Write a migration** in the same module under

@@ -205,7 +205,7 @@ model {
 
     grammar_taxonomy = layer 'Neutral Grammar Taxonomy' {
       #shared
-      description 'Нейтральные `GrammarUnitType`, `GrammarTag`, `GrammarCategory/Form`, labels provider и fixtures, не привязанные к конкретному AI-провайдеру.'
+      description 'Нейтральные `GrammarUnitType`, `GrammarTag`, `GrammarCategory/Form`, runtime labels/invariants providers и fixtures, не привязанные к конкретному AI-провайдеру.'
       technology 'shared/grammar/domain + shared/grammar/data'
       link ../pos-and-forms.adoc
     }
@@ -239,8 +239,8 @@ model {
     }
 
     observability = layer 'Observability Foundation' {
-      #prepared
-      description 'Подготовленный foundation-модуль для logging и дальнейших observability/instrumentation integration points.'
+      #shared
+      description 'Runtime diagnostics boundary: logging, crash reporting and analytics contracts with no-op/local/platform defaults; external telemetry backends are still planned.'
       technology 'shared/core/observability'
       link ../arc42/sections/05_building_block_view.adoc
     }
@@ -254,7 +254,7 @@ model {
 
     splash = layer 'Startup Screen' {
       #shared
-      description 'Cold-start splash: держится ровно пока идёт реальный прогрев словаря (app-scoped GrammarLabelsProvider), не по фиксированной задержке. При тёплом восстановлении персистентного root-стека минуется — deep-target возвращается без splash.'
+      description 'Cold-start splash: держится ровно пока идёт `PreloadAppStartupUseCase` для runtime-таксономии, не по фиксированной задержке. При сбое показывает retryable state; при тёплом восстановлении персистентного root-стека минуется — deep-target возвращается без splash.'
       technology 'StartupComponent'
       link ../arc42/sections/06_runtime_view.adoc
     }
@@ -282,7 +282,7 @@ model {
 
     vocabulary_capture = layer 'Vocabulary Capture Capability' {
       #shared
-      description 'Реализованный primary product capability (ADR-001): ввод → enrich-шов → набор `MeaningCandidate` → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Wizard-стадий нет; выбор и есть подтверждение. Планируемое — lemma-семья и деривация derived-карточек.'
+      description 'Реализованный primary product capability (ADR-001): ввод → AI-граница → набор `MeaningCandidate` → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Поток одностраничный, выбор и есть подтверждение. Планируемое — lemma-семья и деривация derived-карточек.'
       technology 'vocabulary authoring flow'
       link ../arc42/sections/06_runtime_view.adoc
     }
@@ -354,12 +354,14 @@ model {
     entrypoints -> app_shell 'launch the shared UI' 'Создают `PlatformEnvironment` и передают управление общему app shell' 'In-process'
     entrypoints -> platform_services 'use runtime APIs' 'Android, browser, desktop и iOS runtime capabilities' 'Platform APIs'
     app_shell -> core_runtime 'creates the root component graph' 'AppGraph, RootComponent, navigation и DI wiring' 'In-process'
+    app_shell -> observability 'wires diagnostics boundary' '`ObservabilityProviders` публикует logger, crash reporter, analytics tracker и `AppDiagnostics` в app graph' 'Metro DI'
     app_shell -> splash 'shows startup splash (cold start only)' '`RootComponent` стартует с `StartupConfig` лишь когда нет сохранённого стека; иначе восстанавливает deep-target' 'Runtime'
     app_shell -> learning_api 'creates section host contracts' 'PrimaryShellComponent знает feature boundary через component API' 'In-process'
     app_shell -> learning_impl 'resolves feature implementations' 'Реализации подключены через DI bindings и shared dependencies' 'Metro DI'
     learning_api -> core_runtime 'depends on app component abstractions' 'Feature components строятся поверх shared navigation/component contracts' 'Decompose abstractions'
     learning_impl -> learning_api 'implements the feature boundary' 'Compose-реализация следует API-контракту' 'In-process'
     learning_impl -> core_presentation 'uses loading state' '`DeckPracticeLogic` и API state используют DataLoadingState' 'In-process'
+    learning_impl -> observability 'reports presentation failures' 'Feature logic получает `AppDiagnostics` через shared component/DI boundary' 'In-process'
     learning_impl -> practice_domain 'submits review through practice contract' '`DeckPracticeLogic` отправляет review через PracticeReviewRepository' 'In-process'
     learning_impl -> library_catalog 'loads deck through catalog contract' '`DeckPracticeLogic` загружает deck через library-owned CatalogRepository' 'In-process'
     learning_impl -> learning_deck 'renders reusable deck UI' '`DeckPracticeScreen` использует `shared/ui/learning-deck`' 'Compose UI'
@@ -371,7 +373,7 @@ model {
     app_shell -> settings_data 'wires settings repository' '`shared/settings/data` подключён в app-level dependencies' 'Metro DI'
     app_shell -> ai_enrichment 'wires AI enrichment seam' '`shared/ai/integration` подключает routing и provider selection через настройки' 'Metro DI'
     app_shell -> tts_seam 'wires speech services' '`shared/tts/integration` подключает speech providers/playback/cache' 'Metro DI'
-    app_shell -> grammar_taxonomy 'warms grammar labels' '`RootComponent` app-scoped прогревает `GrammarLabelsProvider`' 'In-process'
+    app_shell -> grammar_taxonomy 'preloads runtime taxonomy' '`RootComponent` и `StartupComponent` используют `PreloadAppStartupUseCase`: labels + invariants поверх общего `CachingGrammarTaxonomyProvider`' 'In-process'
     settings_data -> settings_domain 'implements settings contract' '`DefaultUserSettingsRepository` реализует `UserSettingsRepository`' 'In-process'
     settings_data -> persistence 'stores user settings' '`UserSettingsLocalDataSource` работает через SQLDelight database' 'SQLDelight'
     persistence -> settings_schema 'aggregates shared settings schema' '`shared/database` подключает `shared/settings/database-schema`' 'SQLDelight aggregation'
@@ -381,9 +383,9 @@ model {
     library_catalog -> mock_backend 'contributes catalog fixtures' '`CatalogMockFixtures` поставляет service sets/decks для mock backend' 'Fixture data'
     app_shell -> persistence 'depends on shared persistence module' '`shared/database` подключён в общих зависимостях app shell' 'SQLDelight'
     persistence -> platform_services 'uses platform SQL drivers' '`DriverFactory` создаёт platform-specific `SqlDriver`' 'Platform APIs'
-    vocabulary_editor -> vocabulary_capture 'hosts the authoring flow' 'Vocabulary Editor — host для add (capture, реализовано) и для edit записи (edit-path planned); wizard-стадий нет, выбор и есть подтверждение' 'Runtime shell'
+    vocabulary_editor -> vocabulary_capture 'hosts the authoring flow' 'Vocabulary Editor — host для add (capture, реализовано) и для edit записи (edit-path planned); поток одностраничный, выбор и есть подтверждение' 'Runtime shell'
     review_target -> vocabulary_editor 'opens entry editing from a card' 'Из карточки practice deep-link открывает редактирование соответствующей `LexicalEntry` в Vocabulary Editor (planned)' 'Runtime navigation'
-    vocabulary_capture -> ai_enrichment 'requests candidate enrichment' 'Candidate meanings, contexts и grammar cues приходят через provider-agnostic AI-шов как `MeaningCandidate`; без ключа — offline-fixture, деградация first-class, ручной смысл всё равно доходит до Confirmed' 'In-process'
+    vocabulary_capture -> ai_enrichment 'requests candidate enrichment' 'Candidate meanings, contexts и grammar cues приходят через provider-agnostic AI-границу как `MeaningCandidate`; без ключа — offline-fixture, деградация first-class, ручной смысл всё равно доходит до Confirmed' 'In-process'
     ai_enrichment -> ai_fixture 'falls back offline' 'Zero-config deterministic candidates without user key' 'In-process'
     ai_enrichment -> llm_adapter 'routes to configured LLM' 'Settings-backed provider/key/model selection' 'In-process'
     ai_enrichment -> settings_domain 'reads AI settings' '`AiSettings` выбирает provider/key/model и degradation path' 'In-process'

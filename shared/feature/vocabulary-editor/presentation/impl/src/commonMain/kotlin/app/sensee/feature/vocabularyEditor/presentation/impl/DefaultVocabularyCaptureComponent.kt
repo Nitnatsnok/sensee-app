@@ -30,15 +30,16 @@ public class DefaultVocabularyCaptureComponent(
     override fun onAction(action: VocabularyCaptureAction) {
         when (action) {
             is VocabularyCaptureAction.Suggest -> logic.suggest(action.term)
-            is VocabularyCaptureAction.ToggleCandidate -> logic.toggleCandidate(action.index)
+            is VocabularyCaptureAction.ToggleCandidate -> logic.toggleCandidate(action.id)
             is VocabularyCaptureAction.AddManual ->
                 logic.addManual(action.translation, action.surfaceForm, action.unitType)
             is VocabularyCaptureAction.CompleteManualWithAssistant ->
                 logic.completeManualWithAssistant(action.manualIndex)
             is VocabularyCaptureAction.ToggleManualSuggestion ->
-                logic.toggleManualSuggestion(action.manualIndex, action.suggestionIndex)
+                logic.toggleManualSuggestion(action.manualIndex, action.suggestionId)
             VocabularyCaptureAction.ConfirmSelected -> logic.confirmSelected()
             VocabularyCaptureAction.Reset -> logic.reset()
+            VocabularyCaptureAction.RetryGrammarLabels -> logic.retryGrammarLabels()
         }
     }
 

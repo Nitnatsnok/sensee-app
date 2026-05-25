@@ -2,6 +2,8 @@ package app.sensee.feature.vocabularyEditor.presentation.impl
 
 import app.sensee.core.presentation.text.MapTextProvider
 import app.sensee.core.presentation.text.TextKey
+import app.sensee.core.presentation.text.TextProvider
+import app.sensee.feature.vocabularyEditor.presentation.api.CaptureStatusNote
 
 internal object VocabularyCaptureTextKeys {
     val Title = TextKey("vocabulary_capture.title")
@@ -13,6 +15,8 @@ internal object VocabularyCaptureTextKeys {
     val Working = TextKey("vocabulary_capture.working")
     val GetSuggestions = TextKey("vocabulary_capture.get_suggestions")
     val SuggestError = TextKey("vocabulary_capture.suggest_error")
+    val AiUnavailableNote = TextKey("vocabulary_capture.ai_unavailable_note")
+    val AiDegradedNote = TextKey("vocabulary_capture.ai_degraded_note")
     val MissedSense = TextKey("vocabulary_capture.missed_sense")
     val ManualMeaningLabel = TextKey("vocabulary_capture.manual_meaning_label")
     val ManualMeaningPlaceholder = TextKey("vocabulary_capture.manual_meaning_placeholder")
@@ -31,9 +35,13 @@ internal object VocabularyCaptureTextKeys {
     val DetailToggleShow = TextKey("vocabulary_capture.detail_toggle_show")
     val DetailPrepositions = TextKey("vocabulary_capture.detail_prepositions")
     val DetailComplementation = TextKey("vocabulary_capture.detail_complementation")
+    val DetailGrammar = TextKey("vocabulary_capture.detail_grammar")
     val DetailUsage = TextKey("vocabulary_capture.detail_usage")
     val DetailForms = TextKey("vocabulary_capture.detail_forms")
     val DetailNote = TextKey("vocabulary_capture.detail_note")
+    val GrammarLabelsLoading = TextKey("vocabulary_capture.grammar_labels.loading")
+    val GrammarLabelsError = TextKey("vocabulary_capture.grammar_labels.error")
+    val GrammarLabelsRetry = TextKey("vocabulary_capture.grammar_labels.retry")
 }
 
 internal val DefaultVocabularyCaptureTextProvider =
@@ -50,6 +58,9 @@ internal val DefaultVocabularyCaptureTextProvider =
             VocabularyCaptureTextKeys.GetSuggestions to "Получить варианты",
             VocabularyCaptureTextKeys.SuggestError to
                 "Не удалось получить варианты — добавьте значение вручную.",
+            VocabularyCaptureTextKeys.AiUnavailableNote to
+                "Ассистент не настроен или недоступен — укажите ключ в настройках или добавьте значение вручную.",
+            VocabularyCaptureTextKeys.AiDegradedNote to "Частичный ответ ассистента: {0}",
             VocabularyCaptureTextKeys.MissedSense to "Не хватает значения?",
             VocabularyCaptureTextKeys.ManualMeaningLabel to "Значение (своими словами)",
             VocabularyCaptureTextKeys.ManualMeaningPlaceholder to "значение, которого не хватило",
@@ -66,12 +77,22 @@ internal val DefaultVocabularyCaptureTextProvider =
             VocabularyCaptureTextKeys.Completing to "Дополнение…",
             VocabularyCaptureTextKeys.PickAssistantVersion to
                 "Выберите версию ассистента (заменит вашу):",
-            VocabularyCaptureTextKeys.DetailToggleHide to "Свернуть ▴",
-            VocabularyCaptureTextKeys.DetailToggleShow to "Подробнее ▾",
+            VocabularyCaptureTextKeys.DetailToggleHide to "Свернуть",
+            VocabularyCaptureTextKeys.DetailToggleShow to "Подробнее",
             VocabularyCaptureTextKeys.DetailPrepositions to "Предлоги",
             VocabularyCaptureTextKeys.DetailComplementation to "Дополнение",
+            VocabularyCaptureTextKeys.DetailGrammar to "Грамматика",
             VocabularyCaptureTextKeys.DetailUsage to "Употребление",
             VocabularyCaptureTextKeys.DetailForms to "Формы",
             VocabularyCaptureTextKeys.DetailNote to "Примечание",
+            VocabularyCaptureTextKeys.GrammarLabelsLoading to "Загрузка обозначений…",
+            VocabularyCaptureTextKeys.GrammarLabelsError to "Обозначения не загружены — карточка показывает сырые id",
+            VocabularyCaptureTextKeys.GrammarLabelsRetry to "Повторить",
         ),
     )
+
+internal fun TextProvider.statusNoteText(note: CaptureStatusNote): String =
+    when (note) {
+        CaptureStatusNote.AiUnavailable -> text(VocabularyCaptureTextKeys.AiUnavailableNote)
+        is CaptureStatusNote.AiDegraded -> text(VocabularyCaptureTextKeys.AiDegradedNote, note.reason)
+    }

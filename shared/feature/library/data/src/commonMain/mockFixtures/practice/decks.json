@@ -1,0 +1,22 @@
+{
+  "decks": [
+    {
+      "id": "phrasal-verbs-come",
+      "title": "Phrasal verbs: come",
+      "description": "Семейство фразовых глаголов с базовой леммой come.",
+      "card_count": 10
+    },
+    {
+      "id": "architecture-basics",
+      "title": "Architecture vocabulary",
+      "description": "Базовая лексика для разговоров об архитектуре ПО.",
+      "card_count": 10
+    },
+    {
+      "id": "daily-essentials",
+      "title": "Daily essentials",
+      "description": "Карточки общего назначения, которые встречаются каждый день.",
+      "card_count": 10
+    }
+  ]
+}

@@ -11,6 +11,9 @@ import app.sensee.feature.library.domain.CatalogRepository
 import app.sensee.feature.practice.presentation.api.CardDetailCardUiState
 import app.sensee.feature.practice.presentation.api.CardDetailUiState
 import app.sensee.feature.practice.presentation.api.RelatedCardUiState
+import app.sensee.grammar.domain.GrammarLabels
+import app.sensee.grammar.domain.GrammarLabelsLoadResult
+import app.sensee.grammar.domain.GrammarLabelsProvider
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -25,6 +28,7 @@ import kotlinx.coroutines.launch
 public class CardDetailLogic(
     @Assisted private val cardId: String,
     private val catalogRepository: CatalogRepository,
+    private val grammarLabelsProvider: GrammarLabelsProvider,
     appDispatchers: AppDispatchers,
     appDiagnostics: AppDiagnostics,
 ) : BaseLogic(appDispatchers, appDiagnostics) {
@@ -33,12 +37,47 @@ public class CardDetailLogic(
         public fun create(cardId: String): CardDetailLogic
     }
 
-    private val mutableUiState = MutableStateFlow(CardDetailUiState())
+    private val mutableUiState =
+        grammarLabelsProvider.cachedLabels().let { initial ->
+            MutableStateFlow(
+                CardDetailUiState(
+                    grammarLabels = initial,
+                    grammarLabelsState = initialLabelsState(initial),
+                ),
+            )
+        }
 
     public val uiState: StateFlow<CardDetailUiState> = mutableUiState.asStateFlow()
 
     init {
         load()
+        loadGrammarLabels()
+    }
+
+    internal fun retryGrammarLabels() = loadGrammarLabels()
+
+    private fun loadGrammarLabels() {
+        logicScope.launch {
+            mutableUiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
+            when (val result = grammarLabelsProvider.awaitLabels()) {
+                is GrammarLabelsLoadResult.Loaded ->
+                    mutableUiState.update {
+                        it.copy(
+                            grammarLabels = result.labels,
+                            grammarLabelsState = DataLoadingState.Success,
+                        )
+                    }
+                is GrammarLabelsLoadResult.Failed ->
+                    mutableUiState.update {
+                        it.copy(
+                            grammarLabelsState =
+                                DataLoadingState.Error(
+                                    result.cause ?: IllegalStateException("grammar labels load failed"),
+                                ),
+                        )
+                    }
+            }
+        }
     }
 
     public fun load() {
@@ -90,3 +129,6 @@ private fun CardSummary.toUi(isCurrent: Boolean): RelatedCardUiState =
         senseSummary = senseSummary,
         isCurrent = isCurrent,
     )
+
+private fun initialLabelsState(seed: GrammarLabels): DataLoadingState =
+    if (seed === GrammarLabels.EMPTY) DataLoadingState.Idle else DataLoadingState.Success

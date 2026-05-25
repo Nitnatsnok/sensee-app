@@ -1,0 +1,16 @@
+{
+  "id": "lemma-come",
+  "text": "come",
+  "related_cards": [
+    { "id": "card-come", "headword": "come", "unit_type": "irregular_verb", "translation": "приходить, прибывать", "sense_summary": "движение к месту или к говорящему" },
+    { "id": "card-come-up", "headword": "come up", "unit_type": "phrasal_verb", "translation": "возникать, неожиданно появиться", "sense_summary": "о теме, проблеме, событии — внезапно появиться" },
+    { "id": "card-come-up-with", "headword": "come up with", "unit_type": "phrasal_verb", "translation": "придумать, предложить", "sense_summary": "сгенерировать идею, решение, ответ" },
+    { "id": "card-come-across", "headword": "come across", "unit_type": "phrasal_verb", "translation": "случайно встретить, наткнуться", "sense_summary": "найти что-то или встретить кого-то случайно" },
+    { "id": "card-come-around", "headword": "come around", "unit_type": "phrasal_verb", "translation": "прийти в сознание, очнуться", "sense_summary": "вернуться в сознание после обморока или сна" },
+    { "id": "card-come-back", "headword": "come back", "unit_type": "phrasal_verb", "translation": "вернуться", "sense_summary": "возвращение в прежнее место" },
+    { "id": "card-come-out", "headword": "come out", "unit_type": "phrasal_verb", "translation": "выходить, становиться известным", "sense_summary": "о выпуске, публикации или раскрытии факта" },
+    { "id": "card-come-along", "headword": "come along", "unit_type": "phrasal_verb", "translation": "продвигаться, идти вместе", "sense_summary": "о прогрессе или о том, чтобы присоединиться" },
+    { "id": "card-come-down", "headword": "come down", "unit_type": "phrasal_verb", "translation": "снижаться, падать", "sense_summary": "уменьшение величины или уровня" },
+    { "id": "card-come-over", "headword": "come over", "unit_type": "phrasal_verb", "translation": "заходить в гости", "sense_summary": "прийти к кому-то домой ненадолго" }
+  ]
+}

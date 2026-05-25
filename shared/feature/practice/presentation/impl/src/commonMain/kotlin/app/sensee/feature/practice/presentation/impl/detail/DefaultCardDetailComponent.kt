@@ -32,6 +32,7 @@ public class DefaultCardDetailComponent(
     override fun onAction(action: CardDetailAction) {
         when (action) {
             CardDetailAction.Retry -> logic.load()
+            CardDetailAction.RetryGrammarLabels -> logic.retryGrammarLabels()
             is CardDetailAction.OpenRelated ->
                 navigation.open(PracticeConfig.CardDetail(action.cardId))
         }

@@ -18,6 +18,8 @@ internal fun grammarUnitBadgeColors(type: GrammarUnitType): SenseeBadgeColors {
         GrammarUnitType.Verb,
         GrammarUnitType.IrregularVerb,
         GrammarUnitType.PhrasalVerb,
+        GrammarUnitType.ModalVerb,
+        GrammarUnitType.AuxiliaryVerb,
         -> if (dark) VerbDark else VerbLight
         GrammarUnitType.Noun -> if (dark) NounDark else NounLight
         GrammarUnitType.Adjective,
@@ -34,6 +36,7 @@ internal fun grammarUnitBadgeColors(type: GrammarUnitType): SenseeBadgeColors {
         GrammarUnitType.Conjunction,
         GrammarUnitType.Interjection,
         -> SenseeBadgeDefaults.neutralColors()
+        is GrammarUnitType.Unknown -> SenseeBadgeDefaults.neutralColors()
     }
 }
 

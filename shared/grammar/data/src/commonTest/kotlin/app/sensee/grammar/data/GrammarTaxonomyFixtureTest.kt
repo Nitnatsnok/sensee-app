@@ -3,62 +3,62 @@ package app.sensee.grammar.data
 import app.sensee.grammar.domain.ComplementType
 import app.sensee.grammar.domain.GrammarCategory
 import app.sensee.grammar.domain.GrammarForm
-import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.UsageAxis
 import app.sensee.grammar.domain.UsageValue
+import app.sensee.grammar.domain.normalizedTaxonomyId
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
+/**
+ * The fixture is the closed set of "client-known" ids; backend additions
+ * beyond it surface as `Unknown(id)` at runtime. Canon: `docs/pos-and-forms.adoc`.
+ */
 class GrammarTaxonomyFixtureTest {
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
-    fun `the taxonomy fixture deserializes with every unit type`() {
-        assertEquals(GrammarUnitType.entries.size, readTaxonomy().unitTypes.size)
+    fun `the taxonomy fixture deserializes with every known unit type`() {
+        assertEquals(GrammarUnitType.knownEntries.size, readTaxonomy().unitTypes.size)
     }
 
     @Test
-    fun `unit type ids map to the domain enum`() {
-        val domainIds = GrammarUnitType.entries.map { it.name.normalizedId() }.toSet()
+    fun `unit type ids map to a known sealed case`() {
+        val knownIds = GrammarUnitType.knownEntries.map { it.id.normalizedTaxonomyId() }.toSet()
 
         readTaxonomy().unitTypes.forEach { unitType ->
             assertTrue(
-                unitType.id.normalizedId() in domainIds,
-                "Missing domain unit type for ${unitType.id}",
+                unitType.id.normalizedTaxonomyId() in knownIds,
+                "Missing known unit type for ${unitType.id}",
             )
         }
     }
 
     @Test
-    fun `categories and forms map to the domain invariant`() {
-        val categoryIds = GrammarCategory.entries.map { it.id }.toSet()
-        val formIds = GrammarForm.entries.map { it.id }.toSet()
+    fun `categories and forms in the fixture map to known sealed cases`() {
+        val categoryIds = GrammarCategory.knownEntries.map { it.id }.toSet()
+        val formIds = GrammarForm.knownEntries.map { it.id }.toSet()
 
         readTaxonomy().unitTypes.forEach { unitType ->
             unitType.categories.forEach { category ->
                 assertTrue(category.id in categoryIds, "Unknown category ${category.id}")
                 category.forms.forEach { form ->
                     assertTrue(form.id in formIds, "Unknown form ${category.id}/${form.id}")
-                    assertNotNull(
-                        GrammarTag.resolve(category.id, form.id),
-                        "Invalid grammar pair ${category.id}/${form.id}",
-                    )
                 }
             }
         }
     }
 
     @Test
-    fun `usage axes and values map to the domain enum`() {
+    fun `usage axes and values in the fixture map to known sealed cases`() {
         val taxonomy = readTaxonomy()
-        val axisIds = UsageAxis.entries.map { it.id }.toSet()
-        val valueIds = UsageValue.entries.map { it.id }.toSet()
+        val axisIds = UsageAxis.knownEntries.map { it.id }.toSet()
+        val valueIds = UsageValue.knownEntries.map { it.id }.toSet()
 
-        assertEquals(UsageAxis.entries.size, taxonomy.usageAxes.size)
+        assertEquals(UsageAxis.knownEntries.size, taxonomy.usageAxes.size)
         taxonomy.usageAxes.forEach { axis ->
             assertTrue(axis.id in axisIds, "Unknown usage axis ${axis.id}")
             axis.values.forEach { value ->
@@ -68,11 +68,11 @@ class GrammarTaxonomyFixtureTest {
     }
 
     @Test
-    fun `complement types cover the domain enum`() {
+    fun `complement types cover the known sealed cases`() {
         val taxonomy = readTaxonomy()
 
         assertEquals(
-            ComplementType.entries.map { it.id }.toSet(),
+            ComplementType.knownEntries.map { it.id }.toSet(),
             taxonomy.complementTypes.map { it.id }.toSet(),
         )
     }
@@ -95,5 +95,3 @@ class GrammarTaxonomyFixtureTest {
         return json.decodeFromString<GrammarTaxonomyDto>(fixture)
     }
 }
-
-private fun String.normalizedId(): String = filter { it.isLetterOrDigit() }.lowercase()

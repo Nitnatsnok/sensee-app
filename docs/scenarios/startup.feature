@@ -3,19 +3,21 @@
 Функция: Запуск клиента и открытие основного shell
 
   В качестве пользователя я запускаю приложение на любой из поддерживаемых платформ
-  (Android, iOS, Desktop JVM, JS, Wasm) и попадаю в основной primary shell
+  (Android, iOS, Desktop JVM, JS, Wasm) и попадаю в основную навигационную оболочку
   через общий стартовый экран.
 
   Источники реализации:
   - `shared/app-shell/.../root/createAppRoot.kt`, `DefaultRootComponent.kt`
   - `shared/app-shell/.../primary/DefaultPrimaryShellComponent.kt`
   - `shared/app-shell/.../primary/PrimaryShellConfigSerializersProvider.kt`
-    (root-стек персистится; `StartupConfig`/`PrimaryShellConfig` сериализуемы)
+    (root-стек сохраняется; `StartupConfig`/`PrimaryShellConfig` сериализуемы)
   - `shared/feature/startup/.../DefaultStartupComponent.kt`
-  - `shared/grammar/data/.../GrammarLabelsProvider.kt` (app-scoped warm)
+  - `shared/feature/startup/domain/.../PreloadAppStartupUseCase.kt`
+  - `shared/grammar/data/.../CachingGrammarTaxonomyProvider.kt`,
+    `CachingGrammarLabelsProvider.kt`, `CachingTaxonomyInvariantsProvider.kt`
 
   Предыстория:
-    Допустим платформенный entrypoint поднял runtime и `PlatformEnvironment`
+    Допустим платформенная точка входа инициализировала среду выполнения и передала `PlatformEnvironment`
     И вызвал `createAppRoot(...)`, который собрал `AppGraph` и создал `RootComponent`
 
   Сценарий: Холодный старт показывает стартовый экран как initial configuration
@@ -24,20 +26,30 @@
     Тогда `initialConfiguration` равен `StartupConfig`
     И `RootScreen` отображает `StartupComponent` из child stack
 
-  Сценарий: Прогрев словаря — app-scoped, на холодном и тёплом старте
+  Сценарий: Прогрев таксономии — app-scoped, на холодном и тёплом старте
     Когда создаётся `DefaultRootComponent`
-    Тогда он один раз запускает `GrammarLabelsProvider.labels()` в своём scope
+    Тогда он один раз запускает `PreloadAppStartupUseCase` в своём scope
+    И use case загружает `GrammarLabelsProvider.labels()` и
+      `TaxonomyInvariantsProvider.invariants()`
     И прогрев не привязан к splash: тёплое восстановление, минующее
-      `StartupComponent`, всё равно прогревает словарь
-    И провайдер мемоизирует успех; повторные вызовы не рефетчат
+      `StartupComponent`, всё равно прогревает таксономию времени выполнения
+    И общий `CachingGrammarTaxonomyProvider` запоминает успешную загрузку;
+      повторные проекции labels/invariants не запрашивают таксономию заново
 
   Сценарий: Splash держится ровно пока идёт реальный прогрев
     Допустим показан `StartupComponent` (холодный старт)
-    Когда `StartupScreen` ждёт `component.awaitReady()`
-    Тогда ожидание завершается по готовности `GrammarLabelsProvider.labels()`,
-      а не по фиксированной задержке
-    И сбой прогрева не блокирует: `awaitReady()` всё равно завершается (EMPTY)
+    Когда `DefaultStartupComponent` запускает `PreloadAppStartupUseCase`
+    Тогда экран остаётся в состоянии загрузки до результата preload,
+      а не до фиксированной задержки
+    И успешный preload переводит состояние в `StartupState.Loaded`
     И затем вызывается `onFinished`
+
+  Сценарий: Сбой startup-прогрева виден и запускается повторно
+    Допустим показан `StartupComponent` (холодный старт)
+    Когда `PreloadAppStartupUseCase` возвращает сбой labels или invariants
+    Тогда состояние становится `StartupState.Failed`
+    И пользователь может повторить preload через retry
+    И провайдеры не запоминают неуспешную загрузку
 
   Сценарий: Тёплое восстановление возвращает deep-target без splash
     Допустим сохранён root-стек с `PrimaryShellConfig`, у которого задан `target`
@@ -67,4 +79,4 @@
   Сценарий: Нереализованные разделы показывают `UnimplementedScreen`
     Допустим основной shell открыт
     Когда я перехожу в раздел без реализованного содержания (`Home`)
-    Тогда раздел рендерит общую заглушку дизайн-системы `UnimplementedScreen`
+    Тогда раздел отображает общую заглушку дизайн-системы `UnimplementedScreen`

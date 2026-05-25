@@ -1,0 +1,7 @@
+{
+  "id": "lemma-bottleneck",
+  "text": "bottleneck",
+  "related_cards": [
+    { "id": "card-bottleneck", "headword": "bottleneck", "unit_type": "noun", "translation": "узкое место", "sense_summary": "самый медленный участок, ограничивающий систему" }
+  ]
+}

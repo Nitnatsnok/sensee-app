@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.vocabularyEditor.domain.MeaningCandidate
+import app.sensee.feature.vocabularyEditor.domain.MeaningCandidateId
 import app.sensee.feature.vocabularyEditor.presentation.api.ManualSense
 import app.sensee.feature.vocabularyEditor.presentation.api.ManualSenseStatus
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureAction
@@ -219,10 +221,11 @@ private fun LazyListScope.termInputBlock(
             }
         }
     }
+    grammarLabelsLoadStatusItem(uiState, component, textProvider, layoutMetrics)
     uiState.statusNote?.let { note ->
         item {
             SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-                BodyMutedText(note)
+                BodyMutedText(textProvider.statusNoteText(note))
             }
         }
     }
@@ -241,14 +244,15 @@ private fun LazyListScope.candidateList(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    itemsIndexed(uiState.candidates) { index, candidate ->
+    items(uiState.candidates, key = { it.id.value }) { candidate ->
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
             SenseSelectionCard(
                 candidate = candidate,
                 labels = uiState.grammarLabels,
+                studyLanguageTag = uiState.studyLanguageTag,
                 textProvider = textProvider,
-                selected = index in uiState.selectedCandidates,
-                onToggle = { component.onAction(VocabularyCaptureAction.ToggleCandidate(index)) },
+                selected = candidate.id in uiState.selectedCandidates,
+                onToggle = { component.onAction(VocabularyCaptureAction.ToggleCandidate(candidate.id)) },
             )
         }
     }
@@ -283,15 +287,17 @@ private fun LazyListScope.manualSenseList(
             ManualSenseBlock(
                 sense = sense,
                 labels = uiState.grammarLabels,
+                studyLanguageTag = uiState.studyLanguageTag,
+                nativeLanguageTag = uiState.nativeLanguageTag,
                 textProvider = textProvider,
                 onComplete = {
                     component.onAction(VocabularyCaptureAction.CompleteManualWithAssistant(manualIndex))
                 },
-                onToggleSuggestion = { suggestionIndex ->
+                onToggleSuggestion = { suggestionId ->
                     component.onAction(
                         VocabularyCaptureAction.ToggleManualSuggestion(
                             manualIndex = manualIndex,
-                            suggestionIndex = suggestionIndex,
+                            suggestionId = suggestionId,
                         ),
                     )
                 },
@@ -361,9 +367,11 @@ private fun BodyMutedText(text: String) {
 private fun ManualSenseBlock(
     sense: ManualSense,
     labels: GrammarLabels,
+    studyLanguageTag: String,
+    nativeLanguageTag: String,
     textProvider: TextProvider,
     onComplete: () -> Unit,
-    onToggleSuggestion: (Int) -> Unit,
+    onToggleSuggestion: (MeaningCandidateId) -> Unit,
 ) {
     val colors = SenseeTheme.colors
     val typography = SenseeTheme.typography
@@ -382,7 +390,7 @@ private fun ManualSenseBlock(
                 }
                 sense.meaning.unitType?.let { type ->
                     Text(
-                        text = labels.unitType(type) ?: type.name,
+                        text = labels.unitType(type, nativeLanguageTag) ?: type.id,
                         color = colors.textMuted,
                         style = typography.bodyMedium,
                     )
@@ -397,6 +405,7 @@ private fun ManualSenseBlock(
             ManualSenseStatusContent(
                 sense = sense,
                 labels = labels,
+                studyLanguageTag = studyLanguageTag,
                 textProvider = textProvider,
                 onComplete = onComplete,
                 onToggleSuggestion = onToggleSuggestion,
@@ -409,9 +418,10 @@ private fun ManualSenseBlock(
 private fun ManualSenseStatusContent(
     sense: ManualSense,
     labels: GrammarLabels,
+    studyLanguageTag: String,
     textProvider: TextProvider,
     onComplete: () -> Unit,
-    onToggleSuggestion: (Int) -> Unit,
+    onToggleSuggestion: (MeaningCandidateId) -> Unit,
 ) {
     val colors = SenseeTheme.colors
     val typography = SenseeTheme.typography
@@ -445,13 +455,14 @@ private fun ManualSenseStatusContent(
                 color = colors.textSecondary,
                 style = typography.bodySmall,
             )
-            sense.suggestions.forEachIndexed { suggestionIndex, suggestion: MeaningCandidate ->
+            sense.suggestions.forEach { suggestion: MeaningCandidate ->
                 SenseSelectionCard(
                     candidate = suggestion,
                     labels = labels,
+                    studyLanguageTag = studyLanguageTag,
                     textProvider = textProvider,
-                    selected = suggestionIndex in sense.selectedSuggestions,
-                    onToggle = { onToggleSuggestion(suggestionIndex) },
+                    selected = suggestion.id in sense.selectedSuggestions,
+                    onToggle = { onToggleSuggestion(suggestion.id) },
                 )
             }
         }

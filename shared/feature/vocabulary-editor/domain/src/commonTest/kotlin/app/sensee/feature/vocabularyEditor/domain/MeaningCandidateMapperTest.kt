@@ -14,6 +14,7 @@ import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.IrregularForms
 import app.sensee.grammar.domain.PrepositionGovernment
+import app.sensee.grammar.domain.TaxonomyInvariants
 import app.sensee.grammar.domain.UsageAxis
 import app.sensee.grammar.domain.UsageLabel
 import app.sensee.grammar.domain.UsageValue
@@ -21,6 +22,21 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MeaningCandidateMapperTest {
+    private val testInvariants =
+        TaxonomyInvariants(
+            knownUnitTypeIds = setOf("phrasal_verb", "noun"),
+            knownComplementIds = setOf("prepositional_phrase"),
+            allowedValuesByAxis =
+                mapOf(
+                    "register" to setOf("formal", "informal", "slang", "neutral"),
+                ),
+            allowedFormsByCategory =
+                mapOf(
+                    "verb_irregular" to setOf("infinitive", "past_tense", "past_participle"),
+                    "number" to setOf("singular", "plural"),
+                ),
+        )
+
     @Test
     fun `a suggestion maps onto a structured candidate at the feature boundary`() {
         val result =
@@ -50,7 +66,8 @@ class MeaningCandidateMapperTest {
                     ),
             )
 
-        val candidate = result.toMeaningCandidates(fallbackTerm = "come across").single()
+        val candidate =
+            result.toMeaningCandidates(fallbackTerm = "come across", invariants = testInvariants).single()
 
         assertEquals("произвести впечатление", candidate.translation)
         assertEquals("come across [as]", candidate.surfaceForm?.display())
@@ -102,11 +119,105 @@ class MeaningCandidateMapperTest {
                     ),
             )
 
-        val candidate = suggestion.toMeaningCandidate(fallbackTerm = "cats")
+        val candidate = suggestion.toMeaningCandidate(fallbackTerm = "cats", invariants = testInvariants)
 
         assertEquals(
             listOf(GrammarTag(GrammarCategory.Number, GrammarForm.Plural)),
             candidate.grammarTags,
         )
+    }
+
+    @Test
+    fun `strict mode validates normalized unit and complement ids by canonical id`() {
+        val suggestion =
+            EnrichmentSuggestion(
+                translation = "произвести впечатление",
+                unitType = "PhrasalVerb",
+                complementation = listOf("prepositional-phrase"),
+            )
+
+        val candidate = suggestion.toMeaningCandidate(fallbackTerm = "come across", invariants = testInvariants)
+
+        assertEquals(GrammarUnitType.PhrasalVerb, candidate.unitType)
+        assertEquals(listOf(ComplementType.PrepositionalPhrase), candidate.complementation)
+    }
+
+    @Test
+    fun `the same sense maps to the same candidate id across re-enrichment`() {
+        val suggestion =
+            EnrichmentSuggestion(
+                translation = "производить впечатление",
+                surfaceForm = "come across [as]",
+                unitType = "phrasal_verb",
+            )
+
+        val first = suggestion.toMeaningCandidate(fallbackTerm = "come across")
+        val second = suggestion.toMeaningCandidate(fallbackTerm = "come across")
+
+        assertEquals(first.id, second.id)
+    }
+
+    @Test
+    fun `distinct senses of one term get distinct candidate ids`() {
+        val result =
+            EnrichmentResult(
+                availability = EnrichmentAvailability.Available,
+                suggestions =
+                    listOf(
+                        EnrichmentSuggestion(translation = "наткнуться", surfaceForm = "come across"),
+                        EnrichmentSuggestion(
+                            translation = "произвести впечатление",
+                            surfaceForm = "come across [as]",
+                        ),
+                    ),
+            )
+
+        val ids = result.toMeaningCandidates(fallbackTerm = "come across").map { it.id }
+
+        assertEquals(ids.size, ids.toSet().size)
+    }
+
+    @Test
+    fun `same translation senses with different details get distinct candidate ids`() {
+        val result =
+            EnrichmentResult(
+                availability = EnrichmentAvailability.Available,
+                suggestions =
+                    listOf(
+                        EnrichmentSuggestion(
+                            translation = "идти",
+                            surfaceForm = "go",
+                            unitType = "phrasal_verb",
+                            explanation = "move from one place to another",
+                        ),
+                        EnrichmentSuggestion(
+                            translation = "идти",
+                            surfaceForm = "go",
+                            unitType = "phrasal_verb",
+                            explanation = "function or proceed",
+                        ),
+                    ),
+            )
+
+        val ids = result.toMeaningCandidates(fallbackTerm = "go").map { it.id }
+
+        assertEquals(ids.size, ids.toSet().size)
+    }
+
+    @Test
+    fun `duplicate assistant suggestions are disambiguated for selection keys`() {
+        val result =
+            EnrichmentResult(
+                availability = EnrichmentAvailability.Available,
+                suggestions =
+                    listOf(
+                        EnrichmentSuggestion(translation = "идти", surfaceForm = "go"),
+                        EnrichmentSuggestion(translation = "идти", surfaceForm = "go"),
+                    ),
+            )
+
+        val ids = result.toMeaningCandidates(fallbackTerm = "go").map { it.id }
+
+        assertEquals(ids.size, ids.toSet().size)
     }
 }

@@ -5,6 +5,7 @@ import app.sensee.core.decompose.context.AppComponentContext
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.vocabularyEditor.domain.Meaning
 import app.sensee.feature.vocabularyEditor.domain.MeaningCandidate
+import app.sensee.feature.vocabularyEditor.domain.MeaningCandidateId
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarUnitType
 import kotlinx.coroutines.flow.StateFlow
@@ -32,14 +33,41 @@ public data class VocabularyCaptureUiState(
     val term: String = "",
     val loadingState: DataLoadingState = DataLoadingState.Idle,
     val candidates: List<MeaningCandidate> = emptyList(),
-    val selectedCandidates: Set<Int> = emptySet(),
+    val selectedCandidates: Set<MeaningCandidateId> = emptySet(),
     val manualSenses: List<ManualSense> = emptyList(),
-    val statusNote: String? = null,
+    val statusNote: CaptureStatusNote? = null,
     val confirmedTerm: String? = null,
     val grammarLabels: GrammarLabels = GrammarLabels.EMPTY,
+    /** Per-screen lifecycle of the grammar-label dictionary load. */
+    val grammarLabelsState: DataLoadingState = DataLoadingState.Idle,
+    /**
+     * BCP-47 tag of the language the learner is studying — drives short
+     * (study-language) badge labels on the sense card.
+     */
+    val studyLanguageTag: String = "en",
+    /**
+     * BCP-47 tag of the learner's native language — drives long
+     * (native-language) labels in the detail panel and the manual-sense block.
+     */
+    val nativeLanguageTag: String = "ru",
 ) {
     public val canConfirm: Boolean
         get() = selectedCandidates.isNotEmpty() || manualSenses.isNotEmpty()
+}
+
+/**
+ * First-class seam-degradation note for the capture screen. The AI seam still
+ * returned a usable result (no [DataLoadingState.Error]), but the user should
+ * know either there is no AI configured ([AiUnavailable]) or that the answer
+ * was partial ([AiDegraded]). The reason text from the seam is the only thing
+ * not localised — it comes from the provider for diagnostics.
+ */
+public sealed interface CaptureStatusNote {
+    public data object AiUnavailable : CaptureStatusNote
+
+    public data class AiDegraded(
+        val reason: String,
+    ) : CaptureStatusNote
 }
 
 /**
@@ -57,7 +85,7 @@ public data class ManualSense(
     val meaning: Meaning,
     val status: ManualSenseStatus = ManualSenseStatus.Draft,
     val suggestions: List<MeaningCandidate> = emptyList(),
-    val selectedSuggestions: Set<Int> = emptySet(),
+    val selectedSuggestions: Set<MeaningCandidateId> = emptySet(),
 )
 
 public enum class ManualSenseStatus {
@@ -80,7 +108,7 @@ public sealed interface VocabularyCaptureAction {
     ) : VocabularyCaptureAction
 
     public data class ToggleCandidate(
-        val index: Int,
+        val id: MeaningCandidateId,
     ) : VocabularyCaptureAction
 
     /**
@@ -102,10 +130,12 @@ public sealed interface VocabularyCaptureAction {
     /** Pick/unpick an assistant suggestion for a completed manual sense. */
     public data class ToggleManualSuggestion(
         val manualIndex: Int,
-        val suggestionIndex: Int,
+        val suggestionId: MeaningCandidateId,
     ) : VocabularyCaptureAction
 
     public data object ConfirmSelected : VocabularyCaptureAction
 
     public data object Reset : VocabularyCaptureAction
+
+    public data object RetryGrammarLabels : VocabularyCaptureAction
 }

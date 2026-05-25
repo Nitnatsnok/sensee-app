@@ -1,9 +1,8 @@
 package app.sensee.ai.llm.dto
 
-import app.sensee.ai.core.EnrichmentSchema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -25,19 +24,19 @@ internal val JsonObjectResponseFormat: JsonObject =
     buildJsonObject { put("type", "json_object") }
 
 /**
- * The de-facto OpenAI-compatible `json_schema` response_format. The schema
- * itself is owned by [EnrichmentSchema] in the seam's `core`; this only wraps
- * it in the provider envelope, so the provider boundary stays the single
- * source of truth (ADR-005).
+ * The de-facto OpenAI-compatible `json_schema` response_format. The schema is
+ * built by the caller from the runtime taxonomy (EnrichmentSchema.buildJsonSchema);
+ * this only wraps it in the provider envelope, so the provider boundary stays
+ * the single source of truth (ADR-005).
  */
-internal fun jsonSchemaResponseFormat(json: Json): JsonObject =
+internal fun jsonSchemaResponseFormat(schema: JsonElement): JsonObject =
     buildJsonObject {
         put("type", "json_schema")
         put(
             "json_schema",
             buildJsonObject {
                 put("name", "enrichment_response")
-                put("schema", json.parseToJsonElement(EnrichmentSchema.jsonSchema))
+                put("schema", schema)
             },
         )
     }

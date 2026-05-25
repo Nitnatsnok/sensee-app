@@ -1,0 +1,155 @@
+{
+  "id": "phrasal-verbs-come",
+  "title": "Phrasal verbs: come",
+  "description": "Семейство фразовых глаголов с базовой леммой come.",
+  "cards": [
+    {
+      "id": "card-come",
+      "lemma_id": "lemma-come",
+      "headword": "come",
+      "translation": "приходить, прибывать",
+      "context_sentence": "Please come to the meeting at ten.",
+      "unit_type": "irregular_verb",
+      "grammar_tags": [
+        { "category": "verb_irregular", "form": "infinitive" }
+      ],
+      "sense_summary": "движение к месту или к говорящему",
+      "explanation": "Базовый глагол движения «к себе». Формы came/come — основа фразовых глаголов этой леммы."
+    },
+        {
+      "id": "card-come-up",
+      "lemma_id": "lemma-come",
+      "headword": "come up",
+      "translation": "возникать, неожиданно появиться",
+      "context_sentence": "Something has come up at work, so I'll be late tonight.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "о теме, проблеме, событии — внезапно появиться",
+      "explanation": "Используется про события и темы, которые «всплыли» сами по себе."
+    },
+    {
+      "id": "card-come-up-with",
+      "lemma_id": "lemma-come",
+      "headword": "come up with",
+      "translation": "придумать, предложить",
+      "context_sentence": "Can you come up with a better name for the project?",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "transitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "сгенерировать идею, решение, ответ",
+      "explanation": "После come up with — то, что было придумано: идея, имя, решение."
+    },
+        {
+      "id": "card-come-across",
+      "lemma_id": "lemma-come",
+      "headword": "come across",
+      "translation": "случайно встретить, наткнуться",
+      "context_sentence": "I often come across old letters from my grandmother.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "transitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "найти что-то или встретить кого-то случайно",
+      "explanation": "Подчеркивает случайность находки или встречи."
+    },
+    {
+      "id": "card-come-around",
+      "lemma_id": "lemma-come",
+      "headword": "come around",
+      "translation": "прийти в сознание, очнуться",
+      "context_sentence": "She'll come around after a short rest.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "вернуться в сознание после обморока или сна",
+      "explanation": "В этом значении часто после fainted/passed out."
+    },
+    {
+      "id": "card-come-back",
+      "lemma_id": "lemma-come",
+      "headword": "come back",
+      "translation": "вернуться",
+      "context_sentence": "I'll come back as soon as the call is over.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "возвращение в прежнее место",
+      "explanation": "Простое возвращение туда, откуда ушёл."
+    },
+    {
+      "id": "card-come-out",
+      "lemma_id": "lemma-come",
+      "headword": "come out",
+      "translation": "выходить, становиться известным",
+      "context_sentence": "The new version comes out next week.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "о выпуске, публикации или раскрытии факта",
+      "explanation": "Про релизы, новости и то, что «вышло наружу»."
+    },
+    {
+      "id": "card-come-along",
+      "lemma_id": "lemma-come",
+      "headword": "come along",
+      "translation": "продвигаться, идти вместе",
+      "context_sentence": "The project is coming along nicely.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "о прогрессе или о том, чтобы присоединиться",
+      "explanation": "Часто про то, как «движется» работа."
+    },
+    {
+      "id": "card-come-down",
+      "lemma_id": "lemma-come",
+      "headword": "come down",
+      "translation": "снижаться, падать",
+      "context_sentence": "Prices have come down since last year.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "уменьшение величины или уровня",
+      "explanation": "Про снижение цен, чисел, температуры."
+    },
+    {
+      "id": "card-come-over",
+      "lemma_id": "lemma-come",
+      "headword": "come over",
+      "translation": "заходить в гости",
+      "context_sentence": "Come over this weekend and we'll talk it through.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "прийти к кому-то домой ненадолго",
+      "explanation": "Неформальное приглашение зайти."
+    }
+  ]
+}

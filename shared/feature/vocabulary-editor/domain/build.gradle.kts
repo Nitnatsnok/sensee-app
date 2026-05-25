@@ -10,6 +10,7 @@ kotlin {
                 api(projects.shared.grammar.domain)
                 api(projects.shared.ai.core)
                 api(libs.kotlinx.coroutines.core)
+                implementation(projects.shared.core.observability)
                 implementation(libs.metro.runtime)
             }
         }
@@ -18,6 +19,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(projects.shared.core.testKit)
             }
         }
     }

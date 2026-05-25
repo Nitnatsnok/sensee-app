@@ -5,6 +5,7 @@ import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
 import app.sensee.ai.core.EnrichmentResult
 import app.sensee.ai.core.EnrichmentSuggestion
+import app.sensee.ai.core.GrammarTagHint
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
@@ -12,12 +13,21 @@ import app.sensee.feature.vocabularyEditor.domain.EntryId
 import app.sensee.feature.vocabularyEditor.domain.EntryStatus
 import app.sensee.feature.vocabularyEditor.domain.LexicalEntry
 import app.sensee.feature.vocabularyEditor.domain.Meaning
+import app.sensee.feature.vocabularyEditor.domain.MeaningCandidateId
 import app.sensee.feature.vocabularyEditor.domain.SuggestVocabularyMeaningsUseCase
 import app.sensee.feature.vocabularyEditor.domain.VocabularyRepository
 import app.sensee.feature.vocabularyEditor.presentation.api.ManualSenseStatus
-import app.sensee.grammar.data.GrammarLabelsProvider
+import app.sensee.grammar.domain.GrammarCategory
+import app.sensee.grammar.domain.GrammarForm
+import app.sensee.grammar.domain.GrammarLabel
+import app.sensee.grammar.domain.GrammarLabelForm
 import app.sensee.grammar.domain.GrammarLabels
+import app.sensee.grammar.domain.GrammarLabelsLoadResult
+import app.sensee.grammar.domain.GrammarLabelsProvider
+import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.grammar.domain.TaxonomyInvariants
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -79,18 +89,30 @@ class VocabularyCaptureLogicTest {
         override suspend fun enrich(request: EnrichmentRequest): EnrichmentResult = result
     }
 
-    private object EmptyLabelsProvider : GrammarLabelsProvider {
-        override suspend fun labels(): GrammarLabels = GrammarLabels.EMPTY
+    private val emptyLabelsProvider = GrammarLabelsProvider { GrammarLabels.EMPTY }
+    private val noTaxonomyProvider = TaxonomyInvariantsProvider { null }
+
+    private class StaticLabelsProvider(
+        private val labels: GrammarLabels,
+    ) : GrammarLabelsProvider {
+        override suspend fun labels(): GrammarLabels = labels
+
+        override fun cachedLabels(): GrammarLabels = labels
+
+        override suspend fun awaitLabels(): GrammarLabelsLoadResult = GrammarLabelsLoadResult.Loaded(labels)
     }
 
     private fun logic(
         ai: AiEnrichmentClient,
         repo: VocabularyRepository,
+        taxonomyProvider: TaxonomyInvariantsProvider = noTaxonomyProvider,
+        labelsProvider: GrammarLabelsProvider = emptyLabelsProvider,
     ) = VocabularyCaptureLogic(
         enrichmentClient = ai,
         vocabularyRepository = repo,
-        suggestMeanings = SuggestVocabularyMeaningsUseCase(repo, ai),
-        grammarLabelsProvider = EmptyLabelsProvider,
+        suggestMeanings = SuggestVocabularyMeaningsUseCase(repo, ai, taxonomyProvider, noOpAppDiagnostics()),
+        grammarLabelsProvider = labelsProvider,
+        taxonomyInvariantsProvider = taxonomyProvider,
         appDispatchers = immediateAppDispatchers(),
         appDiagnostics = noOpAppDiagnostics(),
     )
@@ -102,6 +124,16 @@ class VocabularyCaptureLogicTest {
                 suggestions = translations.map { EnrichmentSuggestion(translation = it) },
             ),
         )
+
+    private fun VocabularyCaptureLogic.candidateId(index: Int): MeaningCandidateId = uiState.value.candidates[index].id
+
+    private fun VocabularyCaptureLogic.manualSuggestionId(
+        manualIndex: Int,
+        suggestionIndex: Int,
+    ): MeaningCandidateId {
+        val manualSense = uiState.value.manualSenses[manualIndex]
+        return manualSense.suggestions[suggestionIndex].id
+    }
 
     @Test
     fun `suggest populates candidates from the enrichment seam`() {
@@ -136,8 +168,8 @@ class VocabularyCaptureLogicTest {
         val logic = logic(availableAi("наткнуться", "произвести впечатление", "ощущаться"), repo)
         logic.suggest(term = "come across")
 
-        logic.toggleCandidate(0)
-        logic.toggleCandidate(2)
+        logic.toggleCandidate(logic.candidateId(0))
+        logic.toggleCandidate(logic.candidateId(2))
         logic.confirmSelected()
 
         assertEquals(
@@ -153,7 +185,7 @@ class VocabularyCaptureLogicTest {
         val repo = FakeVocabularyRepository(confirmGate = gate)
         val logic = logic(availableAi("наткнуться"), repo)
         logic.suggest(term = "come across")
-        logic.toggleCandidate(0)
+        logic.toggleCandidate(logic.candidateId(0))
 
         logic.confirmSelected()
         logic.confirmSelected()
@@ -168,7 +200,7 @@ class VocabularyCaptureLogicTest {
         val logic = logic(availableAi("наткнуться"), repo)
         logic.suggest(term = "come across")
 
-        logic.toggleCandidate(0)
+        logic.toggleCandidate(logic.candidateId(0))
         logic.addManual("  свой смысл  ")
         logic.confirmSelected()
 
@@ -196,6 +228,51 @@ class VocabularyCaptureLogicTest {
     }
 
     @Test
+    fun `completing a manual sense validates assistant taxonomy ids`() {
+        val taxonomyProvider =
+            TaxonomyInvariantsProvider {
+                TaxonomyInvariants.EMPTY.copy(
+                    allowedFormsByCategory = mapOf("number" to setOf("plural")),
+                )
+            }
+        val ai =
+            FakeAi(
+                EnrichmentResult(
+                    availability = EnrichmentAvailability.Available,
+                    suggestions =
+                        listOf(
+                            EnrichmentSuggestion(
+                                translation = "кошки",
+                                grammarTags =
+                                    listOf(
+                                        GrammarTagHint("number", "plural"),
+                                        GrammarTagHint("number", "past_tense"),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+        val logic = logic(ai, FakeVocabularyRepository(), taxonomyProvider)
+        logic.suggest(term = "cats")
+        logic.addManual("ручной смысл")
+
+        logic.completeManualWithAssistant(manualIndex = 0)
+
+        val suggestion =
+            logic
+                .uiState
+                .value
+                .manualSenses
+                .single()
+                .suggestions
+                .single()
+        assertEquals(
+            listOf(GrammarTag(GrammarCategory.Number, GrammarForm.Plural)),
+            suggestion.grammarTags,
+        )
+    }
+
+    @Test
     fun `a picked assistant suggestion replaces the manual draft on confirm`() {
         val repo = FakeVocabularyRepository()
         val logic = logic(availableAi("enriched sense"), repo)
@@ -203,7 +280,7 @@ class VocabularyCaptureLogicTest {
         logic.addManual("мой черновик")
         logic.completeManualWithAssistant(manualIndex = 0)
 
-        logic.toggleManualSuggestion(manualIndex = 0, suggestionIndex = 0)
+        logic.toggleManualSuggestion(manualIndex = 0, suggestionId = logic.manualSuggestionId(0, 0))
         logic.confirmSelected()
 
         assertEquals(
@@ -274,8 +351,9 @@ class VocabularyCaptureLogicTest {
         logic.addManual("мой черновик")
         logic.completeManualWithAssistant(manualIndex = 0)
 
-        logic.toggleManualSuggestion(manualIndex = 0, suggestionIndex = 0)
-        logic.toggleManualSuggestion(manualIndex = 0, suggestionIndex = 0)
+        val suggestionId = logic.manualSuggestionId(0, 0)
+        logic.toggleManualSuggestion(manualIndex = 0, suggestionId = suggestionId)
+        logic.toggleManualSuggestion(manualIndex = 0, suggestionId = suggestionId)
 
         val state = logic.uiState.value
         val sense = state.manualSenses.single()
@@ -312,13 +390,66 @@ class VocabularyCaptureLogicTest {
     }
 
     @Test
-    fun `toggling a candidate out of range is a no-op`() {
+    fun `toggling a candidate by an unknown id is a no-op`() {
         val logic = logic(availableAi("наткнуться"), FakeVocabularyRepository())
         logic.suggest(term = "come across")
 
-        logic.toggleCandidate(index = 5)
+        logic.toggleCandidate(MeaningCandidateId("not-a-real-candidate"))
 
         val state = logic.uiState.value
         assertTrue(state.selectedCandidates.isEmpty())
+    }
+
+    @Test
+    fun `selection is keyed by candidate identity not list position`() {
+        val repo = FakeVocabularyRepository()
+        val logic = logic(availableAi("наткнуться", "произвести впечатление", "ощущаться"), repo)
+        logic.suggest(term = "come across")
+
+        // Select by the id of the middle sense; confirm must save exactly it,
+        // independent of where it sits in the candidate list.
+        val middleId = logic.candidateId(1)
+        logic.toggleCandidate(middleId)
+        logic.confirmSelected()
+
+        assertEquals(
+            listOf("произвести впечатление"),
+            repo.lastConfirmed?.second?.map { it.translation },
+        )
+    }
+
+    @Test
+    fun `capture another preserves loaded grammar labels`() {
+        val labels =
+            GrammarLabels(
+                unitTypeLabels =
+                    mapOf(
+                        "noun" to
+                            mapOf(
+                                "en" to GrammarLabel(long = "Noun"),
+                            ),
+                    ),
+                categoryLabels = emptyMap(),
+                formLabels = emptyMap(),
+                formLabelsByName = emptyMap(),
+                usageValueLabels = emptyMap(),
+                complementLabels = emptyMap(),
+            )
+        val repo = FakeVocabularyRepository()
+        val logic =
+            logic(
+                ai = availableAi("существительное"),
+                repo = repo,
+                labelsProvider = StaticLabelsProvider(labels),
+            )
+        logic.suggest(term = "thing")
+        logic.toggleCandidate(logic.candidateId(0))
+        logic.confirmSelected()
+
+        logic.reset()
+
+        val state = logic.uiState.value
+        assertEquals(DataLoadingState.Success, state.grammarLabelsState)
+        assertEquals("Noun", state.grammarLabels.unitType(GrammarUnitType.Noun, "en", GrammarLabelForm.Long))
     }
 }

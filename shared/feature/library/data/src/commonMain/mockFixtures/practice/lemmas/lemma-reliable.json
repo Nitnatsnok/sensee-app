@@ -1,0 +1,7 @@
+{
+  "id": "lemma-reliable",
+  "text": "reliable",
+  "related_cards": [
+    { "id": "card-reliable", "headword": "reliable", "unit_type": "adjective", "translation": "надёжный", "sense_summary": "о том, на что можно положиться" }
+  ]
+}

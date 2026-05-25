@@ -1,0 +1,7 @@
+{
+  "id": "lemma-boundary",
+  "text": "boundary",
+  "related_cards": [
+    { "id": "card-boundary", "headword": "boundary", "unit_type": "noun", "translation": "граница ответственности", "sense_summary": "разделение зон ответственности" }
+  ]
+}

@@ -59,7 +59,7 @@ Feature module layout — add submodules only when justified, never by template:
 - `domain` / `data` — optional; add only when the feature has responsibilities worth isolating.
 - `database-schema` — feature-owned SQLDelight schema while runtime database access stays in `shared/database`.
 - Do not create empty `domain`/`data`/`database-schema` modules for symmetry.
-- Root-level Decompose configs must be serializable and registered in the common serializer assembly under `shared/core/decompose` once stack-state serialization is enabled.
+- Decompose configs that can enter a persisted root or section stack must be serializable and registered in the common serializer assembly under `shared/core/decompose`.
 
 Dependency direction:
 

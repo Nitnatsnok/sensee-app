@@ -1,21 +1,21 @@
 # language: ru
-@implemented @profile
+@profile
 Функция: Профиль и полный набор пользовательских настроек
 
-  Profile — владелец пользовательских настроек над `UserSettingsRepository`.
+  Profile — пользовательский интерфейс полного набора настроек поверх `UserSettingsRepository`.
   Раздел открывается экраном-меню `ProfileHome` с группой «Настройки» и
   пунктами по категориям `UserSettingsCategory`. На широких экранах меню и
   экран категории показаны рядом (двухпанельный режим), на узких — по очереди.
   Реализованный экран категории — `Ai` (`ProfileAiSettingsScreen`): выбор
-  AI/TTS-провайдера, верификация ключа и progressive disclosure полей.
-  Категории `App`/`Practice`/`Experimental` пока открывают честный
-  экран-заглушку; в `Learning` реализован выбор тем для примеров.
+  AI/TTS-провайдера, верификация ключа и постепенное раскрытие полей.
+  Категории `App`/`Practice`/`Experimental` пока открывают явную заглушку
+  planned-состояния; в `Learning` реализован выбор тем для примеров.
   Навигация `About`, Account/синхронизация и статистика — планируемое.
 
   Сценарии без тега описывают текущий код; `@planned` — спроектированное,
   но ещё не реализованное. Объём сознательно бережный: ядро — настройки и
-  About; Account/синхронизация и data management остаются честными
-  заглушками, а не фейковым UI.
+  About; Account/синхронизация и data management пока не реализованы и не
+  имитируются фиктивным UI.
 
   Связанные view в `docs/c4/`:
   - `capability_map`
@@ -23,15 +23,15 @@
   Источники реализации:
   - `shared/feature/profile/presentation/impl`: `DefaultProfileSectionComponent`
     (трёхпанельная навигация через `appChildPanels` — `Home` + категория +
-    опциональный extra-пейн для пикера; категория `Learning` открывает пикер
+    опциональную дополнительную панель для выбора тем; категория `Learning` открывает выбор тем
     через `NavigationDispatcher.open(ProfileExtraConfig.TopicPicker)`),
     `DefaultProfileHomeComponent`/`ProfileHomeScreen` (меню категорий),
     `ProfileAiSettingsLogic`/`ProfileAiSettingsScreen` (категория `Ai`),
     `ProfileLearningSettingsLogic`/`ProfileLearningSettingsScreen` (категория
-    `Learning` — пока только строка-триггер пикера тем),
+    `Learning` — пока только строка-триггер выбора тем),
     `DefaultProfileTopicPickerComponent`/`ProfileTopicPickerLogic`/
-    `ProfileTopicPickerScreen` (сам пикер),
-    `ProfileSettingsPlaceholderScreen` (честная заглушка остальных категорий)
+    `ProfileTopicPickerScreen` (сам выбор тем),
+    `ProfileSettingsPlaceholderScreen` (явная заглушка остальных категорий)
   - `shared/feature/profile/presentation/api`: `ProfileSectionComponent`,
     `ProfileHomeComponent`, `ProfileAiSettingsUiState`/`Action`,
     `ProfileLearningSettingsComponent`/`UiState`/`Action`,
@@ -47,8 +47,8 @@
     `TopicCatalogRepository`
   - `shared/settings/data/topic/*`: каталог тем с mock-бэкенда (`learning/topics`)
   - design-system: `SenseeTextField` со скрытым (secure) режимом для ключей,
-    `SenseeCheckbox` + `SenseeModalBottomSheet` + `SenseeSheetHeader` для пикера тем
-  - AI-шов `shared/ai/*` / TTS-шов `shared/tts/*` (ADR-005): список
+    `SenseeCheckbox` + `SenseeModalBottomSheet` + `SenseeSheetHeader` для выбора тем
+  - границы AI/TTS-интеграций `shared/ai/*` / `shared/tts/*` (ADR-005): список
     совместимых провайдеров и выбор модели (из API провайдера, офлайн-fallback)
   - Планируемое: экраны категорий `App`/`Practice`, языки в `Learning`, `About`
 
@@ -75,9 +75,9 @@
     И открытие и закрытие экрана категории анимированы
 
   @implemented
-  Сценарий: Нереализованные категории показывают честную заглушку
+  Сценарий: Нереализованные категории показывают явную заглушку
     Когда пользователь выбирает категорию `App`, `Practice` или `Experimental`
-    Тогда показан честный экран «раздел появится позже» без фейковых полей
+    Тогда показан экран «раздел появится позже» без неработающих полей
 
   @planned
   Сценарий: Настройки категории показывают свои поля
@@ -98,24 +98,24 @@
   @implemented
   Сценарий: Выбор предпочитаемых тем для генерации примеров
     Допустим каталог тем загружается с mock-бэкенда (`learning/topics`)
-    Когда пользователь в категории `Learning` тапает строку-пикер «Темы для примеров»
+    Когда пользователь в категории `Learning` нажимает строку выбора «Темы для примеров»
     Тогда `DefaultProfileLearningSettingsComponent` вызывает
       `navigation.open(ProfileExtraConfig.TopicPicker)`
-    И `DefaultProfileSectionComponent` навигирует panels на extra =
+    И `DefaultProfileSectionComponent` переводит `appChildPanels` в состояние extra =
       `ProfileExtraConfig.TopicPicker` и поднимает `DefaultProfileTopicPickerComponent`
     Если окно поддерживает supporting-pane раскладку (`ContentLayoutType.SupportingPane`)
-    Тогда пикер рендерится третьей панелью рядом с категорией
+    Тогда выбор тем отображается третьей панелью рядом с категорией
     Иначе (list-detail или компакт)
-    Тогда пикер рендерится в `SenseeModalBottomSheet` поверх раскладки
-    И в пикере показан список тем чекбоксами
+    Тогда выбор тем отображается в `SenseeModalBottomSheet` поверх раскладки
+    И в выборе тем показан список тем чекбоксами
     Когда пользователь отмечает или снимает темы
     Тогда выбор сохраняется как идентификаторы тем в `LearningSettings.preferredTopicIds`
-    И сохранение оптимистично — UI обновляется сразу, ошибка персиста откатывает локальное состояние
+    И сохранение оптимистично — UI обновляется сразу, ошибка сохранения откатывает локальное состояние
     И триггер-строка в `Learning` видит изменение через `observeSettings`
-    И список тем приходит с бэкенда, а не захардкожен в клиенте
-    И системная «назад» закрывает пикер прежде, чем выйти из категории `Learning`
-      (back-каскад секции: extra → details → unhandled)
-    И выбранные темы используются AI-швом для подбора примеров (см. `vocabulary-capture.feature`)
+    И список тем приходит с бэкенда, а не зашит в клиенте
+    И системная «назад» закрывает выбор тем прежде, чем выйти из категории `Learning`
+      (каскад back-обработки секции: extra -> details -> unhandled)
+    И выбранные темы используются границей AI-интеграции для подбора примеров (см. `vocabulary-capture.feature`)
 
     # Категория `Learning` пока содержит только выбор тем; правка языков
     # (см. сценарий выше) остаётся `@planned`.
@@ -180,23 +180,23 @@
     И изменение в одном месте видно в другом — единый источник
 
   @planned
-  Сценарий: Категория Experimental честно помечена как разрыв
+  Сценарий: Категория Experimental явно помечена как planned-состояние
     Допустим у категории `Experimental` пока нет data class и полей в `UserSettingsSnapshot`
     Когда пользователь открывает категорию `Experimental`
-    Тогда показывается честное состояние «нет данных», а не фейковые тумблеры
+    Тогда показывается состояние «нет данных», а не неработающие тумблеры
 
   @planned
-  Сценарий: Scope настроек по умолчанию Device, User — будущая синхронизация
+  Сценарий: Область хранения настроек по умолчанию Device, User — будущая синхронизация
     Допустим аккаунта и авторизации в клиенте нет
     Когда пользователь правит любые настройки
-    Тогда они сохраняются в scope `Device` по умолчанию
+    Тогда они сохраняются в области `Device` по умолчанию
     И `UserSettingsScope.User` зарезервирован под будущую per-user синхронизацию
     И переключатель Device/User не показывается, пока нет auth
 
   @planned
-  Сценарий: Account и синхронизация — честная заглушка
+  Сценарий: Account и синхронизация пока не реализованы
     Когда пользователь открывает блок аккаунта
-    Тогда показывается «локальный профиль, вход и синхронизация позже» без фейкового UI
+    Тогда показывается «локальный профиль, вход и синхронизация позже» без неработающего UI
 
   @planned
   Сценарий: Экран About

@@ -16,6 +16,8 @@ import app.sensee.feature.practice.domain.PracticeReviewRepository
 import app.sensee.feature.practice.domain.PracticeSessionPolicy
 import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeRatingAction
+import app.sensee.grammar.domain.GrammarLabels
+import app.sensee.grammar.domain.GrammarLabelsProvider
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.srs.core.model.SrsCardSnapshot
 import app.sensee.srs.testKit.SrsTestCards
@@ -182,6 +184,7 @@ class DeckPracticeLogicTest {
             deckId = "deck",
             catalogRepository = repository,
             reviewRepository = repository,
+            grammarLabelsProvider = GrammarLabelsProvider { GrammarLabels.EMPTY },
             appDispatchers = immediateAppDispatchers(),
             appDiagnostics = noOpAppDiagnostics(),
         )

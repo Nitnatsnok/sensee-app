@@ -3,6 +3,7 @@ package app.sensee.feature.practice.presentation.api
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
 import app.sensee.core.presentation.DataLoadingState
+import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import kotlinx.collections.immutable.PersistentList
@@ -31,6 +32,13 @@ public data class CardDetailUiState(
     val card: CardDetailCardUiState? = null,
     val lemmaText: String = "",
     val relatedCards: PersistentList<RelatedCardUiState> = persistentListOf(),
+    val grammarLabels: GrammarLabels = GrammarLabels.EMPTY,
+    /** Per-screen lifecycle of the grammar-label dictionary load. */
+    val grammarLabelsState: DataLoadingState = DataLoadingState.Idle,
+    /** BCP-47 tag of the language the learner is studying — drives short badge labels. */
+    val studyLanguageTag: String = "en",
+    /** BCP-47 tag of the learner's native language — drives long descriptions. */
+    val nativeLanguageTag: String = "ru",
 )
 
 public data class CardDetailCardUiState(
@@ -56,6 +64,8 @@ public data class RelatedCardUiState(
 
 public sealed interface CardDetailAction {
     public data object Retry : CardDetailAction
+
+    public data object RetryGrammarLabels : CardDetailAction
 
     public data class OpenRelated(
         val cardId: String,

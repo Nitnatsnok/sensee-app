@@ -1,0 +1,7 @@
+{
+  "id": "lemma-trade-off",
+  "text": "trade-off",
+  "related_cards": [
+    { "id": "card-trade-off", "headword": "trade-off", "unit_type": "noun", "translation": "компромисс между вариантами", "sense_summary": "баланс между альтернативами" }
+  ]
+}

@@ -1,7 +1,6 @@
 package app.sensee.feature.library.data.remote
 
-import app.sensee.grammar.domain.GrammarCategory
-import app.sensee.grammar.domain.GrammarForm
+import app.sensee.grammar.domain.GrammarTag
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,8 +13,7 @@ class DeckGrammarTagsFixtureTest {
 
     @Test
     fun `deck fixtures expose known grammar tags`() {
-        val categoryIds = GrammarCategory.entries.map { it.id }.toSet()
-        val formIds = GrammarForm.entries.map { it.id }.toSet()
+        val allowedFormsByCategory = GrammarTag.knownAllowedFormsByCategory
         val deckFixtures =
             CatalogMockFixtures()
                 .fixtures
@@ -30,15 +28,16 @@ class DeckGrammarTagsFixtureTest {
                     "Missing grammar tags for $path/${card.id}",
                 )
                 card.grammarTags.forEach { tag ->
+                    val allowedForms = allowedFormsByCategory[tag.category].orEmpty()
                     assertEquals(
                         true,
-                        tag.category in categoryIds,
+                        allowedForms.isNotEmpty(),
                         "Unknown grammar tag category for $path/${card.id}: ${tag.category}",
                     )
                     assertEquals(
                         true,
-                        tag.form in formIds,
-                        "Unknown grammar tag form for $path/${card.id}: ${tag.form}",
+                        tag.form in allowedForms,
+                        "Invalid grammar tag pair for $path/${card.id}: ${tag.category}/${tag.form}",
                     )
                 }
             }

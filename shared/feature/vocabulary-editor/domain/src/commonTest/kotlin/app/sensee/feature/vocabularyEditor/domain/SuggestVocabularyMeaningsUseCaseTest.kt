@@ -5,6 +5,8 @@ import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
 import app.sensee.ai.core.EnrichmentResult
 import app.sensee.ai.core.EnrichmentSuggestion
+import app.sensee.core.testKit.noOpAppDiagnostics
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -54,6 +56,8 @@ class SuggestVocabularyMeaningsUseCaseTest {
         override suspend fun enrich(request: EnrichmentRequest): EnrichmentResult = result
     }
 
+    private val noTaxonomyProvider = TaxonomyInvariantsProvider { null }
+
     private fun available(vararg translations: String) =
         EnrichmentResult(
             availability = EnrichmentAvailability.Available,
@@ -64,7 +68,13 @@ class SuggestVocabularyMeaningsUseCaseTest {
     fun `invoke creates a draft once and reuses an existing draft id`() =
         runTest {
             val repo = FakeVocabularyRepository()
-            val useCase = SuggestVocabularyMeaningsUseCase(repo, FakeAi(available("наткнуться")))
+            val useCase =
+                SuggestVocabularyMeaningsUseCase(
+                    repo,
+                    FakeAi(available("наткнуться")),
+                    noTaxonomyProvider,
+                    noOpAppDiagnostics(),
+                )
 
             val first = useCase(term = "come across", existingDraftId = null)
             useCase(term = "come acros", existingDraftId = first.draftId)
@@ -78,7 +88,13 @@ class SuggestVocabularyMeaningsUseCaseTest {
     fun `invoke creates a new draft when the previous draft is no longer editable`() =
         runTest {
             val repo = FakeVocabularyRepository().also { it.updateReturnsNull = true }
-            val useCase = SuggestVocabularyMeaningsUseCase(repo, FakeAi(available("наткнуться")))
+            val useCase =
+                SuggestVocabularyMeaningsUseCase(
+                    repo,
+                    FakeAi(available("наткнуться")),
+                    noTaxonomyProvider,
+                    noOpAppDiagnostics(),
+                )
 
             val result = useCase(term = "come acros", existingDraftId = EntryId("old"))
 
@@ -93,6 +109,8 @@ class SuggestVocabularyMeaningsUseCaseTest {
                 SuggestVocabularyMeaningsUseCase(
                     FakeVocabularyRepository(),
                     FakeAi(available("наткнуться", "произвести впечатление")),
+                    noTaxonomyProvider,
+                    noOpAppDiagnostics(),
                 )
 
             val result = useCase(term = "come across", existingDraftId = null)
@@ -112,6 +130,8 @@ class SuggestVocabularyMeaningsUseCaseTest {
                 SuggestVocabularyMeaningsUseCase(
                     repo,
                     FakeAi(EnrichmentResult(EnrichmentAvailability.Unavailable("no key"))),
+                    noTaxonomyProvider,
+                    noOpAppDiagnostics(),
                 )
 
             val result = useCase(term = "come across", existingDraftId = EntryId("kept"))

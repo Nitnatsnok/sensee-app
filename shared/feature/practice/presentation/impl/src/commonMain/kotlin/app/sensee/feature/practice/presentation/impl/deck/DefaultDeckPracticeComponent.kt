@@ -88,6 +88,7 @@ public class DefaultDeckPracticeComponent(
             DeckPracticeAction.Close -> navigation.back()
             is DeckPracticeAction.SpeakText -> speak(action.text)
             DeckPracticeAction.Retry,
+            DeckPracticeAction.RetryGrammarLabels,
             DeckPracticeAction.ToggleTapToFlip,
             is DeckPracticeAction.SubmitReview,
             DeckPracticeAction.OpenHelp,

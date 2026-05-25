@@ -1,0 +1,7 @@
+{
+  "id": "lemma-eventually",
+  "text": "eventually",
+  "related_cards": [
+    { "id": "card-eventually", "headword": "eventually", "unit_type": "adverb", "translation": "в конечном итоге", "sense_summary": "о наступлении результата спустя некоторое время" }
+  ]
+}

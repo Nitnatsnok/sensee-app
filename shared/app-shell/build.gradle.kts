@@ -62,6 +62,7 @@ kotlin {
                 implementation(projects.shared.feature.profile.presentation.api)
                 implementation(projects.shared.feature.profile.presentation.navigationApi)
                 implementation(projects.shared.feature.profile.presentation.impl)
+                implementation(projects.shared.feature.startup.domain)
                 implementation(projects.shared.feature.startup.presentation.api)
                 implementation(projects.shared.feature.startup.presentation.impl)
 

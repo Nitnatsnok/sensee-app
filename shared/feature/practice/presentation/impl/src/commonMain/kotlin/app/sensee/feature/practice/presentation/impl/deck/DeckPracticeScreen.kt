@@ -108,6 +108,9 @@ public fun DeckPracticeScreen(
     DeckPracticeHelpSheet(
         visible = helpVisible,
         onDismiss = { helpVisible = false },
+        labels = uiState.grammarLabels,
+        studyLanguageTag = uiState.studyLanguageTag,
+        nativeLanguageTag = uiState.nativeLanguageTag,
         textProvider = textProvider,
     )
 }
@@ -264,6 +267,11 @@ private fun DeckPracticeBody(
     }
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        GrammarLabelsLoadStatus(
+            state = state.uiState.grammarLabelsState,
+            onRetry = { onAction(DeckPracticeAction.RetryGrammarLabels) },
+            textProvider = textProvider,
+        )
         DeckPracticeCardDeck(
             state = state,
             deckConfig = deckConfig,
@@ -430,6 +438,8 @@ private fun DeckPracticeLearningCard(
         front = {
             PracticeCardFrontContent(
                 card = card,
+                labels = state.uiState.grammarLabels,
+                studyLanguageTag = state.uiState.studyLanguageTag,
                 onSpeak = { text -> onAction(DeckPracticeAction.SpeakText(text)) },
             )
             if (isTopCard && !state.uiState.tapToFlipEnabled && !isFlipped) {
@@ -446,6 +456,8 @@ private fun DeckPracticeLearningCard(
         back = {
             PracticeCardBackContent(
                 card = card,
+                labels = state.uiState.grammarLabels,
+                studyLanguageTag = state.uiState.studyLanguageTag,
                 onSpeak = { text -> onAction(DeckPracticeAction.SpeakText(text)) },
             )
         },

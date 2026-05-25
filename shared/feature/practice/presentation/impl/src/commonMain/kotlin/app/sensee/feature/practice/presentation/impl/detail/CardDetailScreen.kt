@@ -26,11 +26,13 @@ import app.sensee.feature.practice.presentation.api.CardDetailCardUiState
 import app.sensee.feature.practice.presentation.api.CardDetailComponent
 import app.sensee.feature.practice.presentation.api.CardDetailUiState
 import app.sensee.feature.practice.presentation.api.RelatedCardUiState
+import app.sensee.feature.practice.presentation.impl.deck.GrammarLabelsLoadStatus
 import app.sensee.feature.practice.presentation.impl.grammar.grammarTagBadgeColors
 import app.sensee.feature.practice.presentation.impl.grammar.grammarUnitBadgeColors
 import app.sensee.feature.practice.presentation.impl.text.PracticeTextKeys
-import app.sensee.feature.practice.presentation.impl.text.label
 import app.sensee.feature.practice.presentation.impl.text.rememberPracticeTextProvider
+import app.sensee.feature.practice.presentation.impl.text.shortLabel
+import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.ui.designSystem.component.badge.SenseeBadge
 import app.sensee.ui.designSystem.component.button.SenseeButton
@@ -92,14 +94,23 @@ internal fun CardDetailContent(
                     },
                 )
             else ->
-                CardDetailBody(
-                    card = uiState.card,
-                    lemmaText = uiState.lemmaText,
-                    related = uiState.relatedCards,
-                    onRelatedClick = { cardId -> onAction(CardDetailAction.OpenRelated(cardId)) },
-                    modifier = Modifier.fillMaxSize(),
-                    textProvider = textProvider,
-                )
+                Column(modifier = Modifier.fillMaxSize()) {
+                    GrammarLabelsLoadStatus(
+                        state = uiState.grammarLabelsState,
+                        onRetry = { onAction(CardDetailAction.RetryGrammarLabels) },
+                        textProvider = textProvider,
+                    )
+                    CardDetailBody(
+                        card = uiState.card,
+                        lemmaText = uiState.lemmaText,
+                        related = uiState.relatedCards,
+                        labels = uiState.grammarLabels,
+                        studyLanguageTag = uiState.studyLanguageTag,
+                        onRelatedClick = { cardId -> onAction(CardDetailAction.OpenRelated(cardId)) },
+                        modifier = Modifier.fillMaxSize(),
+                        textProvider = textProvider,
+                    )
+                }
         }
     }
 }
@@ -109,6 +120,8 @@ private fun CardDetailBody(
     card: CardDetailCardUiState?,
     lemmaText: String,
     related: ImmutableList<RelatedCardUiState>,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
     onRelatedClick: (String) -> Unit,
     textProvider: TextProvider,
     modifier: Modifier = Modifier,
@@ -133,7 +146,7 @@ private fun CardDetailBody(
             ),
         verticalArrangement = Arrangement.spacedBy(spacing.medium),
     ) {
-        item { CardHeader(card = card, textProvider = textProvider) }
+        item { CardHeader(card = card, labels = labels, studyLanguageTag = studyLanguageTag) }
         item { CardBodySection(card = card, textProvider = textProvider) }
         if (related.isNotEmpty()) {
             item {
@@ -147,6 +160,8 @@ private fun CardDetailBody(
                 RelatedCardRow(
                     item = item,
                     onClick = { onRelatedClick(item.id) },
+                    labels = labels,
+                    studyLanguageTag = studyLanguageTag,
                     textProvider = textProvider,
                 )
             }
@@ -157,7 +172,8 @@ private fun CardDetailBody(
 @Composable
 private fun CardHeader(
     card: CardDetailCardUiState,
-    textProvider: TextProvider,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
 ) {
     val typography = SenseeTheme.typography
     val spacing = SenseeTheme.spacing
@@ -167,12 +183,12 @@ private fun CardHeader(
             Text(text = card.headword, style = typography.titleLarge)
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
                 SenseeBadge(
-                    text = card.unitType.label(textProvider),
+                    text = card.unitType.shortLabel(labels, studyLanguageTag),
                     colors = grammarUnitBadgeColors(card.unitType),
                 )
                 card.grammarTags.forEach { tag ->
                     SenseeBadge(
-                        text = tag.label(textProvider),
+                        text = tag.shortLabel(labels, studyLanguageTag),
                         colors = grammarTagBadgeColors(tag),
                     )
                 }
@@ -219,6 +235,8 @@ private fun SectionLabel(text: String) {
 private fun RelatedCardRow(
     item: RelatedCardUiState,
     onClick: () -> Unit,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
     textProvider: TextProvider,
 ) {
     val colors = SenseeTheme.colors
@@ -238,7 +256,7 @@ private fun RelatedCardRow(
                     style = typography.titleMedium,
                 )
                 SenseeBadge(
-                    text = item.unitType.label(textProvider),
+                    text = item.unitType.shortLabel(labels, studyLanguageTag),
                     colors = grammarUnitBadgeColors(item.unitType),
                 )
             }

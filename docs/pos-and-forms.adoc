@@ -1,204 +1,210 @@
-.Полный список частей речи, лексических единиц и их форм
-[cols="2,2,4,2", options="header"]
+= Канон: части речи, грамматические признаки и нюансы употребления
+
+Единый источник `GrammarUnitType` (что за единица), `GrammarTag = (GrammarCategory, GrammarForm)` (какая форма), `ComplementType`, `UsageAxis`/`UsageValue`. Все `id` — контракт обмена и хранения фикстуры `practice/grammar/taxonomy`; пользовательские подписи и сокращения выбираются во время выполнения через `GrammarLabels`. ADR, сценарии и доменная документация ссылаются сюда якорями (`#pos`, `#grammar-tags`, `#complementation`, `#usage-labels`).
+
+NOTE: Сокращения здесь — `lexicographic`-стиль (словарная конвенция). `pedagogical`-альтернативы перечислены отдельно в <<badge-styles>>.
+
+== Лексические единицы (POS) [[pos]]
+
+`GrammarUnitType` — ось «что это за лексическая единица»; одно значение на смысл. RU-перевод дублируется только для двуязычного чтения, в фикстуре он живёт под BCP-47 тегом `ru`.
+
+[options="header",cols="2,1,2,2,3"]
 |===
-| Часть речи / Лексема [Сокр.] | Категория | Форма и её сокращение | Примеры
+|`id`|Short|English|Русский|Примеры
 
-.3+| *Noun [n.]* +
-(Существительное)
-| Number +
-(Число)
-| Singular *[sing.]* / *[sg.]* — единственное +
-Plural *[pl.]* — множественное
-| _cat_ +
-_cats_
-
-| Case +
-(Падеж)
-| Common *[—]* — общий (нет сокращения) +
-Possessive *[poss.]* — притяжательный
-| _cat_ +
-_cat's_
-
-| Countability +
-(Исчисляемость)
-| Countable *[C]* — исчисляемое +
-Uncountable *[U]* — неисчисляемое
-| _apple_ +
-_water_
-
-.2+| *Verb [v.]* +
-(Правильный глагол)
-| Forms +
-(Формы)
-| Infinitive *[inf.]* — начальная (V1) +
-Past Tense *[p.t.]* / *[past]* — прошедшее вр. (V2) +
-Past Participle *[p.p.]* — прич. прош. вр. (V3) +
-Present Participle *[pres.p.]* — прич. наст. вр. +
-Gerund *[ger.]* — герундий
-| _play_ +
-_played_ +
-_played_ +
-_playing_ +
-_playing_
-
-| Transitivity +
-(Переходность)
-| Transitive *[v.t.]* / *[vt]* — переходный +
-Intransitive *[v.i.]* / *[vi]* — непереходный
-| _read (a book)_ +
-_sleep_
-
-| *Irregular Verb [irreg.v.]* +
-(Неправильный глагол)
-| Forms +
-(Формы)
-| Infinitive *[inf.]* — начальная (V1) +
-Past Tense *[p.t.]* — прошедшее вр. (V2) +
-Past Participle *[p.p.]* — прич. прош. вр. (V3)
-| _go_ +
-_went_ +
-_gone_
-
-.2+| *Phrasal Verb [phr.v.]* +
-(Фразовый глагол)
-| Forms +
-(Формы)
-| Меняются как у глагола: *[inf.], [p.t.], [p.p.]* и т.д.
-| _give up, gave up, given up_
-
-| Separability +
-(Разделяемость)
-| Separable *[sep.]* — разделяемый +
-Inseparable *[insep.]* — неразделяемый
-| _turn (it) on_ +
-_look after (him)_
-
-| *Adjective [adj.]* +
-(Прилагательное)
-| Degrees +
-(Степени сравнения)
-| Positive *[pos.]* — положительная (базовая) +
-Comparative *[comp.]* — сравнительная +
-Superlative *[sup.]* — превосходная
-| _big_ +
-_bigger_ +
-_biggest_
-
-| *Adverb [adv.]* +
-(Наречие)
-| Degrees +
-(Степени сравнения)
-| Positive *[pos.]* — положительная (базовая) +
-Comparative *[comp.]* — сравнительная +
-Superlative *[sup.]* — превосходная
-| _fast_ +
-_faster_ +
-_fastest_
-
-.2+| *Pronoun [pron.]* +
-(Местоимение)
-| Case +
-(Падеж)
-| Subjective *[subj.]* — именительный +
-Objective *[obj.]* — объектный
-| _I, he, they_ +
-_me, him, them_
-
-| Type +
-(Тип)
-| Possessive *[poss.]* — притяжательное +
-Reflexive *[refl.]* — возвратное
-| _my, his, their_ +
-_myself, himself_
-
-| *Determiner [det.]* +
-(Определитель / Детерминатив)
-| Type +
-(Тип)
-| Demonstrative *[dem.]* — указательный +
-Quantifier *[quant.]* — квантификатор (количественный)
-| _this, these_ +
-_some, many, all_
-
-| *Numeral [num.]* +
-(Числительное)
-| Type +
-(Тип)
-| Cardinal *[card.]* — количественное +
-Ordinal *[ord.]* — порядковое
-| _two, ten_ +
-_second, tenth_
-
-| *Article [art.]* +
-(Артикль)
-| Definiteness +
-(Определенность)
-| Definite *[def.]* — определенный +
-Indefinite *[indef.]* — неопределенный
-| _the_ +
-_a, an_
-
-| *Preposition [prep.]* +
-(Предлог)
-| -
-| _Неизменяемая часть речи_ *[inv.]* (Invariant)
-| _in, on, at, by_
-
-| *Conjunction [conj.]* +
-(Союз)
-| -
-| _Неизменяемая часть речи_ *[inv.]* (Invariant)
-| _and, but, or_
-
-| *Interjection [int.]* / *[interj.]* +
-(Междометие)
-| -
-| _Неизменяемая часть речи_ *[inv.]* (Invariant)
-| _oh!, wow!, ouch!_
-
-| *Idiom [id.]* +
-(Идиома)
-| -
-| _Фиксированное выражение_ *[fixed]*
-| _piece of cake, break a leg_
-
-| *Phrase [phr.]* +
-(Фраза / Выражение)
-| -
-| _Словосочетание / Вводная конструкция_ *[fixed]*
-| _by the way, in order to_
+|`noun`|`n.`|Noun|Существительное|_cat_, _water_, _idea_
+|`verb`|`v.`|Verb|Глагол (правильный)|_play_, _work_, _open_
+|`irregular_verb`|`v. irreg.`|Irregular Verb|Неправильный глагол|_go_, _take_, _come_
+|`phrasal_verb`|`phr. v.`|Phrasal Verb|Фразовый глагол|_give up_, _look after_, _turn (it) on_
+|`modal_verb`|`modal`|Modal Verb|Модальный глагол|_can_, _must_, _should_, _will_
+|`auxiliary_verb`|`aux. v.`|Auxiliary Verb|Вспомогательный глагол|_be_ (perfect/passive), _have_ (perfect), _do_ (negation/question)
+|`adjective`|`adj.`|Adjective|Прилагательное|_big_, _interested_, _broken_
+|`adverb`|`adv.`|Adverb|Наречие|_fast_, _carefully_, _well_
+|`pronoun`|`pron.`|Pronoun|Местоимение|_I_, _him_, _my_, _himself_
+|`determiner`|`det.`|Determiner|Определитель|_this_, _some_, _many_
+|`numeral`|`num.`|Numeral|Числительное|_two_, _second_, _ten_
+|`article`|`art.`|Article|Артикль|_a_, _an_, _the_
+|`preposition`|`prep.`|Preposition|Предлог|_in_, _on_, _at_, _by_
+|`conjunction`|`conj.`|Conjunction|Союз|_and_, _but_, _because_
+|`interjection`|`interj.`|Interjection|Междометие|_oh!_, _wow!_, _ouch!_
+|`idiom`|`idiom`|Idiom|Идиома (фигуральный смысл)|_a piece of cake_, _break a leg_
+|`phrase`|`phrase`|Phrase|Фраза, устойчивое выражение|_by the way_, _in order to_
 |===
 
-== Инвариант и привязка к коду
+Регулярный `verb` vs `irregular_verb` — ось *cue*, отличная от лексической: `irregular_verb` означает, что главные формы единицы (`infinitive`/`past_tense`/`past_participle`) заданы лексически и хранятся, а не выводятся правилом. `phrasal_verb` — отдельный тип, потому что несёт `separability` и набор фиксированных частиц/предлогов в `surfaceForm`. Смыслоразличающий предлог (`look at` / `look after` / `look for`) — это разные `phrasal_verb`-смыслы, не «варианты» одного.
 
-Это единый источник POS и категорий/форм. Другие документы (ADR-001, сценарии, память) ссылаются сюда, а не дублируют таблицу.
+`modal_verb` — модальные глаголы с неполной парадигмой (`can`, `must`, `should`, `will`): без `-s`, `-ing`, инфинитива с `to` и причастий. Каждая форма (`can`/`could`, `will`/`would`) — отдельный модальный смысл, а не грамматическое склонение.
 
-`GrammarUnitType` — классификация самой лексической единицы (ось «что это»): `Noun`, `Verb`, `IrregularVerb`, `PhrasalVerb`, `Adjective`, `Adverb`, `Preposition`, `Conjunction`, `Pronoun`, `Determiner`, `Numeral`, `Article`, `Idiom`, `Phrase`, `Interjection`.
+`auxiliary_verb` — первичные вспомогательные глаголы `be`/`have`/`do` в своей **вспомогательной** функции (perfect/progressive/passive/вопросы/отрицания); словарная практика (Oxford OALD, Cambridge) даёт им отдельный POS-тег. Лексическое использование того же слова (`have` = «обладать», `be` = «существовать», `do` = «делать») — отдельная карточка с `irregular_verb`. Модальные глаголы — подмножество вспомогательных, но выделены отдельно из-за неполной лексической парадигмы.
 
-`GrammarTag(category, form)` — конкретный грамматический признак (ось «какая форма»); у карточки/смысла их может быть несколько. *Инвариант*: `GrammarForm` допустима только для своей `GrammarCategory`; каждая форма принадлежит ровно одной категории; пара вне таблицы невалидна и не должна конструироваться (валидация в `GrammarTag`/фабрике, не «доверие вызывающему»).
+== Грамматические признаки (GrammarTag) [[grammar-tags]]
+
+`GrammarTag = (GrammarCategory, GrammarForm)` — ось «какая форма»; у карточки/смысла признаков может быть несколько одновременно. Категория и форма — фиксированные ids; пара должна принадлежать инварианту (см. <<pair-invariant>>).
+
+[options="header",cols="2,2,1,3,3,3"]
+|===
+|`category.id`|`form.id`|Short|English|Русский|Применяется к (POS)
+
+.2+|`number` +
+(Число)|`singular`|`sg.`|singular|единственное|`noun` — _cat_
+|`plural`|`pl.`|plural|множественное|`noun` — _cats_
+
+|`case` +
+(Падеж)|`possessive_case`|`poss.`|possessive|притяжательный|`noun` — _cat's_ (общий падеж — отсутствие маркера, не отображается меткой)
+
+.2+|`countability` +
+(Исчисляемость)|`countable`|`[C]`|countable|исчисляемое|`noun` — _apple_
+|`uncountable`|`[U]`|uncountable|неисчисляемое|`noun` — _water_
+
+.5+|`verb` +
+(Формы глагола)|`infinitive`|`inf.`|infinitive|инфинитив|`verb`, `phrasal_verb` — _play_, _give up_
+|`past_tense`|`past`|past tense|прошедшее время|`verb`, `phrasal_verb` — _played_, _gave up_
+|`past_participle`|`p.p.`|past participle|причастие прошедшего времени|`verb`, `phrasal_verb` — _played_, _given up_
+|`present_participle`|`p.pr.`|present participle|причастие настоящего времени|`verb` — _playing_
+|`gerund`|`ger.`|gerund|герундий (`-ing` как сущ.)|`verb` — _Playing is fun_
+
+.5+|`verb_irregular` +
+(Формы неправ. глагола)|`infinitive`|`inf.`|infinitive|инфинитив|`irregular_verb` — _go_
+|`past_tense`|`past`|past tense|прошедшее время|`irregular_verb` — _went_
+|`past_participle`|`p.p.`|past participle|причастие прошедшего времени|`irregular_verb` — _gone_
+|`present_participle`|`p.pr.`|present participle|причастие настоящего времени|`irregular_verb` — _going_ (выводится правилом)
+|`gerund`|`ger.`|gerund|герундий|`irregular_verb` — _Going is hard_ (выводится правилом)
+
+.2+|`transitivity` +
+(Переходность)|`transitive`|`[T]`|transitive|переходный|`verb`, `phrasal_verb` — _read (a book)_
+|`intransitive`|`[I]`|intransitive|непереходный|`verb`, `phrasal_verb` — _sleep_
+
+.2+|`separability` +
+(Разделяемость)|`separable`|`sep.`|separable|разделяемый|`phrasal_verb` — _turn (it) on_
+|`inseparable`|`insep.`|inseparable|неразделяемый|`phrasal_verb` — _look after (him)_
+
+.3+|`degree` +
+(Степени сравнения)|`positive`|`pos.`|positive|положительная|`adjective`, `adverb` — _big_, _fast_
+|`comparative`|`comp.`|comparative|сравнительная|`adjective`, `adverb` — _bigger_, _faster_
+|`superlative`|`sup.`|superlative|превосходная|`adjective`, `adverb` — _biggest_, _fastest_
+
+.4+|`pronoun_type` +
+(Тип местоимения)|`subjective`|`subj.`|subjective|именительный|`pronoun` — _I_, _he_, _they_
+|`objective`|`obj.`|objective|объектный|`pronoun` — _me_, _him_, _them_
+|`possessive_pronoun`|`poss.`|possessive|притяжательное|`pronoun` — _mine_, _yours_, _his_, _hers_, _ours_, _theirs_ (заменяют существительное; _my_, _your_, _their_ — это determiners, не pronouns)
+|`reflexive`|`refl.`|reflexive|возвратное|`pronoun` — _myself_, _himself_, _themselves_
+
+.5+|`determiner_type` +
+(Тип определителя)|`demonstrative`|`dem.`|demonstrative|указательный|`determiner` — _this_, _these_
+|`quantifier`|`quant.`|quantifier|квантификатор|`determiner` — _some_, _many_, _all_
+|`possessive_determiner`|`poss.det.`|possessive|притяжательный|`determiner` — _my_, _your_, _his_, _her_, _their_ (перед существительным)
+|`distributive`|`distrib.`|distributive|дистрибутивный|`determiner` — _each_, _every_, _either_, _neither_
+|`interrogative`|`interr.`|interrogative|вопросительный|`determiner` — _what_, _which_, _whose_
+
+.2+|`numeral_type` +
+(Тип числительного)|`cardinal`|`card.`|cardinal|количественное|`numeral` — _two_, _ten_
+|`ordinal`|`ord.`|ordinal|порядковое|`numeral` — _second_, _tenth_
+
+.2+|`definiteness` +
+(Определённость)|`definite`|`def.`|definite|определённый|`article` — _the_
+|`indefinite`|`indef.`|indefinite|неопределённый|`article` — _a_, _an_
+
+|`invariance` +
+(Неизменяемая часть речи)|`invariant`|`inv.`|invariant|неизменяемая|`preposition`, `conjunction`, `interjection`, `modal_verb`, `auxiliary_verb`
+
+.3+|`conjunction_type` +
+(Тип союза)|`coordinating`|`coord.`|coordinating|сочинительный|`conjunction` — _and_, _but_, _or_, _nor_, _for_, _yet_, _so_ (FANBOYS)
+|`subordinating`|`subord.`|subordinating|подчинительный|`conjunction` — _because_, _if_, _although_, _since_, _while_
+|`correlative`|`corr.`|correlative|соотносительный|`conjunction` — _either…or_, _neither…nor_, _both…and_, _not only…but also_
+
+|`expression_type` +
+(Тип выражения)|`fixed`|`fixed`|fixed expression|устойчивое выражение|`idiom`, `phrase`
+|===
+
+NOTE: Категория `verb` под `phrasal_verb` хранится с тремя формами (`infinitive`/`past_tense`/`past_participle`) — главные формы; `present_participle`/`gerund` выводятся правилом и в фикстуру отдельно не входят. То же для `verb_irregular`: фикстура несёт только три главные формы, остальные две — производные.
+
+[[pair-invariant]]
+=== Инвариант пары категория → форма
+
+`GrammarForm` допустима только для своей `GrammarCategory`; каждая форма принадлежит ровно одной категории. Валидация выполняется во время работы, а не на этапе компиляции: `GrammarTag.resolve(categoryId, formId, allowedFormsByCategory)` проверяет пару против переданной таксономии (`null` = режим пропуска без проверки для офлайн/UI). Прямое конструирование `GrammarTag(...)` валидацию не делает (несёт `Unknown(...)` через границу); единая точка anti-corruption — `resolve` на AI-границе (ADR-005, ADR-006). Известные клиенту встроенные пары — `GrammarTag.knownAllowedFormsByCategory` (для офлайн-фикстур и хранения):
 
 [options="header",cols="2,4"]
 |===
 |`GrammarCategory` (`id`)|Допустимые `GrammarForm`
+
 |`Number` (`number`)|`Singular`, `Plural`
-|`Case` (`case`)|`CommonCase`, `NounPossessiveCase`
+|`Case` (`case`)|`NounPossessiveCase`
 |`Countability` (`countability`)|`Countable`, `Uncountable`
-|`Verb` (`verb`)|`Infinitive`, `PastTense`, `PastParticiple`, `PresentParticiple`, `Gerund` — выводятся правилом
-|`VerbIrregular` (`verb_irregular`)|`Infinitive`, `PastTense`, `PastParticiple`, `PresentParticiple`, `Gerund` — главные формы (base/past/past participle) заданы лексически и хранятся
+|`Verb` (`verb`)|`Infinitive`, `PastTense`, `PastParticiple`, `PresentParticiple`, `Gerund`
+|`VerbIrregular` (`verb_irregular`)|`Infinitive`, `PastTense`, `PastParticiple`, `PresentParticiple`, `Gerund`
 |`Transitivity` (`transitivity`)|`Transitive`, `Intransitive`
 |`Separability` (`separability`)|`Separable`, `Inseparable`
 |`Degree` (`degree`)|`Positive`, `Comparative`, `Superlative`
 |`PronounType` (`pronoun_type`)|`Subjective`, `Objective`, `PronounPossessive`, `Reflexive`
-|`DeterminerType` (`determiner_type`)|`Demonstrative`, `Quantifier`
+|`DeterminerType` (`determiner_type`)|`Demonstrative`, `Quantifier`, `PossessiveDeterminer`, `Distributive`, `Interrogative`
 |`NumeralType` (`numeral_type`)|`Cardinal`, `Ordinal`
 |`Definiteness` (`definiteness`)|`Definite`, `Indefinite`
 |`Invariance` (`invariance`)|`Invariant`
+|`ConjunctionType` (`conjunction_type`)|`Coordinating`, `Subordinating`, `Correlative`
 |`ExpressionType` (`expression_type`)|`Fixed`
 |===
 
-`Verb` vs `VerbIrregular` — это ось cue, отличная от `GrammarUnitType`: `GrammarUnitType.IrregularVerb` говорит «единица — неправильный глагол», а `GrammarTag(VerbIrregular, PastTense)` помечает конкретную форму как нерегулярную хранимую. `VerbIrregular` обязывает иметь хранимые главные формы — под них создаются связанные карточки-варианты (ADR-001, сценарий `vocabulary-capture.feature`).
+== Комплементация (ComplementType) [[complementation]]
 
-== Управление предлогами и коллокации (структурный cue)
+Что синтаксически принимает единица в этом смысле — ось `complementation: List<ComplementType>`, отдельная от `GrammarTag` и предложного управления: `enjoy`→{`noun`, `gerund`}, `want`→{`noun`, `to_infinitive`}, `make sb do`→{`bare_infinitive`}. Подсвечивается как грамматическая подсказка на карточке.
+
+[options="header",cols="2,1,2,3,3"]
+|===
+|`id`|Short|English|Русский|Примеры
+
+|`noun`|`+n`|noun|существительное|_enjoy a book_, _need water_
+|`gerund`|`+ger`|gerund|герундий (`-ing`)|_enjoy swimming_, _avoid making noise_
+|`to_infinitive`|`+to-inf`|to-infinitive|инфинитив с `to`|_want to go_, _decide to leave_
+|`bare_infinitive`|`+inf`|bare infinitive|инфинитив без `to`|_make him go_, _let her speak_
+|`that_clause`|`+that`|that-clause|придаточное с `that`|_say that he came_, _think that it works_
+|`wh_clause`|`+wh-`|wh-clause|придаточное с `wh-`|_ask what he wants_, _know why_
+|`adjective`|`+adj`|adjective|прилагательное|_seem happy_, _look tired_
+|`prepositional_phrase`|`+prep`|prepositional phrase|предложная группа|_put (it) on the table_, _depend on luck_
+|`intransitive`|`(intr.)`|intransitive|без дополнения|_sleep_, _arrive_
+|===
+
+== Нюансы употребления (UsageLabel) [[usage-labels]]
+
+`usageLabels: List<UsageLabel>` — *тот же* смысл, но с ограничением по регистру, региону, домену, коннотации или актуальности. Смыслоразличающий нюанс — сегрегация в отдельный смысл, не лейбл. Открытое селективное ограничение, которое не выразить осью («только о жирах и маслах») — в `usageNote: String?`, не сюда и не в `explanation`.
+
+[options="header",cols="2,2,1,2,2,2"]
+|===
+|`axis.id`|`value.id`|Short|English|Русский|Примеры
+
+.5+|`register` +
+(Регистр)|`formal`|`fml.`|formal|формальный|_commence_, _utilize_
+|`informal`|`infml.`|informal|неформальный|_kid_ (=child), _gonna_
+|`slang`|`slang`|slang|сленг|_cool_, _dough_ (=money)
+|`literary`|`lit.`|literary|литературный|_alas_, _o'er_
+|`neutral`|`neutral`|neutral|нейтральный|_say_, _go_
+
+.4+|`region` +
+(Регион)|`bre`|`BrE`|British English|британский|_lift_ (=elevator), _flat_ (=apartment)
+|`ame`|`AmE`|American English|американский|_elevator_, _apartment_
+|`ause`|`AusE`|Australian English|австралийский|_arvo_ (=afternoon)
+|`cane`|`CanE`|Canadian English|канадский|_toque_ (=knitted hat)
+
+.5+|`domain` +
+(Тематическая область)|`law`|`law`|law|юридическая|_plaintiff_, _tort_
+|`medicine`|`med.`|medicine|медицина|_myocardial_, _stenosis_
+|`it`|`IT`|computing|IT, вычислительная|_buffer_, _deprecated_
+|`science`|`sci.`|science|научная|_quasar_, _meiosis_
+|`business`|`biz.`|business|бизнес|_KPI_, _onboarding_
+
+.4+|`connotation` +
+(Коннотация)|`neutral_connotation`|`neutral`|neutral|нейтральная|_say_, _employee_
+|`approving`|`approving`|approving|одобрительная|_thrifty_ (vs _stingy_)
+|`disapproving`|`disapprov.`|disapproving|неодобрительная|_stingy_, _crook_
+|`euphemistic`|`euph.`|euphemistic|эвфемизм|_pass away_ (=die)
+
+.4+|`temporality` +
+(Актуальность)|`current`|`current`|current|современное|_phone_, _email_
+|`dated`|`dated`|dated|устаревающее|_ice-box_ (=refrigerator)
+|`archaic`|`archaic`|archaic|архаичное|_thou_, _ere_
+|`obsolete`|`obs.`|obsolete|вышедшее из употребления|_yclept_ (=called)
+|===
+
+== Управление предлогами и коллокации (структурная подсказка)
 
 Помимо `GrammarTag(category, form)`, смысл несёт **структурное управление/коллокацию** — какие предлоги принимает единица в этом смысле. Это отдельная структурированная аннотация (не свободный текст в пояснении и не часть `surfaceForm`, которая описывает поверхностную форму самого смысла):
 
@@ -206,14 +212,49 @@ _a, an_
 * прилагательное: `interested` → `in`, `good` → `at`, `afraid` → `of`, `different` → from/to/than;
 * существительное: `reason` → `for`, `increase` → `in`.
 
-Модель: на смысле — список `PrepositionGovernment(alternatives, example?)` в `shared/grammar/domain` (обычно 0–1 группа). Каждая группа — **взаимозаменяемые** для этого *одного* смысла предлоги (`different` → from/to/than) с опциональным примером (только если не виден из контекстных употреблений). Предлоги, **меняющие смысл** (`look at` / `look after` / `look for`), здесь НЕ группируются — это разные смыслы (сегрегация смыслов), AI возвращает их отдельными senses. Пустой список — единица без предложного управления. Выводится AI-шом наравне с прочими cue (ADR-001).
+Модель: на смысле — список `PrepositionGovernment(alternatives, example?)` в `shared/grammar/domain` (обычно 0–1 группа). Каждая группа — **взаимозаменяемые** для этого *одного* смысла предлоги (`different` → from/to/than) с опциональным примером (только если не виден из контекстных употреблений). Предлоги, **меняющие смысл** (`look at` / `look after` / `look for`), здесь не группируются — это разные смыслы (сегрегация смыслов), AI возвращает их отдельными смыслами. Пустой список — единица без предложного управления. Выводится через границу AI-интеграции наравне с прочими грамматическими подсказками (ADR-001).
+
+== Стили коротких меток: Lexicographic / Pedagogical [[badge-styles]]
+
+Короткие метки карточек берутся из таксономии времени выполнения (`GrammarLabels.form(..., GrammarLabelForm.Short, style)` / `formByName(...)`), а не из этого канона: фикстура `practice/grammar/taxonomy` — источник истины для UI. Стилей два, ось `GrammarLabelStyle`:
+
+* `Lexicographic` — словарная конвенция (`[T]`/`[I]`/`[C]`/`[U]`/`inf.`/`past`/`p.p.`), используется на карточке выбора смысла при вводе.
+* `Pedagogical` — учебниковая ESL-конвенция (`vt.`/`vi.`/`count.`/`uncount.`/`V1`/`V2`/`V3`/`V-ing`), используется на карточке практики.
+
+Большинство значений совпадают; ниже — только те, где `pedagogical` отличается (английские метки).
+
+POS-уровень:
+
+[options="header",cols="2,2,2,2"]
+|===
+|Лексема|`id`|Lexicographic|Pedagogical
+|Irregular Verb|`irregular_verb`|`v. irreg.`|`v. irr.`
+|Phrase|`phrase`|`phrase`|`phr.`
+|===
+
+Уровень форм (`GrammarTag`):
+
+[options="header",cols="2,2,2,2"]
+|===
+|Категория / Форма|`form.id`|Lexicographic|Pedagogical
+|`countability` / `countable`|`countable`|`[C]`|`count.`
+|`countability` / `uncountable`|`uncountable`|`[U]`|`uncount.`
+|`transitivity` / `transitive`|`transitive`|`[T]`|`vt.`
+|`transitivity` / `intransitive`|`intransitive`|`[I]`|`vi.`
+|`verb` / `infinitive`, `verb_irregular` / `infinitive`|`infinitive`|`inf.`|`V1`
+|`verb` / `past_tense`, `verb_irregular` / `past_tense`|`past_tense`|`past`|`V2`
+|`verb` / `past_participle`, `verb_irregular` / `past_participle`|`past_participle`|`p.p.`|`V3`
+|`verb` / `present_participle`, `verb_irregular` / `present_participle`|`present_participle`|`p.pr.`|`V-ing`
+|===
+
+Локализованные RU-варианты задаются в той же фикстуре под BCP-47 тегом `ru`; добавление нового UI-языка — расширение фикстуры, не правка `shared/grammar/domain`.
 
 == Статус реализации
 
-* Таксономия вынесена в нейтральный модуль `shared/grammar/domain` (`GrammarUnitType`, `GrammarTag`/`GrammarCategory`/`GrammarForm`); потребляется и capture (`vocabulary-editor`), и practice/library — независимо.
+* Таксономия вынесена в нейтральный модуль `shared/grammar/domain` (`GrammarUnitType`, `GrammarTag`/`GrammarCategory`/`GrammarForm`, `ComplementType`, `UsageAxis`/`UsageValue`); все шесть — `sealed interface` с ветками `Unknown(id)` (ADR-006). Потребляется и capture (`vocabulary-editor`), и practice/library — независимо.
 * `GrammarTag(category, form)` хранит признаки карточки/смысла, в т.ч. несколько одновременно.
-* Единый владелец рантайм-таксономии — модуль `shared/grammar/data`: фикстура `practice/grammar/taxonomy` (единственный контрибьютор этого ключа), `GrammarTaxonomyRemoteDataSource`/`GrammarTaxonomySource` и чистый резолвер `GrammarLabels` (id → learner-facing подпись на родном языке). Сам резолвер-тип лежит в `shared/grammar/domain` (чтобы лёгкие presentation-API зависели только от домена); сборка `GrammarTaxonomyDto.toGrammarLabels()` — в `data`. Фикстура покрывает `unit_types` (категории/формы), `usage_axes` и `complement_types`. Потребляется и capture, и library, capture не зависит от library (ADR-001, EB-1). Deck fixtures передают `unit_type` и `grammar_tags`.
-* `GrammarCategory` разделён на `Verb` (`verb`) и `VerbIrregular` (`verb_irregular`); инвариант категория → допустимые формы валидируется в конструкторе `GrammarTag` (невалидная пара не конструируется). Поверхностная форма смысла — структурный `SurfaceForm` (литерал / опциональная часть / слот) в `shared/grammar/domain`.
-* Комплементация/валентность смысла — `complementation: List<ComplementType>` в `shared/grammar/domain` (закрытый enum: `Noun, Gerund, ToInfinitive, BareInfinitive, ThatClause, WhClause, Adjective, PrepositionalPhrase, Intransitive`), отдельная ось от `GrammarTag` и предложного управления: `enjoy`→{Noun,Gerund}, `want`→{Noun,ToInfinitive}. Неизвестный id отбрасывается на границе. Подсвечивается как граммфишка на карточке.
-* Нюансы употребления — `usageLabels: List<UsageLabel>` (закрытые оси/значения, валидируется как `GrammarTag`): `Register`(formal/informal/slang/literary/neutral), `Region`(bre/ame/ause/cane), `Domain`(law/medicine/it/science/business), `Connotation`(neutral/positive/pejorative/euphemistic), `Temporality`(current/dated/archaic/obsolete) — про *тот же* смысл с ограничением; плюс `usageNote: String?` для открытого селективного ограничения («только о жирах/маслах»), отдельный типизированный слот, не проза в `explanation`. Смыслоразличающий нюанс — сегрегация в отдельный смысл, не лейбл.
-* Контекстный пример — структурный `StudiedSentence` (`SentenceSegment.Text` / `Target`) в `shared/grammar/domain`, та же ДНК «структура, не строка», что и `SurfaceForm`: изучаемая единица помечена продьюсером (AI знает точный спан), practice подсвечивает/закрывает её для cloze без хрупкого подстрочного поиска (ломался на словоформах `come`/`came`, разделяемых фразовых `turn it on`). Транспорт/хранение — строка с маркером `[[…]]` (как `SurfaceForm` парсится на границе).
+* Таксономия времени выполнения — модуль `shared/grammar/data`: фикстура `practice/grammar/taxonomy` (единственный источник этого ключа), `GrammarTaxonomyRemoteDataSource`/`GrammarTaxonomySource` и два чистых снимка над фикстурой — `GrammarLabels` (`id` → пользовательская подпись с выбором языка/формы/стиля) и `TaxonomyInvariants` (`knownUnitTypeIds`, `knownComplementIds`, `allowedFormsByCategory`, `allowedValuesByAxis`). Типы-разборщики и контракты провайдеров (`GrammarLabelsProvider`, `TaxonomyInvariantsProvider`) лежат в `shared/grammar/domain` (чтобы лёгкие presentation-API и feature-домены зависели только от домена); `CachingGrammarTaxonomyProvider` делает общий запрос, а `CachingGrammarLabelsProvider`/`CachingTaxonomyInvariantsProvider` строят проекции через `toGrammarLabels()` и `toTaxonomyInvariants()`. Фикстура покрывает `unit_types` (категории/формы) с двумя `short`-стилями, `usage_axes` и `complement_types`. Потребляется и capture, и library, capture не зависит от library (ADR-001, EB-1). Фикстуры колод передают `unit_type` и `grammar_tags`.
+* `GrammarCategory` разделён на `Verb` (`verb`) и `VerbIrregular` (`verb_irregular`); инвариант категория → допустимые формы проверяется во время выполнения: `GrammarTag.resolve(catId, formId, allowedFormsByCategory)` валидирует пару на AI-границе против `TaxonomyInvariants` (`null` = режим пропуска без проверки). Известные клиенту встроенные пары — `GrammarTag.knownAllowedFormsByCategory` (для офлайн-фикстур и хранения). Поверхностная форма смысла — структурный `SurfaceForm` (литерал / опциональная часть / слот) в `shared/grammar/domain`.
+* Комплементация/валентность смысла — `complementation: List<ComplementType>` в `shared/grammar/domain` (`sealed interface` c известными `Noun, Gerund, ToInfinitive, BareInfinitive, ThatClause, WhClause, Adjective, PrepositionalPhrase, Intransitive` и веткой `Unknown(id)`). Незнакомый клиенту id из доверенной таксономии — `Unknown(id)`; id вне `TaxonomyInvariants.knownComplementIds` — отбрасывается на границе (ADR-006).
+* Нюансы употребления — `usageLabels: List<UsageLabel>` (`UsageAxis`/`UsageValue` — sealed; парность axis ⇒ value проверяется во время выполнения через `TaxonomyInvariants.allowedValuesByAxis`); смыслоразличающий нюанс — сегрегация в отдельный смысл, не лейбл; открытое селективное ограничение — `usageNote: String?`, не проза в `explanation`.
+* Контекстный пример — структурный `StudiedSentence` (`SentenceSegment.Text` / `Target`) в `shared/grammar/domain`, по тому же принципу «структура, не строка», что и `SurfaceForm`: изучаемая единица помечена источником (AI знает точный диапазон), practice подсвечивает или закрывает её для упражнения с пропуском без хрупкого подстрочного поиска (он ломался бы на словоформах `come`/`came` и разделяемых фразовых `turn it on`). Транспорт/хранение — строка с маркером `[[…]]` (как `SurfaceForm` парсится на границе).

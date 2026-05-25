@@ -7,6 +7,8 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.database.CatalogEntityQueries
 import app.sensee.core.database.Practice_card
+import app.sensee.core.observability.diagnostics.AppDiagnostics
+import app.sensee.core.observability.logging.AppLogger
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.data.remote.CardSummaryDto
@@ -58,7 +60,10 @@ public class CatalogLocalDataSource(
     private val dispatchers: AppDispatchers,
     private val json: Json,
     private val clock: Clock,
+    appDiagnostics: AppDiagnostics,
 ) {
+    private val logger: AppLogger = appDiagnostics.logger.tag("CatalogLocalDataSource")
+
     public suspend fun upsertDeckSummaries(decks: List<DeckSummaryDto>) {
         val database = databaseProvider.database()
         decks.forEach { deck ->
@@ -182,7 +187,7 @@ public class CatalogLocalDataSource(
         val cards =
             entities.map { entity ->
                 val cardId = SrsCardId(entity.id)
-                entity.toCard(json, snapshots[cardId] ?: SrsCardFactory.newCard(cardId))
+                entity.toCard(json, snapshots[cardId] ?: SrsCardFactory.newCard(cardId), logger)
             }
         return DeckWithCards(
             deck =
@@ -204,7 +209,7 @@ public class CatalogLocalDataSource(
                 .selectCardById(cardId)
                 .awaitAsOneOrNull()
                 ?: return null
-        return entity.toCard(json, srsSnapshot(srsStorage, cardId))
+        return entity.toCard(json, srsSnapshot(srsStorage, cardId), logger)
     }
 
     public suspend fun selectLemma(lemmaId: String): Lemma? {
@@ -250,7 +255,10 @@ private suspend fun SenseeDatabase.upsertCardInternal(
     json: Json,
     srsStorage: SrsStorage<FsrsParameters>,
 ) {
-    catalogEntityQueries.upsertLemma(
+    // Card has an FK to practice_lemma(id); make sure the row exists. The real
+    // text comes through the separate loadLemma path; here we only seed an
+    // id-derived placeholder, and IF-ABSENT so we never overwrite a real one.
+    catalogEntityQueries.insertLemmaIfAbsent(
         id = card.lemmaId,
         text = card.lemmaId.removePrefix("lemma-"),
     )
@@ -275,21 +283,28 @@ private fun encodeGrammarTags(
     tags: List<GrammarTagDto>,
 ): String = json.encodeToString(grammarTagListSerializer, tags)
 
+// Malformed payload is treated as "no tags" so a single bad card doesn't break
+// the whole deck; the failure is logged so it surfaces in diagnostics instead
+// of disappearing silently.
 private fun parseGrammarTags(
     json: Json,
     raw: String,
+    cardId: String,
+    logger: AppLogger,
 ): List<GrammarTag> =
     try {
         json
             .decodeFromString(grammarTagListSerializer, raw)
             .mapNotNull(GrammarTagDto::toDomain)
-    } catch (_: SerializationException) {
+    } catch (failure: SerializationException) {
+        logger.warn(failure) { "Malformed grammar_tags_json for card $cardId; falling back to no tags" }
         emptyList()
     }
 
 private fun Practice_card.toCard(
     json: Json,
     srs: SrsCardSnapshot,
+    logger: AppLogger,
 ): Card =
     Card(
         id = CardId(id),
@@ -298,7 +313,7 @@ private fun Practice_card.toCard(
         translation = translation,
         contextSentence = context_sentence,
         unitType = parseUnitType(unit_type),
-        grammarTags = parseGrammarTags(json, grammar_tags_json),
+        grammarTags = parseGrammarTags(json, grammar_tags_json, id, logger),
         senseSummary = sense_summary,
         explanation = explanation,
         srs = srs,
@@ -346,12 +361,11 @@ internal fun LemmaDto.toLemma(): Lemma =
         relatedCards = relatedCards.map(CardSummaryDto::toCardSummary),
     )
 
-private fun parseUnitType(raw: String): GrammarUnitType =
-    GrammarUnitType.entries.firstOrNull { it.name.normalizedGrammarId() == raw.normalizedGrammarId() }
-        ?: GrammarUnitType.Phrase
+private fun parseUnitType(raw: String): GrammarUnitType = GrammarUnitType.fromId(raw)
 
-private fun String.normalizedGrammarId(): String =
-    filter { it.isLetterOrDigit() }
-        .lowercase()
-
-private fun GrammarTagDto.toDomain(): GrammarTag? = GrammarTag.resolve(categoryId = category, formId = form)
+private fun GrammarTagDto.toDomain(): GrammarTag? =
+    GrammarTag.resolve(
+        categoryId = category,
+        formId = form,
+        allowedFormsByCategory = GrammarTag.knownAllowedFormsByCategory,
+    )

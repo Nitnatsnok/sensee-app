@@ -1,0 +1,1013 @@
+{
+  "unit_types": [
+    {
+      "id": "noun",
+      "labels": {
+        "ru": { "long": "Существительное", "short": { "lexicographic": "сущ.", "pedagogical": "n." } },
+        "en": { "long": "noun", "short": { "lexicographic": "n.", "pedagogical": "n." } }
+      },
+      "categories": [
+        {
+          "id": "number",
+          "labels": {
+            "ru": { "long": "Число" },
+            "en": { "long": "number" }
+          },
+          "forms": [
+            {
+              "id": "singular",
+              "labels": {
+                "ru": { "long": "Единственное", "short": { "lexicographic": "ед.", "pedagogical": "sg." } },
+                "en": { "long": "singular", "short": { "lexicographic": "sg.", "pedagogical": "sg." } }
+              },
+              "examples": ["cat"]
+            },
+            {
+              "id": "plural",
+              "labels": {
+                "ru": { "long": "Множественное", "short": { "lexicographic": "мн.", "pedagogical": "pl." } },
+                "en": { "long": "plural", "short": { "lexicographic": "pl.", "pedagogical": "pl." } }
+              },
+              "examples": ["cats"]
+            }
+          ]
+        },
+        {
+          "id": "case",
+          "labels": {
+            "ru": { "long": "Падеж" },
+            "en": { "long": "case" }
+          },
+          "forms": [
+            {
+              "id": "possessive_case",
+              "labels": {
+                "ru": { "long": "Притяжательный", "short": { "lexicographic": "притяж.", "pedagogical": "poss." } },
+                "en": { "long": "possessive", "short": { "lexicographic": "poss.", "pedagogical": "poss." } }
+              },
+              "examples": ["cat's"]
+            }
+          ]
+        },
+        {
+          "id": "countability",
+          "labels": {
+            "ru": { "long": "Исчисляемость" },
+            "en": { "long": "countability" }
+          },
+          "forms": [
+            {
+              "id": "countable",
+              "labels": {
+                "ru": { "long": "Исчисляемое", "short": { "lexicographic": "исч.", "pedagogical": "count." } },
+                "en": { "long": "countable", "short": { "lexicographic": "[C]", "pedagogical": "count." } }
+              },
+              "examples": ["apple"]
+            },
+            {
+              "id": "uncountable",
+              "labels": {
+                "ru": { "long": "Неисчисляемое", "short": { "lexicographic": "неисч.", "pedagogical": "uncount." } },
+                "en": { "long": "uncountable", "short": { "lexicographic": "[U]", "pedagogical": "uncount." } }
+              },
+              "examples": ["water"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verb",
+      "labels": {
+        "ru": { "long": "Глагол", "short": { "lexicographic": "гл.", "pedagogical": "v." } },
+        "en": { "long": "verb", "short": { "lexicographic": "v.", "pedagogical": "v." } }
+      },
+      "categories": [
+        {
+          "id": "verb",
+          "labels": {
+            "ru": { "long": "Формы" },
+            "en": { "long": "forms" }
+          },
+          "forms": [
+            {
+              "id": "infinitive",
+              "labels": {
+                "ru": { "long": "Инфинитив", "short": { "lexicographic": "инф.", "pedagogical": "V1" } },
+                "en": { "long": "infinitive", "short": { "lexicographic": "inf.", "pedagogical": "V1" } }
+              },
+              "examples": ["play"]
+            },
+            {
+              "id": "past_tense",
+              "labels": {
+                "ru": { "long": "Прошедшее время", "short": { "lexicographic": "прош.", "pedagogical": "V2" } },
+                "en": { "long": "past tense", "short": { "lexicographic": "past", "pedagogical": "V2" } }
+              },
+              "examples": ["played"]
+            },
+            {
+              "id": "past_participle",
+              "labels": {
+                "ru": { "long": "Причастие прош. времени", "short": { "lexicographic": "прич.прош.", "pedagogical": "V3" } },
+                "en": { "long": "past participle", "short": { "lexicographic": "p.p.", "pedagogical": "V3" } }
+              },
+              "examples": ["played"]
+            },
+            {
+              "id": "present_participle",
+              "labels": {
+                "ru": { "long": "Причастие наст. времени", "short": { "lexicographic": "прич.наст.", "pedagogical": "V-ing" } },
+                "en": { "long": "present participle", "short": { "lexicographic": "p.pr.", "pedagogical": "V-ing" } }
+              },
+              "examples": ["playing"]
+            },
+            {
+              "id": "gerund",
+              "labels": {
+                "ru": { "long": "Герундий", "short": { "lexicographic": "гер.", "pedagogical": "ger." } },
+                "en": { "long": "gerund", "short": { "lexicographic": "ger.", "pedagogical": "ger." } }
+              },
+              "examples": ["playing"]
+            }
+          ]
+        },
+        {
+          "id": "transitivity",
+          "labels": {
+            "ru": { "long": "Переходность" },
+            "en": { "long": "transitivity" }
+          },
+          "forms": [
+            {
+              "id": "transitive",
+              "labels": {
+                "ru": { "long": "Переходный", "short": { "lexicographic": "перех.", "pedagogical": "vt." } },
+                "en": { "long": "transitive", "short": { "lexicographic": "[T]", "pedagogical": "vt." } }
+              },
+              "examples": ["read a book"]
+            },
+            {
+              "id": "intransitive",
+              "labels": {
+                "ru": { "long": "Непереходный", "short": { "lexicographic": "неперех.", "pedagogical": "vi." } },
+                "en": { "long": "intransitive", "short": { "lexicographic": "[I]", "pedagogical": "vi." } }
+              },
+              "examples": ["sleep"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irregular_verb",
+      "labels": {
+        "ru": { "long": "Неправильный глагол", "short": { "lexicographic": "неправ.гл.", "pedagogical": "v. irr." } },
+        "en": { "long": "irregular verb", "short": { "lexicographic": "v. irreg.", "pedagogical": "v. irr." } }
+      },
+      "categories": [
+        {
+          "id": "verb_irregular",
+          "labels": {
+            "ru": { "long": "Формы" },
+            "en": { "long": "forms" }
+          },
+          "forms": [
+            {
+              "id": "infinitive",
+              "labels": {
+                "ru": { "long": "Инфинитив", "short": { "lexicographic": "инф.", "pedagogical": "V1" } },
+                "en": { "long": "infinitive", "short": { "lexicographic": "inf.", "pedagogical": "V1" } }
+              },
+              "examples": ["go"]
+            },
+            {
+              "id": "past_tense",
+              "labels": {
+                "ru": { "long": "Прошедшее время", "short": { "lexicographic": "прош.", "pedagogical": "V2" } },
+                "en": { "long": "past tense", "short": { "lexicographic": "past", "pedagogical": "V2" } }
+              },
+              "examples": ["went"]
+            },
+            {
+              "id": "past_participle",
+              "labels": {
+                "ru": { "long": "Причастие прош. времени", "short": { "lexicographic": "прич.прош.", "pedagogical": "V3" } },
+                "en": { "long": "past participle", "short": { "lexicographic": "p.p.", "pedagogical": "V3" } }
+              },
+              "examples": ["gone"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phrasal_verb",
+      "labels": {
+        "ru": { "long": "Фразовый глагол", "short": { "lexicographic": "фраз.гл.", "pedagogical": "phr. v." } },
+        "en": { "long": "phrasal verb", "short": { "lexicographic": "phr. v.", "pedagogical": "phr. v." } }
+      },
+      "categories": [
+        {
+          "id": "verb",
+          "labels": {
+            "ru": { "long": "Формы" },
+            "en": { "long": "forms" }
+          },
+          "forms": [
+            {
+              "id": "infinitive",
+              "labels": {
+                "ru": { "long": "Инфинитив", "short": { "lexicographic": "инф.", "pedagogical": "V1" } },
+                "en": { "long": "infinitive", "short": { "lexicographic": "inf.", "pedagogical": "V1" } }
+              },
+              "examples": ["give up"]
+            },
+            {
+              "id": "past_tense",
+              "labels": {
+                "ru": { "long": "Прошедшее время", "short": { "lexicographic": "прош.", "pedagogical": "V2" } },
+                "en": { "long": "past tense", "short": { "lexicographic": "past", "pedagogical": "V2" } }
+              },
+              "examples": ["gave up"]
+            },
+            {
+              "id": "past_participle",
+              "labels": {
+                "ru": { "long": "Причастие прош. времени", "short": { "lexicographic": "прич.прош.", "pedagogical": "V3" } },
+                "en": { "long": "past participle", "short": { "lexicographic": "p.p.", "pedagogical": "V3" } }
+              },
+              "examples": ["given up"]
+            }
+          ]
+        },
+        {
+          "id": "separability",
+          "labels": {
+            "ru": { "long": "Разделяемость" },
+            "en": { "long": "separability" }
+          },
+          "forms": [
+            {
+              "id": "separable",
+              "labels": {
+                "ru": { "long": "Разделяемый", "short": { "lexicographic": "разд.", "pedagogical": "sep." } },
+                "en": { "long": "separable", "short": { "lexicographic": "sep.", "pedagogical": "sep." } }
+              },
+              "examples": ["turn it on"]
+            },
+            {
+              "id": "inseparable",
+              "labels": {
+                "ru": { "long": "Неразделяемый", "short": { "lexicographic": "неразд.", "pedagogical": "insep." } },
+                "en": { "long": "inseparable", "short": { "lexicographic": "insep.", "pedagogical": "insep." } }
+              },
+              "examples": ["look after him"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modal_verb",
+      "labels": {
+        "ru": { "long": "Модальный глагол", "short": { "lexicographic": "мод.гл.", "pedagogical": "модал." } },
+        "en": { "long": "modal verb", "short": { "lexicographic": "modal", "pedagogical": "modal" } }
+      },
+      "categories": [
+        {
+          "id": "invariance",
+          "labels": {
+            "ru": { "long": "Неизменяемость" },
+            "en": { "long": "invariance" }
+          },
+          "forms": [
+            {
+              "id": "invariant",
+              "labels": {
+                "ru": { "long": "Неизменяемая", "short": { "lexicographic": "неизм.", "pedagogical": "inv." } },
+                "en": { "long": "invariant", "short": { "lexicographic": "inv.", "pedagogical": "inv." } }
+              },
+              "examples": ["can", "must", "should"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auxiliary_verb",
+      "labels": {
+        "ru": { "long": "Вспомогательный глагол", "short": { "lexicographic": "всп.гл.", "pedagogical": "вспом." } },
+        "en": { "long": "auxiliary verb", "short": { "lexicographic": "aux. v.", "pedagogical": "aux. v." } }
+      },
+      "categories": [
+        {
+          "id": "invariance",
+          "labels": {
+            "ru": { "long": "Неизменяемость" },
+            "en": { "long": "invariance" }
+          },
+          "forms": [
+            {
+              "id": "invariant",
+              "labels": {
+                "ru": { "long": "Неизменяемая", "short": { "lexicographic": "неизм.", "pedagogical": "inv." } },
+                "en": { "long": "invariant", "short": { "lexicographic": "inv.", "pedagogical": "inv." } }
+              },
+              "examples": ["be (perfect)", "have (perfect)", "do (negation/question)"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adjective",
+      "labels": {
+        "ru": { "long": "Прилагательное", "short": { "lexicographic": "прил.", "pedagogical": "adj." } },
+        "en": { "long": "adjective", "short": { "lexicographic": "adj.", "pedagogical": "adj." } }
+      },
+      "categories": [
+        {
+          "id": "degree",
+          "labels": {
+            "ru": { "long": "Степени сравнения", "short": { "lexicographic": "степ." } },
+            "en": { "long": "degree" }
+          },
+          "forms": [
+            {
+              "id": "positive",
+              "labels": {
+                "ru": { "long": "Положительная", "short": { "lexicographic": "полож.", "pedagogical": "pos." } },
+                "en": { "long": "positive", "short": { "lexicographic": "pos.", "pedagogical": "pos." } }
+              },
+              "examples": ["big"]
+            },
+            {
+              "id": "comparative",
+              "labels": {
+                "ru": { "long": "Сравнительная", "short": { "lexicographic": "сравн.", "pedagogical": "comp." } },
+                "en": { "long": "comparative", "short": { "lexicographic": "comp.", "pedagogical": "comp." } }
+              },
+              "examples": ["bigger"]
+            },
+            {
+              "id": "superlative",
+              "labels": {
+                "ru": { "long": "Превосходная", "short": { "lexicographic": "превосх.", "pedagogical": "sup." } },
+                "en": { "long": "superlative", "short": { "lexicographic": "sup.", "pedagogical": "sup." } }
+              },
+              "examples": ["biggest"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adverb",
+      "labels": {
+        "ru": { "long": "Наречие", "short": { "lexicographic": "нар.", "pedagogical": "adv." } },
+        "en": { "long": "adverb", "short": { "lexicographic": "adv.", "pedagogical": "adv." } }
+      },
+      "categories": [
+        {
+          "id": "degree",
+          "labels": {
+            "ru": { "long": "Степени сравнения", "short": { "lexicographic": "степ." } },
+            "en": { "long": "degree" }
+          },
+          "forms": [
+            {
+              "id": "positive",
+              "labels": {
+                "ru": { "long": "Положительная", "short": { "lexicographic": "полож.", "pedagogical": "pos." } },
+                "en": { "long": "positive", "short": { "lexicographic": "pos.", "pedagogical": "pos." } }
+              },
+              "examples": ["fast"]
+            },
+            {
+              "id": "comparative",
+              "labels": {
+                "ru": { "long": "Сравнительная", "short": { "lexicographic": "сравн.", "pedagogical": "comp." } },
+                "en": { "long": "comparative", "short": { "lexicographic": "comp.", "pedagogical": "comp." } }
+              },
+              "examples": ["faster"]
+            },
+            {
+              "id": "superlative",
+              "labels": {
+                "ru": { "long": "Превосходная", "short": { "lexicographic": "превосх.", "pedagogical": "sup." } },
+                "en": { "long": "superlative", "short": { "lexicographic": "sup.", "pedagogical": "sup." } }
+              },
+              "examples": ["fastest"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pronoun",
+      "labels": {
+        "ru": { "long": "Местоимение", "short": { "lexicographic": "мест.", "pedagogical": "pron." } },
+        "en": { "long": "pronoun", "short": { "lexicographic": "pron.", "pedagogical": "pron." } }
+      },
+      "categories": [
+        {
+          "id": "pronoun_type",
+          "labels": {
+            "ru": { "long": "Тип" },
+            "en": { "long": "type" }
+          },
+          "forms": [
+            {
+              "id": "subjective",
+              "labels": {
+                "ru": { "long": "Именительный", "short": { "lexicographic": "им.", "pedagogical": "subj." } },
+                "en": { "long": "subjective", "short": { "lexicographic": "subj.", "pedagogical": "subj." } }
+              },
+              "examples": ["I", "he", "they"]
+            },
+            {
+              "id": "objective",
+              "labels": {
+                "ru": { "long": "Объектный", "short": { "lexicographic": "об.", "pedagogical": "obj." } },
+                "en": { "long": "objective", "short": { "lexicographic": "obj.", "pedagogical": "obj." } }
+              },
+              "examples": ["me", "him", "them"]
+            },
+            {
+              "id": "possessive_pronoun",
+              "labels": {
+                "ru": { "long": "Притяжательное", "short": { "lexicographic": "притяж.", "pedagogical": "poss." } },
+                "en": { "long": "possessive", "short": { "lexicographic": "poss.", "pedagogical": "poss." } }
+              },
+              "examples": ["my", "his", "their"]
+            },
+            {
+              "id": "reflexive",
+              "labels": {
+                "ru": { "long": "Возвратное", "short": { "lexicographic": "возвр.", "pedagogical": "refl." } },
+                "en": { "long": "reflexive", "short": { "lexicographic": "refl.", "pedagogical": "refl." } }
+              },
+              "examples": ["myself", "himself"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "determiner",
+      "labels": {
+        "ru": { "long": "Определитель", "short": { "lexicographic": "опр.", "pedagogical": "det." } },
+        "en": { "long": "determiner", "short": { "lexicographic": "det.", "pedagogical": "det." } }
+      },
+      "categories": [
+        {
+          "id": "determiner_type",
+          "labels": {
+            "ru": { "long": "Тип" },
+            "en": { "long": "type" }
+          },
+          "forms": [
+            {
+              "id": "demonstrative",
+              "labels": {
+                "ru": { "long": "Указательный", "short": { "lexicographic": "указ.", "pedagogical": "dem." } },
+                "en": { "long": "demonstrative", "short": { "lexicographic": "dem.", "pedagogical": "dem." } }
+              },
+              "examples": ["this", "these"]
+            },
+            {
+              "id": "quantifier",
+              "labels": {
+                "ru": { "long": "Квантификатор", "short": { "lexicographic": "квант.", "pedagogical": "quant." } },
+                "en": { "long": "quantifier", "short": { "lexicographic": "quant.", "pedagogical": "quant." } }
+              },
+              "examples": ["some", "many", "all"]
+            },
+            {
+              "id": "possessive_determiner",
+              "labels": {
+                "ru": { "long": "Притяжательный", "short": { "lexicographic": "притяж.", "pedagogical": "poss.det." } },
+                "en": { "long": "possessive", "short": { "lexicographic": "poss.det.", "pedagogical": "poss.det." } }
+              },
+              "examples": ["my", "your", "his", "her", "their"]
+            },
+            {
+              "id": "distributive",
+              "labels": {
+                "ru": { "long": "Дистрибутивный", "short": { "lexicographic": "дистр.", "pedagogical": "distrib." } },
+                "en": { "long": "distributive", "short": { "lexicographic": "distrib.", "pedagogical": "distrib." } }
+              },
+              "examples": ["each", "every", "either", "neither"]
+            },
+            {
+              "id": "interrogative",
+              "labels": {
+                "ru": { "long": "Вопросительный", "short": { "lexicographic": "вопр.", "pedagogical": "interr." } },
+                "en": { "long": "interrogative", "short": { "lexicographic": "interr.", "pedagogical": "interr." } }
+              },
+              "examples": ["what", "which", "whose"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numeral",
+      "labels": {
+        "ru": { "long": "Числительное", "short": { "lexicographic": "числ.", "pedagogical": "num." } },
+        "en": { "long": "numeral", "short": { "lexicographic": "num.", "pedagogical": "num." } }
+      },
+      "categories": [
+        {
+          "id": "numeral_type",
+          "labels": {
+            "ru": { "long": "Тип" },
+            "en": { "long": "type" }
+          },
+          "forms": [
+            {
+              "id": "cardinal",
+              "labels": {
+                "ru": { "long": "Количественное", "short": { "lexicographic": "кол.", "pedagogical": "card." } },
+                "en": { "long": "cardinal", "short": { "lexicographic": "card.", "pedagogical": "card." } }
+              },
+              "examples": ["two", "ten"]
+            },
+            {
+              "id": "ordinal",
+              "labels": {
+                "ru": { "long": "Порядковое", "short": { "lexicographic": "пор.", "pedagogical": "ord." } },
+                "en": { "long": "ordinal", "short": { "lexicographic": "ord.", "pedagogical": "ord." } }
+              },
+              "examples": ["second", "tenth"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "article",
+      "labels": {
+        "ru": { "long": "Артикль", "short": { "lexicographic": "арт.", "pedagogical": "art." } },
+        "en": { "long": "article", "short": { "lexicographic": "art.", "pedagogical": "art." } }
+      },
+      "categories": [
+        {
+          "id": "definiteness",
+          "labels": {
+            "ru": { "long": "Определённость" },
+            "en": { "long": "definiteness" }
+          },
+          "forms": [
+            {
+              "id": "definite",
+              "labels": {
+                "ru": { "long": "Определённый", "short": { "lexicographic": "опр.", "pedagogical": "def." } },
+                "en": { "long": "definite", "short": { "lexicographic": "def.", "pedagogical": "def." } }
+              },
+              "examples": ["the"]
+            },
+            {
+              "id": "indefinite",
+              "labels": {
+                "ru": { "long": "Неопределённый", "short": { "lexicographic": "неопр.", "pedagogical": "indef." } },
+                "en": { "long": "indefinite", "short": { "lexicographic": "indef.", "pedagogical": "indef." } }
+              },
+              "examples": ["a", "an"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "preposition",
+      "labels": {
+        "ru": { "long": "Предлог", "short": { "lexicographic": "предл.", "pedagogical": "prep." } },
+        "en": { "long": "preposition", "short": { "lexicographic": "prep.", "pedagogical": "prep." } }
+      },
+      "categories": [
+        {
+          "id": "invariance",
+          "labels": {
+            "ru": { "long": "Неизменяемость" },
+            "en": { "long": "invariance" }
+          },
+          "forms": [
+            {
+              "id": "invariant",
+              "labels": {
+                "ru": { "long": "Неизменяемая", "short": { "lexicographic": "неизм.", "pedagogical": "inv." } },
+                "en": { "long": "invariant", "short": { "lexicographic": "inv.", "pedagogical": "inv." } }
+              },
+              "examples": ["in", "on", "at", "by"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conjunction",
+      "labels": {
+        "ru": { "long": "Союз", "short": { "lexicographic": "союз", "pedagogical": "conj." } },
+        "en": { "long": "conjunction", "short": { "lexicographic": "conj.", "pedagogical": "conj." } }
+      },
+      "categories": [
+        {
+          "id": "invariance",
+          "labels": {
+            "ru": { "long": "Неизменяемость" },
+            "en": { "long": "invariance" }
+          },
+          "forms": [
+            {
+              "id": "invariant",
+              "labels": {
+                "ru": { "long": "Неизменяемая", "short": { "lexicographic": "неизм.", "pedagogical": "inv." } },
+                "en": { "long": "invariant", "short": { "lexicographic": "inv.", "pedagogical": "inv." } }
+              },
+              "examples": ["and", "but", "or"]
+            }
+          ]
+        },
+        {
+          "id": "conjunction_type",
+          "labels": {
+            "ru": { "long": "Тип" },
+            "en": { "long": "type" }
+          },
+          "forms": [
+            {
+              "id": "coordinating",
+              "labels": {
+                "ru": { "long": "Сочинительный", "short": { "lexicographic": "сочин.", "pedagogical": "coord." } },
+                "en": { "long": "coordinating", "short": { "lexicographic": "coord.", "pedagogical": "coord." } }
+              },
+              "examples": ["and", "but", "or", "nor", "for", "yet", "so"]
+            },
+            {
+              "id": "subordinating",
+              "labels": {
+                "ru": { "long": "Подчинительный", "short": { "lexicographic": "подч.", "pedagogical": "subord." } },
+                "en": { "long": "subordinating", "short": { "lexicographic": "subord.", "pedagogical": "subord." } }
+              },
+              "examples": ["because", "if", "although", "since", "while"]
+            },
+            {
+              "id": "correlative",
+              "labels": {
+                "ru": { "long": "Соотносительный", "short": { "lexicographic": "соотн.", "pedagogical": "corr." } },
+                "en": { "long": "correlative", "short": { "lexicographic": "corr.", "pedagogical": "corr." } }
+              },
+              "examples": ["either…or", "neither…nor", "both…and", "not only…but also"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interjection",
+      "labels": {
+        "ru": { "long": "Междометие", "short": { "lexicographic": "межд.", "pedagogical": "interj." } },
+        "en": { "long": "interjection", "short": { "lexicographic": "interj.", "pedagogical": "interj." } }
+      },
+      "categories": [
+        {
+          "id": "invariance",
+          "labels": {
+            "ru": { "long": "Неизменяемость" },
+            "en": { "long": "invariance" }
+          },
+          "forms": [
+            {
+              "id": "invariant",
+              "labels": {
+                "ru": { "long": "Неизменяемая", "short": { "lexicographic": "неизм.", "pedagogical": "inv." } },
+                "en": { "long": "invariant", "short": { "lexicographic": "inv.", "pedagogical": "inv." } }
+              },
+              "examples": ["oh!", "wow!", "ouch!"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "idiom",
+      "labels": {
+        "ru": { "long": "Идиома", "short": { "lexicographic": "идиом.", "pedagogical": "idiom" } },
+        "en": { "long": "idiom", "short": { "lexicographic": "idiom", "pedagogical": "idiom" } }
+      },
+      "categories": [
+        {
+          "id": "expression_type",
+          "labels": {
+            "ru": { "long": "Тип выражения" },
+            "en": { "long": "expression type" }
+          },
+          "forms": [
+            {
+              "id": "fixed",
+              "labels": {
+                "ru": { "long": "Устойчивое выражение", "short": { "lexicographic": "фикс.", "pedagogical": "fixed" } },
+                "en": { "long": "fixed expression", "short": { "lexicographic": "fixed", "pedagogical": "fixed" } }
+              },
+              "examples": ["piece of cake", "break a leg"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phrase",
+      "labels": {
+        "ru": { "long": "Фраза", "short": { "lexicographic": "фр.", "pedagogical": "phr." } },
+        "en": { "long": "phrase", "short": { "lexicographic": "phrase", "pedagogical": "phr." } }
+      },
+      "categories": [
+        {
+          "id": "expression_type",
+          "labels": {
+            "ru": { "long": "Тип выражения" },
+            "en": { "long": "expression type" }
+          },
+          "forms": [
+            {
+              "id": "fixed",
+              "labels": {
+                "ru": { "long": "Устойчивое выражение", "short": { "lexicographic": "фикс.", "pedagogical": "fixed" } },
+                "en": { "long": "fixed expression", "short": { "lexicographic": "fixed", "pedagogical": "fixed" } }
+              },
+              "examples": ["by the way", "in order to"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "usage_axes": [
+    {
+      "id": "register",
+      "labels": {
+        "ru": { "long": "Регистр" },
+        "en": { "long": "register" }
+      },
+      "values": [
+        {
+          "id": "formal",
+          "labels": {
+            "ru": { "long": "Формальный", "short": { "lexicographic": "фрм.", "pedagogical": "фрм." } },
+            "en": { "long": "formal", "short": { "lexicographic": "fml.", "pedagogical": "fml." } }
+          }
+        },
+        {
+          "id": "informal",
+          "labels": {
+            "ru": { "long": "Неформальный", "short": { "lexicographic": "нефрм.", "pedagogical": "нефрм." } },
+            "en": { "long": "informal", "short": { "lexicographic": "infml.", "pedagogical": "infml." } }
+          }
+        },
+        {
+          "id": "slang",
+          "labels": {
+            "ru": { "long": "Сленг", "short": { "lexicographic": "сленг", "pedagogical": "сленг" } },
+            "en": { "long": "slang", "short": { "lexicographic": "slang", "pedagogical": "slang" } }
+          }
+        },
+        {
+          "id": "literary",
+          "labels": {
+            "ru": { "long": "Литературный", "short": { "lexicographic": "лит.", "pedagogical": "лит." } },
+            "en": { "long": "literary", "short": { "lexicographic": "lit.", "pedagogical": "lit." } }
+          }
+        },
+        {
+          "id": "neutral",
+          "labels": {
+            "ru": { "long": "Нейтральный", "short": { "lexicographic": "нейтр.", "pedagogical": "нейтр." } },
+            "en": { "long": "neutral", "short": { "lexicographic": "neutral", "pedagogical": "neutral" } }
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "labels": {
+        "ru": { "long": "Регион" },
+        "en": { "long": "region" }
+      },
+      "values": [
+        {
+          "id": "bre",
+          "labels": {
+            "ru": { "long": "Британский", "short": { "lexicographic": "брит.", "pedagogical": "BrE" } },
+            "en": { "long": "British English", "short": { "lexicographic": "BrE", "pedagogical": "BrE" } }
+          }
+        },
+        {
+          "id": "ame",
+          "labels": {
+            "ru": { "long": "Американский", "short": { "lexicographic": "амер.", "pedagogical": "AmE" } },
+            "en": { "long": "American English", "short": { "lexicographic": "AmE", "pedagogical": "AmE" } }
+          }
+        },
+        {
+          "id": "ause",
+          "labels": {
+            "ru": { "long": "Австралийский", "short": { "lexicographic": "австр.", "pedagogical": "AusE" } },
+            "en": { "long": "Australian English", "short": { "lexicographic": "AusE", "pedagogical": "AusE" } }
+          }
+        },
+        {
+          "id": "cane",
+          "labels": {
+            "ru": { "long": "Канадский", "short": { "lexicographic": "кан.", "pedagogical": "CanE" } },
+            "en": { "long": "Canadian English", "short": { "lexicographic": "CanE", "pedagogical": "CanE" } }
+          }
+        }
+      ]
+    },
+    {
+      "id": "domain",
+      "labels": {
+        "ru": { "long": "Область" },
+        "en": { "long": "domain" }
+      },
+      "values": [
+        {
+          "id": "law",
+          "labels": {
+            "ru": { "long": "Юридическая", "short": { "lexicographic": "юр.", "pedagogical": "юр." } },
+            "en": { "long": "law", "short": { "lexicographic": "law", "pedagogical": "law" } }
+          }
+        },
+        {
+          "id": "medicine",
+          "labels": {
+            "ru": { "long": "Медицина", "short": { "lexicographic": "мед.", "pedagogical": "мед." } },
+            "en": { "long": "medicine", "short": { "lexicographic": "med.", "pedagogical": "med." } }
+          }
+        },
+        {
+          "id": "it",
+          "labels": {
+            "ru": { "long": "IT", "short": { "lexicographic": "IT", "pedagogical": "IT" } },
+            "en": { "long": "computing", "short": { "lexicographic": "IT", "pedagogical": "IT" } }
+          }
+        },
+        {
+          "id": "science",
+          "labels": {
+            "ru": { "long": "Наука", "short": { "lexicographic": "наука", "pedagogical": "наука" } },
+            "en": { "long": "science", "short": { "lexicographic": "sci.", "pedagogical": "sci." } }
+          }
+        },
+        {
+          "id": "business",
+          "labels": {
+            "ru": { "long": "Бизнес", "short": { "lexicographic": "биз.", "pedagogical": "биз." } },
+            "en": { "long": "business", "short": { "lexicographic": "biz.", "pedagogical": "biz." } }
+          }
+        }
+      ]
+    },
+    {
+      "id": "connotation",
+      "labels": {
+        "ru": { "long": "Коннотация" },
+        "en": { "long": "connotation" }
+      },
+      "values": [
+        {
+          "id": "neutral_connotation",
+          "labels": {
+            "ru": { "long": "Нейтральная", "short": { "lexicographic": "нейтр.", "pedagogical": "нейтр." } },
+            "en": { "long": "neutral", "short": { "lexicographic": "neutral", "pedagogical": "neutral" } }
+          }
+        },
+        {
+          "id": "approving",
+          "labels": {
+            "ru": { "long": "Одобрительная", "short": { "lexicographic": "одобр.", "pedagogical": "одобр." } },
+            "en": { "long": "approving", "short": { "lexicographic": "approving", "pedagogical": "approving" } }
+          }
+        },
+        {
+          "id": "disapproving",
+          "labels": {
+            "ru": { "long": "Неодобрительная", "short": { "lexicographic": "неодобр.", "pedagogical": "неодобр." } },
+            "en": { "long": "disapproving", "short": { "lexicographic": "disapprov.", "pedagogical": "disapprov." } }
+          }
+        },
+        {
+          "id": "euphemistic",
+          "labels": {
+            "ru": { "long": "Эвфемизм", "short": { "lexicographic": "эвф.", "pedagogical": "эвф." } },
+            "en": { "long": "euphemistic", "short": { "lexicographic": "euph.", "pedagogical": "euph." } }
+          }
+        }
+      ]
+    },
+    {
+      "id": "temporality",
+      "labels": {
+        "ru": { "long": "Актуальность" },
+        "en": { "long": "temporality" }
+      },
+      "values": [
+        {
+          "id": "current",
+          "labels": {
+            "ru": { "long": "Современное", "short": { "lexicographic": "совр.", "pedagogical": "совр." } },
+            "en": { "long": "current", "short": { "lexicographic": "current", "pedagogical": "current" } }
+          }
+        },
+        {
+          "id": "dated",
+          "labels": {
+            "ru": { "long": "Устаревающее", "short": { "lexicographic": "устар.", "pedagogical": "устар." } },
+            "en": { "long": "dated", "short": { "lexicographic": "dated", "pedagogical": "dated" } }
+          }
+        },
+        {
+          "id": "archaic",
+          "labels": {
+            "ru": { "long": "Архаичное", "short": { "lexicographic": "арх.", "pedagogical": "арх." } },
+            "en": { "long": "archaic", "short": { "lexicographic": "archaic", "pedagogical": "archaic" } }
+          }
+        },
+        {
+          "id": "obsolete",
+          "labels": {
+            "ru": { "long": "Вышедшее из употребления", "short": { "lexicographic": "обс.", "pedagogical": "обс." } },
+            "en": { "long": "obsolete", "short": { "lexicographic": "obs.", "pedagogical": "obs." } }
+          }
+        }
+      ]
+    }
+  ],
+  "complement_types": [
+    {
+      "id": "noun",
+      "labels": {
+        "ru": { "long": "Существительное", "short": { "lexicographic": "сущ.", "pedagogical": "сущ." } },
+        "en": { "long": "noun", "short": { "lexicographic": "+n", "pedagogical": "+n" } }
+      }
+    },
+    {
+      "id": "gerund",
+      "labels": {
+        "ru": { "long": "Герундий (-ing)", "short": { "lexicographic": "гер.", "pedagogical": "гер." } },
+        "en": { "long": "gerund", "short": { "lexicographic": "+ger", "pedagogical": "+ger" } }
+      }
+    },
+    {
+      "id": "to_infinitive",
+      "labels": {
+        "ru": { "long": "Инфинитив с to", "short": { "lexicographic": "инф.+to", "pedagogical": "инф.+to" } },
+        "en": { "long": "to-infinitive", "short": { "lexicographic": "+to-inf", "pedagogical": "+to-inf" } }
+      }
+    },
+    {
+      "id": "bare_infinitive",
+      "labels": {
+        "ru": { "long": "Инфинитив без to", "short": { "lexicographic": "инф.", "pedagogical": "инф." } },
+        "en": { "long": "bare infinitive", "short": { "lexicographic": "+inf", "pedagogical": "+inf" } }
+      }
+    },
+    {
+      "id": "that_clause",
+      "labels": {
+        "ru": { "long": "Придаточное с that", "short": { "lexicographic": "прид.+that", "pedagogical": "прид.+that" } },
+        "en": { "long": "that clause", "short": { "lexicographic": "+that", "pedagogical": "+that" } }
+      }
+    },
+    {
+      "id": "wh_clause",
+      "labels": {
+        "ru": { "long": "Придаточное с wh-", "short": { "lexicographic": "прид.+wh-", "pedagogical": "прид.+wh-" } },
+        "en": { "long": "wh- clause", "short": { "lexicographic": "+wh-", "pedagogical": "+wh-" } }
+      }
+    },
+    {
+      "id": "adjective",
+      "labels": {
+        "ru": { "long": "Прилагательное", "short": { "lexicographic": "прил.", "pedagogical": "прил." } },
+        "en": { "long": "adjective", "short": { "lexicographic": "+adj", "pedagogical": "+adj" } }
+      }
+    },
+    {
+      "id": "prepositional_phrase",
+      "labels": {
+        "ru": { "long": "Предложная группа", "short": { "lexicographic": "предл.", "pedagogical": "предл." } },
+        "en": { "long": "prepositional phrase", "short": { "lexicographic": "+prep", "pedagogical": "+prep" } }
+      }
+    },
+    {
+      "id": "intransitive",
+      "labels": {
+        "ru": { "long": "Без дополнения", "short": { "lexicographic": "без доп.", "pedagogical": "без доп." } },
+        "en": { "long": "intransitive", "short": { "lexicographic": "(intr.)", "pedagogical": "(intr.)" } }
+      }
+    }
+  ]
+}

@@ -1,13 +1,21 @@
 package app.sensee.ai.core
 
+import kotlinx.serialization.json.JsonElement
+
 /**
  * Anti-corruption mapping from the versioned wire DTO to neutral suggestions
  * (ADR-005). Never throws: a malformed or partial provider response degrades
  * into a usable result instead of corrupting feature domain or crashing the
  * flow. An item with no usable translation is not a candidate and is dropped.
+ *
+ * [itemExtensions] aligns by index with `response.items`. A shorter list →
+ * no extensions for the tail; a longer one → trailing entries ignored.
  */
 public object EnrichmentResponseMapper {
-    public fun map(response: EnrichmentResponseV1): EnrichmentResult {
+    public fun map(
+        response: EnrichmentResponseV1,
+        itemExtensions: List<Map<String, JsonElement>> = emptyList(),
+    ): EnrichmentResult {
         if (response.version != EnrichmentResponseV1.SCHEMA_VERSION) {
             return EnrichmentResult(
                 EnrichmentAvailability.Degraded(
@@ -15,49 +23,61 @@ public object EnrichmentResponseMapper {
                 ),
             )
         }
-        val suggestions = response.items.mapNotNull(::toSuggestion)
+        val pairs = response.items.zipPositional(itemExtensions)
+        val suggestions = pairs.mapNotNull { (item, extensions) -> toSuggestion(item, extensions) }
         return result(response, suggestions)
     }
 
-    private fun toSuggestion(item: EnrichmentItemV1): EnrichmentSuggestion? {
-        val translation = item.translation?.trim().orEmptyIfBlank() ?: return null
+    private fun List<EnrichmentItemV1>.zipPositional(
+        extensions: List<Map<String, JsonElement>>,
+    ): List<Pair<EnrichmentItemV1, Map<String, JsonElement>>> =
+        mapIndexed { index, item ->
+            item to extensions.getOrElse(index) { emptyMap() }
+        }
+
+    private fun toSuggestion(
+        item: EnrichmentItemV1,
+        extensions: Map<String, JsonElement>,
+    ): EnrichmentSuggestion? {
+        val translation = item.translation?.trim().nullIfBlank() ?: return null
         return EnrichmentSuggestion(
             translation = translation,
-            surfaceForm = item.surfaceForm?.trim().orEmptyIfBlank(),
-            unitType = item.unitType?.trim().orEmptyIfBlank(),
-            baseLemma = item.baseLemma?.trim().orEmptyIfBlank(),
-            explanation = item.explanation?.trim().orEmptyIfBlank(),
-            examples = item.examples.mapNotNull { it.trim().orEmptyIfBlank() },
+            surfaceForm = item.surfaceForm?.trim().nullIfBlank(),
+            unitType = item.unitType?.trim().nullIfBlank(),
+            baseLemma = item.baseLemma?.trim().nullIfBlank(),
+            explanation = item.explanation?.trim().nullIfBlank(),
+            examples = item.examples.mapNotNull { it.trim().nullIfBlank() },
             governedPrepositions =
                 item.prepositionGovernment.mapNotNull { group ->
-                    val alternatives = group.alternatives.mapNotNull { it.trim().orEmptyIfBlank() }
+                    val alternatives = group.alternatives.mapNotNull { it.trim().nullIfBlank() }
                     if (alternatives.isEmpty()) {
                         return@mapNotNull null
                     }
-                    PrepositionGovernmentHint(alternatives, group.example?.trim().orEmptyIfBlank())
+                    PrepositionGovernmentHint(alternatives, group.example?.trim().nullIfBlank())
                 },
-            complementation = item.complementation.mapNotNull { it.trim().orEmptyIfBlank() },
+            complementation = item.complementation.mapNotNull { it.trim().nullIfBlank() },
             usageLabels =
                 item.usageLabels.mapNotNull { label ->
-                    val axis = label.axis.trim().orEmptyIfBlank() ?: return@mapNotNull null
-                    val value = label.value.trim().orEmptyIfBlank() ?: return@mapNotNull null
+                    val axis = label.axis.trim().nullIfBlank() ?: return@mapNotNull null
+                    val value = label.value.trim().nullIfBlank() ?: return@mapNotNull null
                     UsageLabelHint(axis, value)
                 },
-            usageNote = item.usageNote?.trim().orEmptyIfBlank(),
+            usageNote = item.usageNote?.trim().nullIfBlank(),
             grammarTags =
                 item.grammarTags.mapNotNull { tag ->
-                    val category = tag.category.trim().orEmptyIfBlank() ?: return@mapNotNull null
-                    val form = tag.form.trim().orEmptyIfBlank() ?: return@mapNotNull null
+                    val category = tag.category.trim().nullIfBlank() ?: return@mapNotNull null
+                    val form = tag.form.trim().nullIfBlank() ?: return@mapNotNull null
                     GrammarTagHint(category, form)
                 },
             irregularForms = item.irregularForms?.let(::toIrregularFormsHint),
+            extensions = extensions,
         )
     }
 
     private fun toIrregularFormsHint(forms: IrregularFormsDtoV1): IrregularFormsHint? {
-        val base = forms.base.trim().orEmptyIfBlank()
-        val past = forms.past.trim().orEmptyIfBlank()
-        val pastParticiple = forms.pastParticiple.trim().orEmptyIfBlank()
+        val base = forms.base.trim().nullIfBlank()
+        val past = forms.past.trim().nullIfBlank()
+        val pastParticiple = forms.pastParticiple.trim().nullIfBlank()
         if (base == null || past == null || pastParticiple == null) {
             return null
         }
@@ -80,5 +100,5 @@ public object EnrichmentResponseMapper {
         return EnrichmentResult(availability, suggestions)
     }
 
-    private fun String?.orEmptyIfBlank(): String? = this?.takeIf { it.isNotBlank() }
+    private fun String?.nullIfBlank(): String? = this?.takeIf { it.isNotBlank() }
 }

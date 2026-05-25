@@ -4,6 +4,7 @@ import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.practice.domain.PracticeCardFront
+import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -53,6 +54,18 @@ public data class DeckPracticeUiState(
     // counts once when FSRS graduates it, never on an in-session reinjection.
     val completedCount: Int = 0,
     val tapToFlipEnabled: Boolean = true,
+    val grammarLabels: GrammarLabels = GrammarLabels.EMPTY,
+    /**
+     * Lifecycle of the grammar-label dictionary for *this* screen. Cold start
+     * after the splash → already `Success`; warm-restore deep-link → starts
+     * `Loading` and transitions to `Success`/`Error` as `awaitLabels` returns.
+     * UI may render a skeleton + retry around the badges based on this.
+     */
+    val grammarLabelsState: DataLoadingState = DataLoadingState.Idle,
+    /** BCP-47 tag of the language the learner is studying — drives short badge labels. */
+    val studyLanguageTag: String = "en",
+    /** BCP-47 tag of the learner's native language — drives long help-glossary descriptions. */
+    val nativeLanguageTag: String = "ru",
 )
 
 public data class DeckPracticeCardUiState(
@@ -84,6 +97,9 @@ public enum class DeckPracticeRatingAction {
 
 public sealed interface DeckPracticeAction {
     public data object Retry : DeckPracticeAction
+
+    /** Retry only the grammar-label dictionary load (the screen's badges). */
+    public data object RetryGrammarLabels : DeckPracticeAction
 
     public data object ToggleTapToFlip : DeckPracticeAction
 

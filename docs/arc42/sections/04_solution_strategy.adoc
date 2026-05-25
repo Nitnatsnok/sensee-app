@@ -4,25 +4,25 @@
 == Ключевые стратегические решения
 
 SD-1. Document the implemented slice first::
-Клиентская документация описывает прежде всего реально существующие entrypoints, shared-модули и implemented runtime slice, а не только целевое состояние.
+Клиентская документация описывает прежде всего реально существующие точки входа, shared-модули и реализованный срез поведения, а не только целевое состояние.
 
 SD-2. Shared app shell as the stable center::
 `shared/app-shell` остаётся общей точкой сборки UI, platform environment и root navigation для всех поддерживаемых платформ.
 
 SD-3. Feature boundaries before product breadth::
-Даже при одном пользовательском сценарии feature уже отделён от app shell через `presentation/api` и `presentation/impl`.
+Даже при одном пользовательском сценарии feature-модуль уже отделён от app shell через `presentation/api` и `presentation/impl`.
 
 SD-4. Product semantics before UI shortcuts::
-Даже при текущем implemented slice архитектура должна исходить из более широкой lexical source model: meanings, contextual applications, grammar cues и derived learning cards не должны склеиваться в один UI-текст или в одну карточную сущность. Реализованный capture flow уже использует эту модель; practice остаётся downstream-потребителем.
+Даже при текущем реализованном срезе архитектура должна исходить из модели исходного лексического материала: значения, контекстные употребления, грамматические подсказки и производные учебные карточки не должны склеиваться в один UI-текст или в одну карточную сущность. Реализованный capture-сценарий уже использует эту модель; practice остаётся потребителем подтверждённого материала.
 
 SD-5. Fixture-backed integration before live backend::
-Текущие flow проходят через нормальные клиентские границы: repository contracts, `shared/core/network`, `shared/core/mock-backend`, SQLDelight, `shared/srs/*`, `shared/ai/*`, `shared/tts/*` и `shared/settings/*`. При этом live backend, production sync и серверная AI-оркестрация остаются планируемыми интеграциями.
+Текущие сценарии проходят через нормальные клиентские границы: repository contracts, `shared/core/network`, `shared/core/mock-backend`, SQLDelight, `shared/srs/*`, `shared/ai/*`, `shared/tts/*` и `shared/settings/*`. При этом live backend, production sync и серверная AI-оркестрация остаются планируемыми интеграциями.
 
 SD-6. Diagram sources live in LikeC4::
 Поддерживаемые архитектурные схемы ведутся в `docs/c4/`, а текст arc42 синхронизируется с ними и с кодом репозитория. Канонический набор view сейчас состоит из `index`, `capability_map`, `shared_modules`, `current_learning_slice`, `reviewer_system_context`, `reviewer_container_overview`, `reviewer_component_slices`, `database_aggregation`, `prepared_modules`, `deployment_targets`, `startup_flow`, `deck_interaction_flow`, `vocabulary_capture_flow`, `planned_card_derivation_flow`, `planned_library_curation_flow` и `primary_navigation_shell`.
 
 SD-7. Root navigation is config-driven and target-oriented::
-App shell использует базовую primary navigation model с target'ами `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Переходы описываются сериализуемыми `ScreenConfig`, распространяются по цепочке host-компонентов и могут быть переиспользованы для будущих deeplink'ов.
+App shell использует базовую primary navigation model с target-экранами `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Переходы описываются сериализуемыми `ScreenConfig`, распространяются по цепочке хост-компонентов и могут быть переиспользованы для будущих deeplink'ов.
 
 == Архитектурный подход
 
@@ -31,4 +31,4 @@ App shell использует базовую primary navigation model с target
 * Shared KMP core как основной носитель переиспользуемой логики.
 * Decompose для root/component boundaries.
 * Metro для DI.
-* Fixture-backed delivery текущего учебного среза без архитектурной нечестности.
+* Fixture-backed delivery текущего учебного среза без имитации live backend.

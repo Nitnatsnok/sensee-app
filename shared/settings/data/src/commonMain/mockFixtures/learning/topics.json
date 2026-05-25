@@ -1,22 +1,3 @@
-package app.sensee.settings.data.topic
-
-import app.sensee.core.mockBackend.MockFixtureSet
-import dev.zacsweers.metro.AppScope
-import dev.zacsweers.metro.ContributesIntoSet
-import dev.zacsweers.metro.Inject
-
-/**
- * Learning-topic catalog served by the mock backend. The list is intentionally
- * data, not a client-side enum: the set of topics is a backend concern.
- */
-@ContributesIntoSet(AppScope::class)
-@Inject
-public class TopicCatalogMockFixtures : MockFixtureSet {
-    override val fixtures: Map<String, String> =
-        mapOf("learning/topics" to TOPIC_CATALOG_FIXTURE)
-}
-
-private const val TOPIC_CATALOG_FIXTURE = """
 {
   "topics": [
     { "id": "everyday-life", "display_name": "Повседневная жизнь", "prompt_keyword": "everyday life" },
@@ -33,4 +14,3 @@ private const val TOPIC_CATALOG_FIXTURE = """
     { "id": "entertainment", "display_name": "Развлечения и медиа", "prompt_keyword": "entertainment and media" }
   ]
 }
-"""

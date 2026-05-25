@@ -1,0 +1,145 @@
+{
+  "id": "daily-essentials",
+  "title": "Daily essentials",
+  "description": "Карточки общего назначения, которые встречаются каждый день.",
+  "cards": [
+        {
+      "id": "card-come-up",
+      "lemma_id": "lemma-come",
+      "headword": "come up",
+      "translation": "возникать, неожиданно появиться",
+      "context_sentence": "Something has come up at work, so I'll be late tonight.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "о теме, проблеме, событии — внезапно появиться",
+      "explanation": "Используется про события и темы, которые «всплыли» сами по себе."
+    },
+        {
+      "id": "card-come-across",
+      "lemma_id": "lemma-come",
+      "headword": "come across",
+      "translation": "случайно встретить, наткнуться",
+      "context_sentence": "I often come across old letters from my grandmother.",
+      "unit_type": "phrasal_verb",
+      "grammar_tags": [
+        { "category": "verb", "form": "infinitive" },
+        { "category": "transitivity", "form": "transitive" },
+        { "category": "separability", "form": "inseparable" }
+      ],
+      "sense_summary": "найти что-то или встретить кого-то случайно",
+      "explanation": "Подчеркивает случайность находки или встречи."
+    },
+        {
+      "id": "card-resilient",
+      "lemma_id": "lemma-resilient",
+      "headword": "resilient",
+      "translation": "устойчивый, способный быстро восстановиться",
+      "context_sentence": "A resilient system keeps working even when some parts fail.",
+      "unit_type": "adjective",
+      "grammar_tags": [
+        { "category": "degree", "form": "positive" }
+      ],
+      "sense_summary": "о системе — способна продолжать работу при отказах",
+      "explanation": "Часто противопоставляется fragile: после ударов система возвращается к работе."
+    },
+        {
+      "id": "card-eventually",
+      "lemma_id": "lemma-eventually",
+      "headword": "eventually",
+      "translation": "в конечном итоге",
+      "context_sentence": "The cache will eventually become consistent.",
+      "unit_type": "adverb",
+      "grammar_tags": [
+        { "category": "degree", "form": "positive" }
+      ],
+      "sense_summary": "о наступлении результата спустя некоторое время",
+      "explanation": "Не «потенциально», а «через какое-то время, но обязательно»."
+    },
+    {
+      "id": "card-reliable",
+      "lemma_id": "lemma-reliable",
+      "headword": "reliable",
+      "translation": "надёжный",
+      "context_sentence": "She is a reliable teammate.",
+      "unit_type": "adjective",
+      "grammar_tags": [
+        { "category": "degree", "form": "positive" }
+      ],
+      "sense_summary": "о том, на что можно положиться",
+      "explanation": "Делает то, что обещал, стабильно."
+    },
+    {
+      "id": "card-schedule",
+      "lemma_id": "lemma-schedule",
+      "headword": "schedule",
+      "translation": "расписание, график",
+      "context_sentence": "The release is back on schedule.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "план дел во времени",
+      "explanation": "on schedule = по плану; behind schedule = с опозданием."
+    },
+    {
+      "id": "card-meeting",
+      "lemma_id": "lemma-meeting",
+      "headword": "meeting",
+      "translation": "встреча, совещание",
+      "context_sentence": "Let's move the meeting to the afternoon.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "запланированный сбор людей",
+      "explanation": "Базовое слово рабочего календаря."
+    },
+    {
+      "id": "card-deadline",
+      "lemma_id": "lemma-deadline",
+      "headword": "deadline",
+      "translation": "крайний срок",
+      "context_sentence": "We have a tight deadline on Friday.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "момент, к которому работа должна быть готова",
+      "explanation": "miss a deadline = не успеть к сроку."
+    },
+    {
+      "id": "card-priority",
+      "lemma_id": "lemma-priority",
+      "headword": "priority",
+      "translation": "приоритет",
+      "context_sentence": "Security is our top priority this quarter.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "number", "form": "singular" },
+        { "category": "countability", "form": "countable" }
+      ],
+      "sense_summary": "то, что делается раньше остального",
+      "explanation": "top priority = самое важное сейчас."
+    },
+    {
+      "id": "card-feedback",
+      "lemma_id": "lemma-feedback",
+      "headword": "feedback",
+      "translation": "обратная связь",
+      "context_sentence": "Thanks for the quick feedback on the draft.",
+      "unit_type": "noun",
+      "grammar_tags": [
+        { "category": "countability", "form": "uncountable" }
+      ],
+      "sense_summary": "реакция, помогающая улучшить работу",
+      "explanation": "Неисчисляемое: a piece of feedback, не a feedback."
+    }
+  ]
+}

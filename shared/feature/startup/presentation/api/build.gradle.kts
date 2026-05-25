@@ -6,6 +6,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                api(projects.shared.feature.startup.domain)
+                api(libs.kotlinx.coroutines.core)
                 implementation(projects.shared.core.decompose)
             }
         }

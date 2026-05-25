@@ -1,0 +1,7 @@
+{
+  "id": "lemma-coupling",
+  "text": "coupling",
+  "related_cards": [
+    { "id": "card-coupling", "headword": "coupling", "unit_type": "noun", "translation": "связанность между модулями", "sense_summary": "степень зависимости модулей друг от друга" }
+  ]
+}

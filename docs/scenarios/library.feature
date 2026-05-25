@@ -1,9 +1,9 @@
 # language: ru
-@implemented @library
+@library
 Функция: Библиотека лексического материала и курирование колод
 
   Library — браузер и куратор лексического материала, владелец каталога
-  записей и колод (ADR-001: authoring-first, practice — downstream consumer).
+  записей и колод (ADR-001: authoring-first, practice — потребитель материала).
 
   Карточка может принадлежать нескольким колодам (many-to-many). Помимо
   собственного материала пользователь просматривает сервисные наборы и
@@ -17,7 +17,7 @@
   `Collections`, `DeckDetail`, частичное добавление, запуск practice из
   библиотеки, фильтры и режим списка карточек.
 
-  Связанные планируемые view в `docs/c4/`:
+  Связанные планируемые `LikeC4 view` в `docs/c4/`:
   - `planned_library_curation_flow`
   - `planned_card_derivation_flow`
 
@@ -29,7 +29,7 @@
     `CatalogAdoptionRepository`, `Deck` с типизированным `CatalogOrigin`
     (`Personal` — материал пользователя; `Service` — сервисные наборы)
   - `shared/feature/library/data`: `DefaultCatalogAdoptionRepository`,
-    `CapturedCatalogRepository` (фильтрует Practice до owned + captured),
+    `CapturedCatalogRepository` (фильтрует Practice до собственного и захваченного материала),
     `CatalogMockFixtures` (сервисный каталог: 3 набора по 10 карточек,
     4 карточки общие между наборами), колонка `practice_deck.adopted_at`
   - Источники (планируемые): `LibraryConfig` -> `EntryDetail(entryId)`,
@@ -75,9 +75,9 @@
   @planned
   Сценарий: Обзор всех записей и карточек со статусами
     Когда `Library` загружает каталог пользователя
-    Тогда отображается список `LexicalEntry` с бейджами статуса (`Draft`/`Confirmed`; богатый triage-лайфцикл `InRefinement`/`HasCandidates` вводится здесь же — EB-6)
+    Тогда отображается список `LexicalEntry` с метками статуса (`Draft`/`Confirmed`; расширенный жизненный цикл `InRefinement`/`HasCandidates` вводится здесь же — EB-6)
     И доступны фильтры по статусу, `GrammarUnitType`, языку и наличию карточек к повторению
-    И незавершённый capture (inbox) виден здесь же, без отдельного экрана
+    И незавершённый ввод виден здесь же, без отдельного экрана
 
   @planned
   Сценарий: Просмотр всех карточек списком
@@ -101,8 +101,8 @@
   Сценарий: Редактирование своей карточки
     Допустим пользователь открыл свою карточку в `Library`
     Когда пользователь выбирает «редактировать»
-    Тогда открывается deep-link в `Vocabulary Editor` на edit-path соответствующей `LexicalEntry`
-    И правка идёт через тот же refinement-поток, что и capture
+    Тогда открывается прямая ссылка в `Vocabulary Editor` на экран правки соответствующей `LexicalEntry`
+    И правка идёт через тот же поток уточнения, что и ввод
 
   @planned
   Сценарий: Удаление своей карточки

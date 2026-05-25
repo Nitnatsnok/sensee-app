@@ -8,6 +8,18 @@ import app.sensee.grammar.domain.PrepositionGovernment
 import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.grammar.domain.SurfaceForm
 import app.sensee.grammar.domain.UsageLabel
+import kotlin.jvm.JvmInline
+
+/**
+ * Stable identity of a [MeaningCandidate] within a capture session. Derived
+ * from the candidate's content (see [deriveMeaningCandidateId]), so a re-enrich
+ * that returns the same sense yields the same id — selection survives a
+ * candidate-list replacement instead of silently shifting with list indices.
+ */
+@JvmInline
+public value class MeaningCandidateId(
+    public val value: String,
+)
 
 /**
  * One usage example of a sense. A sense carries a list of these (one per usage
@@ -45,9 +57,11 @@ public data class Meaning(
  * An unconfirmed proposal (ADR-001). It is never silently promoted to a
  * [Meaning]; the user explicitly selects it (the selection is the
  * confirmation). Provenance is implicit: every candidate is AI/assistant
- * proposed and unverified until selected.
+ * proposed and unverified until selected. [id] is a content-derived stable
+ * identity used to key selection.
  */
 public data class MeaningCandidate(
+    val id: MeaningCandidateId,
     val translation: String,
     val surfaceForm: SurfaceForm? = null,
     val unitType: GrammarUnitType? = null,
@@ -77,3 +91,26 @@ public data class MeaningCandidate(
             irregularForms = irregularForms,
         )
 }
+
+/**
+ * Derives a [MeaningCandidateId] from the fields that identify a sense - the
+ * surface form, part of speech, translation and an optional content
+ * fingerprint. Stable across a re-enrich for the same sense; distinct senses
+ * of one term differ by their identifying content.
+ */
+public fun deriveMeaningCandidateId(
+    translation: String,
+    surfaceForm: SurfaceForm?,
+    unitType: GrammarUnitType?,
+    contentFingerprint: String = "",
+): MeaningCandidateId =
+    MeaningCandidateId(
+        listOf(
+            surfaceForm?.display().orEmpty(),
+            unitType?.id.orEmpty(),
+            translation,
+            contentFingerprint,
+        ).joinToString(separator = "|", transform = ::stableIdPart),
+    )
+
+private fun stableIdPart(value: String): String = "${value.length}:$value"

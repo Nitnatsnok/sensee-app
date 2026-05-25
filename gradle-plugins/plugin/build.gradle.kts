@@ -15,6 +15,7 @@ dependencies {
     implementation(libs.gradle.detekt)
     implementation(libs.gradle.ktlint)
     implementation(libs.gradle.dependencyAnalysis)
+    implementation(libs.kotlinx.serialization.json)
 }
 
 gradlePlugin {
@@ -32,6 +33,11 @@ gradlePlugin {
         register("composeMultiplatform") {
             id = "app.sensee.gradle.compose-multiplatform"
             implementationClass = "app.sensee.gradle.ComposeMultiplatformPlugin"
+        }
+
+        register("mockFixtures") {
+            id = "app.sensee.gradle.mock-fixtures"
+            implementationClass = "app.sensee.gradle.MockFixturesPlugin"
         }
     }
 }

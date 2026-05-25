@@ -1,0 +1,7 @@
+{
+  "id": "lemma-latency",
+  "text": "latency",
+  "related_cards": [
+    { "id": "card-latency", "headword": "latency", "unit_type": "noun", "translation": "задержка отклика", "sense_summary": "время между запросом и ответом" }
+  ]
+}

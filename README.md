@@ -1,22 +1,22 @@
 # Sensee
 
-**Kotlin Multiplatform + Compose Multiplatform** learning app — a public **engineering
-portfolio**, not a commercial product. It shows how I structure a modern KMP codebase,
-share UI and logic across platforms, and how I make and document architectural decisions.
+Source-available **Kotlin Multiplatform + Compose Multiplatform** learning app sample.
+It is not a commercial product. The repository focuses on shared client architecture,
+cross-platform UI, local persistence, and documented architectural decisions.
 
 ## Status
 
-Demo slice, fixture-backed, no live backend yet.
+Demo slice backed by fixtures; no live backend yet.
 
-- Several user-facing slices work end to end through real client boundaries (Ktor
-  `HttpClient`, fixture-backed mock transport, SQLDelight persistence): the **Practice**
-  flow (deck / home / card detail) on an FSRS-based SRS engine; **vocabulary capture**
-  (term → AI-candidate senses → multi-select → durable confirm), with the AI-enrichment
-  seam degrading offline to a deterministic fixture; the **Library** catalog with deck
-  adoption; and **Profile** AI/TTS provider settings with key verification.
-- Only **Home** is a navigable placeholder. Deeper surfaces (catalog curation, the full
-  settings screen, lemma families, derived cards) are intentionally documented ahead of
-  code as authoring-first (ADR-001), with implemented vs planned marked honestly.
+- Implemented: **Practice** (deck, home, card detail) with an FSRS-based SRS engine;
+  **vocabulary capture** (term → AI candidate senses → multi-select → confirm);
+  **Library** catalog and deck adoption; **Profile** AI/TTS provider settings with key
+  verification.
+- Ktor `HttpClient`, fixture transport, and SQLDelight are already wired through the
+  client boundaries. When provider keys are missing, AI enrichment uses deterministic
+  fixtures.
+- **Home** is still a navigable placeholder. Catalog curation, full settings, lemma
+  families, and derived cards are tracked as planned work in docs and ADRs.
 
 ## Try it without building
 
@@ -32,9 +32,8 @@ CI publishes reviewer artifacts so you don't need the KMP toolchain:
     it installs;
   - `*.deb` — Linux: `sudo apt install ./<file>.deb`.
 
-iOS is not distributed: an installable build requires Apple Developer ID
-signing, out of scope for this WIP. All artifacts are reviewer-facing WIP
-snapshots, not product-tested.
+iOS is not distributed because installable builds require Apple Developer ID signing.
+Published artifacts are review builds, not product releases.
 
 `apps/androidApp/debug.keystore` is committed on purpose: it is the well-known
 **public** Android debug key (`androiddebugkey` / `android`), not a secret. It
@@ -43,30 +42,25 @@ place. A secret-scanner flagging it is an expected false positive.
 
 ## Reviewing this repo? Start here
 
-- **The real working slices:** [`shared/feature/practice`](shared/feature/practice) +
+- **Implemented slices:** [`shared/feature/practice`](shared/feature/practice) +
   [`shared/srs`](shared/srs) (FSRS engine with tests), and
   [`shared/feature/vocabulary-editor`](shared/feature/vocabulary-editor) (capture →
   AI candidates → confirm, with tests).
 - **Decisions & trade-offs:** [`docs/adr/`](docs/adr/index.adoc) — especially ADR-004
-  (FSRS as the single scheduling source of truth, with the app-wide SR-semantics cost
-  explicitly accepted) and ADR-005 (AI-enrichment boundary contract). The sequenced,
-  costed plan is [`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc).
+  (FSRS scheduling) and ADR-005 (AI-enrichment boundary). Open follow-up work is in
+  [`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc).
 - **Architecture:** [`docs/`](docs/) — arc42 + C4 (LikeC4 sources in
   [`docs/c4/`](docs/c4)); behavioral scenarios in [`docs/scenarios/`](docs/scenarios).
 - **Build & verification:** [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Architecture & decisions
 
-The product thesis is **authoring-first** (ADR-001): the user captures and disambiguates
-lexical material; learning cards are *derived* artifacts, AI suggestions are *candidates*
-until confirmed (ADR-001 / ADR-005), and grammar cues are structured annotations. Practice
-is the downstream consumer of that model; capture is the upstream authoring slice.
+The product model is **authoring-first** (ADR-001): the user confirms lexical material
+first, then cards and practice are built from confirmed meanings. AI suggestions stay as
+candidates until confirmation (ADR-005), and grammar cues are structured annotations.
 
-Documentation is deliberately honest about implemented vs planned state (arc42 §11 risks,
-[`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc)). Architecture diagrams are
-LikeC4 sources, not exported PNGs.
-Decisions are recorded as ADRs with alternatives and consequences marked *realized* vs
-*expected*.
+Docs separate implemented and planned state. Architecture diagrams are maintained as
+LikeC4 sources, not exported PNGs. ADRs record alternatives and consequences.
 
 ## What it demonstrates
 
@@ -77,9 +71,8 @@ Decisions are recorded as ADRs with alternatives and consequences marked *realiz
   (ADR-003)
 - DI with Metro; local persistence with SQLDelight (feature-owned schema, aggregated
   database — ADR-002)
-- A fixture-backed Ktor boundary through shared DI (a real client seam without a live
-  backend)
-- Provider-agnostic AI/TTS seams: offline fixtures, OpenAI-compatible AI enrichment,
+- A Ktor client boundary backed by fixture transport, without a live backend
+- AI/TTS provider boundaries: offline fixtures, OpenAI-compatible AI enrichment,
   provider-specific TTS adapters, and settings-backed routing
 - Neutral grammar taxonomy and sense-first vocabulary capture with durable lexical
   storage
@@ -135,15 +128,11 @@ are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Roadmap
 
-The real plan is the sequenced, costed backlog in
-[`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc) (a mutable backlog artifact,
-not an ADR — that separation is itself the policy, stated there). The grammar-domain
-extraction, library-owned catalog, and `vocabulary-editor/domain` are done; near-term is
-an ad-hoc/query practice session (EB-3) and a card-transcription field (EB-5). A live
-backend, AI-assisted learning semantics, and broader feature coverage follow.
-
-This is a deliberate engineering sample that keeps evolving toward a fuller product — not
-a finished commercial app.
+The roadmap lives in [`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc). Done:
+grammar-domain extraction, library-owned catalog, and `vocabulary-editor/domain`.
+Near-term: sampled practice sessions (EB-3) and card transcription (EB-5). Later:
+live backend/sync, external telemetry, live AI/TTS integrations, and broader feature
+coverage.
 
 ## License
 

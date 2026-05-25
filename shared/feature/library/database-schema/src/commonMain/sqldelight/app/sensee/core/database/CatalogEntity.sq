@@ -103,6 +103,14 @@ upsertLemma:
 INSERT OR REPLACE INTO practice_lemma(id, text)
 VALUES (?, ?);
 
+-- Used when a card insert needs the FK row to exist but the caller does not
+-- own the real lemma text yet (the deck sync path). A later upsertLemma with
+-- the real text overrides the placeholder; if the real row already exists
+-- this IGNOREs and keeps it intact.
+insertLemmaIfAbsent:
+INSERT OR IGNORE INTO practice_lemma(id, text)
+VALUES (?, ?);
+
 -- Two-statement upsert (sqlite_3_18 has no ON CONFLICT DO UPDATE): INSERT OR
 -- IGNORE leaves an existing row (and its adopted_at_epoch_ms) untouched, then
 -- the metadata UPDATE refreshes title/description only. INSERT OR REPLACE would

@@ -1,13 +1,19 @@
 package app.sensee.ai.llm.client
 
 import app.sensee.ai.core.AiEnrichmentClient
+import app.sensee.ai.core.AiEnrichmentExtension
 import app.sensee.ai.core.EnrichmentAvailability
+import app.sensee.ai.core.EnrichmentPromptAssembler
 import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.EnrichmentRequestContext
+import app.sensee.ai.core.EnrichmentRequestModifier
 import app.sensee.ai.core.EnrichmentResponseMapper
 import app.sensee.ai.core.EnrichmentResponseV1
 import app.sensee.ai.core.EnrichmentResult
 import app.sensee.ai.core.EnrichmentSchema
+import app.sensee.ai.core.PolysemyHintsModifier
 import app.sensee.ai.core.SenseCoverage
+import app.sensee.ai.core.UserEnrichmentPreferencesProvider
 import app.sensee.ai.llm.api.LlmEnrichmentApi
 import app.sensee.ai.llm.config.AiCredentialsProvider
 import app.sensee.ai.llm.config.LlmConfig
@@ -15,24 +21,35 @@ import app.sensee.ai.llm.config.LlmConfigProvider
 import app.sensee.ai.llm.dto.ChatMessageDto
 import app.sensee.ai.llm.dto.JsonObjectResponseFormat
 import app.sensee.ai.llm.dto.jsonSchemaResponseFormat
+import app.sensee.grammar.domain.TaxonomyInvariants
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
- * Real LLM-backed enrichment over any OpenAI-compatible chat endpoint. Honors
- * the seam contract (ADR-005): no key, an unreachable provider, or an
- * unparseable answer all degrade into a first-class result — this never throws
- * across the seam, so the wizard always has a manual fallback.
+ * LLM-backed enrichment over any OpenAI-compatible chat endpoint. Honors the
+ * seam contract (ADR-005): no key, an unreachable provider, or an unparseable
+ * answer all degrade into a first-class result — never throws across the seam.
  *
- * The raw model answer is parsed through the versioned wire DTO and the
- * anti-corruption mapper; it never reaches feature domain directly.
+ * Prompt content comes from [EnrichmentRequestModifier]s, assembled per call;
+ * schema constraints from [EnrichmentSchema.buildJsonSchema] over the loaded
+ * taxonomy; the answer passes through [EnrichmentResponseMapper] before
+ * reaching the seam.
  */
+@Suppress("ProfiledLongParameterList")
 public class LlmAiEnrichmentClient internal constructor(
     private val api: LlmEnrichmentApi,
     private val credentials: AiCredentialsProvider,
     private val configProvider: LlmConfigProvider,
+    private val taxonomyInvariantsProvider: TaxonomyInvariantsProvider,
+    private val modifiers: Set<EnrichmentRequestModifier>,
+    private val extensions: Set<AiEnrichmentExtension>,
+    private val preferencesProvider: UserEnrichmentPreferencesProvider,
     private val json: Json,
 ) : AiEnrichmentClient {
     override suspend fun enrich(request: EnrichmentRequest): EnrichmentResult {
@@ -42,9 +59,14 @@ public class LlmAiEnrichmentClient internal constructor(
 
         return try {
             val config = configProvider.config()
-            val responseFormat =
-                if (config.structuredOutput) jsonSchemaResponseFormat(json) else JsonObjectResponseFormat
-            val basePrompt = promptFor(request)
+            val invariants = taxonomyInvariantsProvider.invariants() ?: TaxonomyInvariants.EMPTY
+            val responseFormat = responseFormatFor(config, invariants)
+            val context =
+                EnrichmentRequestContext(
+                    request = request,
+                    preferences = preferencesProvider.preferences(),
+                )
+            val basePrompt = promptFor(context)
             val first = callAndMap(apiKey, config, responseFormat, basePrompt)
             if (!shouldRetryForMoreSenses(request, first)) {
                 return first
@@ -69,6 +91,24 @@ public class LlmAiEnrichmentClient internal constructor(
         }
     }
 
+    private fun responseFormatFor(
+        config: LlmConfig,
+        invariants: TaxonomyInvariants,
+    ): JsonObject =
+        if (config.structuredOutput) {
+            jsonSchemaResponseFormat(
+                EnrichmentSchema.buildJsonSchema(
+                    unitTypeIds = invariants.knownUnitTypeIds,
+                    complementIds = invariants.knownComplementIds,
+                    usageAxesAndValues = invariants.allowedValuesByAxis,
+                    grammarCategoriesAndForms = invariants.allowedFormsByCategory,
+                    extensions = extensions,
+                ),
+            )
+        } else {
+            JsonObjectResponseFormat
+        }
+
     private suspend fun callAndMap(
         apiKey: String,
         config: LlmConfig,
@@ -85,15 +125,34 @@ public class LlmAiEnrichmentClient internal constructor(
                 ?: return EnrichmentResult(
                     EnrichmentAvailability.Degraded("provider returned an empty response"),
                 )
-        val dto =
-            try {
-                json.decodeFromString<EnrichmentResponseV1>(content)
-            } catch (_: SerializationException) {
-                return EnrichmentResult(
-                    EnrichmentAvailability.Degraded("provider response was not in the expected format"),
-                )
-            }
-        return EnrichmentResponseMapper.map(dto)
+        return try {
+            val element = json.parseToJsonElement(content)
+            val dto = json.decodeFromJsonElement<EnrichmentResponseV1>(element)
+            EnrichmentResponseMapper.map(dto, extensionValuesFrom(element))
+        } catch (_: SerializationException) {
+            EnrichmentResult(
+                EnrichmentAvailability.Degraded("provider response was not in the expected format"),
+            )
+        }
+    }
+
+    private fun extensionValuesFrom(element: JsonElement): List<Map<String, JsonElement>> {
+        if (extensions.isEmpty()) return emptyList()
+        // Built-ins win on collision (mirrors EnrichmentSchema.itemSchema):
+        // without this the same field would surface twice — typed on the
+        // suggestion and again in the opaque extensions bucket.
+        val builtInNames = EnrichmentSchema.fields.mapTo(mutableSetOf()) { it.serialName }
+        val ownedKeys =
+            extensions
+                .flatMapTo(mutableSetOf()) { it.ownedKeys }
+                .apply { removeAll(builtInNames) }
+        if (ownedKeys.isEmpty()) return emptyList()
+        val root = element as? JsonObject ?: return emptyList()
+        val items = root["items"] as? JsonArray ?: return emptyList()
+        return items.map { item ->
+            val itemObject = item as? JsonObject ?: return@map emptyMap()
+            ownedKeys.mapNotNull { key -> itemObject[key]?.let { key to it } }.toMap()
+        }
     }
 
     private fun shouldRetryForMoreSenses(
@@ -120,120 +179,28 @@ public class LlmAiEnrichmentClient internal constructor(
                     "senses. Return one item only if there is genuinely only one " +
                     "common learner-relevant sense.",
             )
-            KNOWN_POLYSEMY_HINTS[request.term.trim().lowercase()]?.let {
+            PolysemyHintsModifier.polysemyHintFor(request.term)?.let {
                 append(' ')
                 append(it)
             }
         }
 
-    private fun promptFor(request: EnrichmentRequest): List<ChatMessageDto> {
-        val fieldGuide =
-            EnrichmentSchema.fields.joinToString("\n") { "- ${it.serialName}: ${it.guidance}" }
+    private fun promptFor(context: EnrichmentRequestContext): List<ChatMessageDto> {
+        val request = context.request
+        val assembled = EnrichmentPromptAssembler.assemble(modifiers, context)
+        val systemPrompt = assembled.systemFragments.joinToString(separator = "\n")
+        val userPrompt =
+            buildString {
+                append("Term: ${request.term}")
+                request.userNote?.takeIf { it.isNotBlank() }?.let { append("\nUser note: $it") }
+                assembled.userFragments.forEach { fragment ->
+                    append('\n')
+                    append(fragment)
+                }
+            }
         return listOf(
-            ChatMessageDto(role = "system", content = systemPromptFor(request, fieldGuide)),
-            ChatMessageDto(role = "user", content = userPromptFor(request)),
+            ChatMessageDto(role = "system", content = systemPrompt),
+            ChatMessageDto(role = "user", content = userPrompt),
         )
     }
-
-    // Per-field semantics live in EnrichmentSchema (single source of truth);
-    // cross-cutting rules (sense splitting, request-driven language
-    // autodetection) are assembled here.
-    private fun systemPromptFor(
-        request: EnrichmentRequest,
-        fieldGuide: String,
-    ): String =
-        "You are a lexicographer. Return ONLY JSON matching this schema: " +
-            "${EnrichmentSchema.jsonSkeleton}.\n" +
-            senseSplittingPrompt() +
-            languagePrompt(request) + "\n" +
-            coverageRule(request.senseCoverage) + "\n" +
-            topicPreferencePrompt(request) +
-            "For example, \"come across\" should normally include separate " +
-            "senses for: find or meet by chance; seem or give a particular " +
-            "impression, often \"come across as <adjective/noun>\"; be " +
-            "communicated or understood clearly, often " +
-            "\"<message/meaning/idea> comes across\".\n" +
-            "Fields:\n$fieldGuide\n" +
-            "Omit unknown fields."
-
-    private fun senseSplittingPrompt(): String =
-        "Each item is exactly one distinct sense — never merge senses into " +
-            "one blob. Before producing the final JSON, identify the common " +
-            "learner-relevant sense inventory of the input and return ALL common " +
-            "distinct senses, not only the most frequent one — do not stop after " +
-            "the first valid sense. For phrasal/prepositional verbs, idioms, " +
-            "phrases and fixed expressions check whether the unit has multiple " +
-            "common meanings, constructions or argument patterns. Return one item " +
-            "only when there is genuinely only one common learner-relevant sense; " +
-            "do not invent rare, obsolete or artificial senses to inflate the " +
-            "count. A meaning-changing nuance is a separate sense, not a label. " +
-            "YOU detect the lexical unit type (word, inflected form, phrasal / " +
-            "prepositional / phrasal-prepositional verb, phrase, idiom, " +
-            "collocation, fixed expression) — the user never declares it. " +
-            "A particle or preposition that changes the meaning makes a SEPARATE " +
-            "item (look at / look after / look for are different senses), never " +
-            "an alternative; a preposition that keeps the meaning is " +
-            "preposition_government; a fixed part of the unit (look down on) " +
-            "belongs in surface_form. Conversely, do NOT over-split: one sense " +
-            "whose complement may be a person or a thing stays ONE item (come " +
-            "across an old friend / some letters is one sense) — write the slot " +
-            "generically as <someone/something>, never split by object type. " +
-            "Every item has at least one example, one per significant construction. " +
-            "For an irregular verb include irregular_forms. "
-
-    private fun languagePrompt(request: EnrichmentRequest): String =
-        "Auto-detect the input language: it may be ${request.studyLanguageTag} " +
-            "or ${request.nativeLanguageTag}. Always return ${request.studyLanguageTag} " +
-            "senses; for ${request.nativeLanguageTag} input find the matching " +
-            "${request.studyLanguageTag} variants. 'translation', 'explanation' " +
-            "and 'usage_note' are in ${request.nativeLanguageTag} (the learner " +
-            "picks senses by them); 'examples' are in ${request.studyLanguageTag} " +
-            "with the studied unit in [[ ]]."
-
-    private fun userPromptFor(request: EnrichmentRequest): String =
-        buildString {
-            append("Term: ${request.term}")
-            request.userNote?.takeIf { it.isNotBlank() }?.let { append("\nUser note: $it") }
-        }
-
-    // Soft steering of 'examples' only. Topic keywords come from the learner's
-    // settings (see RoutingAiEnrichmentClient); an empty list leaves the prompt
-    // unchanged so unset preferences cost nothing.
-    private fun topicPreferencePrompt(request: EnrichmentRequest): String {
-        val topics = request.topicPreferences.filter { it.isNotBlank() }
-        if (topics.isEmpty()) {
-            return ""
-        }
-        return "The learner is interested in these topics: ${topics.joinToString(", ")}. " +
-            "When a sense naturally allows it, prefer 'examples' set in those topics; " +
-            "never force an unnatural or misleading context, and never let topic " +
-            "steering distort the sense, translation, grammar or any non-example field.\n"
-    }
-
-    private fun coverageRule(coverage: SenseCoverage): String =
-        when (coverage) {
-            SenseCoverage.Minimal ->
-                "Coverage: return only the most important sense(s) for a quick add."
-            SenseCoverage.Common ->
-                "Coverage: usually return 2-5 items for polysemous words, phrasal " +
-                    "verbs, idioms, phrases and fixed expressions; return all common " +
-                    "learner-relevant senses, avoiding rare or obsolete ones unless " +
-                    "important for learners."
-            SenseCoverage.Comprehensive ->
-                "Coverage: return as many useful distinct dictionary senses as " +
-                    "practical, still avoiding rare or obsolete senses unless " +
-                    "important for learners."
-        }
 }
-
-// Targeted retry hints for units that are reliably polysemous but that models
-// often collapse to one sense. Kept tiny and explicit on purpose — not a
-// dictionary, just a nudge for the known-bad cases (reasonable minimum).
-private val KNOWN_POLYSEMY_HINTS: Map<String, String> =
-    mapOf(
-        "come across" to
-            "The input \"come across\" is polysemous. Return separate items for: " +
-            "find/meet by chance; seem/give an impression, often " +
-            "\"come across as <adjective/noun>\"; be communicated/understood, often " +
-            "\"<message/meaning/idea> comes across\".",
-    )

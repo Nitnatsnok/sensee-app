@@ -1,27 +1,27 @@
 [[client-section-runtime-view]]
 = Представление поведения системы
 
-Раздел намеренно разделяет реализованные runtime-сценарии и планируемую продуктовую эволюцию. Это позволяет держать в поле зрения продуктовый приоритет Sensee, не описывая ещё не реализованные расширения как уже работающее поведение. Единственный раздел без реализованного содержания — `Home` (рендерит `UnimplementedScreen`).
+Раздел намеренно разделяет реализованные сценарии поведения и планируемую продуктовую эволюцию. Это позволяет держать в поле зрения продуктовый приоритет Sensee, не описывая ещё не реализованные расширения как уже работающее поведение. Единственный раздел без реализованного содержания — `Home` (отображает `UnimplementedScreen`).
 
 == Реализованный сценарий 1. Запуск приложения и открытие основного shell
 
 1. Пользователь запускает Android, Desktop, Web или iOS-приложение.
 2. Платформенный entrypoint создаёт `PlatformEnvironment` и вызывает `createAppRoot(...)`.
-3. `createAppRoot(...)` поднимает `AppGraph` и создаёт `RootComponent`. `RootComponent` сразу запускает app-scoped прогрев словаря (`GrammarLabelsProvider.labels()`, мемоизируется) — не привязанный к splash, выполняется и на холодном, и на тёплом старте.
-4. `RootComponent` инициализирует стек Decompose. Стек персистится (`screenConfigSerializer`): на холодном старте (нет сохранённого состояния) `initialConfiguration` — `StartupConfig`; при наличии сохранённого стека он восстанавливается как есть, включая deep-target `PrimaryShellConfig(target = …)`, минуя splash.
-5. `App(rootComponent)` рендерит `RootScreen`.
-6. На холодном старте `RootScreen` получает `StartupComponent` и показывает splash, пока идёт реальный прогрев (`StartupComponent.awaitReady()` ждёт тот же `GrammarLabelsProvider`, а не фиксированную задержку; сбой прогрева не блокирует — деградирует к EMPTY).
-7. По готовности прогрева `StartupComponent` вызывает `onFinished`, а `RootComponent` открывает основной shell через бизнес-конфиг `HomeConfig.Home`.
+3. `createAppRoot(...)` поднимает `AppGraph` и создаёт `RootComponent`. `RootComponent` сразу запускает app-scoped `PreloadAppStartupUseCase` как safety net для тёплого восстановления: прогреваются `GrammarLabelsProvider` и `TaxonomyInvariantsProvider`, результат запоминается на уровне `shared/grammar/data`.
+4. `RootComponent` инициализирует стек Decompose. Стек сохраняется (`screenConfigSerializer`): на холодном старте (нет сохранённого состояния) `initialConfiguration` — `StartupConfig`; при наличии сохранённого стека он восстанавливается как есть, включая deep-target `PrimaryShellConfig(target = …)`, минуя splash.
+5. `App(rootComponent)` отображает `RootScreen`.
+6. На холодном старте `RootScreen` получает `StartupComponent` и показывает splash, пока `DefaultStartupComponent` запускает тот же `PreloadAppStartupUseCase`; состояние явно переходит в `StartupState.Loaded` или `StartupState.Failed`, retry повторяет preload.
+7. После `StartupState.Loaded` `StartupComponent` вызывает `onFinished`, а `RootComponent` открывает основной shell через бизнес-конфигурацию `HomeConfig.Home`.
 8. `RootScreen` получает `PrimaryShellComponent` из child stack.
 9. `PrimaryShellComponent` создаётся из root `PrimaryShellConfig(target = HomeConfig.Home)` и внутри выбирает `PrimarySectionConfig.HomeSection()` как initial config; `PrimaryShellScreen` показывает базовую primary navigation shell.
-10. Раздел `Home` (ещё без реализованного содержания) отображает общую заглушку дизайн-системы `UnimplementedScreen`; остальные разделы рендерят свой реализованный срез.
+10. Раздел `Home` (ещё без реализованного содержания) отображает общую заглушку дизайн-системы `UnimplementedScreen`; остальные разделы показывают свой реализованный срез.
 
 == Реализованный сценарий 2. Прохождение карточек в practice deck
 
 1. Навигация открывает `PracticeConfig.DeckPractice` в `PracticeSectionComponent`.
 2. `DefaultDeckPracticeComponent` создаёт `DeckPracticeLogic` с `CatalogRepository` и `PracticeReviewRepository`.
-3. `DeckPracticeLogic` запрашивает practice deck через library-owned `CatalogRepository` и публикует `DataLoadingState`.
-4. `DefaultCatalogRepository` получает fixture-backed каталог/колоды через `CatalogRemoteDataSource`, сохраняет catalog/deck/adoption state через `CatalogLocalDataSource`, а practice data layer подготавливает SRS-состояние через `PracticeSrsStorage`.
+3. `DeckPracticeLogic` запрашивает practice deck через `CatalogRepository`, принадлежащий `Library`, и публикует `DataLoadingState`.
+4. `DefaultCatalogRepository` получает каталог/колоды на фикстурах через `CatalogRemoteDataSource`, сохраняет catalog/deck/adoption state через `CatalogLocalDataSource`, а practice data layer подготавливает SRS-состояние через `PracticeSrsStorage`.
 5. `DeckPracticeScreen` отображает верхнюю карточку, индикатор прогресса и набор управляющих действий через `shared/ui/learning-deck`.
 6. Карточка в UI сохраняет раздельные учебные смыслы: `front`, `back`/meaning, example, transcription и review state не превращаются в один текстовый payload.
 7. Пользователь может:
@@ -36,22 +36,30 @@
 
 == Реализованный сценарий 3. Что пока не происходит в основном пользовательском потоке
 
-В текущем practice flow пока не происходит:
+В текущем practice-сценарии пока не происходит:
 
 * обращения к live backend;
-* production authentication, sync или profile workflow;
+* production-аутентификации, синхронизации и полноценного серверного профиля;
 * серверной AI-оркестрации;
 * хранения пользовательских секретов на клиенте.
 
-Network, local persistence и SRS уже подключены к текущему срезу, но через fixture-backed инфраструктуру и локальную data orchestration.
+Network, local persistence и SRS уже подключены к текущему срезу, но через инфраструктуру на фикстурах и локальную data orchestration.
 
 == Основной продуктовый сценарий. Внесение слова или выражения и разделение смыслов
 
-Статус:: реализованный срез (capture); planned — lemma-семья и derived-карточки
+Статус:: реализованный срез (capture); planned — lemma-семья и производные карточки
 
-На уровне продуктового приоритета Sensee в первую очередь строится не вокруг review, а вокруг внесения и структурирования лексического материала. Раздел `Vocabulary Editor` реализует capture-вертикаль: `DefaultVocabularyEditorSectionComponent` хостит `VocabularyCaptureComponent`/`VocabularyCaptureScreen`, а не placeholder.
+На уровне продуктового приоритета Sensee в первую очередь строится не вокруг review, а вокруг внесения и структурирования лексического материала. Раздел `Vocabulary Editor` реализует capture-вертикаль: `DefaultVocabularyEditorSectionComponent` содержит `VocabularyCaptureComponent`/`VocabularyCaptureScreen`, а не заглушку.
 
-Реализованное runtime-поведение: ввод низкофрикционный (одно поле, язык ввода авто — en/ru); enrich идёт через provider-agnostic AI-шов и возвращает единую структурную модель ответа (набор `MeaningCandidate`) одинаково для слова/фразы/идиомы; пошагового wizard нет — пользователь мультивыбором отмечает, какие смыслы добавить, и/или добавляет свой смысл вручную (опционально «дополнить ассистентом»); выбор и есть подтверждение; `LexicalEntry`/`Meaning` сохраняются durable в `SenseeDatabase` (`DurableVocabularyRepository`). Планируемое: группировка под леммой-родителем и деривация learning cards в основной practice flow. Решение — ADR-001 (AI-шов — ADR-005). Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии без тега, планируемые помечены `@planned`); схемы — `docs/c4/`; доменные типы — `shared/feature/vocabulary-editor/domain`.
+Реализованное поведение:
+
+* ввод короткий: одно поле, язык ввода определяется автоматически (`en`/`ru`);
+* enrichment идёт через provider-agnostic границу AI-интеграции и возвращает единую структурную модель ответа (`MeaningCandidate`) для слова, фразы или идиомы;
+* поток одностраничный: пользователь мультивыбором отмечает смыслы, которые хочет добавить, и/или добавляет свой смысл вручную;
+* опциональное действие «дополнить ассистентом» не меняет правило подтверждения: выбранный пользователем смысл становится подтверждённым;
+* `LexicalEntry`/`Meaning` устойчиво сохраняются в `SenseeDatabase` (`DurableVocabularyRepository`).
+
+Планируемое: группировка под леммой-родителем и деривация learning cards для основного practice-сценария. Решение — ADR-001; граница AI-интеграции — ADR-005. Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии без тега, планируемые помечены `@planned`); схемы — `docs/c4/`; доменные типы — `shared/feature/vocabulary-editor/domain`.
 
 == Реализованный срез и планируемое курирование. Библиотека каталога
 
@@ -62,12 +70,12 @@ Library — владелец каталога лексического мате�
 Реализовано (`LibraryHomeLogic`/`DefaultLibraryHomeComponent`/`LibrarySectionScreen`):
 
 1. Пользователь открывает раздел `Library`; `LibraryHomeLogic` загружает связанный (отфильтрованный до собственного материала) каталог и список сервисных наборов для adoption.
-2. Пользователь добавляет сервисный набор целиком; добавленный материал становится его собственным и виден в каталоге. Adoption обратим (detach), кроме derived captured-колоды (owned, но не detachable).
+2. Пользователь добавляет сервисный набор целиком; добавленный материал становится его собственным и виден в каталоге. Добавление набора можно отменить; производная колода захваченных слов принадлежит пользователю, но не отделяется от каталога.
 
 Планируется:
 
 3. Drill: `EntryDetail(entryId)` показывает сегрегированные `Meaning` с переводами, `ContextualApplication`, структурными grammar cues и производными карточками; `LemmaDetail(lemmaId)` даёт пивот по семье леммы.
-4. Правка своей карточки открывает deep-link в `Vocabulary Editor` на edit-path соответствующей `LexicalEntry` (тот же refinement-поток, что и capture). Та же точка входа доступна из карточки practice.
+4. Правка своей карточки открывает прямую ссылку в `Vocabulary Editor` на экран правки соответствующей `LexicalEntry` (тот же поток уточнения, что и ввод). Та же точка входа доступна из карточки practice.
 5. Удаление карточки убирает её из каталога и всех колод, но сохраняет confirmed lexical material записи.
 6. В `DeckDetail(deckId)` пользователь курирует колоды: одна карточка может входить в несколько колод (many-to-many); удаление из одной колоды не затрагивает другие и каталог.
 7. Частичное добавление сервисного набора; запуск practice из курируемой колоды/подмножества открывает `PracticeConfig.DeckPractice`; курирование остаётся в Library, practice его не владеет.
@@ -76,7 +84,7 @@ Library — владелец каталога лексического мате�
 
 Статус:: planned
 
-Доработка поверх реализованного practice slice. Пошаговое поведение зафиксировано в `docs/scenarios/practice-deck.feature` (сценарии с тегом `@planned`).
+Доработка поверх реализованного practice-среза. Пошаговое поведение зафиксировано в `docs/scenarios/practice-deck.feature` (сценарии с тегом `@planned`).
 
 1. Карта остаётся лёгкой (recognition): при `practiceFront=English` обратная русская сторона показывает контекст без пилюль-заглушек; при `practiceFront=Russian` слово скрыто пилюлями.
 2. Перевод контекстного предложения показывается по тапу (`contextTranslation=on-tap` по умолчанию), а не постоянно.
@@ -84,55 +92,55 @@ Library — владелец каталога лексического мате�
 4. При `practiceFront=Russian` и `answerInput=typed` пользователь вводит ответ в группу пилюль для самопроверки; при `answerInput=off` доступен только flip.
 5. Detail-панель — хаб исследования: полный `Meaning` (переводы, контексты с предлогом/коллокацией, explanation, grammar cues с описаниями), связанные словоформы (формы неправильного глагола, производные части речи), семья леммы и связанные грамматические правила.
 6. Из detail можно выбрать часть связанных карточек и добавить их в курируемую Library колоду; курирование остаётся ответственностью Library.
-7. Help объясняет процесс (свайпы↔рейтинги, flip / tap-to-flip, режим заглушек и typed-input, перевод по тапу), а не только глоссарий бейджей.
+7. Справка объясняет процесс (свайпы↔рейтинги, flip / tap-to-flip, режим заглушек и typed-input, перевод по тапу), а не только глоссарий меток.
 8. Кнопка `settings` в practice открывает отдельный экран только со связанными с практикой настройками; полный набор настроек живёт в разделе `Profile`.
 
 == Реализованный срез и планируемое расширение. Profile и настройки
 
 Статус:: реализованный срез (меню категорий `ProfileHome` + двух/трёхпанельный режим; экран категории `Ai` — `ProfileAiSettingsLogic`: настройки + верификация AI/TTS-ключа над `UserSettingsRepository`; в категории `Learning` реализован выбор тем для AI-примеров); planned — экраны категорий `App`/`Practice`, языковые поля `Learning`, `About`-навигация, Account/синхронизация, статистика
 
-Объём сознательно бережный: ядро — настройки и About; Account/синхронизация, статистика и data management остаются честными заглушками. Пошаговое поведение — в `docs/scenarios/profile.feature`.
+Объём ограничен ядром настроек и будущим `About`; Account/синхронизация, статистика и data management пока не реализованы и не имитируются фиктивным UI. Пошаговое поведение — в `docs/scenarios/profile.feature`.
 
-1. Пользователь открывает `Profile`; раздел показывает меню `ProfileHome` с группой «Настройки» и пунктами по `UserSettingsCategory`. `ProfileConfig` содержит `Home` и конфиги категорий (`Settings.App`/`Settings.Learning`/`Settings.Practice`/`Settings.Ai`/`Settings.Experimental`); `DefaultProfileSectionComponent` через `appChildPanels` показывает меню и экран категории рядом на широких экранах, по очереди — на узких. Опциональный `ProfileExtraConfig.TopicPicker` открывается как третья панель на `SupportingPane` или как `SenseeModalBottomSheet` на более узких раскладках.
-2. Категория `Ai` реализована: `ProfileAiSettingsLogic` читает `UserSettingsRepository.readSettings()` и, если AI/TTS-ключ сохранён, верифицирует его метаданным-вызовом провайдера (бесплатный, без расхода квоты; офлайн деградирует к ручному вводу с сохранённым значением). Категория `Learning` реализует выбор `LearningSettings.preferredTopicIds` через каталог тем; категории `App`/`Practice`/`Experimental` пока открывают честный экран-заглушку.
+1. Пользователь открывает `Profile`; раздел показывает меню `ProfileHome` с группой «Настройки» и пунктами по `UserSettingsCategory`. `ProfileConfig` содержит `Home` и конфигурации категорий (`Settings.App`/`Settings.Learning`/`Settings.Practice`/`Settings.Ai`/`Settings.Experimental`); `DefaultProfileSectionComponent` через `appChildPanels` показывает меню и экран категории рядом на широких экранах, по очереди — на узких. Опциональный `ProfileExtraConfig.TopicPicker` открывается как третья панель на `SupportingPane` или как `SenseeModalBottomSheet` на более узких раскладках.
+2. Категория `Ai` реализована: `ProfileAiSettingsLogic` читает `UserSettingsRepository.readSettings()` и, если AI/TTS-ключ сохранён, верифицирует его метаданным-вызовом провайдера (бесплатный, без расхода квоты; офлайн деградирует к ручному вводу с сохранённым значением). Категория `Learning` реализует выбор `LearningSettings.preferredTopicIds` через каталог тем; категории `App`/`Practice`/`Experimental` пока открывают явную заглушку planned-состояния.
 3. Категория `Practice` планируется как полный набор practice-настроек; локальный practice-экран остаётся подмножеством над тем же репозиторием (единый источник).
-4. Категория `Experimental` пока без data class и полей в `UserSettingsSnapshot` — честно помечается как разрыв, без фейковых тумблеров.
-5. Настройки сохраняются в scope `Device` по умолчанию; `UserSettingsScope.User` зарезервирован под будущую per-user синхронизацию; переключатель Device/User не показывается, пока нет auth.
-6. Account/синхронизация — честная заглушка «локальный профиль, вход позже»; `About` показывает версию и ссылки.
+4. Категория `Experimental` пока без data class и полей в `UserSettingsSnapshot` — явно помечена как planned-состояние, без неработающих тумблеров.
+5. Настройки сохраняются в области `Device` по умолчанию; `UserSettingsScope.User` зарезервирован под будущую per-user синхронизацию; переключатель Device/User не показывается, пока нет авторизации.
+6. Account/синхронизация показывают «локальный профиль, вход позже»; `About` показывает версию и ссылки.
 
 == Планируемый сценарий. Домашний дашборд
 
 Статус:: planned
 
-`Home` открывается как стартовый раздел уже сейчас, но его содержание — placeholder. Объём наполнения сознательно бережный: три actionable-блока. Пошаговое поведение — в `docs/scenarios/home.feature` (`@planned`).
+`Home` открывается как стартовый раздел уже сейчас, но его содержание — заглушка. Планируемый `Home` ограничен тремя рабочими блоками. Пошаговое поведение — в `docs/scenarios/home.feature` (`@planned`).
 
 1. `HomeComponent` — `NavigationDispatcher`: дашборд не владеет доменом, показывает агрегаты и уводит в другие разделы через `NavigationDispatcher.open(...)`. `HomeConfig` остаётся `Home`.
-2. Блок «Повторить сегодня»: счётчик due-карточек, прогресс к `dailyGoal`, стрик — actionable today-виджет (агрегаты, без per-card SRS-метаданных; статистика как экран — в `Profile`, честная заглушка).
-3. CTA «Повторить сегодня» уводит сразу в practice по due-подмножеству; это опирается на ad-hoc/query practice-сессию — планируемое расширение контракта practice (сейчас practice гоняет только готовый `Deck`).
-4. Блок «Незавершённый capture»: записи в статусе `Draft` (не подтверждённые), CTA уводит в `Vocabulary Editor` на refinement; при отсутствии незавершённых блок скрыт. Богатый triage-лайфцикл статусов и авто-прун — планируемое (EB-6).
+2. Блок «Повторить сегодня»: счётчик due-карточек, прогресс к `dailyGoal`, стрик — рабочий виджет текущего дня (агрегаты, без per-card SRS-метаданных; статистика как экран в `Profile` пока не реализована).
+3. CTA «Повторить сегодня» уводит сразу в practice по due-подмножеству; это опирается на сессию практики по выборке — планируемое расширение контракта practice (сейчас practice запускает только готовый `Deck`).
+4. Блок «Незавершённый capture»: записи в статусе `Draft` (не подтверждённые), CTA уводит в `Vocabulary Editor` на уточнение; при отсутствии незавершённых блок скрыт. Расширенный жизненный цикл статусов и автоматическая уборка брошенных черновиков — планируемое (EB-6).
 5. «Быстрый ввод» открывает `VocabularyEditorConfig.QuickCapture` (authoring-first, ADR-001).
 
-== Реализованный сценарий 4. Распространение навигации чистыми конфигами
+== Реализованный сценарий 4. Распространение навигации чистыми конфигурациями
 
 1. Источник навигации вызывает `NavigationDispatcher.open(config)` с сериализуемым `ScreenConfig`.
 2. Локальный host-компонент пытается обработать config своим `NavigationDispatcher`.
 3. Если config не принадлежит текущему host, навигационный запрос поднимается по цепочке `local -> parent`.
 4. `PrimaryShellComponent` выбирает нужный раздел для `HomeConfig`, `PracticeConfig`, `LibraryConfig`, `VocabularyEditorConfig` или `ProfileConfig`.
-5. Если основной shell ещё не открыт, `RootComponent` кладёт полученный бизнес-конфиг в свой stack и создаёт `PrimaryShellComponent` с этим target.
-6. Если основной shell уже открыт, `RootComponent` переносит существующий `PrimaryShellComponent` наверх и передаёт исходный бизнес-конфиг внутрь.
-7. `PrimaryShellComponent` уже на своём уровне решает, переиспользовать section component для home-config или пересоздать section component для target-конфига.
+5. Если основной shell ещё не открыт, `RootComponent` кладёт полученную бизнес-конфигурацию в свой stack и создаёт `PrimaryShellComponent` с этим target.
+6. Если основной shell уже открыт, `RootComponent` переносит существующий `PrimaryShellComponent` наверх и передаёт исходную бизнес-конфигурацию внутрь.
+7. `PrimaryShellComponent` уже на своём уровне решает, переиспользовать section component для home-config или пересоздать section component для target-конфигурации.
 8. Обратная навигация остаётся отдельным вызовом `NavigationDispatcher.back()` и возвращает результат обработки через `NavigationRequestStatus`.
 
 Реализованная web-навигация (`JS`/`Wasm`)::
 
-На `JS`/`Wasm` тот же активный путь nav-дерева проецируется в историю браузера как производный URL (`withWebHistory`): URL — выход навигации, а не вход. Вход URL только в двух местах — разовый разбор cold-start deep-link и browser back/forward.
+На `JS`/`Wasm` активный путь nav-дерева проецируется в историю браузера как производный URL (`withWebHistory`). URL строится из текущего состояния навигации; входом он становится только при разовом разборе прямой ссылки на холодном старте и при кнопках назад/вперёд браузера.
 
-1. Активная секция отражается section-level URL: `/practice`, `/library`, ... (`WebSectionRoute.pathFor`); browser back не циклит по табам (`PrimaryShell` `enableHistory = false`).
-2. Within-section back-stack отражается в истории: при стеке `[Home, DeckPractice]` browser back снимает `DeckPractice` (`DefaultPracticeSectionComponent` `enableHistory = true`).
-3. Cold deep-link во вложенный экран practice восстанавливает вложенный конфиг: `/practice/deck/d1?focus=c9` → `WebSectionRoute.landingForPath` → `PracticeConfig.DeckPractice("d1", "c9")`, и после `Startup` стек секции открыт сразу на этом экране (`DefaultRootComponent.deepLinkLanding`).
+1. Активная секция отражается URL уровня секции: `/practice`, `/library`, ... (`WebSectionRoute.pathFor`); кнопка назад браузера не циклит по табам (`PrimaryShell` `enableHistory = false`).
+2. Стек внутри секции отражается в истории: при стеке `[Home, DeckPractice]` кнопка назад браузера снимает `DeckPractice` (`DefaultPracticeSectionComponent` `enableHistory = true`).
+3. Прямая ссылка на вложенный экран practice при холодном старте восстанавливает вложенную конфигурацию: `/practice/deck/d1?focus=c9` → `WebSectionRoute.landingForPath` → `PracticeConfig.DeckPractice("d1", "c9")`, и после `Startup` стек секции открыт сразу на этом экране (`DefaultRootComponent.deepLinkLanding`).
 4. Splash не имеет URL и не попадает в историю: переход на `PrimaryShell` идёт через `replaceCurrent`, а не push.
-5. Warm reload минует `Startup`: при том же URL StateKeeper восстанавливает root stack, активная секция и экран берутся из собственного стека `PrimaryShell`.
+5. Тёплая перезагрузка минует `Startup`: при том же URL StateKeeper восстанавливает root stack, активная секция и экран берутся из собственного стека `PrimaryShell`.
 
-Вложенный deep-link в `vocabulary` пока резолвится только до section-level (`QuickCapture`); полный разбор до `VocabularyEditorConfig.Editor(entryId)` — отложенный разрыв (см. `docs/evolution-backlog.adoc`, EB-7). Пошаговое поведение — `docs/scenarios/navigation.feature`.
+Вложенная ссылка в `vocabulary` пока разбирается только до уровня секции (`QuickCapture`); полный разбор до `VocabularyEditorConfig.Editor(entryId)` — отложенная доработка (см. `docs/evolution-backlog.adoc`, EB-7). Пошаговое поведение — `docs/scenarios/navigation.feature`.
 
-UI navigation shell показывает разделы `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Реализованное содержание есть у Practice (deck/home/card detail), Library (каталог + adoption), Vocabulary Editor (capture) и Profile (настройки + верификация ключа); `Home` пока рендерит `UnimplementedScreen`.
+UI navigation shell показывает разделы `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Реализованное содержание есть у Practice (deck/home/card detail), Library (каталог + adoption), Vocabulary Editor (capture) и Profile (настройки + верификация ключа); `Home` пока отображает `UnimplementedScreen`.

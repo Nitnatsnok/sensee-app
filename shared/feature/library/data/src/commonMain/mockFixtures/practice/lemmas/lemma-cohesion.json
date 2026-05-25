@@ -1,0 +1,7 @@
+{
+  "id": "lemma-cohesion",
+  "text": "cohesion",
+  "related_cards": [
+    { "id": "card-cohesion", "headword": "cohesion", "unit_type": "noun", "translation": "связность модуля", "sense_summary": "логическая связанность элементов модуля" }
+  ]
+}

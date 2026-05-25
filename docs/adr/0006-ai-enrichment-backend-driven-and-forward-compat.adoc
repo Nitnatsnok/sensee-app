@@ -1,0 +1,44 @@
+= ADR-006: AI enrichment — backend-driven schema, forward-compatible domain, request/response extension points
+:revdate: 2026-05-24
+
+Статус:: Accepted
+Дата:: 2026-05-24
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Maintainability (QG-3: новая опция шва или новое wire-поле — без правки клиента), Reliability (FS-*: эволюция таксономии бэкенда не ломает клиента и не отбрасывает значения), Functional Suitability (candidate-слой ADR-001 остаётся живым при расширении бэкенда — учится тому, чего клиент ещё не знает)
+
+Контекст::
+ADR-005 зафиксировал границу AI-enrichment как явный версионируемый клиентский контракт с anti-corruption mapping. Контракт оставался фиксированным на этапе компиляции: списки `unit_type` / `complement_type`, осей и значений `usage_labels`, категорий и форм `grammar_tags` жили в client-side `enum`-ах; парные инварианты (`category → allowedForms`, `axis → allowedValues`) были `init { require(...) }` в `GrammarTag` / `UsageLabel`; промпт собирался монолитной функцией в `LlmAiEnrichmentClient`; добавить новое wire-поле — изменить версию `EnrichmentResponseV1` и DTO. Из-за этого: новый `id` с бэкенда молча отбрасывался маппером (semantic loss), добавление опции enrichment (например, polysemy-hints или topic steering) требовало правки клиента, бэкенд не мог свободно расширять таксономию.
+
+Решение::
+Граница остаётся явным versioned contract по ADR-005, но получает три ортогональных расширения, а парные инварианты переезжают в проверки времени выполнения.
+
+. **Backend-driven JSON Schema.** `EnrichmentSchema.buildJsonSchema(...)` строит `response_format` `json_schema` из загруженной таксономии: `unit_type` / `complementation` получают `enum`, `usage_labels` / `grammar_tags` — `oneOf`-блоки с `const`-дискриминатором и `enum`-значением. `SettingsLlmConfigProvider` включает этот режим для `OpenAI`-моделей с известной поддержкой Structured Outputs; остальные OpenAI-compatible endpoints остаются на portable `json_object`. Структурный скелет (`jsonSkeleton` в user-промпте) — нейтрален. Пустые входы → ограничения снимаются (degraded-режим, нет блокировки звонка).
+. **Forward-compatible domain types.** `GrammarUnitType`, `GrammarCategory`, `GrammarForm`, `ComplementType`, `UsageAxis`, `UsageValue` — `sealed interface` с известными `data object`-ами и веткой `data class Unknown(id)`. `fromId(id)` всегда возвращает non-null. `GrammarTag.init`-инвариант снят; `GrammarTag.resolve(catId, formId, allowedFormsByCategory)` валидирует пару против таксономии времени выполнения (`null` = режим пропуска без проверки). `UsageLabel.resolve(...)` аналогично.
+. **TaxonomyInvariants + provider.** Плоский снимок загруженной таксономии (`knownUnitTypeIds`, `knownComplementIds`, `allowedValuesByAxis`, `allowedFormsByCategory`) живёт в `shared/grammar/domain`. Оба provider-контракта (`TaxonomyInvariantsProvider` и `GrammarLabelsProvider`) — там же; data-имплементации (`CachingGrammarTaxonomyProvider`, `CachingTaxonomyInvariantsProvider`, `CachingGrammarLabelsProvider`) — в `shared/grammar/data`. Общий `CachingGrammarTaxonomyProvider` делает один mutex-guarded запрос и отдаёт из него обе projection-модели. `TaxonomyInvariantsProvider` возвращает `null` при сбое загрузки (caller переключает режим пропуска без проверки и строгую проверку), `GrammarLabelsProvider` — `GrammarLabels.EMPTY` для non-blocking UI lookup; `PreloadAppStartupUseCase` собирает оба результата в `PreloadOutcome`, чтобы splash показывал retry при частичном/полном сбое. Неуспех ни один provider не кэширует — следующий вызов загружает заново.
+. **Request-side extension point.** `EnrichmentRequestModifier` (`id`, `phase`, `contribute(context): PromptContribution`); `EnrichmentPromptAssembler` собирает промпт в порядке `Identity → Format → CrossCutting → Coverage → Shaping → Preferences → Final`, внутри фазы — alphabetic by `id`. Каждый встроенный модификатор владеет своей семантикой (`IdentityModifier`, `FormatModifier`, `SenseSplittingModifier`, `LanguageModifier`, `SenseCoverageModifier`, `PolysemyHintsModifier`, `PreferredTopicsModifier`, `PhrasalVerbCoverageModifier`). Добавление опции = новый модификатор; клиент `LlmAiEnrichmentClient` не правится.
+. **Response-side extension point (инфра).** `AiEnrichmentExtension` (`id`, `ownedKeys`, `fields()`) и `EnrichmentSuggestion.extensions: Map<String, JsonElement>` — непрозрачный контейнер под новые wire-поля; `EnrichmentSchema.buildJsonSchema(...)` принимает `Set<AiEnrichmentExtension>` и добавляет их fields в item schema. Реальных extensions нет — только точка расширения.
+. **Anti-corruption mapping.** `MeaningCandidateMapper` принимает `TaxonomyInvariants?` и `onUnknown` callback. С `null`-invariants включается режим пропуска без проверки (unknown id → `Unknown(id)`, значение доходит до UI). С non-null включается строгая проверка: значение вне схемы отбрасывается. Любая ветка `Unknown(...)` сигналит через `AppDiagnostics.warnUnknownTaxonomyValue` — клиент знает, когда таксономия бэкенда эволюционировала.
+
+Альтернативы::
+* Оставить compile-time enum'ы и статичную JSON Schema. Отклонено: бэкенд эволюционирует — клиент молча отбрасывает новые `id`; release-блокер при каждом добавлении `id`.
+* Расширять `EnrichmentRequest`/`EnrichmentResponseV1` под каждое новое поле/опцию. Отклонено: размывает «версия = миграция» (ADR-005); новая опция не должна каждый раз поднимать версию DTO.
+* Plugin-модель локально внутри `LlmAiEnrichmentClient` без core-контракта. Отклонено: не extension point — спагетти; не unit-тестируется.
+* Не различать режим пропуска без проверки и строгую проверку в маппере. Отклонено: либо клиент отбрасывает любое незнакомое значение (semantic loss), либо допускает любой мусор (corruption); явные два режима покрывают и «таксономия не загружена», и «таксономия известна, значение вне неё».
+
+Последствия (реализованные, 2026-05-24)::
+* `shared/ai/core`: `EnrichmentSchema.buildJsonSchema(...)`, `EnrichmentRequestModifier` + 8 встроенных модификаторов + `EnrichmentPromptAssembler`, `UserEnrichmentPreferences` + provider, `AiEnrichmentExtension`, `EnrichmentSuggestion.extensions`. Контрактные тесты на enum/oneOf shape и стабильный phase-id порядок.
+* `shared/ai/llm`: `LlmAiEnrichmentClient` получает через DI `TaxonomyInvariantsProvider` + `Set<EnrichmentRequestModifier>` + `UserEnrichmentPreferencesProvider`; промпт собирается ассемблером per call; `KNOWN_POLYSEMY_HINTS` переехал в `PolysemyHintsModifier`. Зависит только на `grammar.domain` (не на `grammar.data`).
+* `shared/grammar/domain`: 6 `sealed interface`-типов с `knownEntries` и `Unknown(id)`. `GrammarTag.resolve` / `UsageLabel.resolve` принимают runtime-invariants. `TaxonomyInvariants`, `TaxonomyInvariantsProvider`, `GrammarLabelsProvider` — domain-уровень (provider-контракты — `fun interface`, лёгкие presentation-API зависят только на domain).
+* `shared/grammar/data`: `CachingGrammarTaxonomyProvider`, `CachingTaxonomyInvariantsProvider`, `CachingGrammarLabelsProvider` (`@ContributesBinding` через Metro), `GrammarTaxonomyDto.toTaxonomyInvariants()`, `toGrammarLabels()`.
+* `shared/feature/vocabulary-editor/domain`: `MeaningCandidateMapper` принимает `TaxonomyInvariants?` и `onUnknown` callback; `SuggestVocabularyMeaningsUseCase` загружает invariants через provider и сигналит через `AppDiagnostics.warnUnknownTaxonomyValue`. Зависит только на `grammar.domain`.
+* Konsist-правило: `feature/<X>/domain` не зависит ни от какого `data`-пакета (своего feature или shared, например `grammar.data`).
+
+Последствия (ожидаемые)::
+* Новая опция enrichment (новое поведение промпта) добавляется как `EnrichmentRequestModifier` — один файл, регистрация в `DefaultEnrichmentRequestModifiers`, без правок клиента.
+* Новое wire-поле от провайдера, если оно когда-то понадобится, добавляется как `AiEnrichmentExtension` — без подъёма версии DTO. Версия DTO остаётся для truly breaking-изменений ответа.
+* Бэкенд расширяет таксономию (`new unit_type`, `new (category, form)`, `new (axis, value)`) — клиент работает без пересборки: новый `id` доходит до UI как `Unknown(id)`, telemetry подаёт сигнал «client out of date», UI показывает сырой `id`; со следующим релизом он становится `data object`.
+* Цена: семантика валидации в маппере становится двухрежимной — call-site обязан передать invariants или явно `null`; sealed-`when`-сайты обязаны покрыть `Unknown`-ветку (это требует компилятор).
+
+Связанные ADR::
+* link:0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc[ADR-005] (refines) — наращивает контракт границы тремя ортогональными точками расширения (request/response/schema) и переносит парные инварианты в проверки времени выполнения.
+* link:0001-sense-first-lexical-model.adoc[ADR-001] (touches) — sense-first инварианты грамматики (канон `docs/pos-and-forms.adoc`) валидируются теперь во время выполнения через `TaxonomyInvariants`, а не на этапе компиляции через enum-сеты.

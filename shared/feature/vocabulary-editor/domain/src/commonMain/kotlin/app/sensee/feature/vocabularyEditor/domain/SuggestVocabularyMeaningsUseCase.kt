@@ -3,18 +3,21 @@ package app.sensee.feature.vocabularyEditor.domain
 import app.sensee.ai.core.AiEnrichmentClient
 import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.core.observability.diagnostics.AppDiagnostics
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import dev.zacsweers.metro.Inject
 
 /**
  * Capture-suggestion orchestration: ensure a single draft per capture session,
- * then enrich the term through the AI seam and map the result into structured
- * candidates. UI-facing copy (the availability note, loading state) stays in
- * presentation; this use case returns the typed [EnrichmentAvailability].
+ * enrich the term through the AI seam, map the result into structured
+ * candidates. UI copy (availability note, loading state) stays in presentation.
  */
 @Inject
 public class SuggestVocabularyMeaningsUseCase(
     private val vocabularyRepository: VocabularyRepository,
     private val enrichmentClient: AiEnrichmentClient,
+    private val taxonomyInvariantsProvider: TaxonomyInvariantsProvider,
+    private val appDiagnostics: AppDiagnostics,
 ) {
     public data class Suggestion(
         val draftId: EntryId,
@@ -42,7 +45,12 @@ public class SuggestVocabularyMeaningsUseCase(
         val result = enrichmentClient.enrich(EnrichmentRequest(term = term))
         return Suggestion(
             draftId = draftId,
-            candidates = result.toMeaningCandidates(fallbackTerm = term),
+            candidates =
+                result.toMeaningCandidates(
+                    fallbackTerm = term,
+                    invariants = taxonomyInvariantsProvider.invariants(),
+                    onUnknown = appDiagnostics::warnUnknownTaxonomyValue,
+                ),
             availability = result.availability,
         )
     }

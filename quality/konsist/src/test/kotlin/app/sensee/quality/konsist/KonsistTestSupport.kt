@@ -42,6 +42,18 @@ internal object KonsistTestSupport {
     val featurePresentationImplRegex =
         Regex("""shared/feature/[^/]+/presentation/impl/""")
 
+    val featureSourceRegex =
+        Regex("""shared/feature/([^/]+)/[^/]+(?:/[^/]+)?/src/[^/]+/kotlin/""")
+
+    val featureDataSourceRegex =
+        Regex("""shared/feature/([^/]+)/data/src/[^/]+/kotlin/""")
+
+    // Matches every shared/<area>/domain/src/<...>/kotlin/ outside the feature
+    // tree — e.g. shared/grammar/domain, shared/ai/core, shared/srs/core. Used to
+    // enforce "no domain depends on any data package" symmetrically.
+    val sharedDomainSourceRegex =
+        Regex("""shared/(?!feature/)[^/]+/(?:domain|core)/src/[^/]+/kotlin/""")
+
     val metroAnnotationRegex =
         Regex("""@(AssistedInject|AssistedFactory|ContributesBinding)\b""")
 

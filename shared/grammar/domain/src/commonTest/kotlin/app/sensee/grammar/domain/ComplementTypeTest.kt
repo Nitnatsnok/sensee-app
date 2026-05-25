@@ -2,7 +2,6 @@ package app.sensee.grammar.domain
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class ComplementTypeTest {
     @Test
@@ -13,7 +12,9 @@ class ComplementTypeTest {
     }
 
     @Test
-    fun `an unknown id resolves to null - dropped at the boundary`() {
-        assertNull(ComplementType.fromId("subjunctive"))
+    fun `an unknown id surfaces as Unknown carrying the original wire string`() {
+        val resolved = ComplementType.fromId("subjunctive")
+
+        assertEquals(ComplementType.Unknown("subjunctive"), resolved)
     }
 }

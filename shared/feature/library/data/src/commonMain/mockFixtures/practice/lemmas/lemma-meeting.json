@@ -1,0 +1,7 @@
+{
+  "id": "lemma-meeting",
+  "text": "meeting",
+  "related_cards": [
+    { "id": "card-meeting", "headword": "meeting", "unit_type": "noun", "translation": "встреча, совещание", "sense_summary": "запланированный сбор людей" }
+  ]
+}

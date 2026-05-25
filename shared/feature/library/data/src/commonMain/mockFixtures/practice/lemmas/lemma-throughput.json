@@ -1,0 +1,7 @@
+{
+  "id": "lemma-throughput",
+  "text": "throughput",
+  "related_cards": [
+    { "id": "card-throughput", "headword": "throughput", "unit_type": "noun", "translation": "пропускная способность", "sense_summary": "объём работы в единицу времени" }
+  ]
+}

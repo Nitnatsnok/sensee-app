@@ -1,0 +1,7 @@
+{
+  "id": "lemma-scalable",
+  "text": "scalable",
+  "related_cards": [
+    { "id": "card-scalable", "headword": "scalable", "unit_type": "adjective", "translation": "масштабируемый", "sense_summary": "о системе — растёт под нагрузкой без переписывания" }
+  ]
+}

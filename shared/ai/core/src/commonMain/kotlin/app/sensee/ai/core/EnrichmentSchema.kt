@@ -7,21 +7,18 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /**
- * Human-maintained description of the versioned [EnrichmentResponseV1] wire
- * shape: one [Field] per [EnrichmentItemV1] property, carrying its [ShapeType]
- * and the per-field guidance prose.
+ * Single source of truth for the [EnrichmentResponseV1] wire shape: one
+ * [Field] per [EnrichmentItemV1] property. Both representations derive from
+ * [fields]:
+ * - [jsonSkeleton] — compact shape example, embedded in the user prompt.
+ * - [buildJsonSchema] — JSON Schema (`json_schema` response_format). The four
+ *   taxonomy-bound fields get enum/oneOf from caller-supplied neutral sets,
+ *   so a structured-output provider cannot return an id outside the loaded
+ *   taxonomy.
  *
- * Single source of truth for the schema. Both representations are derived from
- * [fields], so they cannot diverge:
- * - [jsonSkeleton] — the compact shape example embedded in the provider prompt.
- * - [jsonSchema] — a JSON Schema for providers that accept a `json_schema`
- *   `response_format` (the de-facto OpenAI-compatible standard).
- *
- * `EnrichmentSchemaTest` asserts every wire field has an entry so the DTO and
- * the schema cannot silently drift (ADR-005: schema changes are deliberate).
- *
- * Cross-cutting instructions (sense splitting, language autodetection, example
- * marking) are NOT per-field and stay in the provider prompt builder, not here.
+ * `EnrichmentSchemaTest` asserts the wire DTO and this catalog stay aligned
+ * (ADR-005: schema changes are deliberate). Cross-cutting prompt rules live
+ * in [EnrichmentRequestModifier]s, not here.
  */
 public object EnrichmentSchema {
     public sealed interface ShapeType {
@@ -79,11 +76,12 @@ public object EnrichmentSchema {
                 shape = ShapeType.ArrayOf(ShapeType.Text),
                 guidance =
                     "at least one; one per significant construction/variant of THIS " +
-                        "sense. Wrap the exact occurrence in a SINGLE [[ ]] span, " +
+                        "sense. Wrap the exact occurrence in [[ ]] span(s), " +
                         "exactly as it appears — inflected (\"She [[came across]] the " +
-                        "letters.\"), separated (\"He [[turned the light on]].\") or " +
-                        "multi-word (\"It was [[a piece of cake]].\"); never split the " +
-                        "span into several [[ ]]",
+                        "letters.\"), separated phrasal verbs (\"He [[turned]] the light " +
+                        "[[on]].\") or multi-word (\"It was [[a piece of cake]].\"). Use " +
+                        "multiple spans only when one occurrence is discontinuous; never " +
+                        "split a contiguous occurrence into several spans",
             ),
             Field(
                 serialName = "preposition_government",
@@ -123,8 +121,7 @@ public object EnrichmentSchema {
                         "register(formal/informal/slang/literary/neutral), " +
                         "region(bre/ame/ause/cane), " +
                         "domain(law/medicine/it/science/business), " +
-                        "connotation(neutral_connotation/positive_connotation/" +
-                        "pejorative/euphemistic), " +
+                        "connotation(neutral_connotation/approving/disapproving/euphemistic), " +
                         "temporality(current/dated/archaic/obsolete)",
             ),
             text(
@@ -198,12 +195,26 @@ public object EnrichmentSchema {
             if (guidance.isNotBlank()) put("description", guidance)
         }
 
+    private const val UNIT_TYPE = "unit_type"
+    private const val COMPLEMENTATION = "complementation"
+    private const val USAGE_LABELS = "usage_labels"
+    private const val GRAMMAR_TAGS = "grammar_tags"
+
     /**
-     * JSON Schema for the full [EnrichmentResponseV1] envelope. Non-strict by
-     * design: optional fields stay optional, matching the forward-compatible
-     * DTO and the prompt's "omit unknown fields" guidance (ADR-005).
+     * JSON Schema for the [EnrichmentResponseV1] envelope. Empty sets/maps
+     * collapse to the structural shape (free string or `{key, value}` object)
+     * so a failed taxonomy fetch still produces a usable schema. Non-strict:
+     * optional DTO fields stay optional, matching the "omit unknown fields"
+     * prompt rule (ADR-005).
      */
-    public val jsonSchema: String =
+    @Suppress("ProfiledLongParameterList")
+    public fun buildJsonSchema(
+        unitTypeIds: Set<String>,
+        complementIds: Set<String>,
+        usageAxesAndValues: Map<String, Set<String>>,
+        grammarCategoriesAndForms: Map<String, Set<String>>,
+        extensions: Set<AiEnrichmentExtension> = emptySet(),
+    ): JsonElement =
         buildJsonObject {
             put("type", "object")
             put(
@@ -214,12 +225,173 @@ public object EnrichmentSchema {
                         "items",
                         buildJsonObject {
                             put("type", "array")
-                            put("items", schemaOf(ShapeType.ObjectOf(fields), ""))
+                            put(
+                                "items",
+                                itemSchema(
+                                    unitTypeIds = unitTypeIds,
+                                    complementIds = complementIds,
+                                    usageAxesAndValues = usageAxesAndValues,
+                                    grammarCategoriesAndForms = grammarCategoriesAndForms,
+                                    extensions = extensions,
+                                ),
+                            )
                         },
                     )
                 },
             )
             put("required", buildJsonArray { add("items") })
             put("additionalProperties", false)
-        }.toString()
+        }
+
+    @Suppress("ProfiledLongParameterList")
+    private fun itemSchema(
+        unitTypeIds: Set<String>,
+        complementIds: Set<String>,
+        usageAxesAndValues: Map<String, Set<String>>,
+        grammarCategoriesAndForms: Map<String, Set<String>>,
+        extensions: Set<AiEnrichmentExtension>,
+    ): JsonElement =
+        buildJsonObject {
+            put("type", "object")
+            put(
+                "properties",
+                buildJsonObject {
+                    val builtInNames = fields.mapTo(mutableSetOf()) { it.serialName }
+                    fields.forEach { field ->
+                        put(
+                            field.serialName,
+                            constrainedFieldSchema(
+                                field = field,
+                                unitTypeIds = unitTypeIds,
+                                complementIds = complementIds,
+                                usageAxesAndValues = usageAxesAndValues,
+                                grammarCategoriesAndForms = grammarCategoriesAndForms,
+                            ),
+                        )
+                    }
+                    // Built-ins win on key collision: ADR-006 mandates disjoint
+                    // ownership but a misconfigured extension shouldn't be able
+                    // to overwrite the wire DTO shape silently.
+                    extensions
+                        .flatMap { it.fields() }
+                        .forEach { field ->
+                            if (field.serialName in builtInNames) return@forEach
+                            put(field.serialName, schemaOf(field.shape, field.guidance))
+                        }
+                },
+            )
+            put("additionalProperties", false)
+        }
+
+    private fun constrainedFieldSchema(
+        field: Field,
+        unitTypeIds: Set<String>,
+        complementIds: Set<String>,
+        usageAxesAndValues: Map<String, Set<String>>,
+        grammarCategoriesAndForms: Map<String, Set<String>>,
+    ): JsonElement =
+        when (field.serialName) {
+            UNIT_TYPE -> stringEnumSchema(unitTypeIds, field.guidance)
+            COMPLEMENTATION ->
+                buildJsonObject {
+                    put("type", "array")
+                    put("items", stringEnumSchema(complementIds, guidance = ""))
+                    if (field.guidance.isNotBlank()) put("description", field.guidance)
+                }
+            USAGE_LABELS ->
+                arrayOfTaggedPairs(
+                    discriminatorKey = "axis",
+                    valueKey = "value",
+                    allowedByDiscriminator = usageAxesAndValues,
+                    guidance = field.guidance,
+                )
+            GRAMMAR_TAGS ->
+                arrayOfTaggedPairs(
+                    discriminatorKey = "category",
+                    valueKey = "form",
+                    allowedByDiscriminator = grammarCategoriesAndForms,
+                    guidance = field.guidance,
+                )
+            else -> schemaOf(field.shape, field.guidance)
+        }
+
+    private fun stringEnumSchema(
+        ids: Set<String>,
+        guidance: String,
+    ): JsonElement =
+        buildJsonObject {
+            put("type", "string")
+            if (ids.isNotEmpty()) {
+                put("enum", buildJsonArray { ids.sorted().forEach { add(it) } })
+            }
+            if (guidance.isNotBlank()) put("description", guidance)
+        }
+
+    private fun arrayOfTaggedPairs(
+        discriminatorKey: String,
+        valueKey: String,
+        allowedByDiscriminator: Map<String, Set<String>>,
+        guidance: String,
+    ): JsonElement =
+        buildJsonObject {
+            put("type", "array")
+            put(
+                "items",
+                if (allowedByDiscriminator.isEmpty()) {
+                    schemaOf(
+                        shape =
+                            ShapeType.ObjectOf(
+                                listOf(text(discriminatorKey), text(valueKey)),
+                            ),
+                        guidance = "",
+                    )
+                } else {
+                    taggedPairOneOf(
+                        discriminatorKey = discriminatorKey,
+                        valueKey = valueKey,
+                        allowedByDiscriminator = allowedByDiscriminator,
+                    )
+                },
+            )
+            if (guidance.isNotBlank()) put("description", guidance)
+        }
+
+    private fun taggedPairOneOf(
+        discriminatorKey: String,
+        valueKey: String,
+        allowedByDiscriminator: Map<String, Set<String>>,
+    ): JsonElement =
+        buildJsonObject {
+            put(
+                "oneOf",
+                buildJsonArray {
+                    val orderedEntries = allowedByDiscriminator.entries.sortedBy { it.key }
+                    orderedEntries.forEach { (discriminator, values) ->
+                        add(
+                            buildJsonObject {
+                                put("type", "object")
+                                put(
+                                    "properties",
+                                    buildJsonObject {
+                                        put(
+                                            discriminatorKey,
+                                            buildJsonObject { put("const", discriminator) },
+                                        )
+                                        put(valueKey, stringEnumSchema(values, guidance = ""))
+                                    },
+                                )
+                                put(
+                                    "required",
+                                    buildJsonArray {
+                                        add(discriminatorKey)
+                                        add(valueKey)
+                                    },
+                                )
+                                put("additionalProperties", false)
+                            },
+                        )
+                    }
+                },
+            )
+        }
 }

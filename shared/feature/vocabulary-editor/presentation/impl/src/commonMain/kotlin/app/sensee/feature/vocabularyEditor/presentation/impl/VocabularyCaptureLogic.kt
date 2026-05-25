@@ -10,15 +10,22 @@ import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.vocabularyEditor.domain.EntryId
 import app.sensee.feature.vocabularyEditor.domain.Meaning
+import app.sensee.feature.vocabularyEditor.domain.MeaningCandidate
+import app.sensee.feature.vocabularyEditor.domain.MeaningCandidateId
 import app.sensee.feature.vocabularyEditor.domain.SuggestVocabularyMeaningsUseCase
 import app.sensee.feature.vocabularyEditor.domain.VocabularyRepository
 import app.sensee.feature.vocabularyEditor.domain.toMeaningCandidates
+import app.sensee.feature.vocabularyEditor.domain.warnUnknownTaxonomyValue
+import app.sensee.feature.vocabularyEditor.presentation.api.CaptureStatusNote
 import app.sensee.feature.vocabularyEditor.presentation.api.ManualSense
 import app.sensee.feature.vocabularyEditor.presentation.api.ManualSenseStatus
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureUiState
-import app.sensee.grammar.data.GrammarLabelsProvider
+import app.sensee.grammar.domain.GrammarLabels
+import app.sensee.grammar.domain.GrammarLabelsLoadResult
+import app.sensee.grammar.domain.GrammarLabelsProvider
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.SurfaceForm
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,15 +40,27 @@ public class VocabularyCaptureLogic(
     private val vocabularyRepository: VocabularyRepository,
     private val suggestMeanings: SuggestVocabularyMeaningsUseCase,
     private val grammarLabelsProvider: GrammarLabelsProvider,
+    private val taxonomyInvariantsProvider: TaxonomyInvariantsProvider,
     appDispatchers: AppDispatchers,
-    appDiagnostics: AppDiagnostics,
+    private val appDiagnostics: AppDiagnostics,
 ) : BaseLogic(appDispatchers, appDiagnostics) {
+    private val onUnknownTaxonomyValue: (field: String, id: String) -> Unit =
+        appDiagnostics::warnUnknownTaxonomyValue
+
     @AssistedFactory
     public fun interface Factory {
         public fun create(): VocabularyCaptureLogic
     }
 
-    private val mutableUiState = MutableStateFlow(VocabularyCaptureUiState())
+    private val mutableUiState =
+        grammarLabelsProvider.cachedLabels().let { initial ->
+            MutableStateFlow(
+                VocabularyCaptureUiState(
+                    grammarLabels = initial,
+                    grammarLabelsState = initialLabelsState(initial),
+                ),
+            )
+        }
     public val uiState: StateFlow<VocabularyCaptureUiState> = mutableUiState.asStateFlow()
 
     private var draftId: EntryId? = null
@@ -49,6 +68,36 @@ public class VocabularyCaptureLogic(
     // Guards a re-entrant confirm: a second tap before the first
     // confirmMeanings round-trip resolves would append the same meanings twice.
     private var confirming = false
+
+    init {
+        loadGrammarLabels()
+    }
+
+    public fun retryGrammarLabels(): Unit = loadGrammarLabels()
+
+    private fun loadGrammarLabels() {
+        logicScope.launch {
+            mutableUiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
+            when (val result = grammarLabelsProvider.awaitLabels()) {
+                is GrammarLabelsLoadResult.Loaded ->
+                    mutableUiState.update {
+                        it.copy(
+                            grammarLabels = result.labels,
+                            grammarLabelsState = DataLoadingState.Success,
+                        )
+                    }
+                is GrammarLabelsLoadResult.Failed ->
+                    mutableUiState.update {
+                        it.copy(
+                            grammarLabelsState =
+                                DataLoadingState.Error(
+                                    result.cause ?: IllegalStateException("grammar labels load failed"),
+                                ),
+                        )
+                    }
+            }
+        }
+    }
 
     public fun suggest(term: String) {
         val trimmed = term.trim()
@@ -58,20 +107,18 @@ public class VocabularyCaptureLogic(
                 VocabularyCaptureUiState(
                     term = trimmed,
                     loadingState = DataLoadingState.Loading,
+                    grammarLabels = it.grammarLabels,
+                    grammarLabelsState = it.grammarLabelsState,
                 )
             }
-            // App-scoped, fetched once and shared; never throws (EMPTY on failure).
-            val grammarLabels = grammarLabelsProvider.labels()
             runCatchingCancellable {
                 suggestMeanings(term = trimmed, existingDraftId = draftId)
             }.onSuccess { suggestion ->
                 draftId = suggestion.draftId
-                val note =
+                val note: CaptureStatusNote? =
                     when (val availability = suggestion.availability) {
-                        is EnrichmentAvailability.Unavailable ->
-                            "AI is not configured or unreachable — add a key in Profile, or add a meaning manually."
-                        is EnrichmentAvailability.Degraded ->
-                            "Partial AI result: ${availability.reason}"
+                        is EnrichmentAvailability.Unavailable -> CaptureStatusNote.AiUnavailable
+                        is EnrichmentAvailability.Degraded -> CaptureStatusNote.AiDegraded(availability.reason)
                         EnrichmentAvailability.Available -> null
                     }
                 mutableUiState.update {
@@ -79,7 +126,6 @@ public class VocabularyCaptureLogic(
                         loadingState = DataLoadingState.Success,
                         candidates = suggestion.candidates,
                         statusNote = note,
-                        grammarLabels = grammarLabels,
                     )
                 }
             }.onFailure { throwable ->
@@ -91,13 +137,13 @@ public class VocabularyCaptureLogic(
         }
     }
 
-    public fun toggleCandidate(index: Int) {
+    public fun toggleCandidate(id: MeaningCandidateId) {
         mutableUiState.update { state ->
-            if (index !in state.candidates.indices) return@update state
+            if (state.candidates.none { it.id == id }) return@update state
             val selected = state.selectedCandidates
             state.copy(
                 selectedCandidates =
-                    if (index in selected) selected - index else selected + index,
+                    if (id in selected) selected - id else selected + id,
             )
         }
     }
@@ -137,17 +183,18 @@ public class VocabularyCaptureLogic(
         updateManual(manualIndex) { it.copy(status = ManualSenseStatus.Completing) }
         logicScope.launch {
             runCatchingCancellable {
-                enrichmentClient.enrich(
-                    EnrichmentRequest(
-                        term = term,
-                        userNote = sense.meaning.translation,
-                        // We want the one sense the user described; Minimal also
-                        // suppresses the "look for more senses" corrective retry.
-                        senseCoverage = SenseCoverage.Minimal,
-                    ),
+                enrichAndMap(
+                    request =
+                        EnrichmentRequest(
+                            term = term,
+                            userNote = sense.meaning.translation,
+                            // We want the one sense the user described; Minimal also
+                            // suppresses the "look for more senses" corrective retry.
+                            senseCoverage = SenseCoverage.Minimal,
+                        ),
+                    fallbackTerm = term,
                 )
-            }.onSuccess { result ->
-                val suggestions = result.toMeaningCandidates(fallbackTerm = term)
+            }.onSuccess { suggestions ->
                 updateManual(manualIndex) {
                     if (suggestions.isEmpty()) {
                         it.copy(status = ManualSenseStatus.CompleteFailed)
@@ -166,19 +213,32 @@ public class VocabularyCaptureLogic(
         }
     }
 
+    /** Shared mapping path for AI-driven flows that don't go through [suggestMeanings]. */
+    private suspend fun enrichAndMap(
+        request: EnrichmentRequest,
+        fallbackTerm: String,
+    ): List<MeaningCandidate> =
+        enrichmentClient
+            .enrich(request)
+            .toMeaningCandidates(
+                fallbackTerm = fallbackTerm,
+                invariants = taxonomyInvariantsProvider.invariants(),
+                onUnknown = onUnknownTaxonomyValue,
+            )
+
     public fun toggleManualSuggestion(
         manualIndex: Int,
-        suggestionIndex: Int,
+        suggestionId: MeaningCandidateId,
     ) {
         updateManual(manualIndex) { sense ->
-            if (suggestionIndex !in sense.suggestions.indices) return@updateManual sense
+            if (sense.suggestions.none { it.id == suggestionId }) return@updateManual sense
             val selected = sense.selectedSuggestions
             sense.copy(
                 selectedSuggestions =
-                    if (suggestionIndex in selected) {
-                        selected - suggestionIndex
+                    if (suggestionId in selected) {
+                        selected - suggestionId
                     } else {
-                        selected + suggestionIndex
+                        selected + suggestionId
                     },
             )
         }
@@ -188,9 +248,9 @@ public class VocabularyCaptureLogic(
         val id = draftId ?: return
         val state = mutableUiState.value
         val fromCandidates =
-            state.selectedCandidates
-                .sorted()
-                .mapNotNull { state.candidates.getOrNull(it)?.toConfirmedMeaning() }
+            state.candidates
+                .filter { it.id in state.selectedCandidates }
+                .map { it.toConfirmedMeaning() }
         val fromManual =
             state.manualSenses.flatMap { sense ->
                 // A picked enriched suggestion replaces the thin draft; with
@@ -198,9 +258,9 @@ public class VocabularyCaptureLogic(
                 if (sense.selectedSuggestions.isEmpty()) {
                     listOf(sense.meaning)
                 } else {
-                    sense.selectedSuggestions
-                        .sorted()
-                        .mapNotNull { sense.suggestions.getOrNull(it)?.toConfirmedMeaning() }
+                    sense.suggestions
+                        .filter { it.id in sense.selectedSuggestions }
+                        .map { it.toConfirmedMeaning() }
                 }
             }
         val meanings = fromCandidates + fromManual
@@ -211,7 +271,7 @@ public class VocabularyCaptureLogic(
                 runCatchingCancellable { vocabularyRepository.confirmMeanings(id, meanings) }
                     .onSuccess { entry ->
                         mutableUiState.update {
-                            VocabularyCaptureUiState(confirmedTerm = entry.term)
+                            it.freshSessionState(confirmedTerm = entry.term)
                         }
                     }.onFailure { throwable ->
                         logger.error(throwable) { "Confirming meanings failed" }
@@ -234,7 +294,7 @@ public class VocabularyCaptureLogic(
 
     public fun reset() {
         draftId = null
-        mutableUiState.update { VocabularyCaptureUiState() }
+        mutableUiState.update { it.freshSessionState() }
     }
 
     private inline fun updateManual(
@@ -252,3 +312,15 @@ public class VocabularyCaptureLogic(
         }
     }
 }
+
+private fun initialLabelsState(seed: GrammarLabels): DataLoadingState =
+    if (seed === GrammarLabels.EMPTY) DataLoadingState.Idle else DataLoadingState.Success
+
+private fun VocabularyCaptureUiState.freshSessionState(confirmedTerm: String? = null): VocabularyCaptureUiState =
+    VocabularyCaptureUiState(
+        confirmedTerm = confirmedTerm,
+        grammarLabels = grammarLabels,
+        grammarLabelsState = grammarLabelsState,
+        studyLanguageTag = studyLanguageTag,
+        nativeLanguageTag = nativeLanguageTag,
+    )

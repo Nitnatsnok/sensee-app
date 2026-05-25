@@ -17,8 +17,8 @@ kotlin {
                 implementation(libs.metro.runtime)
                 implementation(projects.shared.core.presentation)
                 implementation(projects.shared.core.tracing)
+                implementation(projects.shared.feature.startup.domain)
                 implementation(projects.shared.feature.startup.presentation.api)
-                implementation(projects.shared.grammar.data)
                 implementation(projects.shared.ui.designSystem)
             }
         }

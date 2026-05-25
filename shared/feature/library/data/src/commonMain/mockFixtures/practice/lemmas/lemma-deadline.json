@@ -1,0 +1,7 @@
+{
+  "id": "lemma-deadline",
+  "text": "deadline",
+  "related_cards": [
+    { "id": "card-deadline", "headword": "deadline", "unit_type": "noun", "translation": "крайний срок", "sense_summary": "момент, к которому работа должна быть готова" }
+  ]
+}

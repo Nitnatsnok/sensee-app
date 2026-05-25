@@ -1,7 +1,22 @@
 plugins {
     alias(libs.plugins.sensee.kmpLibrary)
+    alias(libs.plugins.sensee.mockFixtures)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.metro)
+}
+
+mockFixtures {
+    packageName.set("app.sensee.feature.library.data.remote")
+    className.set("CatalogMockFixtures")
+    classKdoc.set(
+        """
+        Library's catalog (mock backend). Three themed decks of ten cards each;
+        four cards live in two decks to exercise true many-to-many — a shared
+        card is one practice-card row referenced by several decks. The shared
+        card JSON is duplicated across the deck fixtures and a `commonTest`
+        pins their byte-identity by id (see `SharedCatalogCardsTest`).
+        """.trimIndent(),
+    )
 }
 
 kotlin {
@@ -16,6 +31,7 @@ kotlin {
                 implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.mockBackend)
                 implementation(projects.shared.core.network)
+                implementation(projects.shared.core.observability)
                 implementation(projects.shared.core.platform)
                 implementation(projects.shared.database)
                 implementation(projects.shared.feature.library.domain)
@@ -30,6 +46,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 

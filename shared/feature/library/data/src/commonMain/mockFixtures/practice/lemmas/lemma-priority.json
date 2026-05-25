@@ -1,0 +1,7 @@
+{
+  "id": "lemma-priority",
+  "text": "priority",
+  "related_cards": [
+    { "id": "card-priority", "headword": "priority", "unit_type": "noun", "translation": "приоритет", "sense_summary": "то, что делается раньше остального" }
+  ]
+}

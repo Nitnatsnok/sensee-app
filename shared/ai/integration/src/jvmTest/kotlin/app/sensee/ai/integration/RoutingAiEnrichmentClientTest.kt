@@ -1,7 +1,10 @@
 package app.sensee.ai.integration
 
+import app.sensee.ai.core.DefaultEnrichmentRequestModifiers
 import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.UserEnrichmentPreferences
+import app.sensee.ai.core.UserEnrichmentPreferencesProvider
 import app.sensee.ai.fixture.FixtureAiEnrichmentClient
 import app.sensee.ai.llm.client.LlmAiEnrichmentClientFactory
 import app.sensee.ai.llm.config.LlmConfig
@@ -10,6 +13,7 @@ import app.sensee.core.observability.crash.NoOpCrashReporter
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.observability.diagnostics.DefaultAppDiagnostics
 import app.sensee.core.observability.logging.DefaultAppLoggerFactory
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import app.sensee.settings.domain.AiSettings
 import app.sensee.settings.domain.LearningSettings
 import app.sensee.settings.domain.LearningTopic
@@ -26,12 +30,17 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+// jvmTest + runBlocking (not commonTest + runTest): the LLM client factory
+// installs Ktor's HttpTimeout plugin, whose real-time delay watcher is
+// incompatible with runTest's virtual time — same constraint as
+// LlmAiEnrichmentClientTest and SafeBodyTest. The router uses the same
+// factory, so the routing exercise has to live here too.
 class RoutingAiEnrichmentClientTest {
     private class FakeSettings(
         private val snapshot: UserSettingsSnapshot,
@@ -72,6 +81,9 @@ class RoutingAiEnrichmentClientTest {
                 engine = MockEngine { error("LLM must not be called when no key is configured") },
                 credentials = { null },
                 configProvider = { LlmConfig() },
+                taxonomyInvariantsProvider = NoTaxonomyProvider,
+                modifiers = DefaultEnrichmentRequestModifiers,
+                preferencesProvider = NoOpPreferencesProvider,
                 json = Json,
             )
         return RoutingAiEnrichmentClient(
@@ -90,6 +102,9 @@ class RoutingAiEnrichmentClientTest {
                 engine = MockEngine { respond("upstream boom", HttpStatusCode.InternalServerError) },
                 credentials = { "sk-configured" },
                 configProvider = { LlmConfig() },
+                taxonomyInvariantsProvider = NoTaxonomyProvider,
+                modifiers = DefaultEnrichmentRequestModifiers,
+                preferencesProvider = NoOpPreferencesProvider,
                 json = Json,
             )
         return RoutingAiEnrichmentClient(
@@ -103,7 +118,7 @@ class RoutingAiEnrichmentClientTest {
 
     @Test
     fun `a configured key whose LLM fails degrades rather than silently falling back to the fixture`() =
-        runTest {
+        runBlocking {
             val result = routerWithFailingLlm().enrich(EnrichmentRequest(term = "run"))
 
             assertTrue(
@@ -118,7 +133,7 @@ class RoutingAiEnrichmentClientTest {
 
     @Test
     fun `no configured key routes to the offline fixture`() =
-        runTest {
+        runBlocking {
             val result =
                 router(AiSettings(aiApiKey = null)).enrich(
                     EnrichmentRequest(term = "run"),
@@ -130,7 +145,7 @@ class RoutingAiEnrichmentClientTest {
 
     @Test
     fun `blank key is treated as unconfigured and still routes to fixture`() =
-        runTest {
+        runBlocking {
             val result =
                 router(AiSettings(aiApiKey = "   ")).enrich(
                     EnrichmentRequest(term = "walk"),
@@ -142,7 +157,7 @@ class RoutingAiEnrichmentClientTest {
 
     @Test
     fun `no configured key does not load topic catalog even when topic preferences are saved`() =
-        runTest {
+        runBlocking {
             val catalog =
                 FakeTopicCatalog(
                     listOf(LearningTopic("travel", "Путешествия", "travel and tourism")),
@@ -159,6 +174,9 @@ class RoutingAiEnrichmentClientTest {
                     engine = MockEngine { error("LLM must not be called when no key is configured") },
                     credentials = { null },
                     configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
                     json = Json,
                 )
             val router =
@@ -179,7 +197,7 @@ class RoutingAiEnrichmentClientTest {
 
     @Test
     fun `preferred topic ids are resolved through the catalog into the enrichment request`() =
-        runTest {
+        runBlocking {
             val promptBodies = mutableListOf<String>()
             val settings =
                 FakeSettings(
@@ -214,6 +232,9 @@ class RoutingAiEnrichmentClientTest {
                         },
                     credentials = { "sk-configured" },
                     configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
                     json = Json,
                 )
             val router =
@@ -233,3 +254,8 @@ class RoutingAiEnrichmentClientTest {
             assertTrue(!promptBody.contains("sports and fitness"), "an unselected topic does not")
         }
 }
+
+private val NoTaxonomyProvider: TaxonomyInvariantsProvider = TaxonomyInvariantsProvider { null }
+
+private val NoOpPreferencesProvider: UserEnrichmentPreferencesProvider =
+    UserEnrichmentPreferencesProvider { UserEnrichmentPreferences.EMPTY }

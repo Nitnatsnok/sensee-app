@@ -208,3 +208,4 @@ sensee-composeMultiplatform = { id = "app.sensee.gradle.compose-multiplatform" }
 sensee-kmpLibrary = { id = "app.sensee.gradle.kmp-library" }
 sensee-quality = { id = "app.sensee.gradle.quality" }
 sensee-kmpWebToolchain = { id = "app.sensee.gradle.kmp-web-toolchain" }
+sensee-mockFixtures = { id = "app.sensee.gradle.mock-fixtures" }

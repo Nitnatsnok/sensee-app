@@ -17,7 +17,7 @@ import app.sensee.ui.designSystem.theme.SenseeAdaptiveLayoutMetrics
 import com.composeunstyled.Text
 import kotlinx.collections.immutable.toPersistentList
 
-private val ManualUnitTypeOptions = GrammarUnitType.entries.toPersistentList()
+private val ManualUnitTypeOptions = GrammarUnitType.knownEntries.toPersistentList()
 
 internal fun LazyListScope.manualTranslationItem(
     formState: VocabularyCaptureFormState,
@@ -69,7 +69,7 @@ internal fun LazyListScope.manualUnitTypeItem(
                 label = textProvider.text(VocabularyCaptureTextKeys.PartOfSpeechLabel),
                 selected = formState.manualUnitType,
                 options = ManualUnitTypeOptions,
-                optionLabel = { uiState.grammarLabels.unitType(it) ?: it.name },
+                optionLabel = { uiState.grammarLabels.unitType(it, uiState.nativeLanguageTag) ?: it.id },
                 onSelect = { formState.manualUnitType = it },
                 placeholder = textProvider.text(VocabularyCaptureTextKeys.PartOfSpeechUnset),
             )

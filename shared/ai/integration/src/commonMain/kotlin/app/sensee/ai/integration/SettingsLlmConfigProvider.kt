@@ -16,12 +16,14 @@ public class SettingsLlmConfigProvider(
     override suspend fun config(): LlmConfig {
         val ai = settings.readSettings().ai
         val provider = ai.aiProvider
+        val model =
+            ai.aiModel?.takeIf { it.isNotBlank() }
+                ?: provider.knownModels.firstOrNull()
+                ?: LlmConfig.DEFAULT_MODEL
         return LlmConfig(
             baseUrl = provider.baseUrl,
-            model =
-                ai.aiModel?.takeIf { it.isNotBlank() }
-                    ?: provider.knownModels.firstOrNull()
-                    ?: LlmConfig.DEFAULT_MODEL,
+            model = model,
+            structuredOutput = provider.supportsJsonSchemaResponseFormat(model),
         )
     }
 }

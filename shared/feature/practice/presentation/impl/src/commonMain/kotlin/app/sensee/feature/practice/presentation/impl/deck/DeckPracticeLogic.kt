@@ -15,6 +15,9 @@ import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeCardUiState
 import app.sensee.feature.practice.presentation.api.DeckPracticeRatingAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeUiState
+import app.sensee.grammar.domain.GrammarLabels
+import app.sensee.grammar.domain.GrammarLabelsLoadResult
+import app.sensee.grammar.domain.GrammarLabelsProvider
 import app.sensee.srs.core.model.ReviewRating
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -32,6 +35,7 @@ public class DeckPracticeLogic(
     @Assisted private val deckId: String,
     private val catalogRepository: CatalogRepository,
     private val reviewRepository: PracticeReviewRepository,
+    private val grammarLabelsProvider: GrammarLabelsProvider,
     appDispatchers: AppDispatchers,
     appDiagnostics: AppDiagnostics,
 ) : BaseLogic(appDispatchers, appDiagnostics) {
@@ -40,7 +44,15 @@ public class DeckPracticeLogic(
         public fun create(deckId: String): DeckPracticeLogic
     }
 
-    private val mutableUiState = MutableStateFlow(DeckPracticeUiState())
+    private val mutableUiState =
+        grammarLabelsProvider.cachedLabels().let { initial ->
+            MutableStateFlow(
+                DeckPracticeUiState(
+                    grammarLabels = initial,
+                    grammarLabelsState = initialLabelsState(initial),
+                ),
+            )
+        }
 
     public val uiState: StateFlow<DeckPracticeUiState> = mutableUiState.asStateFlow()
 
@@ -55,11 +67,39 @@ public class DeckPracticeLogic(
 
     init {
         load()
+        loadGrammarLabels()
+    }
+
+    private fun retryGrammarLabels() = loadGrammarLabels()
+
+    private fun loadGrammarLabels() {
+        logicScope.launch {
+            mutableUiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
+            when (val result = grammarLabelsProvider.awaitLabels()) {
+                is GrammarLabelsLoadResult.Loaded ->
+                    mutableUiState.update {
+                        it.copy(
+                            grammarLabels = result.labels,
+                            grammarLabelsState = DataLoadingState.Success,
+                        )
+                    }
+                is GrammarLabelsLoadResult.Failed ->
+                    mutableUiState.update {
+                        it.copy(
+                            grammarLabelsState =
+                                DataLoadingState.Error(
+                                    result.cause ?: IllegalStateException("grammar labels load failed"),
+                                ),
+                        )
+                    }
+            }
+        }
     }
 
     public fun onAction(action: DeckPracticeAction) {
         when (action) {
             DeckPracticeAction.Retry -> load()
+            DeckPracticeAction.RetryGrammarLabels -> retryGrammarLabels()
             DeckPracticeAction.ToggleTapToFlip ->
                 mutableUiState.update { it.copy(tapToFlipEnabled = !it.tapToFlipEnabled) }
             is DeckPracticeAction.SubmitReview -> submitReview(action.cardId, action.rating)
@@ -221,3 +261,7 @@ private fun DeckPracticeRatingAction.toReviewRating(): ReviewRating =
         DeckPracticeRatingAction.Good -> ReviewRating.Good
         DeckPracticeRatingAction.Easy -> ReviewRating.Easy
     }
+
+// Cache hot at construction → skip the Loading flash on the first frame.
+private fun initialLabelsState(seed: GrammarLabels): DataLoadingState =
+    if (seed === GrammarLabels.EMPTY) DataLoadingState.Idle else DataLoadingState.Success

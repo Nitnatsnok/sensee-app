@@ -17,9 +17,9 @@ import app.sensee.feature.home.presentation.navigationApi.HomeConfig
 import app.sensee.feature.library.presentation.navigationApi.LibraryConfig
 import app.sensee.feature.practice.presentation.navigationApi.PracticeConfig
 import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
+import app.sensee.feature.startup.domain.PreloadAppStartupUseCase
 import app.sensee.feature.startup.presentation.api.StartupComponent
 import app.sensee.feature.vocabularyEditor.presentation.navigationApi.VocabularyEditorConfig
-import app.sensee.grammar.data.GrammarLabelsProvider
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -47,7 +47,7 @@ public class DefaultRootComponent(
     @Assisted private val deepLink: String?,
     private val startupComponentFactory: StartupComponent.Factory,
     private val primaryShellComponentFactory: PrimaryShellComponent.Factory,
-    private val grammarLabelsProvider: GrammarLabelsProvider,
+    private val preloadAppStartup: PreloadAppStartupUseCase,
     platformEnvironment: PlatformEnvironment,
     appDispatchers: AppDispatchers,
 ) : RootComponent,
@@ -86,10 +86,11 @@ public class DefaultRootComponent(
         )
 
     init {
-        // App-scoped, runs once on cold AND warm start (RootComponent lives the
-        // whole session; the provider memoizes). Decoupled from the splash
-        // screen so a warm restore that skips Startup still warms the labels.
-        componentScope.launch { grammarLabelsProvider.labels() }
+        // Warm-restore safety net: when Decompose restores a non-`StartupConfig`
+        // stack (deep-link / process-death return), the splash is skipped, so
+        // the use case has to be kicked here too. Providers cache app-scope —
+        // at most one fetch per session, splash + root share the same cache.
+        componentScope.launch { preloadAppStartup() }
         lifecycle.doOnDestroy(componentScope::cancel)
     }
 

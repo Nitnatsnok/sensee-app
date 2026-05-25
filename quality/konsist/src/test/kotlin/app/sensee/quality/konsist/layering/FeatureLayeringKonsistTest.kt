@@ -5,6 +5,7 @@ import app.sensee.quality.konsist.assertNoViolations
 import app.sensee.quality.konsist.featurePackageName
 import app.sensee.quality.konsist.importedPath
 import app.sensee.quality.konsist.isProductionSourcePath
+import app.sensee.quality.konsist.kebabToCamel
 import app.sensee.quality.konsist.normalizedProjectPath
 import app.sensee.quality.konsist.strippedText
 import app.sensee.quality.konsist.violation
@@ -131,16 +132,107 @@ class FeatureLayeringKonsistTest {
     }
 
     @Test
-    fun `feature domain and data must not depend on presentation`() {
+    fun `feature presentation domain and data layers respect the dependency direction`() {
         Konsist.scopeFromProduction().assertArchitecture {
             val presentation = Layer("Presentation", "app.sensee.feature..presentation..")
             val domain = Layer("Domain", "app.sensee.feature..domain..")
             val data = Layer("Data", "app.sensee.feature..data..")
 
+            // Higher layers do not depend on presentation (presentation is the leaf).
             domain.doesNotDependOn(presentation)
             data.doesNotDependOn(presentation)
+            // Data is sealed: nothing reaches it through imports, neither
+            // presentation nor domain. Even the same feature's presentation
+            // must go through its domain contract — that is what makes a
+            // live-backend `data` swap a one-module change.
+            presentation.doesNotDependOn(data)
+            domain.doesNotDependOn(data)
         }
     }
+
+    /**
+     * Non-feature core/domain modules: `shared/<area>/domain` (or
+     * `<area>/core`, which we use as the provider-agnostic boundary in
+     * `shared/ai`, `shared/tts`, `shared/srs`) must not depend on any
+     * `*.data.*` package — that is the boundary that keeps the wire DTO
+     * out of the neutral type module. Feature `domain` modules are covered
+     * by the broader rule below ("nothing outside feature data layer…").
+     */
+    @Test
+    fun `shared core or domain modules must not depend on any data package`() {
+        assertNoViolations(dataPackageImportViolations(KonsistTestSupport.sharedDomainSourceRegex))
+    }
+
+    /**
+     * `data` is a sealed module: nothing outside the data layer of feature X
+     * should reach into any `*.data.*` package — neither X's own
+     * `presentation`/`domain` (they go through X's `domain` contracts),
+     * nor any other feature, nor any shared/<area>/data. The only legal
+     * consumers are composition roots (`shared/app-shell`, host apps),
+     * which are not features and are not covered by this rule.
+     *
+     * Note: intra-module composition inside the same `feature/X/data` Gradle
+     * module (e.g. `DefaultCatalogRepository` → `local.CatalogLocalDataSource`)
+     * is normal Kotlin visibility and is allowed. Data-layer files are still
+     * checked for imports of another feature's `data` package or any other
+     * shared `*.data.*` package.
+     */
+    @Test
+    fun `nothing outside feature data layer may depend on a data package`() {
+        val violations =
+            KonsistTestSupport.featureScope.files
+                .filter { file ->
+                    val path = file.normalizedProjectPath()
+                    if (!path.isProductionSourcePath()) return@filter false
+                    if (!KonsistTestSupport.featureSourceRegex.containsMatchIn(path)) return@filter false
+                    true
+                }.flatMap { file ->
+                    val path = file.normalizedProjectPath()
+                    val ownerFeature =
+                        KonsistTestSupport.featureSourceRegex
+                            .find(path)
+                            ?.groupValues
+                            ?.get(1)
+                            ?.kebabToCamel()
+                            ?: return@flatMap emptyList()
+                    val isOwnerDataFile = KonsistTestSupport.featureDataSourceRegex.containsMatchIn(path)
+                    file.imports.mapNotNull { importDeclaration ->
+                        val imported = importDeclaration.importedPath()
+                        val packageSegments = imported.split('.').dropLast(1)
+                        if ("data" !in packageSegments) return@mapNotNull null
+                        val isSameFeatureDataImport =
+                            imported == "app.sensee.feature.$ownerFeature.data" ||
+                                imported.startsWith("app.sensee.feature.$ownerFeature.data.")
+                        if (isOwnerDataFile && isSameFeatureDataImport) return@mapNotNull null
+                        violation(
+                            subject = file.normalizedProjectPath(),
+                            message = "depends on data package '$imported'",
+                        )
+                    }
+                }
+
+        assertNoViolations(violations)
+    }
+
+    private fun dataPackageImportViolations(scopeRegex: Regex): List<String> =
+        KonsistTestSupport.sharedScope.files
+            .filter { file ->
+                val path = file.normalizedProjectPath()
+                scopeRegex.containsMatchIn(path) && path.isProductionSourcePath()
+            }.flatMap { file ->
+                file.imports.mapNotNull { importDeclaration ->
+                    val imported = importDeclaration.importedPath()
+                    val packageSegments = imported.split('.').dropLast(1)
+                    if ("data" in packageSegments) {
+                        violation(
+                            subject = file.normalizedProjectPath(),
+                            message = "depends on data package '$imported'",
+                        )
+                    } else {
+                        null
+                    }
+                }
+            }
 
     // --- Cross-feature isolation (per-feature; not a static Layer) --------------
 

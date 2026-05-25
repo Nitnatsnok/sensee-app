@@ -1,0 +1,7 @@
+{
+  "id": "lemma-schedule",
+  "text": "schedule",
+  "related_cards": [
+    { "id": "card-schedule", "headword": "schedule", "unit_type": "noun", "translation": "расписание, график", "sense_summary": "план дел во времени" }
+  ]
+}

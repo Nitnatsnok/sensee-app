@@ -1,9 +1,16 @@
 package app.sensee.ai.llm.client
 
+import app.sensee.ai.core.AiEnrichmentExtension
+import app.sensee.ai.core.DefaultEnrichmentRequestModifiers
 import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.EnrichmentSchema
 import app.sensee.ai.core.SenseCoverage
+import app.sensee.ai.core.UserEnrichmentPreferences
+import app.sensee.ai.core.UserEnrichmentPreferencesProvider
 import app.sensee.ai.llm.config.LlmConfig
+import app.sensee.grammar.domain.TaxonomyInvariants
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
@@ -14,6 +21,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -40,6 +48,9 @@ class LlmAiEnrichmentClientTest {
                     engine = engine,
                     credentials = { null },
                     configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
                     json = json,
                 )
 
@@ -67,6 +78,9 @@ class LlmAiEnrichmentClientTest {
                     engine = engine,
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
                     json = json,
                 )
 
@@ -90,6 +104,9 @@ class LlmAiEnrichmentClientTest {
                     engine = engine,
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
                     json = json,
                 )
 
@@ -112,6 +129,9 @@ class LlmAiEnrichmentClientTest {
                     engine = engine,
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig(structuredOutput = true) },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
                     json = json,
                 )
 
@@ -120,6 +140,134 @@ class LlmAiEnrichmentClientTest {
             assertTrue(body.contains("\"type\":\"json_schema\""))
             assertTrue(body.contains("\"name\":\"enrichment_response\""))
             assertTrue(body.contains("\"surface_form\""))
+        }
+
+    @Test
+    fun `structured output schema carries taxonomy-driven unit_type enum`() =
+        runBlocking {
+            var body = ""
+            val engine =
+                MockEngine { httpRequest ->
+                    body = httpRequest.body.toByteArray().decodeToString()
+                    respondCompletion()
+                }
+            val invariants =
+                TaxonomyInvariants.EMPTY.copy(knownUnitTypeIds = setOf("noun", "verb"))
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { "sk-test" },
+                    configProvider = { LlmConfig(structuredOutput = true) },
+                    taxonomyInvariantsProvider = TaxonomyInvariantsProvider { invariants },
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
+                    json = json,
+                )
+
+            client.enrich(request)
+
+            assertTrue(body.contains("\"enum\":[\"noun\",\"verb\"]"))
+        }
+
+    @Test
+    fun `extension fields are requested in schema and returned on suggestions`() =
+        runBlocking {
+            var body = ""
+            val extension =
+                object : AiEnrichmentExtension {
+                    override val id: String = "etymology"
+                    override val ownedKeys: Set<String> = setOf("etymology")
+
+                    override fun fields(): List<EnrichmentSchema.Field> =
+                        listOf(
+                            EnrichmentSchema.Field(
+                                serialName = "etymology",
+                                shape = EnrichmentSchema.ShapeType.Text,
+                                guidance = "short origin note",
+                            ),
+                        )
+                }
+            val content = """{"version":1,"items":[{"translation":"бежать","etymology":"Old English"}]}"""
+            val engine =
+                MockEngine { httpRequest ->
+                    body = httpRequest.body.toByteArray().decodeToString()
+                    val encoded = json.encodeToString(content)
+                    respond(
+                        content = """{"choices":[{"message":{"role":"assistant","content":$encoded}}]}""",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                    )
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { "sk-test" },
+                    configProvider = { LlmConfig(structuredOutput = true) },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
+                    json = json,
+                    extensions = setOf(extension),
+                )
+
+            val result =
+                client.enrich(EnrichmentRequest(term = "run", senseCoverage = SenseCoverage.Minimal))
+
+            assertTrue(body.contains("\"etymology\""))
+            val etymology =
+                result
+                    .suggestions
+                    .single()
+                    .extensions["etymology"]
+                    ?.jsonPrimitive
+                    ?.content
+            assertEquals(
+                "Old English",
+                etymology,
+            )
+        }
+
+    @Test
+    fun `an extension claiming a built-in key cannot leak into the suggestion bucket`() =
+        runBlocking {
+            val rogue =
+                object : AiEnrichmentExtension {
+                    override val id: String = "rogue"
+                    override val ownedKeys: Set<String> = setOf("translation")
+
+                    override fun fields(): List<EnrichmentSchema.Field> = emptyList()
+                }
+            val content = """{"version":1,"items":[{"translation":"бежать"}]}"""
+            val engine =
+                MockEngine {
+                    respond(
+                        content = """{"choices":[{"message":{"role":"assistant","content":${json.encodeToString(
+                            content,
+                        )}}}]}""",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                    )
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    engine = engine,
+                    credentials = { "sk-test" },
+                    configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
+                    json = json,
+                    extensions = setOf(rogue),
+                )
+
+            val suggestion =
+                client
+                    .enrich(EnrichmentRequest(term = "run", senseCoverage = SenseCoverage.Minimal))
+                    .suggestions
+                    .single()
+
+            assertEquals("бежать", suggestion.translation)
+            assertTrue(suggestion.extensions.isEmpty(), "built-in keys never reach the opaque bucket")
         }
 
     @Test
@@ -253,6 +401,9 @@ class LlmAiEnrichmentClientTest {
             engine = engine,
             credentials = { "sk-test" },
             configProvider = { LlmConfig() },
+            taxonomyInvariantsProvider = NoTaxonomyProvider,
+            modifiers = DefaultEnrichmentRequestModifiers,
+            preferencesProvider = NoOpPreferencesProvider,
             json = json,
         )
 
@@ -273,3 +424,8 @@ class LlmAiEnrichmentClientTest {
 
     private fun MockRequestHandleScope.respondCompletion() = respondItems(listOf("x"))
 }
+
+private val NoTaxonomyProvider: TaxonomyInvariantsProvider = TaxonomyInvariantsProvider { null }
+
+private val NoOpPreferencesProvider: UserEnrichmentPreferencesProvider =
+    UserEnrichmentPreferencesProvider { UserEnrichmentPreferences.EMPTY }

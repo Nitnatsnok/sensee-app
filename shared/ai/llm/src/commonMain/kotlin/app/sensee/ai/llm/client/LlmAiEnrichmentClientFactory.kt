@@ -1,11 +1,15 @@
 package app.sensee.ai.llm.client
 
+import app.sensee.ai.core.AiEnrichmentExtension
+import app.sensee.ai.core.EnrichmentRequestModifier
+import app.sensee.ai.core.UserEnrichmentPreferencesProvider
 import app.sensee.ai.llm.api.LlmEnrichmentApi
 import app.sensee.ai.llm.config.AiCredentialsProvider
 import app.sensee.ai.llm.config.LlmConfig
 import app.sensee.ai.llm.config.LlmConfigProvider
 import app.sensee.core.network.NetworkConfig
 import app.sensee.core.network.NetworkHttpClientFactory
+import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import io.ktor.client.engine.HttpClientEngine
 import kotlinx.serialization.json.Json
 
@@ -19,11 +23,16 @@ import kotlinx.serialization.json.Json
  * auth and must hit the real network, not the app's mock engine.
  */
 public object LlmAiEnrichmentClientFactory {
+    @Suppress("ProfiledLongParameterList")
     public fun create(
         engine: HttpClientEngine,
         credentials: AiCredentialsProvider,
         configProvider: LlmConfigProvider,
+        taxonomyInvariantsProvider: TaxonomyInvariantsProvider,
+        modifiers: Set<EnrichmentRequestModifier>,
+        preferencesProvider: UserEnrichmentPreferencesProvider,
         json: Json,
+        extensions: Set<AiEnrichmentExtension> = emptySet(),
     ): LlmAiEnrichmentClient =
         LlmAiEnrichmentClient(
             api =
@@ -42,6 +51,10 @@ public object LlmAiEnrichmentClientFactory {
                 ),
             credentials = credentials,
             configProvider = configProvider,
+            taxonomyInvariantsProvider = taxonomyInvariantsProvider,
+            modifiers = modifiers,
+            extensions = extensions,
+            preferencesProvider = preferencesProvider,
             json = json,
         )
 

@@ -1,0 +1,7 @@
+{
+  "id": "lemma-feedback",
+  "text": "feedback",
+  "related_cards": [
+    { "id": "card-feedback", "headword": "feedback", "unit_type": "noun", "translation": "обратная связь", "sense_summary": "реакция, помогающая улучшить работу" }
+  ]
+}

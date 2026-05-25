@@ -1,7 +1,17 @@
 plugins {
     alias(libs.plugins.sensee.kmpLibrary)
+    alias(libs.plugins.sensee.mockFixtures)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.metro)
+}
+
+mockFixtures {
+    packageName.set("app.sensee.settings.data.topic")
+    className.set("TopicCatalogMockFixtures")
+    classKdoc.set(
+        "Learning-topic catalog served by the mock backend. The list is intentionally\n" +
+            "data, not a client-side enum: the set of topics is a backend concern.",
+    )
 }
 
 kotlin {

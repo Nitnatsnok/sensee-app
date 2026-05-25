@@ -1,0 +1,7 @@
+{
+  "id": "lemma-resilient",
+  "text": "resilient",
+  "related_cards": [
+    { "id": "card-resilient", "headword": "resilient", "unit_type": "adjective", "translation": "устойчивый, способный быстро восстановиться", "sense_summary": "о системе — способна продолжать работу при отказах" }
+  ]
+}

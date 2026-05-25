@@ -3,6 +3,7 @@ package app.sensee.feature.library.data
 import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.sensee.core.testKit.immediateAppDispatchers
+import app.sensee.core.testKit.noOpAppDiagnostics
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.data.local.CatalogLocalDataSource
@@ -82,6 +83,7 @@ class CapturedCatalogRepositoryTest {
                 dispatchers = immediateAppDispatchers(),
                 json = Json,
                 clock = FixedClock,
+                appDiagnostics = noOpAppDiagnostics(),
             )
         val remoteDataSource =
             CatalogRemoteDataSource(

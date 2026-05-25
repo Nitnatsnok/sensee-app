@@ -17,7 +17,8 @@ import app.sensee.feature.practice.domain.PracticeCardFront
 import app.sensee.feature.practice.presentation.api.DeckPracticeCardUiState
 import app.sensee.feature.practice.presentation.impl.grammar.grammarTagBadgeColors
 import app.sensee.feature.practice.presentation.impl.grammar.grammarUnitBadgeColors
-import app.sensee.feature.practice.presentation.impl.text.label
+import app.sensee.feature.practice.presentation.impl.text.shortLabel
+import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.SentenceSegment
 import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.ui.designSystem.component.badge.SenseeBadge
@@ -35,6 +36,8 @@ import kotlinx.collections.immutable.toPersistentList
 @Composable
 internal fun PracticeCardFrontContent(
     card: DeckPracticeCardUiState,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
     onSpeak: (text: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -42,6 +45,8 @@ internal fun PracticeCardFrontContent(
         PracticeCardFront.English ->
             EnglishCardContent(
                 card = card,
+                labels = labels,
+                studyLanguageTag = studyLanguageTag,
                 onSpeak = onSpeak,
                 modifier = modifier,
             )
@@ -57,6 +62,8 @@ internal fun PracticeCardFrontContent(
 @Composable
 internal fun PracticeCardBackContent(
     card: DeckPracticeCardUiState,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
     onSpeak: (text: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -71,6 +78,8 @@ internal fun PracticeCardBackContent(
         PracticeCardFront.Russian ->
             EnglishCardContent(
                 card = card,
+                labels = labels,
+                studyLanguageTag = studyLanguageTag,
                 onSpeak = onSpeak,
                 modifier = modifier,
             )
@@ -80,6 +89,8 @@ internal fun PracticeCardBackContent(
 @Composable
 private fun EnglishCardContent(
     card: DeckPracticeCardUiState,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
     onSpeak: (text: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,7 +109,7 @@ private fun EnglishCardContent(
             color = colors.textPrimary,
             onSpeak = { onSpeak(card.headword) },
         )
-        BadgeRow(card = card)
+        BadgeRow(card = card, labels = labels, studyLanguageTag = studyLanguageTag)
         ContextSentenceLine(
             sentence = buildContextSentence(card.contextSentence, card.headword, revealed = true),
             color = colors.textPrimary,
@@ -235,16 +246,20 @@ private fun ContextSentenceLine(
 }
 
 @Composable
-private fun BadgeRow(card: DeckPracticeCardUiState) {
+private fun BadgeRow(
+    card: DeckPracticeCardUiState,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
+) {
     val spacing = SenseeTheme.spacing
     Row(horizontalArrangement = Arrangement.spacedBy(spacing.extraSmall)) {
         SenseeBadge(
-            text = card.unitType.label(),
+            text = card.unitType.shortLabel(labels, studyLanguageTag),
             colors = grammarUnitBadgeColors(card.unitType),
         )
         card.grammarTags.forEach { tag ->
             SenseeBadge(
-                text = tag.label(),
+                text = tag.shortLabel(labels, studyLanguageTag),
                 colors = grammarTagBadgeColors(tag),
             )
         }

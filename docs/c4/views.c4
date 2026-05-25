@@ -45,10 +45,6 @@ views 'Sensee Client' {
     include mock_backend
     include observability
     autoLayout LeftRight 170 120
-
-    style observability {
-      border dashed
-    }
   }
 
   view capability_map of client {
@@ -107,6 +103,7 @@ views 'Sensee Client' {
     include srs
     include network
     include mock_backend
+    include observability
     include platform_services
     include provider_apis
     autoLayout LeftRight 170 120
@@ -136,15 +133,10 @@ views 'Sensee Client' {
   }
 
   view prepared_modules of client {
-    title 'Структура / Подготовленные модули'
-    description 'Реально существующие в коде shared-модули, которые ещё не формируют основной пользовательский flow.'
-    include observability
+    title 'Структура / Планируемые внешние интеграции'
+    description 'Внешние направления, которые ещё не формируют текущий runtime клиента.'
     include future_backend
     autoLayout LeftRight 170 120
-
-    style observability {
-      border dashed
-    }
 
     style future_backend {
       color muted
@@ -245,14 +237,14 @@ views 'Sensee Client' {
 
   dynamic view startup_flow {
     title 'Runtime / Startup Flow'
-    description 'Запуск приложения: app-scoped прогрев словаря, cold-start splash либо тёплое восстановление deep-target, открытие PrimaryShellComponent.'
+    description 'Запуск приложения: app-scoped preload runtime-таксономии, cold-start splash либо тёплое восстановление deep-target, открытие PrimaryShellComponent.'
 
     learner -> client.entrypoints 'запускает приложение'
     client.entrypoints -> platform_services 'использует platform runtime'
     client.entrypoints -> client.app_shell 'создаёт PlatformEnvironment и вызывает createAppRoot(...)'
-    client.app_shell -> client.core_runtime 'поднимает AppGraph и RootComponent; RootComponent app-scoped прогревает словарь'
-    client.app_shell -> client.splash 'cold start: splash, пока идёт прогрев (awaitReady)'
-    client.splash -> client.primary_navigation 'по готовности открывает `PrimaryShellComponent`'
+    client.app_shell -> client.core_runtime 'поднимает AppGraph и RootComponent; RootComponent app-scoped запускает `PreloadAppStartupUseCase`'
+    client.app_shell -> client.splash 'cold start: splash, пока `StartupComponent` ждёт preload'
+    client.splash -> client.primary_navigation '`StartupState.Loaded` открывает `PrimaryShellComponent`; сбой остаётся retryable'
     client.app_shell -> client.primary_navigation 'тёплый старт: восстановленный deep-target без splash'
     client.primary_navigation -> client.home_target 'показывает стартовый `Home` target'
     client.app_shell -> client.learning_api 'создаёт section host contracts через feature API'
@@ -279,12 +271,12 @@ views 'Sensee Client' {
 
   dynamic view vocabulary_capture_flow {
     title 'Vocabulary Capture Flow'
-    description 'Реализованный основной продуктовый сценарий: ввод → enrich через AI-шов → набор `MeaningCandidate` → мультивыбор + ручной смысл → подтверждение → durable persist. Wizard-стадий нет. Planned: edit-path из карточки и деривация derived-карточек (см. `card_derivation_flow`).'
+    description 'Реализованный основной продуктовый сценарий: ввод → enrichment через AI-границу → набор `MeaningCandidate` → мультивыбор + ручной смысл → подтверждение → durable persist. Поток одностраничный, выбор и есть подтверждение. Planned: edit-path из карточки и деривация derived-карточек (см. `card_derivation_flow`).'
 
     learner -> client.primary_navigation 'нажимает кнопку `Vocabulary Editor` (add-path)'
     client.primary_navigation -> client.vocabulary_editor 'открывает `QuickCapture`'
     learner -> client.vocabulary_editor 'вводит слово/фразу; создаётся `Draft`'
-    client.vocabulary_editor -> client.ai_enrichment 'запрашивает `MeaningCandidate` через AI-шов (ADR-005)'
+    client.vocabulary_editor -> client.ai_enrichment 'запрашивает `MeaningCandidate` через AI-границу (ADR-005)'
     client.ai_enrichment -> client.ai_fixture 'без ключа использует offline fixture'
     client.ai_enrichment -> client.llm_adapter 'при настроенном ключе маршрутизирует в LLM adapter'
     client.llm_adapter -> provider_apis 'вызывает provider API'

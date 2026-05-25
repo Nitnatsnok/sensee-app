@@ -18,9 +18,10 @@ import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.practice.presentation.impl.grammar.grammarUnitBadgeColors
 import app.sensee.feature.practice.presentation.impl.text.PracticeTextKeys
 import app.sensee.feature.practice.presentation.impl.text.description
-import app.sensee.feature.practice.presentation.impl.text.label
 import app.sensee.feature.practice.presentation.impl.text.rememberPracticeTextProvider
+import app.sensee.feature.practice.presentation.impl.text.shortLabel
 import app.sensee.grammar.domain.GrammarForm
+import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.ui.designSystem.component.SenseeIcon
 import app.sensee.ui.designSystem.component.badge.SenseeBadge
@@ -46,6 +47,9 @@ import com.composeunstyled.Text
 internal fun DeckPracticeHelpSheet(
     visible: Boolean,
     onDismiss: () -> Unit,
+    labels: GrammarLabels,
+    studyLanguageTag: String,
+    nativeLanguageTag: String,
     textProvider: TextProvider = rememberPracticeTextProvider(),
 ) {
     SenseeModalBottomSheet(
@@ -88,11 +92,11 @@ internal fun DeckPracticeHelpSheet(
                     text = textProvider.text(PracticeTextKeys.HelpSectionUnitTypes),
                 )
             }
-            items(GrammarUnitType.entries, key = { "unit-${it.name}" }) { unitType ->
+            items(GrammarUnitType.knownEntries, key = { "unit-${it.id}" }) { unitType ->
                 HelpRow(
-                    badgeText = unitType.label(textProvider),
+                    badgeText = unitType.shortLabel(labels, studyLanguageTag),
                     badgeColors = grammarUnitBadgeColors(unitType),
-                    description = unitType.description(textProvider),
+                    description = unitType.description(labels, nativeLanguageTag),
                 )
             }
             item {
@@ -101,11 +105,11 @@ internal fun DeckPracticeHelpSheet(
                     text = textProvider.text(PracticeTextKeys.HelpSectionGrammarForms),
                 )
             }
-            items(GrammarForm.entries, key = { "form-${it.name}" }) { form ->
+            items(GrammarForm.knownEntries, key = { "form-${it.id}" }) { form ->
                 HelpRow(
-                    badgeText = textProvider.text(PracticeTextKeys.grammarForm(form)),
+                    badgeText = form.shortLabel(labels, studyLanguageTag),
                     badgeColors = SenseeBadgeDefaults.neutralColors(),
-                    description = form.description(textProvider),
+                    description = form.description(labels, nativeLanguageTag),
                 )
             }
         }

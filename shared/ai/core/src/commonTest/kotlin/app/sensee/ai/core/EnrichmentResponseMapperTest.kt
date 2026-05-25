@@ -1,5 +1,6 @@
 package app.sensee.ai.core
 
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -61,6 +62,28 @@ class EnrichmentResponseMapperTest {
         assertEquals("of impressions, not objects", suggestion.usageNote)
         assertEquals(GrammarTagHint("verb_irregular", "infinitive"), suggestion.grammarTags.single())
         assertEquals(IrregularFormsHint("come", "came", "come"), suggestion.irregularForms)
+    }
+
+    @Test
+    fun `extension values are carried by item index`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(translation = "идти"),
+                        EnrichmentItemV1(translation = "работать"),
+                    ),
+            )
+        val extensions =
+            listOf(
+                mapOf("etymology" to JsonPrimitive("Old English")),
+                mapOf("etymology" to JsonPrimitive("Norse")),
+            )
+
+        val suggestions = EnrichmentResponseMapper.map(response, extensions).suggestions
+
+        assertEquals(JsonPrimitive("Old English"), suggestions[0].extensions["etymology"])
+        assertEquals(JsonPrimitive("Norse"), suggestions[1].extensions["etymology"])
     }
 
     @Test

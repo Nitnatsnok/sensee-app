@@ -4,23 +4,23 @@
 == Уровень 1 — Клиентское приложение в целом
 
 Мотивация::
-Клиент должен оставаться понятным, продуктово цельным и модульно честным: по коду должно быть видно, что уже работает, что переиспользуемо, а что только подготавливается к дальнейшему росту.
+Клиент должен оставаться понятным, продуктово цельным и модульно прозрачным: по коду должно быть видно, что уже работает, что переиспользуемо, а что только подготавливается к дальнейшему росту.
 
-Этот раздел сознательно описывает прежде всего реализованные строительные блоки текущего client slice. Planned authoring-first product flow и связанные product-level решения зафиксированы отдельно в `09_architecture_decisions.adoc` и ADR-коллекции.
+Этот раздел сознательно описывает прежде всего реализованные строительные блоки текущего клиентского среза. Планируемый authoring-first сценарий и связанные продуктовые решения зафиксированы отдельно в `09_architecture_decisions.adoc` и ADR-коллекции.
 
-Для структурного разбора используются view `capability_map`, `shared_modules`, `current_learning_slice`, `database_aggregation`, `prepared_modules` и `primary_navigation_shell` в `docs/c4/`. Основной подход остаётся module/capability- и dynamic-flow-view: для одного KMP-клиента без отдельных runtime-сервисов это даёт больше сигнала, чем искусственная декомпозиция. Дополнительно поддерживаются reviewer-facing C4-проекции `reviewer_system_context`, `reviewer_container_overview` и `reviewer_component_slices`; они помогают внешнему ревью, но не заменяют основную модель.
+Для структурного разбора используются `LikeC4 view` `capability_map`, `shared_modules`, `current_learning_slice`, `database_aggregation`, `prepared_modules` и `primary_navigation_shell` в `docs/c4/`. Основной подход идёт от модулей, возможностей и потоков поведения: для одного KMP-клиента без отдельных сервисов времени выполнения это полезнее, чем искусственная декомпозиция. Дополнительно поддерживаются C4-проекции для внешнего ревью: `reviewer_system_context`, `reviewer_container_overview` и `reviewer_component_slices`; они помогают ревью, но не заменяют основную модель.
 
 Продуктовые capability::
 +
 [options="header",cols="1,2,1"]
 |===
 |Capability|Смысл для продукта|Статус
-|Vocabulary Capture and Sense Disambiguation|Внесение слова или выражения, разделение смыслов, фиксация контекстов и грамматических уточнений, создание связанных учебных артефактов|implemented slice: capture (enrich → мультивыбор + ручной смысл + дополнение ассистентом → durable confirm); planned: lemma-семья и деривация derived-карточек
-|Library Catalog and Curation|Браузер каталога записей и карточек, курирование колод (many-to-many), правка/удаление своих карточек, добавление сервисных наборов целиком или частично|implemented slice: `Home` (обзор сервисных наборов и собственного материала, добавление набора целиком, отмена), Practice фильтруется до собственного материала; planned: курирование, `EntryDetail`/`LemmaDetail`, частичное добавление; library-owned catalog, practice — read-only consumer
-|Practice and Review|Прохождение уже созданных карточек, review scheduling и повторение материала|implemented slice
-|Shared Shell and Navigation|Единый платформенно-независимый вход, базовая навигация и orchestration feature-разделов|implemented base shell
-|Platform Integration|Запуск клиента на Android, iOS, Desktop JVM, JS и Wasm|implemented
-|Persistence and Integration Foundations|Локальное хранение, network boundary, fixture-backed transport и SRS foundation|implemented for current slice
+|Vocabulary Capture and Sense Disambiguation|Внесение слова или выражения, разделение смыслов, фиксация контекстов и грамматических уточнений, создание связанных учебных артефактов|реализованный срез: ввод, AI-подсказки, мультивыбор, ручной смысл, подтверждение; planned: lemma-семья и производные карточки
+|Library Catalog and Curation|Каталог записей и карточек, курирование колод (many-to-many), правка/удаление своих карточек, добавление сервисных наборов целиком или частично|реализованный срез: `Home` в `Library` (обзор сервисных наборов и собственного материала, добавление набора целиком, отмена), Practice видит только собственный материал; planned: курирование, `EntryDetail`/`LemmaDetail`, частичное добавление
+|Practice and Review|Прохождение уже созданных карточек, планирование повторений и повторение материала|реализованный срез
+|Shared Shell and Navigation|Единый платформенно-независимый вход, базовая навигация и координация feature-разделов|реализованная базовая оболочка
+|Platform Integration|Запуск клиента на Android, iOS, Desktop JVM, JS и Wasm|реализовано
+|Persistence and Integration Foundations|Локальное хранение, network boundary, транспорт на фикстурах и SRS foundation|реализовано для текущего среза
 |===
 
 Содержащиеся строительные блоки::
@@ -28,20 +28,19 @@
 [options="header",cols="1,2"]
 |===
 |Строительный блок|Ответственность
-|Platform Entry Logic|`apps/androidApp`, `apps/desktopApp`, `apps/webApp` и `apps/iosFramework` (+ Xcode-хост `apps/iosApp`) поднимают нужный runtime, создают `PlatformEnvironment` и передают управление общему app shell
+|Platform Entry Logic|`apps/androidApp`, `apps/desktopApp`, `apps/webApp` и `apps/iosFramework` (+ Xcode-хост `apps/iosApp`) поднимают нужную среду выполнения, создают `PlatformEnvironment` и передают управление общему app shell
 |Shared App Shell|`shared/app-shell` собирает тему, adaptive environment, root component и platform environment
-|Feature Presentation API|`shared/feature/*/presentation/api` задаёт component contracts для разделов `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`
+|Feature Presentation API|`shared/feature/*/presentation/api` задаёт контракты компонентов для разделов `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`
 |Feature Navigation API|`shared/feature/*/presentation/navigation-api` задаёт сериализуемые `ScreenConfig` для переходов между разделами и будущих deeplink'ов
-|Feature Presentation Implementation|`shared/feature/*/presentation/impl` реализует host-компоненты разделов, базовые экраны, practice deck flow, library catalog/adoption, profile AI/TTS settings и vocabulary capture
-|Practice Domain/Data|`shared/feature/practice/domain` и `shared/feature/practice/data` задают repository boundary, domain-модель карточек и fixture-backed data flow
+|Feature Presentation Implementation|`shared/feature/*/presentation/impl` реализует хост-компоненты разделов, базовые экраны, Practice deck, Library catalog/adoption, Profile AI/TTS settings и Vocabulary capture
+|Practice Domain/Data|`shared/feature/practice/domain` и `shared/feature/practice/data` задают repository boundary, domain-модель карточек и поток данных на фикстурах
 |Practice Database Schema|`shared/feature/practice/database-schema` хранит SQLDelight-схему practice-карточек и SRS-состояния
 |Shared Settings|`shared/settings/domain`, `shared/settings/data` и `shared/settings/database-schema` задают типизированное хранилище пользовательских настроек по категориям
-|Reusable UI|`shared/ui/design-system`, `shared/ui/adaptive` и `shared/ui/learning-deck` поставляют переиспользуемые UI primitives
-|Core Runtime|`shared/core/decompose` задаёт component/navigation infrastructure, `shared/core/presentation` — общие presentation states, `shared/core/compose` — переиспользуемые Compose-утилиты; DI собирается Metro-графом `AppGraph` в `shared/app-shell`
-|Client Integration Foundations|`shared/database`, `shared/core/network` и `shared/core/mock-backend` предоставляют persistence, `HttpClient` boundary и fixture-backed transport для текущих fixture-backed flow
-|Prepared Foundations|`shared/core/observability` существует как отдельный shared-модуль для дальнейших observability/instrumentation integration points
-|SRS Libraries|`shared/srs/*` содержат domain/engine/FSRS библиотеки, которые используются practice data flow для review scheduling
-|AI Enrichment Seam|`shared/ai/*` — `core` (provider-agnostic boundary contract), `fixture` (offline impl), `llm` (LLM-провайдеры), `integration` (routing-by-config + DI композиция). Anti-corruption граница для capture-вертикали (ADR-005)
+|Reusable UI|`shared/ui/design-system`, `shared/ui/adaptive` и `shared/ui/learning-deck` поставляют переиспользуемые UI-примитивы
+|Core Runtime|`shared/core/decompose` задаёт инфраструктуру компонентов и навигации, `shared/core/presentation` — общие presentation states, `shared/core/compose` — переиспользуемые Compose-утилиты; DI собирается Metro-графом `AppGraph` в `shared/app-shell`
+|Client Integration Foundations|`shared/database`, `shared/core/network`, `shared/core/mock-backend` и `shared/core/observability` предоставляют хранение, `HttpClient` boundary, транспорт на фикстурах и границу runtime diagnostics для текущих сценариев
+|SRS Libraries|`shared/srs/*` содержат domain/engine/FSRS библиотеки, которые используются practice data flow для планирования повторений
+|AI Enrichment Boundary|`shared/ai/*` — `core` (provider-agnostic boundary contract + request/response extension points: `EnrichmentRequestModifier`, `AiEnrichmentExtension`), `fixture` (offline impl), `llm` (LLM-провайдеры, schema из таксономии времени выполнения), `integration` (routing-by-config + DI композиция). Anti-corruption граница для вертикали ввода (ADR-005, ADR-006)
 |TTS Seam|`shared/tts/*` — `core` contract, `system`/`elevenlabs`/`openai` impl-адаптеры, `playback`, `cache`, `integration` композиция. Та же seam-конвенция, что и AI
 |Neutral Grammar|`shared/grammar/domain` и `shared/grammar/data` задают нейтральную грамматическую таксономию, не привязанную к конкретному языку или AI-провайдеру
 |===
@@ -54,14 +53,14 @@
 |Platform Entry Logic → Shared App Shell|Платформенные launchers создают `PlatformEnvironment` и вызывают `createAppRoot(...)`
 |Shared App Shell → Feature Presentation API|`RootComponent` открывает `PrimaryShellComponent`, а `PrimaryShellComponent` создаёт section components через API contracts
 |Shared App Shell → Feature Navigation API|Root/primary navigation маршрутизирует `HomeConfig`, `PracticeConfig`, `LibraryConfig`, `VocabularyEditorConfig` и `ProfileConfig`
-|Feature Presentation Implementation → Practice/Library Domain|`DeckPracticeLogic` загружает deck через library-owned `CatalogRepository` и отправляет review через `PracticeReviewRepository`, не создавая network/database/SRS зависимости напрямую
-|Feature Presentation Implementation → Reusable UI|`DeckPracticeScreen` рендерит карточки через `shared/ui/learning-deck`
-|Library Data → Client Integration Foundations|`DefaultCatalogRepository` получает fixture-backed каталог через `CatalogRemoteDataSource`, сохраняет catalog/deck/adoption state через `CatalogLocalDataSource` и SQLDelight
+|Feature Presentation Implementation → Practice/Library Domain|`DeckPracticeLogic` загружает deck через `CatalogRepository`, принадлежащий `Library`, и отправляет review через `PracticeReviewRepository`, не создавая network/database/SRS зависимости напрямую
+|Feature Presentation Implementation → Reusable UI|`DeckPracticeScreen` отображает карточки через `shared/ui/learning-deck`
+|Library Data → Client Integration Foundations|`DefaultCatalogRepository` получает каталог на фикстурах через `CatalogRemoteDataSource`, сохраняет catalog/deck/adoption state через `CatalogLocalDataSource` и SQLDelight
 |Practice Database Schema → Persistence Module|`shared/feature/practice/database-schema` владеет feature-схемой, а `shared/database` агрегирует её в корневой `SenseeDatabase`
 |Shared Settings Data → Persistence Module|`shared/settings/data` реализует `UserSettingsRepository` поверх SQLDelight, а `shared/settings/database-schema` агрегируется в `SenseeDatabase`
 |Practice Data → SRS Libraries|Practice data layer применяет SRS engine/storage для review state
-|Vocabulary Capture → AI Enrichment Seam|Capture получает `MeaningCandidate` через provider-agnostic `shared/ai/*`, а не через прямой SDK/endpoint
-|Profile → AI/TTS Seams|Profile проверяет provider keys/model/voice metadata через `shared/ai/*` и `shared/tts/*`, а настройки хранит через `UserSettingsRepository`
+|Vocabulary Capture -> AI Enrichment Boundary|Capture получает `MeaningCandidate` через provider-agnostic `shared/ai/*`, а не через прямой SDK/endpoint
+|Profile -> AI/TTS Boundaries|Profile проверяет provider keys/model/voice metadata через `shared/ai/*` и `shared/tts/*`, а настройки хранит через `UserSettingsRepository`
 |Grammar Domain → Practice/Vocabulary|`shared/grammar/*` задаёт общие `GrammarUnitType`, `GrammarTag` и labels для карточек и смыслов
 |Shared App Shell → Core Runtime|App shell использует Decompose и Metro для component graph и root wiring
 |Client Integration Foundations → Core Runtime|Network, mock-backend и database зависимости предоставляются через shared DI graph
@@ -116,12 +115,12 @@
 * `ProfileSectionComponent`
 
 Ответственность::
-Определить contract boundary feature-разделов и не смешивать navigation ownership с Compose-реализацией экранов.
+Определить границу контрактов feature-разделов и не смешивать navigation ownership с Compose-реализацией экранов.
 
 === Белый ящик: Feature Presentation Implementation
 
 Назначение::
-Реализовать section host components, базовые экраны разделов и текущий practice deck flow поверх API-контрактов.
+Реализовать section host components, базовые экраны разделов и текущий practice deck-сценарий поверх API-контрактов.
 
 Содержащиеся строительные блоки:
 
@@ -130,12 +129,12 @@
 * `PracticeHomeScreen` / `DeckPracticeScreen` / `CardDetailScreen`
 * `DefaultLibrarySectionComponent`, `DefaultLibraryHomeComponent`, `LibraryHomeLogic`, `LibrarySectionScreen`
 * `DefaultProfileSectionComponent` (двухпанельная навигация по категориям), `DefaultProfileHomeComponent` / `ProfileHomeScreen` (меню категорий), `ProfileAiSettingsLogic` / `ProfileAiSettingsScreen` (категория `Ai`), `ProfileSettingsPlaceholderScreen` (заглушка остальных категорий)
-* `DefaultVocabularyEditorSectionComponent` (хостит реализованный `VocabularyCaptureComponent`)
+* `DefaultVocabularyEditorSectionComponent` (содержит реализованный `VocabularyCaptureComponent`)
 * `DefaultVocabularyCaptureComponent` / `VocabularyCaptureLogic` / `VocabularyCaptureScreen` / `SenseSelectionCard`
-* `DefaultHomeSectionComponent` / `DefaultHomeComponent` (раздел `Home` пока рендерит `UnimplementedScreen`)
+* `DefaultHomeSectionComponent` / `DefaultHomeComponent` (раздел `Home` пока отображает `UnimplementedScreen`)
 
 Ответственность::
-Собрать feature-разделы, связать practice (deck + home + card detail two-pane), library catalog/adoption и profile settings, а также capture-вертикаль с domain/data boundary. Единственный нереализованный раздел — `Home`: он сознательно показывает честный `UnimplementedScreen` вместо имитации функциональности.
+Собрать feature-разделы, связать practice (deck + home + card detail two-pane), library catalog/adoption и profile settings, а также capture-вертикаль с domain/data boundary. Единственный нереализованный раздел — `Home`: он показывает явный `UnimplementedScreen` вместо имитации функциональности.
 
 === Белый ящик: Practice Domain/Data
 
@@ -155,14 +154,14 @@
 * `shared/feature/practice/database-schema`
 
 Ответственность::
-Применять SRS-review, хранить review state/log и отдавать presentation layer правила session behavior. Контент deck загружается через library-owned `CatalogRepository`, а practice data отвечает за `PracticeReviewRepository` и SRS storage. Feature-owned SQLDelight schema остаётся в `shared/feature/practice/database-schema`, а runtime-агрегация схемы и platform drivers живут в `shared/database`.
+Применять SRS-review, хранить review state/log и отдавать presentation layer правила session behavior. Контент deck загружается через `CatalogRepository`, принадлежащий `Library`, а practice data отвечает за `PracticeReviewRepository` и SRS storage. Feature-owned SQLDelight schema остаётся в `shared/feature/practice/database-schema`, а runtime-агрегация схемы и platform drivers живут в `shared/database`.
 
-NOTE: Каталог записей и колоды library-owned: `CatalogRepository`/`Deck`/`DeckWithCards` в `shared/feature/library/domain` (реализация — `library/data`); practice — read-only потребитель курируемых Library колод, захваченный материал адоптируется декоратором каталога. Решение — ADR-001.
+NOTE: Каталог записей и колоды принадлежат `Library`: `CatalogRepository`/`Deck`/`DeckWithCards` в `shared/feature/library/domain` (реализация — `library/data`); practice — read-only потребитель курируемых Library колод, захваченный материал добавляется декоратором каталога. Решение — ADR-001.
 
 === Белый ящик: Vocabulary Editor Domain/Data/Schema
 
 Назначение::
-Удерживать source-of-truth модель лексического материала (ADR-001) отдельно от UI и AI-шва, с durable-персистентностью.
+Удерживать source-of-truth модель лексического материала (ADR-001) отдельно от UI и границы AI-интеграции, с устойчивым хранением.
 
 Содержащиеся строительные блоки:
 
@@ -176,7 +175,9 @@ NOTE: Каталог записей и колоды library-owned: `CatalogRepos
 * `shared/feature/vocabulary-editor/database-schema`
 
 Ответственность::
-Принимать `MeaningCandidate` от AI-шва (anti-corruption mapper, ADR-005), хранить подтверждённые `Meaning` durable в `lexical_entry` агрегатной `SenseeDatabase` (feature-owned schema, ADR-002), отдавать presentation layer структурную модель смысла (`surfaceForm`, `unitType`, контексты, grammar cues). Грамматическая таксономия — нейтральный `shared/grammar/domain`.
+Принимать `MeaningCandidate` от границы AI-интеграции (anti-corruption mapper, ADR-005), устойчиво хранить подтверждённые `Meaning` в `lexical_entry` агрегатной `SenseeDatabase` (feature-owned schema, ADR-002) и отдавать presentation layer структурную модель смысла: `surfaceForm`, `unitType`, контексты и grammar cues.
+
+Грамматическая таксономия — нейтральный `shared/grammar/domain`: sealed-типы с `Unknown(id)`-ветками, парные инварианты — `TaxonomyInvariants` времени выполнения, ADR-006.
 
 === Белый ящик: Shared Settings
 
@@ -212,12 +213,12 @@ NOTE: Каталог записей и колоды library-owned: `CatalogRepos
 * `FlippableLearningCard`
 
 Ответственность::
-Переиспользоваться между фичами и платформами без привязки к текущему practice screen.
+Переиспользоваться между feature-модулями и платформами без привязки к текущему practice screen.
 
 === Белый ящик: Core Runtime и Client Integration Foundations
 
 Назначение::
-Предоставить runtime и инфраструктурные зависимости, не смешивая их с feature UI.
+Предоставить среду выполнения и инфраструктурные зависимости, не смешивая их с feature UI.
 
 Содержащиеся строительные блоки:
 
@@ -232,7 +233,7 @@ NOTE: Каталог записей и колоды library-owned: `CatalogRepos
 * `shared/core/observability`
 
 Ответственность::
-Поддерживать reusable runtime, persistence и integration points. `shared/database`, `shared/settings/*`, `shared/core/network` и `shared/core/mock-backend` входят в текущий shared foundation; `shared/database` собирает корневой `SenseeDatabase` из feature-owned и shared-owned схем, а `shared/core/observability` пока остаётся prepared foundation.
+Поддерживать переиспользуемую среду выполнения, хранение и точки интеграции. `shared/database`, `shared/settings/*`, `shared/core/network`, `shared/core/mock-backend` и `shared/core/observability` входят в текущую shared foundation; `shared/database` собирает корневой `SenseeDatabase` из feature-owned и shared-owned схем, а `shared/core/observability` публикует `AppDiagnostics`, logger, crash reporter и analytics tracker с no-op/local/platform defaults. Внешние observability backend-интеграции остаются planned.
 
 === Белый ящик: SRS Libraries
 
@@ -248,13 +249,13 @@ NOTE: Каталог записей и колоды library-owned: `CatalogRepos
 * `shared/srs/test-kit`
 
 Ответственность::
-Дать независимые shared-библиотеки для вычисления review scheduling. Practice data layer использует их через `PracticeSrsStorage` и SRS engine, не смешивая алгоритм с Compose UI.
+Дать независимые shared-библиотеки для вычисления расписания повторений. Practice data layer использует их через `PracticeSrsStorage` и SRS engine, не смешивая алгоритм с Compose UI.
 
 == Уровень 3
 
 === Primary Navigation Shell
 
-Статус:: implemented as base shell
+Статус:: реализованная базовая оболочка
 
 Текущая базовая навигация опирается на:
 
@@ -268,6 +269,6 @@ NOTE: Каталог записей и колоды library-owned: `CatalogRepos
 Разделы открываются через сериализуемые config-типы, а не через прямые вызовы Compose UI.
 
 Форма представления::
-Один и тот же набор target'ов рендерится разным навигационным chrome, выбираемым адаптивно (`selectPrimaryNavLayout`): нижняя панель в компактном окне, вертикальный `navigation rail` в широком окне на `Android`/`iOS`/`Desktop` и горизонтальный top bar в широком окне на `JS`/`Wasm`. Выбор зависит от размера окна и платформы; config-модель при этом не меняется.
+Один и тот же набор target-экранов отображается разной навигационной оболочкой, выбираемой адаптивно (`selectPrimaryNavLayout`): нижняя панель в компактном окне, вертикальный `navigation rail` в широком окне на `Android`/`iOS`/`Desktop` и горизонтальный top bar в широком окне на `JS`/`Wasm`. Выбор зависит от размера окна и платформы; config-модель при этом не меняется.
 
-NOTE: На следующем уровне детализации стоит отдельно документировать public API модулей `shared/ui/learning-deck`, `shared/feature/practice/domain`, `shared/feature/vocabulary-editor/domain`, `shared/feature/library/domain`, `shared/srs/*`, `shared/ai/*`, `shared/tts/*`, `shared/database` и `shared/core/decompose`. Для текущей фазы достаточно зафиксировать устойчивые модульные границы и реально существующие flow.
+NOTE: На следующем уровне детализации стоит отдельно документировать public API модулей `shared/ui/learning-deck`, `shared/feature/practice/domain`, `shared/feature/vocabulary-editor/domain`, `shared/feature/library/domain`, `shared/srs/*`, `shared/ai/*`, `shared/tts/*`, `shared/database` и `shared/core/decompose`. Для текущей фазы достаточно зафиксировать устойчивые модульные границы и реально существующие сценарии.

@@ -17,7 +17,6 @@ kotlin {
                 implementation(libs.metro.runtime)
                 implementation(projects.shared.core.presentation)
                 implementation(projects.shared.ai.core)
-                implementation(projects.shared.grammar.data)
                 implementation(projects.shared.feature.vocabularyEditor.domain)
                 implementation(projects.shared.feature.vocabularyEditor.presentation.api)
                 implementation(projects.shared.feature.vocabularyEditor.presentation.navigationApi)

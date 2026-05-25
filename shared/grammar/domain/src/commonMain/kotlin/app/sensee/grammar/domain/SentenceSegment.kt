@@ -41,28 +41,32 @@ public data class StudiedSentence(
         private const val CLOSE = "]]"
 
         /**
-         * Parses a sentence whose studied unit is wrapped in `[[ ]]`, e.g.
-         * `She [[came across]] the letters.` Text outside the markers becomes
-         * [SentenceSegment.Text]; the marked span becomes [SentenceSegment.Target].
-         * Unmarked input is a single [SentenceSegment.Text] (still valid — the
-         * producer simply did not mark a target).
+         * Parses a sentence whose studied units are wrapped in `[[ ]]`, e.g.
+         * `She [[comes across]] [[as]] confident.` Every `[[ ]]` span becomes a
+         * [SentenceSegment.Target]; surrounding text becomes
+         * [SentenceSegment.Text]. Unmarked input is a single [SentenceSegment.Text]
+         * (still valid — the producer simply did not mark a target). An opening
+         * `[[` without a matching `]]` is treated as literal text from that point
+         * on (do not silently drop the rest of the sentence).
          */
         public fun parse(raw: String): StudiedSentence {
-            val open = raw.indexOf(OPEN)
-            val close = if (open < 0) -1 else raw.indexOf(CLOSE, open + OPEN.length)
-            if (open < 0 || close < 0) {
-                return StudiedSentence(listOf(SentenceSegment.Text(raw)))
+            val segments = mutableListOf<SentenceSegment>()
+            var cursor = 0
+            while (true) {
+                val open = raw.indexOf(OPEN, cursor)
+                val close = if (open < 0) -1 else raw.indexOf(CLOSE, open + OPEN.length)
+                if (open < 0 || close < 0) {
+                    // No more markers (or an unbalanced opener): keep the tail
+                    // as plain text and finish.
+                    if (cursor < raw.length) segments.add(SentenceSegment.Text(raw.substring(cursor)))
+                    break
+                }
+                if (open > cursor) segments.add(SentenceSegment.Text(raw.substring(cursor, open)))
+                segments.add(SentenceSegment.Target(raw.substring(open + OPEN.length, close).trim()))
+                cursor = close + CLOSE.length
             }
-            val before = raw.substring(0, open)
-            val targetText = raw.substring(open + OPEN.length, close).trim()
-            val after = raw.substring(close + CLOSE.length)
-            return StudiedSentence(
-                buildList {
-                    if (before.isNotEmpty()) add(SentenceSegment.Text(before))
-                    add(SentenceSegment.Target(targetText))
-                    if (after.isNotEmpty()) add(SentenceSegment.Text(after))
-                },
-            )
+            if (segments.isEmpty()) segments.add(SentenceSegment.Text(raw))
+            return StudiedSentence(segments)
         }
     }
 }
