@@ -26,6 +26,7 @@ public interface ScreenConfigSerializationContext {
 
 public interface AppComponentContext :
     GenericComponentContext<AppComponentContext>,
+    AdaptivePresentationContext,
     NavigationContext,
     ComponentResultContext,
     ScreenConfigSerializationContext

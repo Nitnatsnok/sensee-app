@@ -3,6 +3,7 @@ package app.sensee.feature.practice.presentation.impl.deck
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -67,43 +68,50 @@ public fun DeckPracticeScreen(
 ) {
     val uiState by component.uiState.collectAsState()
 
-    // Help glossary is purely presentational (static legend), so its visibility is local
-    // state — no decompose component or business logic needed.
     var helpVisible by remember { mutableStateOf(false) }
 
-    AppChildPanels(
-        panels = component.panels,
-        modifier = modifier,
-        mainPaneWeight = MAIN_PANE_WEIGHT,
-        detailPaneWeight = DETAIL_PANE_WEIGHT,
-        main = { _, _ ->
-            DeckPracticePane(
-                uiState = uiState,
-                onAction = component::onAction,
-                onHelpRequest = { helpVisible = true },
-                modifier = Modifier.fillMaxSize(),
-                textProvider = textProvider,
+    val colors = SenseeTheme.colors
+    val backgroundBrush =
+        remember(colors) {
+            Brush.verticalGradient(
+                listOf(colors.surfaceContainerHighest, colors.surfaceContainer, colors.background),
             )
-        },
-        detail = { detailChild, _ ->
-            DeckPracticeDetailPane(
-                component = detailChild.instance,
-                onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
-                modifier = Modifier.fillMaxSize(),
-                textProvider = textProvider,
-            )
-        },
-        compactDetail = {
-            // The sheet is always composed (visibility toggled) so its enter/exit animations play.
-            MainPane()
-            DeckPracticeDetailSheet(
-                component = detail?.instance,
-                visible = detail != null,
-                onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
-                textProvider = textProvider,
-            )
-        },
-    )
+        }
+
+    Box(modifier = modifier.fillMaxSize().background(backgroundBrush)) {
+        AppChildPanels(
+            panels = component.panels,
+            modifier = Modifier.fillMaxSize(),
+            mainPaneWeight = MAIN_PANE_WEIGHT,
+            detailPaneWeight = DETAIL_PANE_WEIGHT,
+            main = { _, _ ->
+                DeckPracticePane(
+                    uiState = uiState,
+                    onAction = component::onAction,
+                    onHelpRequest = { helpVisible = true },
+                    modifier = Modifier.fillMaxSize(),
+                    textProvider = textProvider,
+                )
+            },
+            detail = { detailChild, _ ->
+                DeckPracticeDetailPane(
+                    component = detailChild.instance,
+                    onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
+                    modifier = Modifier.fillMaxSize(),
+                    textProvider = textProvider,
+                )
+            },
+            compactDetail = {
+                MainPane()
+                DeckPracticeDetailSheet(
+                    component = detail?.instance,
+                    visible = detail != null,
+                    onDismiss = { component.onAction(DeckPracticeAction.DismissDetails) },
+                    textProvider = textProvider,
+                )
+            },
+        )
+    }
 
     DeckPracticeHelpSheet(
         visible = helpVisible,
@@ -126,13 +134,6 @@ internal fun DeckPracticePane(
     textProvider: TextProvider,
     modifier: Modifier = Modifier,
 ) {
-    val colors = SenseeTheme.colors
-    val backgroundBrush =
-        remember(colors) {
-            Brush.verticalGradient(
-                listOf(colors.surfaceContainerHighest, colors.surfaceContainer, colors.background),
-            )
-        }
     // Deck state is hoisted to the pane level so the top bar — rendered once below — can
     // expose the focused card via `onDetails`, while the body branches just render content
     // for the current `loadingState`.
@@ -167,7 +168,7 @@ internal fun DeckPracticePane(
         }
 
     Column(
-        modifier = modifier.fillMaxSize().background(backgroundBrush),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         PracticeTopBar(

@@ -17,13 +17,16 @@ import app.sensee.ui.designSystem.icons.Close24px
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.LocalContentColor
 
-/** Title row for a `SenseeModalBottomSheet`. Sheet provides surface, drag indicator and padding. */
+/**
+ * Title row for a wide-layout detail pane sitting inside a card surface. Layout only —
+ * the enclosing card provides background, padding and any status-bar inset.
+ */
 @Composable
-public fun SenseeSheetHeader(
+public fun SenseePaneHeader(
     onClose: () -> Unit,
     closeAccessibilityLabel: String,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = SenseeSheetHeaderDefaults.contentPadding(),
+    contentPadding: PaddingValues = SenseePaneHeaderDefaults.contentPadding(),
     actions: @Composable RowScope.() -> Unit = {},
     title: @Composable () -> Unit,
 ) {
@@ -49,7 +52,7 @@ public fun SenseeSheetHeader(
     }
 }
 
-public object SenseeSheetHeaderDefaults {
+public object SenseePaneHeaderDefaults {
     @Composable
-    public fun contentPadding(): PaddingValues = PaddingValues(horizontal = SenseeTheme.spacing.large)
+    public fun contentPadding(): PaddingValues = PaddingValues(horizontal = SenseeTheme.spacing.small)
 }

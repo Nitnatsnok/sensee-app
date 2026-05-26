@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
+import app.sensee.ui.designSystem.component.LocalSenseeMinTouchTargetSize
 import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.ProvideContentColor
@@ -76,6 +77,7 @@ public fun SenseeTextField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
+    val minTouchTargetSize = LocalSenseeMinTouchTargetSize.current
 
     // Secure mode: obscured by default with a built-in reveal toggle, so screens
     // never hand-roll key masking (profile.feature).
@@ -99,7 +101,7 @@ public fun SenseeTextField(
                     text = revealToggleLabel,
                     modifier =
                         Modifier
-                            .senseeMinTouchTargetSize()
+                            .senseeMinTouchTargetSize(minTouchTargetSize)
                             .clickable(
                                 enabled = enabled,
                                 role = Role.Button,
@@ -220,7 +222,6 @@ private fun TextFieldScope.SenseeTextFieldInputRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .senseeMinTouchTargetSize()
                 .defaultMinSize(minHeight = SenseeTextFieldDefaults.MinHeight)
                 .clip(shape)
                 .background(resolvedStyle.container)

@@ -2,9 +2,13 @@ package app.sensee.appShell
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import app.sensee.appShell.root.RootComponent
 import app.sensee.appShell.root.RootScreen
+import app.sensee.core.decompose.context.AppContentPresentation
+import app.sensee.ui.adaptive.ContentLayoutType
+import app.sensee.ui.adaptive.LocalAdaptiveInfo
 
 /**
  * Decorator slot rendered between [AppComposeEnvironment] and [RootScreen].
@@ -22,6 +26,10 @@ public fun App(
     contentFrame: AppContentFrame = { content -> content() },
 ) {
     AppComposeEnvironment(platform = rootComponent.platform) {
+        val contentPresentation = LocalAdaptiveInfo.current.contentLayoutType.toContentPresentation()
+        SideEffect {
+            rootComponent.setContentPresentation(contentPresentation)
+        }
         contentFrame {
             RootScreen(
                 component = rootComponent,
@@ -30,3 +38,10 @@ public fun App(
         }
     }
 }
+
+private fun ContentLayoutType.toContentPresentation(): AppContentPresentation =
+    when (this) {
+        ContentLayoutType.SinglePane -> AppContentPresentation.SinglePane
+        ContentLayoutType.ListDetail -> AppContentPresentation.ListDetail
+        ContentLayoutType.SupportingPane -> AppContentPresentation.SupportingPane
+    }

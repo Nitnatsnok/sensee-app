@@ -1,6 +1,5 @@
 package app.sensee.feature.profile.presentation.impl.aisettings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +39,6 @@ public fun ProfileAiSettingsScreen(
 ) {
     val uiState by component.uiState.collectAsState()
     val formState = rememberProfileAiSettingsFormState()
-    val colors = SenseeTheme.colors
     val spacing = SenseeTheme.spacing
     val layoutMetrics = LocalSenseeAdaptiveLayoutMetrics.current ?: senseeCompactLayoutMetrics()
 
@@ -51,8 +49,7 @@ public fun ProfileAiSettingsScreen(
     Box(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(colors.background),
+                .fillMaxSize(),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

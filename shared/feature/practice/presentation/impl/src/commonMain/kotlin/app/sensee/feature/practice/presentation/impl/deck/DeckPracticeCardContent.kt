@@ -1,18 +1,25 @@
 package app.sensee.feature.practice.presentation.impl.deck
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Constraints
 import app.sensee.feature.practice.domain.PracticeCardFront
 import app.sensee.feature.practice.presentation.api.DeckPracticeCardUiState
 import app.sensee.feature.practice.presentation.impl.grammar.grammarTagBadgeColors
@@ -21,8 +28,11 @@ import app.sensee.feature.practice.presentation.impl.text.shortLabel
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.SentenceSegment
 import app.sensee.grammar.domain.StudiedSentence
+import app.sensee.grammar.domain.SurfaceForm
+import app.sensee.grammar.domain.SurfaceToken
 import app.sensee.ui.designSystem.component.badge.SenseeBadge
 import app.sensee.ui.designSystem.component.button.SenseeSpeakIconButton
+import app.sensee.ui.designSystem.component.button.SenseeSpeakIconButtonDefaults
 import app.sensee.ui.designSystem.component.sentence.SenseeSentence
 import app.sensee.ui.designSystem.component.sentence.SenseeSentencePart
 import app.sensee.ui.designSystem.component.sentence.SenseeSentencePlaceholderState
@@ -97,18 +107,26 @@ private fun EnglishCardContent(
     val spacing = SenseeTheme.spacing
     val typography = SenseeTheme.typography
     val colors = SenseeTheme.colors
+    val headwordText =
+        rememberHeadwordAnnotated(
+            raw = card.headword,
+            mutedColor = colors.textSecondary,
+        )
 
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        SpeakableHeadline(
-            text = card.headword,
-            style = typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-            color = colors.textPrimary,
-            onSpeak = { onSpeak(card.headword) },
-        )
+        SpeakableSlot(onSpeak = { onSpeak(card.headword) }) {
+            Text(
+                text = headwordText,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                color = colors.textPrimary,
+                style = typography.headlineMedium,
+            )
+        }
         BadgeRow(card = card, labels = labels, studyLanguageTag = studyLanguageTag)
         ContextSentenceLine(
             sentence = buildContextSentence(card.contextSentence, card.headword, revealed = true),
@@ -133,12 +151,7 @@ private fun RussianRevealedCardContent(
         verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = card.translation,
-            color = colors.textPrimary,
-            style = typography.titleLarge,
-            textAlign = TextAlign.Center,
-        )
+        TranslationSlot(translation = card.translation, color = colors.textPrimary)
         if (card.explanation.isNotBlank()) {
             Text(
                 text = card.explanation,
@@ -169,12 +182,7 @@ private fun RussianPlaceholderCardContent(
         verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(
-            text = card.translation,
-            color = colors.textPrimary,
-            style = typography.titleLarge,
-            textAlign = TextAlign.Center,
-        )
+        TranslationSlot(translation = card.translation, color = colors.textPrimary)
         if (card.explanation.isNotBlank()) {
             Text(
                 text = card.explanation,
@@ -193,20 +201,145 @@ private fun RussianPlaceholderCardContent(
 }
 
 @Composable
-private fun SpeakableHeadline(
-    text: String,
-    style: TextStyle,
+private fun TranslationSlot(
+    translation: String,
     color: Color,
-    onSpeak: () -> Unit,
+) {
+    val typography = SenseeTheme.typography
+    SpeakableSlot(onSpeak = null) {
+        Text(
+            text = AnnotatedString(translation),
+            textAlign = TextAlign.Center,
+            color = color,
+            style = typography.titleLarge,
+        )
+    }
+}
+
+/**
+ * Centers the text horizontally as if the speak button were not there; the button
+ * follows the text from the left with a small gap. A natural width that falls between
+ * `centerableMax` and `singleLineMax` pins the button to the card edge and lets the
+ * single line stretch to the trailing padding.
+ */
+@Composable
+private fun SpeakableSlot(
+    onSpeak: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
 ) {
     val spacing = SenseeTheme.spacing
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(spacing.small, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SenseeSpeakIconButton(onClick = onSpeak)
-        Text(text = text, color = color, style = style)
+    val gap = spacing.small
+    Layout(
+        modifier = modifier.fillMaxWidth(),
+        content = {
+            Box(contentAlignment = Alignment.Center, content = { content() })
+            if (onSpeak != null) {
+                SenseeSpeakIconButton(onClick = onSpeak)
+            }
+        },
+    ) { measurables, constraints ->
+        val gapPx = gap.roundToPx()
+        val containerWidth = constraints.maxWidth
+        val iconVisualSize = SenseeSpeakIconButtonDefaults.Size.roundToPx()
+
+        val buttonPlaceable = measurables.getOrNull(1)?.measure(Constraints())
+        // SenseeIconButton placeable is the 48dp touch target around the visible disc;
+        // shifting it left by this inset puts the visible icon edge exactly `gap` away
+        // from the first letter.
+        val touchInset =
+            if (buttonPlaceable != null) {
+                ((buttonPlaceable.width - iconVisualSize) / 2).coerceAtLeast(0)
+            } else {
+                0
+            }
+        val leftReserve =
+            if (buttonPlaceable != null) touchInset + iconVisualSize + gapPx else 0
+        val centerableMax = (containerWidth - 2 * leftReserve).coerceAtLeast(0)
+        val singleLineMax = (containerWidth - leftReserve).coerceAtLeast(0)
+
+        // Intrinsic query — not a `.measure()` call — so we can branch on width before
+        // the single allowed measurement of the text measurable.
+        val naturalWidth = measurables[0].maxIntrinsicWidth(constraints.maxHeight)
+        val pinSingleLine =
+            buttonPlaceable != null &&
+                naturalWidth > centerableMax &&
+                naturalWidth <= singleLineMax
+        val textMinHeight = buttonPlaceable?.height ?: 0
+        val textPlaceable =
+            measurables[0].measure(
+                if (pinSingleLine) {
+                    constraints.copy(
+                        minWidth = 0,
+                        maxWidth = singleLineMax,
+                        minHeight = textMinHeight,
+                    )
+                } else {
+                    constraints.copy(
+                        minWidth = 0,
+                        maxWidth = centerableMax,
+                        minHeight = textMinHeight,
+                    )
+                },
+            )
+
+        val containerHeight = maxOf(textPlaceable.height, buttonPlaceable?.height ?: 0)
+
+        layout(containerWidth, containerHeight) {
+            val textX =
+                if (pinSingleLine) leftReserve else (containerWidth - textPlaceable.width) / 2
+            textPlaceable.place(textX, 0)
+
+            if (buttonPlaceable != null) {
+                val visibleIconLeft = textX - gapPx - iconVisualSize
+                val btnX = (visibleIconLeft - touchInset).coerceAtLeast(0)
+                buttonPlaceable.place(btnX, 0)
+            }
+        }
+    }
+}
+
+@Composable
+private fun rememberHeadwordAnnotated(
+    raw: String,
+    mutedColor: Color,
+): AnnotatedString {
+    val parsed: SurfaceForm? =
+        remember(raw) {
+            if (raw.isBlank()) {
+                null
+            } else {
+                try {
+                    SurfaceForm.parse(raw)
+                } catch (_: IllegalArgumentException) {
+                    null
+                }
+            }
+        }
+    return remember(parsed, mutedColor, raw) {
+        if (parsed == null) {
+            AnnotatedString(raw)
+        } else {
+            val mutedSpan =
+                SpanStyle(
+                    color = mutedColor,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Normal,
+                )
+            buildAnnotatedString {
+                parsed.tokens.forEachIndexed { index, token ->
+                    if (index > 0) append(" ")
+                    when (token) {
+                        is SurfaceToken.Literal -> append(token.text)
+                        is SurfaceToken.Optional ->
+                            withStyle(mutedSpan) { append("[${token.text}]") }
+
+                        is SurfaceToken.Slot ->
+                            withStyle(mutedSpan) { append("<${token.name}>") }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -216,31 +349,11 @@ private fun ContextSentenceLine(
     color: Color,
     onSpeak: (() -> Unit)?,
 ) {
-    val spacing = SenseeTheme.spacing
     val typography = SenseeTheme.typography
-
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.small),
-        horizontalArrangement =
-            Arrangement.spacedBy(
-                space = spacing.small,
-                alignment = Alignment.CenterHorizontally,
-            ),
-    ) {
-        if (onSpeak != null) {
-            // Align the speak icon to the first line's baseline rather than the row's top —
-            // for a multi-line context sentence this keeps the icon next to line 1 instead of
-            // floating above it (which `Alignment.Top` would do because the icon button is
-            // 32dp tall while a `bodyLarge` line is ~24dp).
-            SenseeSpeakIconButton(
-                onClick = onSpeak,
-                modifier = Modifier.alignBy { placeable -> placeable.measuredHeight / 2 },
-            )
-        }
+    SpeakableSlot(onSpeak = onSpeak) {
         SenseeSentenceText(
             sentence = sentence,
             textStyle = typography.bodyLarge.copy(color = color),
-            modifier = Modifier.alignByBaseline(),
         )
     }
 }

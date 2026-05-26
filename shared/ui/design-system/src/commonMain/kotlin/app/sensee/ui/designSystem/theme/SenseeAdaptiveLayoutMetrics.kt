@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Resolved screen-layout metrics: horizontal/vertical padding around screen content, the
@@ -60,3 +61,15 @@ public fun senseeExpandedLayoutMetrics(): SenseeAdaptiveLayoutMetrics {
         paneGap = layout.paneGap,
     )
 }
+
+/** Picks layout metrics for a container of [widthDp]. */
+@Composable
+public fun senseeLayoutMetricsFor(widthDp: Dp): SenseeAdaptiveLayoutMetrics =
+    when {
+        widthDp >= WidthExpandedLowerBound -> senseeExpandedLayoutMetrics()
+        widthDp >= WidthMediumLowerBound -> senseeMediumLayoutMetrics()
+        else -> senseeCompactLayoutMetrics()
+    }
+
+private val WidthMediumLowerBound: Dp = 600.dp
+private val WidthExpandedLowerBound: Dp = 840.dp

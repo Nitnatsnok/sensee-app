@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -23,14 +22,11 @@ import app.sensee.feature.practice.presentation.impl.text.shortLabel
 import app.sensee.grammar.domain.GrammarForm
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarUnitType
-import app.sensee.ui.designSystem.component.SenseeIcon
 import app.sensee.ui.designSystem.component.badge.SenseeBadge
 import app.sensee.ui.designSystem.component.badge.SenseeBadgeColors
 import app.sensee.ui.designSystem.component.badge.SenseeBadgeDefaults
-import app.sensee.ui.designSystem.component.button.SenseeIconButton
 import app.sensee.ui.designSystem.component.layout.SenseeModalBottomSheet
 import app.sensee.ui.designSystem.component.layout.SenseeSheetHeader
-import app.sensee.ui.designSystem.icons.Close24px
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.Text
 
@@ -58,24 +54,16 @@ internal fun DeckPracticeHelpSheet(
         contentPadding = PaddingValues(0.dp),
     ) {
         val spacing = SenseeTheme.spacing
-        val typography = SenseeTheme.typography
 
         SenseeSheetHeader(
-            modifier = Modifier.padding(horizontal = spacing.large),
-            title = {
-                Text(
-                    text = textProvider.text(PracticeTextKeys.HelpSheetTitle),
-                    style = typography.titleMedium,
-                )
-            },
-            actions = {
-                SenseeIconButton(
-                    onClick = onDismiss,
-                    accessibilityLabel = textProvider.text(PracticeTextKeys.ActionClose),
-                    icon = { SenseeIcon(imageVector = Close24px, contentDescription = null) },
-                )
-            },
-        )
+            onClose = onDismiss,
+            closeAccessibilityLabel = textProvider.text(PracticeTextKeys.ActionClose),
+        ) {
+            Text(
+                text = textProvider.text(PracticeTextKeys.HelpSheetTitle),
+                style = SenseeTheme.typography.titleMedium,
+            )
+        }
         Spacer(modifier = Modifier.height(spacing.small))
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f, fill = false),

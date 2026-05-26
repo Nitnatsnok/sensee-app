@@ -5,12 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.presentation.text.TextProvider
@@ -32,10 +36,12 @@ import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
 import app.sensee.ui.adaptive.AppChildPanels
 import app.sensee.ui.designSystem.component.SenseeIcon
 import app.sensee.ui.designSystem.component.layout.SenseeModalBottomSheet
+import app.sensee.ui.designSystem.component.layout.SenseeSurface
 import app.sensee.ui.designSystem.component.topBar.SenseeTopBar
 import app.sensee.ui.designSystem.component.topBar.SenseeTopBarIconButton
 import app.sensee.ui.designSystem.icons.ArrowBack24px
-import app.sensee.ui.designSystem.icons.Close24px
+import app.sensee.ui.designSystem.theme.LocalSenseeAdaptiveLayoutMetrics
+import app.sensee.ui.designSystem.theme.SenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.composeunstyled.Text
@@ -83,6 +89,7 @@ public fun ProfileSectionScreen(
                 ProfileTopicPickerScreen(
                     component = picker,
                     modifier = Modifier.fillMaxSize(),
+                    compact = false,
                 )
             }
         },
@@ -98,41 +105,74 @@ private fun ProfileDetailPane(
     textProvider: TextProvider,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.background(SenseeTheme.colors.background)) {
-        SenseeTopBar(
-            title = { Text(text = textProvider.text(config.categoryTitleKey())) },
-            navigation = {
-                SenseeTopBarIconButton(
-                    onClick = onClose,
-                    accessibilityLabel =
-                        textProvider.text(
-                            if (compact) ProfileHomeTextKeys.Back else ProfileHomeTextKeys.Close,
-                        ),
-                    icon = {
-                        SenseeIcon(
-                            imageVector = if (compact) ArrowBack24px else Close24px,
-                            contentDescription = null,
-                        )
-                    },
-                )
-            },
-            showDivider = false,
-        )
-        when (component) {
-            is ProfileAiSettingsComponent ->
-                ProfileAiSettingsScreen(component = component, modifier = Modifier.fillMaxSize())
-
-            is ProfileLearningSettingsComponent ->
-                ProfileLearningSettingsScreen(component = component, modifier = Modifier.fillMaxSize())
-
-            is ProfileSettingsPlaceholderComponent ->
-                ProfileSettingsPlaceholderScreen(
-                    config = component.config,
-                    modifier = Modifier.fillMaxSize(),
-                )
-
-            else -> error("Unknown profile detail child: ${component::class}")
+    if (compact) {
+        val title = textProvider.text(config.categoryTitleKey())
+        val colors = SenseeTheme.colors
+        Column(modifier = modifier) {
+            SenseeTopBar(
+                title = { Text(text = title) },
+                navigation = {
+                    SenseeTopBarIconButton(
+                        onClick = onClose,
+                        accessibilityLabel = textProvider.text(ProfileHomeTextKeys.Back),
+                        icon = {
+                            SenseeIcon(imageVector = ArrowBack24px, contentDescription = null)
+                        },
+                    )
+                },
+            )
+            ProfileDetailBody(component = component, modifier = Modifier.fillMaxSize().background(colors.background))
         }
+    } else {
+        val spacing = SenseeTheme.spacing
+        SenseeSurface(
+            modifier =
+                modifier
+                    .statusBarsPadding()
+                    .padding(top = spacing.medium, bottom = spacing.medium, end = spacing.medium),
+            shape = SenseeTheme.shapes.large,
+            contentPadding = PaddingValues(0.dp),
+            borderWidth = 0.dp,
+        ) {
+            CompositionLocalProvider(
+                LocalSenseeAdaptiveLayoutMetrics provides profilePaneLayoutMetrics(),
+            ) {
+                ProfileDetailBody(component = component, modifier = Modifier.fillMaxSize())
+            }
+        }
+    }
+}
+
+@Composable
+private fun profilePaneLayoutMetrics(): SenseeAdaptiveLayoutMetrics {
+    val layout = SenseeTheme.layout
+    return SenseeAdaptiveLayoutMetrics(
+        screenHorizontalPadding = layout.screenHorizontalPaddingCompact,
+        screenVerticalPadding = layout.screenVerticalPaddingCompact,
+        contentMaxWidth = Dp.Infinity,
+        paneGap = layout.paneGap,
+    )
+}
+
+@Composable
+private fun ProfileDetailBody(
+    component: AppComponent,
+    modifier: Modifier = Modifier,
+) {
+    when (component) {
+        is ProfileAiSettingsComponent ->
+            ProfileAiSettingsScreen(component = component, modifier = modifier)
+
+        is ProfileLearningSettingsComponent ->
+            ProfileLearningSettingsScreen(component = component, modifier = modifier)
+
+        is ProfileSettingsPlaceholderComponent ->
+            ProfileSettingsPlaceholderScreen(
+                config = component.config,
+                modifier = modifier,
+            )
+
+        else -> error("Unknown profile detail child: ${component::class}")
     }
 }
 
@@ -156,10 +196,7 @@ private fun TopicPickerSheet(
         ProfileTopicPickerScreen(
             component = renderTarget,
             modifier = Modifier.fillMaxWidth(),
-            // The sheet already paints its own surface — let the picker stay
-            // transparent so the sheet's drag handle sits flush above the
-            // header.
-            paneBackground = false,
+            compact = true,
         )
     }
 }

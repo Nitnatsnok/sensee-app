@@ -1,19 +1,31 @@
 package app.sensee.ui.adaptive
 
+import androidx.compose.animation.core.snap
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.panels.ChildPanels
 import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.value.MutableValue
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -72,6 +84,173 @@ class AppChildPanelsUiTest {
             assertTrue(
                 extraCompactFlags.any { !it },
                 "supporting-pane layout passes compact = false to the extra slot",
+            )
+        }
+
+    @Test
+    fun `supporting extra pane exits at its open width while main expands`() =
+        runComposeUiTest {
+            val panels = MutableValue(threePanePanels(showDetail = true, showExtra = true))
+
+            setContent {
+                CompositionLocalProvider(LocalAdaptiveInfo provides SupportingAdaptiveInfo) {
+                    Box(modifier = Modifier.size(width = 1000.dp, height = 500.dp)) {
+                        AppChildPanels(
+                            panels = panels,
+                            main = { _, _, _ ->
+                                Box(Modifier.fillMaxSize().testTag(MAIN_PANE_TAG))
+                            },
+                            detail = { _, _, _ ->
+                                Box(Modifier.fillMaxSize().testTag(DETAIL_PANE_TAG))
+                            },
+                            extra = { child, compact ->
+                                if (child != null && !compact) {
+                                    Box(Modifier.fillMaxSize().testTag(EXTRA_PANE_TAG))
+                                }
+                            },
+                        )
+                    }
+                }
+            }
+            waitForIdle()
+
+            val initialMainBounds = onNodeWithTag(MAIN_PANE_TAG).getUnclippedBoundsInRoot()
+            val initialDetailBounds = onNodeWithTag(DETAIL_PANE_TAG).getUnclippedBoundsInRoot()
+            val initialExtraBounds = onNodeWithTag(EXTRA_PANE_TAG).getBoundsInRoot()
+
+            mainClock.autoAdvance = false
+            panels.value = threePanePanels(showDetail = true, showExtra = false)
+            mainClock.advanceTimeByFrame()
+            mainClock.advanceTimeBy(AppChildPanelsDefaults.DEFAULT_DURATION_MILLIS / 2L)
+
+            val exitingMainBounds = onNodeWithTag(MAIN_PANE_TAG).getUnclippedBoundsInRoot()
+            val exitingDetailBounds = onNodeWithTag(DETAIL_PANE_TAG).getUnclippedBoundsInRoot()
+            val exitingExtraBounds = onNodeWithTag(EXTRA_PANE_TAG).getBoundsInRoot()
+
+            assertDpClose(
+                initialExtraBounds.right - initialExtraBounds.left,
+                exitingExtraBounds.right - exitingExtraBounds.left,
+            )
+            assertTrue(
+                exitingExtraBounds.left > initialExtraBounds.left,
+                "extra pane should move toward the trailing edge while exiting",
+            )
+            assertTrue(
+                exitingMainBounds.right - exitingMainBounds.left >
+                    initialMainBounds.right - initialMainBounds.left,
+                "main pane should expand while the extra pane is still exiting",
+            )
+            assertTrue(
+                exitingDetailBounds.left >= initialDetailBounds.left,
+                "detail pane should not overshoot toward the main pane while extra exits",
+            )
+        }
+
+    @Test
+    fun `supporting extra pane enters at its open width while main shrinks`() =
+        runComposeUiTest {
+            val panels = MutableValue(threePanePanels(showDetail = true, showExtra = false))
+
+            setContent {
+                CompositionLocalProvider(LocalAdaptiveInfo provides SupportingAdaptiveInfo) {
+                    Box(modifier = Modifier.size(width = 1000.dp, height = 500.dp)) {
+                        AppChildPanels(
+                            panels = panels,
+                            main = { _, _, _ ->
+                                Box(Modifier.fillMaxSize().testTag(MAIN_PANE_TAG))
+                            },
+                            detail = { _, _, _ ->
+                                Box(Modifier.fillMaxSize().testTag(DETAIL_PANE_TAG))
+                            },
+                            extra = { child, compact ->
+                                if (child != null && !compact) {
+                                    Box(Modifier.fillMaxSize().testTag(EXTRA_PANE_TAG))
+                                }
+                            },
+                        )
+                    }
+                }
+            }
+            waitForIdle()
+
+            val initialMainBounds = onNodeWithTag(MAIN_PANE_TAG).getUnclippedBoundsInRoot()
+            val expectedExtraWidth = 1000.dp * (0.6f / (0.3f + 0.4f + 0.6f))
+
+            mainClock.autoAdvance = false
+            panels.value = threePanePanels(showDetail = true, showExtra = true)
+            mainClock.advanceTimeByFrame()
+            mainClock.advanceTimeBy(AppChildPanelsDefaults.DEFAULT_DURATION_MILLIS / 2L)
+
+            val enteringMainBounds = onNodeWithTag(MAIN_PANE_TAG).getUnclippedBoundsInRoot()
+            val enteringExtraBounds = onNodeWithTag(EXTRA_PANE_TAG).getUnclippedBoundsInRoot()
+
+            assertDpClose(
+                expectedExtraWidth,
+                enteringExtraBounds.right - enteringExtraBounds.left,
+            )
+            assertTrue(
+                enteringExtraBounds.left > 1000.dp - expectedExtraWidth,
+                "extra pane should still be moving in from the trailing edge",
+            )
+            assertTrue(
+                enteringMainBounds.right - enteringMainBounds.left <
+                    initialMainBounds.right - initialMainBounds.left,
+                "main pane should shrink while the extra pane is still entering",
+            )
+        }
+
+    @Test
+    fun `pane travel selector can override extra exit animation`() =
+        runComposeUiTest {
+            val panels = MutableValue(threePanePanels(showDetail = true, showExtra = true))
+            val animation =
+                AppChildPanelsAnimation(
+                    paneTravelSpecSelector =
+                        AppChildPaneTravelSpecSelector { context ->
+                            if (
+                                context.role == AppChildPaneRole.Extra &&
+                                context.phase == AppChildPaneMotionPhase.Exit
+                            ) {
+                                snap()
+                            } else {
+                                null
+                            }
+                        },
+                )
+
+            setContent {
+                CompositionLocalProvider(LocalAdaptiveInfo provides SupportingAdaptiveInfo) {
+                    Box(modifier = Modifier.size(width = 1000.dp, height = 500.dp)) {
+                        AppChildPanels(
+                            panels = panels,
+                            main = { _, _, _ ->
+                                Box(Modifier.fillMaxSize().testTag(MAIN_PANE_TAG))
+                            },
+                            detail = { _, _, _ ->
+                                Box(Modifier.fillMaxSize().testTag(DETAIL_PANE_TAG))
+                            },
+                            extra = { child, compact ->
+                                if (child != null && !compact) {
+                                    Box(Modifier.fillMaxSize().testTag(EXTRA_PANE_TAG))
+                                }
+                            },
+                            animation = animation,
+                        )
+                    }
+                }
+            }
+            waitForIdle()
+
+            mainClock.autoAdvance = false
+            panels.value = threePanePanels(showDetail = true, showExtra = false)
+            mainClock.advanceTimeByFrame()
+            mainClock.advanceTimeByFrame()
+
+            val exitingExtraBounds = onNodeWithTag(EXTRA_PANE_TAG).getUnclippedBoundsInRoot()
+
+            assertTrue(
+                exitingExtraBounds.left >= 1000.dp,
+                "extra pane should use the role-specific snap exit override, got ${exitingExtraBounds.left}",
             )
         }
 
@@ -171,6 +350,22 @@ private data object MainChild
 private data object DetailChild
 
 private data object ExtraChild
+
+private const val MAIN_PANE_TAG = "main-pane"
+
+private const val DETAIL_PANE_TAG = "detail-pane"
+
+private const val EXTRA_PANE_TAG = "extra-pane"
+
+private fun assertDpClose(
+    expected: Dp,
+    actual: Dp,
+) {
+    assertTrue(
+        abs(expected.value - actual.value) < 0.5f,
+        "expected $expected, got $actual",
+    )
+}
 
 private val CompactAdaptiveInfo =
     AppAdaptiveInfo(

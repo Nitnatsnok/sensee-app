@@ -335,6 +335,7 @@ Compose:
       - LocalPlatform
       - LocalTextProvider
       - LocalSenseeAdaptiveLayoutMetrics
+      - LocalSenseeMinTouchTargetSize
       - LocalSenseeNavigationItemLayout
   CompositionLocalNaming:
     active: true

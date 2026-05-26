@@ -2,6 +2,7 @@ package app.sensee.feature.profile.presentation.impl.section
 
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
+import app.sensee.core.decompose.context.AppContentPresentation
 import app.sensee.core.decompose.context.appChildPanels
 import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
@@ -19,6 +20,7 @@ import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.router.panels.Panels
 import com.arkivanov.decompose.router.panels.PanelsNavigation
 import com.arkivanov.decompose.router.panels.navigate
+import com.arkivanov.decompose.router.panels.setMode
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.subscribe
 import com.arkivanov.essenty.backhandler.BackCallback
@@ -36,7 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 @AssistedInject
 public class DefaultProfileSectionComponent(
     @Assisted componentContext: AppComponentContext,
-    @Assisted private val target: ProfileConfig?,
+    @Assisted target: ProfileConfig?,
     private val profileHomeComponentFactory: ProfileHomeComponent.Factory,
     private val profileAiSettingsComponentFactory: ProfileAiSettingsComponent.Factory,
     private val profileLearningSettingsComponentFactory: ProfileLearningSettingsComponent.Factory,
@@ -46,6 +48,7 @@ public class DefaultProfileSectionComponent(
     private val panelsNavigation =
         PanelsNavigation<ProfileConfig.Home, ProfileConfig.Settings, ProfileExtraConfig>()
     private val showBottomBarState = MutableStateFlow(true)
+    private var lastSettingsDetail = target as? ProfileConfig.Settings ?: DefaultSettingsConfig
 
     override val panels: Value<ProfileChildPanels> =
         appChildPanels(
@@ -59,9 +62,9 @@ public class DefaultProfileSectionComponent(
             initialPanels = {
                 Panels(
                     main = ProfileConfig.Home,
-                    details = target as? ProfileConfig.Settings,
+                    details = null,
                     extra = null,
-                    mode = ChildPanelsMode.DUAL,
+                    mode = ChildPanelsMode.SINGLE,
                 )
             },
             handleBackButton = false,
@@ -76,20 +79,27 @@ public class DefaultProfileSectionComponent(
     override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
 
     // System back cascades through the panels: close extra (picker) first, then
-    // detail, before letting the press fall through to the shell. appChildPanels'
-    // own handleBackButton stays off so this stays the single source.
+    // compact detail, before letting the press fall through to the shell.
+    // appChildPanels' own handleBackButton stays off so this stays the single source.
     private val panelsBackCallback =
         BackCallback(isEnabled = false) {
             when {
                 panels.value.extra != null -> closeTopicPicker()
-                panels.value.details != null -> closeSettings()
+                panels.value.details != null &&
+                    contentPresentation.value == AppContentPresentation.SinglePane -> closeSettings()
             }
         }
 
     init {
         backHandler.register(panelsBackCallback)
         panels.subscribe(lifecycle) { state ->
-            panelsBackCallback.isEnabled = state.details != null || state.extra != null
+            state.details?.configuration?.let { config ->
+                lastSettingsDetail = config
+            }
+            updatePanelsBackCallback()
+        }
+        contentPresentation.subscribe(lifecycle) { presentation ->
+            applyContentPresentation(presentation)
         }
     }
 
@@ -99,7 +109,11 @@ public class DefaultProfileSectionComponent(
     ): NavigationRequestStatus =
         when (target) {
             ProfileConfig.Home -> {
-                closeSettings()
+                if (contentPresentation.value == AppContentPresentation.SinglePane) {
+                    closeSettings()
+                } else {
+                    ensureSettingsDetailOpened()
+                }
                 onComplete(true)
                 NavigationRequestStatus.Handled
             }
@@ -122,7 +136,8 @@ public class DefaultProfileSectionComponent(
                 closeTopicPicker()
                 onResult(NavigationRequestStatus.Handled)
             }
-            panels.value.details != null -> {
+            panels.value.details != null &&
+                contentPresentation.value == AppContentPresentation.SinglePane -> {
                 closeSettings()
                 onResult(NavigationRequestStatus.Handled)
             }
@@ -131,6 +146,7 @@ public class DefaultProfileSectionComponent(
     }
 
     private fun openSettings(config: ProfileConfig.Settings) {
+        lastSettingsDetail = config
         panelsNavigation.navigate(details = config, extra = null)
     }
 
@@ -144,6 +160,35 @@ public class DefaultProfileSectionComponent(
 
     private fun closeTopicPicker() {
         panelsNavigation.navigate(extra = null)
+    }
+
+    private fun applyContentPresentation(presentation: AppContentPresentation) {
+        val mode = presentation.toChildPanelsMode()
+        if (panels.value.mode != mode) {
+            panelsNavigation.setMode(mode)
+        }
+        if (presentation != AppContentPresentation.SinglePane) {
+            ensureSettingsDetailOpened()
+        }
+        updatePanelsBackCallback()
+    }
+
+    private fun ensureSettingsDetailOpened() {
+        if (panels.value.details == null) {
+            panelsNavigation.navigate(
+                details = lastSettingsDetail,
+                extra = panels.value.extra?.configuration,
+            )
+        }
+    }
+
+    private fun updatePanelsBackCallback() {
+        panelsBackCallback.isEnabled =
+            panels.value.extra != null ||
+            (
+                panels.value.details != null &&
+                    contentPresentation.value == AppContentPresentation.SinglePane
+            )
     }
 
     private fun createDetails(
@@ -184,3 +229,13 @@ public class DefaultProfileSectionComponent(
         ): DefaultProfileSectionComponent
     }
 }
+
+@OptIn(ExperimentalDecomposeApi::class)
+private fun AppContentPresentation.toChildPanelsMode(): ChildPanelsMode =
+    when (this) {
+        AppContentPresentation.SinglePane -> ChildPanelsMode.SINGLE
+        AppContentPresentation.ListDetail -> ChildPanelsMode.DUAL
+        AppContentPresentation.SupportingPane -> ChildPanelsMode.TRIPLE
+    }
+
+private val DefaultSettingsConfig = ProfileConfig.Settings.App

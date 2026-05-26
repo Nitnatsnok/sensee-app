@@ -1,5 +1,6 @@
 package app.sensee.ui.designSystem.component.practiceRating
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import app.sensee.ui.designSystem.component.SenseeIcon
-import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.Text
@@ -60,10 +60,10 @@ public fun SenseePracticeRatingButton(
             ),
         modifier =
             modifier
-                .senseeMinTouchTargetSize()
                 .defaultMinSize(minWidth = minWidth, minHeight = minHeight)
                 .clip(shape)
                 .background(colors.containerColor(enabled)),
+        indication = LocalIndication.current,
     ) {
         ProvideContentColor(colors.contentColor(enabled)) {
             Column(

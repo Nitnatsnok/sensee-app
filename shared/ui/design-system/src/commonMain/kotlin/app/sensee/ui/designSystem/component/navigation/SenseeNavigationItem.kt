@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import app.sensee.ui.designSystem.component.LocalSenseeMinTouchTargetSize
 import app.sensee.ui.designSystem.component.button.SenseeIconButton
 import app.sensee.ui.designSystem.component.button.SenseeIconButtonDefaults
 import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
@@ -49,10 +50,11 @@ public fun SenseeNavigationItem(
     val itemLayout = LocalSenseeNavigationItemLayout.current
     val iconTint = if (selected) colors.selectedIcon else colors.unselectedIcon
     val labelColor = if (selected) colors.selectedLabel else colors.unselectedLabel
+    val minTouchTargetSize = LocalSenseeMinTouchTargetSize.current
 
     val base =
         modifier
-            .senseeMinTouchTargetSize()
+            .senseeMinTouchTargetSize(minTouchTargetSize)
             .clip(shapes.large)
             .selectable(selected = selected, onClick = onClick, role = Role.Tab)
 

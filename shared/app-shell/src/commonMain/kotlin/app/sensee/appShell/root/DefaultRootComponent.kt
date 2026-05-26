@@ -6,6 +6,8 @@ import app.sensee.appShell.primary.WebSectionRoute
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
+import app.sensee.core.decompose.context.AppContentPresentation
+import app.sensee.core.decompose.context.MutableAdaptivePresentationContext
 import app.sensee.core.decompose.context.appChildStack
 import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
@@ -43,7 +45,7 @@ import kotlinx.coroutines.launch
 
 @AssistedInject
 public class DefaultRootComponent(
-    @Assisted componentContext: AppComponentContext,
+    @Assisted private val componentContext: AppComponentContext,
     @Assisted private val deepLink: String?,
     private val startupComponentFactory: StartupComponent.Factory,
     private val primaryShellComponentFactory: PrimaryShellComponent.Factory,
@@ -54,6 +56,8 @@ public class DefaultRootComponent(
     AppComponentContext by componentContext {
     override val platform: Platform = platformEnvironment.platform
 
+    private val adaptivePresentationController =
+        componentContext as? MutableAdaptivePresentationContext
     private val stackNavigation = StackNavigation<ScreenConfig>()
     private val componentScope = CoroutineScope(appDispatchers.main.immediate + SupervisorJob())
 
@@ -109,6 +113,10 @@ public class DefaultRootComponent(
 
     override fun back(onResult: (NavigationRequestStatus) -> Unit) {
         stackNavigation.pop(onResult = onResult)
+    }
+
+    override fun setContentPresentation(presentation: AppContentPresentation) {
+        adaptivePresentationController?.setContentPresentation(presentation)
     }
 
     private fun createChild(

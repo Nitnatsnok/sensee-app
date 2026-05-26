@@ -1,6 +1,5 @@
 package app.sensee.feature.profile.presentation.impl.learningsettings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,14 +37,12 @@ public fun ProfileLearningSettingsScreen(
     textProvider: TextProvider = rememberProfileLearningSettingsTextProvider(),
 ) {
     val uiState by component.uiState.collectAsState()
-    val colors = SenseeTheme.colors
     val layoutMetrics = LocalSenseeAdaptiveLayoutMetrics.current ?: senseeCompactLayoutMetrics()
 
     Box(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(colors.background),
+                .fillMaxSize(),
     ) {
         when (val loadingState = uiState.loadingState) {
             DataLoadingState.Idle,

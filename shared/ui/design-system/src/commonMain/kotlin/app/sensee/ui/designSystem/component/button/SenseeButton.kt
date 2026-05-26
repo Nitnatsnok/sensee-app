@@ -1,5 +1,6 @@
 package app.sensee.ui.designSystem.component.button
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
-import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
 import com.composeunstyled.ProvideContentColor
 import com.composeunstyled.UnstyledButton
 
@@ -41,7 +41,6 @@ public fun SenseeButton(
         contentPadding = contentPadding,
         modifier =
             modifier
-                .senseeMinTouchTargetSize()
                 .defaultMinSize(
                     minWidth = minWidth,
                     minHeight = minHeight,
@@ -53,6 +52,7 @@ public fun SenseeButton(
                     shape = shape,
                 ),
         interactionSource = interactionSource,
+        indication = LocalIndication.current,
     ) {
         ProvideContentColor(colors.contentColor(enabled)) {
             Row(

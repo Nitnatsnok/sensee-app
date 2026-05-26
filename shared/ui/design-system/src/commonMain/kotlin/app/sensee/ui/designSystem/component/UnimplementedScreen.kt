@@ -1,6 +1,5 @@
 package app.sensee.ui.designSystem.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +37,6 @@ public fun UnimplementedScreen(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(colors.background)
                 .padding(
                     horizontal = layoutMetrics.screenHorizontalPadding,
                     vertical = layoutMetrics.screenVerticalPadding,

@@ -2,6 +2,7 @@ package app.sensee.appShell.root
 
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
+import app.sensee.core.decompose.context.AppContentPresentation
 import app.sensee.core.decompose.navigation.NavigationDispatcher
 import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.core.platform.Platform
@@ -17,6 +18,8 @@ public interface RootComponent :
     public val stack: Value<ChildStack<ScreenConfig, AppComponent>>
 
     public val platform: Platform
+
+    public fun setContentPresentation(presentation: AppContentPresentation)
 
     public fun interface Factory {
         public fun create(

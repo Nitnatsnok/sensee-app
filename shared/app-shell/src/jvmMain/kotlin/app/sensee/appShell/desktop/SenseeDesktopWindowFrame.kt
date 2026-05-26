@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +34,7 @@ import app.sensee.ui.designSystem.icons.CollapseContent24px
 import app.sensee.ui.designSystem.icons.ExpandContent24px
 import app.sensee.ui.designSystem.icons.Minimize24px
 import app.sensee.ui.designSystem.theme.SenseeTheme
+import com.composeunstyled.Text
 
 private val TitleBarHeight = 40.dp
 private val ControlButtonWidth = 46.dp
@@ -101,7 +101,7 @@ private fun FrameWindowScope.WindowTitleBar(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                BasicText(
+                Text(
                     text = title,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

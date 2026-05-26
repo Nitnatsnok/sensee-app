@@ -21,6 +21,29 @@ missing — add it here, don't inline it in the feature.
   `shared/ui/adaptive`** — it only consumes the `Local`. `SenseeScreenContent` reads it by
   default so screens don't thread size class manually.
 
+## Pane header vs sheet header vs top bar
+
+The same logical "panel header" appears in three contexts. Use the design-system primitive
+matching that context instead of hand-rolling a styled header in feature code:
+
+- **`SenseePaneHeader`** — title row for a wide-layout detail/extra pane (`AppChildPanels`).
+  It is layout only: the caller owns the pane surface, shape, status-bar inset, outer padding,
+  and any divider/background chrome.
+- **`SenseeSheetHeader`** — title row inside `SenseeModalBottomSheet`. The sheet owns the
+  surface and drag indicator; the header only owns its inner row and content padding.
+- **`SenseeTopBar`** — full window-edge app bar with a leading navigation slot. Use it for
+  full-screen pages and the compact replace-main path of an `AppChildPanels` detail, where
+  the detail behaves like a pushed page.
+
+`SenseePaneHeader` and `SenseeSheetHeader` share the same structure:
+`[ title ][ actions ][ close ]`. Close belongs in the trailing actions area, never in a
+leading navigation slot. Back arrows belong to `SenseeTopBar` only, because back navigation
+has stack semantics that a side panel or sheet close action does not.
+
+For pane roots, prefer `SenseeSurface` or another design-system container over raw
+`Modifier.background(...)`. The header should not be wrapped in `SenseeTopBar` just to get
+colors, padding, or a close icon.
+
 ## Resources peculiarity (Compose Multiplatform)
 
 - Drawables in `composeResources/drawable` auto-generate `Res.drawable.*` accessors

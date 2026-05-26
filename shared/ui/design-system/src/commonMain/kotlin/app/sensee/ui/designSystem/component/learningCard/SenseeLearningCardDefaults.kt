@@ -21,8 +21,8 @@ public object SenseeLearningCardDefaults {
         val spacing = SenseeTheme.spacing
 
         return PaddingValues(
-            horizontal = spacing.extraLarge,
-            vertical = spacing.extraLarge,
+            horizontal = spacing.large,
+            vertical = spacing.large,
         )
     }
 

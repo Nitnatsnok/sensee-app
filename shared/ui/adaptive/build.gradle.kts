@@ -13,6 +13,7 @@ kotlin {
                 implementation(libs.compose.adaptive)
                 implementation(libs.decompose)
                 implementation(libs.decompose.extensions.compose)
+                implementation(projects.shared.ui.designSystem)
             }
         }
 

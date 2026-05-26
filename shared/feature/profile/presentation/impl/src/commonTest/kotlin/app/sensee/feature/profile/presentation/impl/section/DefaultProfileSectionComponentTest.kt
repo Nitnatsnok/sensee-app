@@ -1,5 +1,6 @@
 package app.sensee.feature.profile.presentation.impl.section
 
+import app.sensee.core.decompose.context.AppContentPresentation
 import app.sensee.core.decompose.context.RootComponentContext
 import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
@@ -18,6 +19,7 @@ import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
 import app.sensee.feature.profile.presentation.navigationApi.ProfileExtraConfig
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.ExperimentalDecomposeApi
+import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import kotlinx.collections.immutable.ImmutableList
@@ -39,10 +41,135 @@ class DefaultProfileSectionComponentTest {
     }
 
     @Test
-    fun `section opens directly into the target category`() {
+    fun `single-pane section keeps the target category pending`() {
         val component = buildComponent(target = ProfileConfig.Settings.Ai)
+
+        assertNull(component.panels.value.details)
+        assertEquals(ChildPanelsMode.SINGLE, component.panels.value.mode)
+    }
+
+    @Test
+    fun `wide section opens directly into the target category`() {
+        val component =
+            buildComponent(
+                target = ProfileConfig.Settings.Ai,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
         val detail = component.panels.value.details
+
         assertEquals(ProfileConfig.Settings.Ai, detail?.configuration)
+        assertEquals(ChildPanelsMode.DUAL, component.panels.value.mode)
+    }
+
+    @Test
+    fun `wide section reads presentation already stored in context`() {
+        val component =
+            buildComponent(
+                target = ProfileConfig.Settings.Learning,
+                contentPresentation = AppContentPresentation.SupportingPane,
+                setPresentationBeforeCreate = true,
+            )
+
+        assertEquals(
+            ProfileConfig.Settings.Learning,
+            component.panels.value.details
+                ?.configuration,
+        )
+        assertEquals(ChildPanelsMode.TRIPLE, component.panels.value.mode)
+    }
+
+    @Test
+    fun `wide section opens the default category when target is null`() {
+        val component =
+            buildComponent(
+                target = null,
+                contentPresentation = AppContentPresentation.SupportingPane,
+            )
+
+        assertEquals(
+            ProfileConfig.Settings.App,
+            component.panels.value.details
+                ?.configuration,
+        )
+        assertEquals(ChildPanelsMode.TRIPLE, component.panels.value.mode)
+    }
+
+    @Test
+    fun `wide section opens the default category when target is Home`() {
+        val component =
+            buildComponent(
+                target = ProfileConfig.Home,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
+
+        assertEquals(
+            ProfileConfig.Settings.App,
+            component.panels.value.details
+                ?.configuration,
+        )
+        assertEquals(ChildPanelsMode.DUAL, component.panels.value.mode)
+    }
+
+    @Test
+    fun `wide section keeps the detail category when opening Home`() {
+        val component =
+            buildComponent(
+                target = ProfileConfig.Settings.Ai,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
+
+        component.open(ProfileConfig.Home) {}
+
+        assertEquals(
+            ProfileConfig.Settings.Ai,
+            component.panels.value.details
+                ?.configuration,
+        )
+        assertEquals(ChildPanelsMode.DUAL, component.panels.value.mode)
+    }
+
+    @Test
+    fun `wide section does not close the detail category on back`() {
+        val component =
+            buildComponent(
+                target = ProfileConfig.Settings.Ai,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
+
+        var result: NavigationRequestStatus? = null
+        component.back { result = it }
+
+        assertEquals(NavigationRequestStatus.Unhandled, result)
+        assertEquals(
+            ProfileConfig.Settings.Ai,
+            component.panels.value.details
+                ?.configuration,
+        )
+    }
+
+    @Test
+    fun `wide section restores the last detail category after compact closes it`() {
+        val fixture =
+            buildFixture(
+                target = null,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
+        val component = fixture.component
+        component.open(ProfileConfig.Settings.Ai) {}
+
+        fixture.componentContext.setContentPresentation(AppContentPresentation.SinglePane)
+        component.back {}
+
+        assertNull(component.panels.value.details)
+
+        fixture.componentContext.setContentPresentation(AppContentPresentation.ListDetail)
+
+        assertEquals(
+            ProfileConfig.Settings.Ai,
+            component.panels.value.details
+                ?.configuration,
+        )
+        assertEquals(ChildPanelsMode.DUAL, component.panels.value.mode)
     }
 
     @Test
@@ -82,7 +209,9 @@ class DefaultProfileSectionComponentTest {
 
     @Test
     fun `opening Home closes the open category`() {
-        val component = buildComponent(target = ProfileConfig.Settings.Ai)
+        val component = buildComponent(target = null)
+
+        component.open(ProfileConfig.Settings.Ai) {}
 
         component.open(ProfileConfig.Home) {}
 
@@ -91,7 +220,9 @@ class DefaultProfileSectionComponentTest {
 
     @Test
     fun `back closes an open category and reports handled`() {
-        val component = buildComponent(target = ProfileConfig.Settings.Ai)
+        val component = buildComponent(target = null)
+
+        component.open(ProfileConfig.Settings.Ai) {}
 
         var result: NavigationRequestStatus? = null
         component.back { result = it }
@@ -112,7 +243,11 @@ class DefaultProfileSectionComponentTest {
 
     @Test
     fun `opening the topic picker shows it in the extra panel`() {
-        val component = buildComponent(target = ProfileConfig.Settings.Learning)
+        val component =
+            buildComponent(
+                target = ProfileConfig.Settings.Learning,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
 
         val status = component.open(ProfileExtraConfig.TopicPicker) {}
 
@@ -124,7 +259,11 @@ class DefaultProfileSectionComponentTest {
 
     @Test
     fun `the picker's Close action closes the extra panel`() {
-        val component = buildComponent(target = ProfileConfig.Settings.Learning)
+        val component =
+            buildComponent(
+                target = ProfileConfig.Settings.Learning,
+                contentPresentation = AppContentPresentation.ListDetail,
+            )
         component.open(ProfileExtraConfig.TopicPicker) {}
 
         val picker =
@@ -139,7 +278,8 @@ class DefaultProfileSectionComponentTest {
 
     @Test
     fun `back closes the picker before the detail panel`() {
-        val component = buildComponent(target = ProfileConfig.Settings.Learning)
+        val component = buildComponent(target = null)
+        component.open(ProfileConfig.Settings.Learning) {}
         component.open(ProfileExtraConfig.TopicPicker) {}
 
         var first: NavigationRequestStatus? = null
@@ -158,7 +298,22 @@ class DefaultProfileSectionComponentTest {
         assertNull(component.panels.value.details)
     }
 
-    private fun buildComponent(target: ProfileConfig?): DefaultProfileSectionComponent {
+    private fun buildComponent(
+        target: ProfileConfig?,
+        contentPresentation: AppContentPresentation = AppContentPresentation.SinglePane,
+        setPresentationBeforeCreate: Boolean = false,
+    ): DefaultProfileSectionComponent =
+        buildFixture(
+            target = target,
+            contentPresentation = contentPresentation,
+            setPresentationBeforeCreate = setPresentationBeforeCreate,
+        ).component
+
+    private fun buildFixture(
+        target: ProfileConfig?,
+        contentPresentation: AppContentPresentation = AppContentPresentation.SinglePane,
+        setPresentationBeforeCreate: Boolean = false,
+    ): ProfileSectionFixture {
         val lifecycle = LifecycleRegistry()
         val componentContext =
             RootComponentContext(
@@ -168,15 +323,28 @@ class DefaultProfileSectionComponentTest {
                 screenConfigSerializer = PolymorphicSerializer(ScreenConfig::class),
             )
         lifecycle.resume()
-        return DefaultProfileSectionComponent(
-            componentContext = componentContext,
-            target = target,
-            profileHomeComponentFactory = { FakeProfileHomeComponent() },
-            profileAiSettingsComponentFactory = { FakeProfileAiSettingsComponent() },
-            profileLearningSettingsComponentFactory = { FakeProfileLearningSettingsComponent() },
-            profileTopicPickerComponentFactory = { _, onClose -> FakeProfileTopicPickerComponent(onClose) },
-        )
+        if (setPresentationBeforeCreate) {
+            componentContext.setContentPresentation(contentPresentation)
+        }
+        val component =
+            DefaultProfileSectionComponent(
+                componentContext = componentContext,
+                target = target,
+                profileHomeComponentFactory = { FakeProfileHomeComponent() },
+                profileAiSettingsComponentFactory = { FakeProfileAiSettingsComponent() },
+                profileLearningSettingsComponentFactory = { FakeProfileLearningSettingsComponent() },
+                profileTopicPickerComponentFactory = { _, onClose -> FakeProfileTopicPickerComponent(onClose) },
+            )
+        if (!setPresentationBeforeCreate) {
+            componentContext.setContentPresentation(contentPresentation)
+        }
+        return ProfileSectionFixture(component, componentContext)
     }
+
+    private data class ProfileSectionFixture(
+        val component: DefaultProfileSectionComponent,
+        val componentContext: RootComponentContext,
+    )
 
     private class FakeProfileHomeComponent : ProfileHomeComponent {
         override val items: ImmutableList<ProfileConfig.Settings> = persistentListOf()

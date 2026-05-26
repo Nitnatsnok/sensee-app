@@ -51,6 +51,7 @@ public fun CardDetailScreen(
     component: CardDetailComponent,
     modifier: Modifier = Modifier,
     textProvider: TextProvider = rememberPracticeTextProvider(),
+    showCardSummary: Boolean = true,
 ) {
     val uiState by component.uiState.collectAsState()
     CardDetailContent(
@@ -58,6 +59,7 @@ public fun CardDetailScreen(
         onAction = component::onAction,
         modifier = modifier.fillMaxSize(),
         textProvider = textProvider,
+        showCardSummary = showCardSummary,
     )
 }
 
@@ -67,6 +69,7 @@ internal fun CardDetailContent(
     onAction: (CardDetailAction) -> Unit,
     textProvider: TextProvider,
     modifier: Modifier = Modifier,
+    showCardSummary: Boolean = true,
 ) {
     val spacing = SenseeTheme.spacing
 
@@ -109,6 +112,7 @@ internal fun CardDetailContent(
                         onRelatedClick = { cardId -> onAction(CardDetailAction.OpenRelated(cardId)) },
                         modifier = Modifier.fillMaxSize(),
                         textProvider = textProvider,
+                        showCardSummary = showCardSummary,
                     )
                 }
         }
@@ -124,6 +128,7 @@ private fun CardDetailBody(
     studyLanguageTag: String,
     onRelatedClick: (String) -> Unit,
     textProvider: TextProvider,
+    showCardSummary: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val spacing = SenseeTheme.spacing
@@ -146,7 +151,14 @@ private fun CardDetailBody(
             ),
         verticalArrangement = Arrangement.spacedBy(spacing.medium),
     ) {
-        item { CardHeader(card = card, labels = labels, studyLanguageTag = studyLanguageTag) }
+        item {
+            CardHeader(
+                card = card,
+                labels = labels,
+                studyLanguageTag = studyLanguageTag,
+                showCardSummary = showCardSummary,
+            )
+        }
         item { CardBodySection(card = card, textProvider = textProvider) }
         if (related.isNotEmpty()) {
             item {
@@ -174,27 +186,35 @@ private fun CardHeader(
     card: CardDetailCardUiState,
     labels: GrammarLabels,
     studyLanguageTag: String,
+    showCardSummary: Boolean,
 ) {
     val typography = SenseeTheme.typography
-    val spacing = SenseeTheme.spacing
-
-    SenseeSurface(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(spacing.extraSmall)) {
-            Text(text = card.headword, style = typography.titleLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
-                SenseeBadge(
-                    text = card.unitType.shortLabel(labels, studyLanguageTag),
-                    colors = grammarUnitBadgeColors(card.unitType),
-                )
-                card.grammarTags.forEach { tag ->
+    if (showCardSummary) {
+        val spacing = SenseeTheme.spacing
+        SenseeSurface(modifier = Modifier.fillMaxWidth()) {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.extraSmall)) {
+                Text(text = card.headword, style = typography.titleLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
                     SenseeBadge(
-                        text = tag.shortLabel(labels, studyLanguageTag),
-                        colors = grammarTagBadgeColors(tag),
+                        text = card.unitType.shortLabel(labels, studyLanguageTag),
+                        colors = grammarUnitBadgeColors(card.unitType),
                     )
+                    card.grammarTags.forEach { tag ->
+                        SenseeBadge(
+                            text = tag.shortLabel(labels, studyLanguageTag),
+                            colors = grammarTagBadgeColors(tag),
+                        )
+                    }
                 }
+                Text(text = card.translation, style = typography.titleMedium)
             }
-            Text(text = card.translation, style = typography.titleMedium)
         }
+    } else {
+        Text(
+            text = card.translation,
+            modifier = Modifier.fillMaxWidth(),
+            style = typography.titleMedium,
+        )
     }
 }
 
@@ -206,17 +226,18 @@ private fun CardBodySection(
     val typography = SenseeTheme.typography
     val spacing = SenseeTheme.spacing
 
-    SenseeSurface(modifier = Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
-            SectionLabel(text = textProvider.text(PracticeTextKeys.CardDetailSectionSense))
-            Text(text = card.senseSummary, style = typography.bodyMedium)
-            Spacer(modifier = Modifier.height(spacing.small))
-            SectionLabel(text = textProvider.text(PracticeTextKeys.CardDetailSectionContext))
-            Text(
-                text = StudiedSentence.parse(card.contextSentence).plainText(),
-                style = typography.bodyMedium,
-            )
-        }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(spacing.small),
+    ) {
+        SectionLabel(text = textProvider.text(PracticeTextKeys.CardDetailSectionSense))
+        Text(text = card.senseSummary, style = typography.bodyMedium)
+        Spacer(modifier = Modifier.height(spacing.small))
+        SectionLabel(text = textProvider.text(PracticeTextKeys.CardDetailSectionContext))
+        Text(
+            text = StudiedSentence.parse(card.contextSentence).plainText(),
+            style = typography.bodyMedium,
+        )
     }
 }
 
