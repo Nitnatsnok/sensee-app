@@ -16,8 +16,11 @@ import kotlin.test.assertEquals
 class ProfileAppSettingsLogicTest {
     private class FakeSettings(
         initial: UserSettingsSnapshot = UserSettingsSnapshot(),
+        private val updateFailure: Throwable? = null,
     ) : UserSettingsRepository {
         private val flow = MutableStateFlow(initial)
+        var updateAttempts = 0
+            private set
 
         override fun observeSettings(scope: UserSettingsScope): Flow<UserSettingsSnapshot> = flow.asStateFlow()
 
@@ -27,6 +30,8 @@ class ProfileAppSettingsLogicTest {
             scope: UserSettingsScope,
             transform: (UserSettingsSnapshot) -> UserSettingsSnapshot,
         ): UserSettingsSnapshot {
+            updateAttempts += 1
+            updateFailure?.let { throw it }
             val next = transform(flow.value)
             flow.value = next
             return next
@@ -77,5 +82,41 @@ class ProfileAppSettingsLogicTest {
         settings.emitThemeMode(AppThemeMode.Dark)
 
         assertEquals(AppThemeMode.Dark, logic.uiState.value.themeMode)
+    }
+
+    @Test
+    fun `setting the active theme mode does not persist a duplicate update`() {
+        val settings =
+            FakeSettings(
+                initial =
+                    UserSettingsSnapshot(
+                        app = AppSettings(themeMode = AppThemeMode.Dark),
+                    ),
+            )
+        val logic = logic(settings)
+
+        logic.setThemeMode(AppThemeMode.Dark)
+
+        assertEquals(0, settings.updateAttempts)
+        assertEquals(AppThemeMode.Dark, logic.uiState.value.themeMode)
+    }
+
+    @Test
+    fun `failed theme mode persistence keeps the observed state unchanged`() {
+        val settings =
+            FakeSettings(
+                initial =
+                    UserSettingsSnapshot(
+                        app = AppSettings(themeMode = AppThemeMode.Dark),
+                    ),
+                updateFailure = IllegalStateException("settings unavailable"),
+            )
+        val logic = logic(settings)
+
+        logic.setThemeMode(AppThemeMode.Light)
+
+        assertEquals(1, settings.updateAttempts)
+        assertEquals(AppThemeMode.Dark, logic.uiState.value.themeMode)
+        assertEquals(AppThemeMode.Dark, settings.snapshot().app.themeMode)
     }
 }

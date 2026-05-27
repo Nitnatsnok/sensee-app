@@ -27,18 +27,26 @@ class FsrsMathTest {
     }
 
     @Test
-    fun `initial state has positive stability and bounded difficulty`() {
+    fun `initial state matches the FSRS v6 default weights`() {
         val state = math.initialState(ReviewRating.Good)
 
-        assertTrue(state.stability > 0.0)
-        assertTrue(state.difficulty in 1.0..10.0)
+        assertEquals(
+            expected = 2.11810397045901,
+            actual = state.difficulty,
+            absoluteTolerance = 1e-12,
+        )
+        assertEquals(
+            expected = 2.3065,
+            actual = state.stability,
+            absoluteTolerance = 1e-12,
+        )
     }
 
     @Test
-    fun `next interval is positive`() {
+    fun `next interval rounds stability at the desired retention point`() {
         val interval = math.nextIntervalDays(stability = 5.0)
 
-        assertTrue(interval > 0)
+        assertEquals(5, interval)
     }
 
     @Test
@@ -50,14 +58,18 @@ class FsrsMathTest {
     }
 
     @Test
-    fun `successful review does not reduce short term stability`() {
+    fun `successful short term review uses the FSRS v6 stability increase`() {
         val next =
             math.nextShortTermStability(
                 currentStability = 1.0,
                 rating = ReviewRating.Good,
             )
 
-        assertTrue(next >= 1.0)
+        assertEquals(
+            expected = 1.05072037462322,
+            actual = next,
+            absoluteTolerance = 1e-12,
+        )
     }
 
     @Test

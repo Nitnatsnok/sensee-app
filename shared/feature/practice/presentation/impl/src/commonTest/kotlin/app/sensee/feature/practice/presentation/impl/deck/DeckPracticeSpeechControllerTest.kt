@@ -112,6 +112,50 @@ class DeckPracticeSpeechControllerTest {
         }
     }
 
+    @Test
+    fun `failed speech clears the active indicator`() {
+        val scope = testScope()
+        val speaker = FakeSpeaker()
+        val controller = DeckPracticeSpeechController(speaker)
+
+        try {
+            controller.speak(
+                targetId = "card-1:headword",
+                text = "hello",
+                locale = SpeechLocale.English,
+                scope = scope,
+            )
+            speaker.lastHandle.update(SpeechState.Speaking)
+
+            speaker.lastHandle.update(SpeechState.Failed(TtsError.Unknown("playback failed")))
+
+            assertEquals(DeckPracticeSpeechUiState(), controller.state.value)
+        } finally {
+            scope.cancel()
+        }
+    }
+
+    @Test
+    fun `blank speech text is ignored without creating a handle`() {
+        val scope = testScope()
+        val speaker = FakeSpeaker()
+        val controller = DeckPracticeSpeechController(speaker)
+
+        try {
+            controller.speak(
+                targetId = "card-1:headword",
+                text = "   ",
+                locale = SpeechLocale.English,
+                scope = scope,
+            )
+
+            assertEquals(0, speaker.requestCount)
+            assertEquals(DeckPracticeSpeechUiState(), controller.state.value)
+        } finally {
+            scope.cancel()
+        }
+    }
+
     private fun testScope(): CoroutineScope {
         val dispatchers = immediateAppDispatchers()
         return CoroutineScope(dispatchers.main.immediate + SupervisorJob())
@@ -126,6 +170,9 @@ class DeckPracticeSpeechControllerTest {
 
         val lastRequest: SpeechRequest
             get() = recordedRequests.last()
+
+        val requestCount: Int
+            get() = recordedRequests.size
 
         override fun speak(request: SpeechRequest): SpeechHandle {
             recordedRequests += request

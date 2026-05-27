@@ -17,7 +17,7 @@
 | `navigation.feature` | `@implemented` + `@planned` | Распространение `ScreenConfig` по цепочке `local -> parent`, поведение `RootComponent` и `PrimaryShellComponent`; web-навигация: URL секции, история вложенного стека, холодный старт и тёплое восстановление; планируется вложенная ссылка во `VocabularyEditorConfig.Editor` (EB-7) |
 | `vocabulary-capture.feature` | `@implemented` (+ `@planned`) | Внесение слова, получение AI-подсказок, единая модель ответа, мультивыбор смыслов, ручной смысл, устойчивое подтверждение; планируется лемма-семья и производные карточки |
 | `library.feature` | `@implemented` (+ `@planned`) | `Home`: обзор сервисных наборов и собственного материала, добавление/отмена набора, Practice видит только собственный материал; планируется курирование, `EntryDetail`/`LemmaDetail`, частичное добавление |
-| `profile.feature` | `@implemented` (+ `@planned`) | Категория `Ai`: выбор AI/TTS-провайдера, верификация ключа, постепенное раскрытие полей; планируется экран `Settings` по категориям, scope `Device`/`User`, `About`, заглушки `Account`/`Stats` |
+| `profile.feature` | `@implemented` (+ `@planned`) | Меню `Profile`, wide/compact раскладка категорий, `App` themeMode, `Learning` выбор тем, `Ai`/TTS-провайдеры и ключи, заглушки `Practice`/`Experimental`; планируются языки, полный `Practice`, `About`, Account/синхронизация |
 | `home.feature` | `@planned` | Дашборд: повторить сегодня (due-сессия), незавершённый ввод, быстрый ввод; агрегатор без своего домена |
 
 ## Соглашения
