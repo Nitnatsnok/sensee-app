@@ -19,12 +19,14 @@ import androidx.compose.ui.unit.dp
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.profile.presentation.api.ProfileAiSettingsComponent
+import app.sensee.feature.profile.presentation.api.ProfileAppSettingsComponent
 import app.sensee.feature.profile.presentation.api.ProfileLearningSettingsComponent
 import app.sensee.feature.profile.presentation.api.ProfileSectionComponent
 import app.sensee.feature.profile.presentation.api.ProfileSettingsPlaceholderComponent
 import app.sensee.feature.profile.presentation.api.ProfileTopicPickerAction
 import app.sensee.feature.profile.presentation.api.ProfileTopicPickerComponent
 import app.sensee.feature.profile.presentation.impl.aisettings.ProfileAiSettingsScreen
+import app.sensee.feature.profile.presentation.impl.appsettings.ProfileAppSettingsScreen
 import app.sensee.feature.profile.presentation.impl.home.ProfileHomeScreen
 import app.sensee.feature.profile.presentation.impl.home.ProfileHomeTextKeys
 import app.sensee.feature.profile.presentation.impl.home.categoryTitleKey
@@ -160,6 +162,9 @@ private fun ProfileDetailBody(
     modifier: Modifier = Modifier,
 ) {
     when (component) {
+        is ProfileAppSettingsComponent ->
+            ProfileAppSettingsScreen(component = component, modifier = modifier)
+
         is ProfileAiSettingsComponent ->
             ProfileAiSettingsScreen(component = component, modifier = modifier)
 

@@ -21,10 +21,10 @@ kotlin {
                 implementation(libs.compose.uiToolingPreview)
                 implementation(libs.androidx.lifecycle.viewmodelCompose)
                 implementation(libs.androidx.lifecycle.runtimeCompose)
-                implementation(libs.kotlinx.coroutines.core)
+                api(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.core)
 
-                implementation(projects.shared.ui.designSystem)
+                api(projects.shared.ui.designSystem)
                 implementation(projects.shared.ui.adaptive)
 
                 api(projects.shared.database)
@@ -73,6 +73,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlinx.serialization.json)
             }
         }

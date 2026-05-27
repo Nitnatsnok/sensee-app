@@ -3,6 +3,8 @@ package app.sensee.appShell
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import app.sensee.appShell.root.RootComponent
 import app.sensee.appShell.root.RootScreen
@@ -25,7 +27,8 @@ public fun App(
     modifier: Modifier = Modifier,
     contentFrame: AppContentFrame = { content -> content() },
 ) {
-    AppComposeEnvironment(platform = rootComponent.platform) {
+    val themeMode by rootComponent.themeMode.collectAsState()
+    AppComposeEnvironment(platform = rootComponent.platform, themeMode = themeMode) {
         val contentPresentation = LocalAdaptiveInfo.current.contentLayoutType.toContentPresentation()
         SideEffect {
             rootComponent.setContentPresentation(contentPresentation)

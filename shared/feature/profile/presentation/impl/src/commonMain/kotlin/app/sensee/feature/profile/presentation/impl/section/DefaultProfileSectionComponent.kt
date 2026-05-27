@@ -7,6 +7,7 @@ import app.sensee.core.decompose.context.appChildPanels
 import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.feature.profile.presentation.api.ProfileAiSettingsComponent
+import app.sensee.feature.profile.presentation.api.ProfileAppSettingsComponent
 import app.sensee.feature.profile.presentation.api.ProfileChildPanels
 import app.sensee.feature.profile.presentation.api.ProfileHomeComponent
 import app.sensee.feature.profile.presentation.api.ProfileLearningSettingsComponent
@@ -40,6 +41,7 @@ public class DefaultProfileSectionComponent(
     @Assisted componentContext: AppComponentContext,
     @Assisted target: ProfileConfig?,
     private val profileHomeComponentFactory: ProfileHomeComponent.Factory,
+    private val profileAppSettingsComponentFactory: ProfileAppSettingsComponent.Factory,
     private val profileAiSettingsComponentFactory: ProfileAiSettingsComponent.Factory,
     private val profileLearningSettingsComponentFactory: ProfileLearningSettingsComponent.Factory,
     private val profileTopicPickerComponentFactory: ProfileTopicPickerComponent.Factory,
@@ -196,10 +198,10 @@ public class DefaultProfileSectionComponent(
         componentContext: AppComponentContext,
     ): AppComponent =
         when (config) {
+            ProfileConfig.Settings.App -> profileAppSettingsComponentFactory.create(componentContext)
             ProfileConfig.Settings.Ai -> profileAiSettingsComponentFactory.create(componentContext)
             ProfileConfig.Settings.Learning ->
                 profileLearningSettingsComponentFactory.create(componentContext)
-            ProfileConfig.Settings.App,
             ProfileConfig.Settings.Practice,
             ProfileConfig.Settings.Experimental,
             -> DefaultProfileSettingsPlaceholderComponent(componentContext, config)

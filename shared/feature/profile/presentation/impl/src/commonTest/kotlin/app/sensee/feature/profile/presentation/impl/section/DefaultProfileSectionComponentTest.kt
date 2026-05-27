@@ -7,6 +7,9 @@ import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.feature.profile.presentation.api.ProfileAiSettingsAction
 import app.sensee.feature.profile.presentation.api.ProfileAiSettingsComponent
 import app.sensee.feature.profile.presentation.api.ProfileAiSettingsUiState
+import app.sensee.feature.profile.presentation.api.ProfileAppSettingsAction
+import app.sensee.feature.profile.presentation.api.ProfileAppSettingsComponent
+import app.sensee.feature.profile.presentation.api.ProfileAppSettingsUiState
 import app.sensee.feature.profile.presentation.api.ProfileHomeComponent
 import app.sensee.feature.profile.presentation.api.ProfileLearningSettingsAction
 import app.sensee.feature.profile.presentation.api.ProfileLearningSettingsComponent
@@ -185,15 +188,26 @@ class DefaultProfileSectionComponentTest {
     }
 
     @Test
-    fun `an unimplemented category opens a placeholder carrying its config`() {
+    fun `opening AppSettings shows the app settings component in the detail panel`() {
         val component = buildComponent(target = null)
 
         component.open(ProfileConfig.Settings.App) {}
 
         val detail = component.panels.value.details
+        assertEquals(ProfileConfig.Settings.App, detail?.configuration)
+        assertIs<ProfileAppSettingsComponent>(detail?.instance)
+    }
+
+    @Test
+    fun `an unimplemented category opens a placeholder carrying its config`() {
+        val component = buildComponent(target = null)
+
+        component.open(ProfileConfig.Settings.Practice) {}
+
+        val detail = component.panels.value.details
         val instance = detail?.instance
         assertIs<ProfileSettingsPlaceholderComponent>(instance)
-        assertEquals(ProfileConfig.Settings.App, instance.config)
+        assertEquals(ProfileConfig.Settings.Practice, instance.config)
     }
 
     @Test
@@ -331,6 +345,7 @@ class DefaultProfileSectionComponentTest {
                 componentContext = componentContext,
                 target = target,
                 profileHomeComponentFactory = { FakeProfileHomeComponent() },
+                profileAppSettingsComponentFactory = { FakeProfileAppSettingsComponent() },
                 profileAiSettingsComponentFactory = { FakeProfileAiSettingsComponent() },
                 profileLearningSettingsComponentFactory = { FakeProfileLearningSettingsComponent() },
                 profileTopicPickerComponentFactory = { _, onClose -> FakeProfileTopicPickerComponent(onClose) },
@@ -350,6 +365,13 @@ class DefaultProfileSectionComponentTest {
         override val items: ImmutableList<ProfileConfig.Settings> = persistentListOf()
 
         override fun onItemSelected(config: ProfileConfig.Settings) = Unit
+    }
+
+    private class FakeProfileAppSettingsComponent : ProfileAppSettingsComponent {
+        override val uiState: StateFlow<ProfileAppSettingsUiState> =
+            MutableStateFlow(ProfileAppSettingsUiState())
+
+        override fun onAction(action: ProfileAppSettingsAction) = Unit
     }
 
     private class FakeProfileAiSettingsComponent : ProfileAiSettingsComponent {

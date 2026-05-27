@@ -6,10 +6,11 @@
   Раздел открывается экраном-меню `ProfileHome` с группой «Настройки» и
   пунктами по категориям `UserSettingsCategory`. На широких экранах меню и
   экран категории показаны рядом (двухпанельный режим), на узких — по очереди.
-  Реализованный экран категории — `Ai` (`ProfileAiSettingsScreen`): выбор
-  AI/TTS-провайдера, верификация ключа и постепенное раскрытие полей.
-  Категории `App`/`Practice`/`Experimental` пока открывают явную заглушку
-  planned-состояния; в `Learning` реализован выбор тем для примеров.
+  Реализованные экраны категорий: `App` (`ProfileAppSettingsScreen`) для
+  выбора темы приложения, `Learning` для выбора тем для примеров и `Ai`
+  (`ProfileAiSettingsScreen`) для AI/TTS-провайдера, верификации ключа и
+  постепенного раскрытия полей. Категории `Practice`/`Experimental` пока
+  открывают явную заглушку planned-состояния.
   Навигация `About`, Account/синхронизация и статистика — планируемое.
 
   Сценарии без тега описывают текущий код; `@planned` — спроектированное,
@@ -26,6 +27,8 @@
     опциональную дополнительную панель для выбора тем; категория `Learning` открывает выбор тем
     через `NavigationDispatcher.open(ProfileExtraConfig.TopicPicker)`),
     `DefaultProfileHomeComponent`/`ProfileHomeScreen` (меню категорий),
+    `ProfileAppSettingsLogic`/`ProfileAppSettingsScreen` (категория `App`,
+    выбор `themeMode`),
     `ProfileAiSettingsLogic`/`ProfileAiSettingsScreen` (категория `Ai`),
     `ProfileLearningSettingsLogic`/`ProfileLearningSettingsScreen` (категория
     `Learning` — пока только строка-триггер выбора тем),
@@ -33,7 +36,8 @@
     `ProfileTopicPickerScreen` (сам выбор тем),
     `ProfileSettingsPlaceholderScreen` (явная заглушка остальных категорий)
   - `shared/feature/profile/presentation/api`: `ProfileSectionComponent`,
-    `ProfileHomeComponent`, `ProfileAiSettingsUiState`/`Action`,
+    `ProfileHomeComponent`, `ProfileAppSettingsComponent`/`UiState`/`Action`,
+    `ProfileAiSettingsUiState`/`Action`,
     `ProfileLearningSettingsComponent`/`UiState`/`Action`,
     `ProfileTopicPickerComponent`/`UiState`/`Action`, `KeyCheckStatus`
   - `shared/feature/profile/presentation/navigation-api`: `ProfileConfig`
@@ -43,14 +47,18 @@
   - `shared/settings/domain`: `UserSettingsRepository`,
     `UserSettingsCategory{App, Learning, Practice, Ai, Experimental}`,
     `UserSettingsScope{Device, User}`, `AiSettings` (ключи/провайдер),
-    `LearningSettings.preferredTopicIds`, `LearningTopic`,
+    `AppSettings.themeMode`, `LearningSettings.preferredTopicIds`, `LearningTopic`,
     `TopicCatalogRepository`
   - `shared/settings/data/topic/*`: каталог тем с mock-бэкенда (`learning/topics`)
   - design-system: `SenseeTextField` со скрытым (secure) режимом для ключей,
+    `SenseeSelectField` для выбора темы,
     `SenseeCheckbox` + `SenseeModalBottomSheet` + `SenseeSheetHeader` для выбора тем
+  - `shared/app-shell`: `RootComponent.themeMode` применяет `AppSettings.themeMode`
+    к корневому `AppComposeEnvironment` и `SenseeTheme`
   - границы AI/TTS-интеграций `shared/ai/*` / `shared/tts/*` (ADR-005): список
     совместимых провайдеров и выбор модели (из API провайдера, офлайн-fallback)
-  - Планируемое: экраны категорий `App`/`Practice`, языки в `Learning`, `About`
+  - Планируемое: экраны категорий `Practice`/`Experimental`, язык интерфейса
+    в `App`, языки в `Learning`, `About`
 
   Предыстория:
     Допустим пользователь открыл раздел `Profile`
@@ -76,19 +84,27 @@
 
   @implemented
   Сценарий: Нереализованные категории показывают явную заглушку
-    Когда пользователь выбирает категорию `App`, `Practice` или `Experimental`
+    Когда пользователь выбирает категорию `Practice` или `Experimental`
     Тогда показан экран «раздел появится позже» без неработающих полей
 
   @planned
   Сценарий: Настройки категории показывают свои поля
-    Когда пользователь открывает экран категории `App`, `Learning` или `Practice`
+    Когда пользователь открывает экран категории `Practice`
     Тогда показаны поля категории из `UserSettingsSnapshot`
 
-  @planned
-  Сценарий: Правка настроек App
-    Когда пользователь меняет `themeMode` или язык интерфейса в категории `App`
+  @implemented
+  Сценарий: Правка темы приложения
+    Когда пользователь открывает категорию `App`
+    Тогда показан выбор темы: системная, светлая или тёмная
+    Когда пользователь меняет `themeMode`
     Тогда изменение сохраняется через `UserSettingsRepository.updateAppSettings`
     И применяется к приложению
+
+  @planned
+  Сценарий: Правка языка интерфейса
+    Когда пользователь меняет язык интерфейса в категории `App`
+    Тогда изменение сохраняется через `UserSettingsRepository.updateAppSettings`
+    И применяется к текстам приложения
 
   @planned
   Сценарий: Правка настроек Learning

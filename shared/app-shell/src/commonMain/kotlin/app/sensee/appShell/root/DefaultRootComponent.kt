@@ -22,6 +22,8 @@ import app.sensee.feature.profile.presentation.navigationApi.ProfileConfig
 import app.sensee.feature.startup.domain.PreloadAppStartupUseCase
 import app.sensee.feature.startup.presentation.api.StartupComponent
 import app.sensee.feature.vocabularyEditor.presentation.navigationApi.VocabularyEditorConfig
+import app.sensee.settings.domain.UserSettingsRepository
+import app.sensee.ui.designSystem.theme.SenseeThemeMode
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -41,6 +43,9 @@ import dev.zacsweers.metro.binding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -50,6 +55,7 @@ public class DefaultRootComponent(
     private val startupComponentFactory: StartupComponent.Factory,
     private val primaryShellComponentFactory: PrimaryShellComponent.Factory,
     private val preloadAppStartup: PreloadAppStartupUseCase,
+    settingsRepository: UserSettingsRepository,
     platformEnvironment: PlatformEnvironment,
     appDispatchers: AppDispatchers,
 ) : RootComponent,
@@ -60,6 +66,15 @@ public class DefaultRootComponent(
         componentContext as? MutableAdaptivePresentationContext
     private val stackNavigation = StackNavigation<ScreenConfig>()
     private val componentScope = CoroutineScope(appDispatchers.main.immediate + SupervisorJob())
+
+    override val themeMode: StateFlow<SenseeThemeMode> =
+        settingsRepository
+            .observeThemeMode()
+            .stateIn(
+                scope = componentScope,
+                started = SharingStarted.Eagerly,
+                initialValue = SenseeThemeMode.System,
+            )
 
     override val stack: Value<ChildStack<ScreenConfig, AppComponent>> =
         appChildStack(

@@ -74,6 +74,7 @@ dependencies {
     implementation(projects.shared.appShell)
     implementation(projects.shared.core.decompose)
     implementation(projects.shared.core.platform)
+    implementation(projects.shared.ui.designSystem)
 
     implementation(libs.compose.uiToolingPreview)
     implementation(libs.androidx.activity.compose)
