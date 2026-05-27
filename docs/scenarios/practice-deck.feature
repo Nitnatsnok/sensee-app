@@ -9,7 +9,9 @@
   Источники реализации:
   - `shared/feature/practice/presentation/impl/DeckPracticeLogic.kt`
   - `shared/feature/practice/presentation/impl/DeckPracticeScreen.kt`
+  - `shared/feature/practice/presentation/impl/DeckPracticeSpeechController.kt`
   - `shared/feature/practice/presentation/impl/DefaultDeckPracticeComponent.kt`
+  - `shared/ui/design-system/component/button/SenseeSpeakIconButton.kt`
 
   Предыстория:
     Допустим открыт раздел `Practice` и `DefaultPracticeSectionComponent` находится на `PracticeConfig.Home`
@@ -56,6 +58,20 @@
     Когда я нажимаю `Reveal meaning`
     Тогда карточка показывает `back` сторону
     И кнопка `Reveal meaning` больше не отображается, пока карточка перевёрнута
+
+  @implemented
+  Сценарий: Кнопка озвучки показывает загрузку, воспроизведение и остановку
+    Допустим колода успешно загружена
+    И на текущей карточке есть кнопка озвучки для `headword` или контекстного предложения
+    Когда я нажимаю кнопку озвучки
+    Тогда `DefaultDeckPracticeComponent` запускает `Speaker.speak(...)`
+    И `DeckPracticeUiState.speech` указывает выбранный текст в фазе `Loading`
+    И соответствующий `SenseeSpeakIconButton` показывает круговой loader вместо иконки
+    Когда `SpeechHandle.state` становится `Speaking`
+    Тогда эта кнопка показывает пульсирующую иконку
+    Когда я нажимаю на пульсирующую кнопку
+    Тогда повторный `DeckPracticeAction.SpeakText` для того же target отменяет текущий `SpeechHandle`
+    И `DeckPracticeUiState.speech` возвращается в `Idle`
 
   @implemented
   Структура сценария: Свайп перевёрнутой карточки отправляет оценку в SRS

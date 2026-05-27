@@ -50,6 +50,7 @@ public data class DeckPracticeUiState(
     val loadingState: DataLoadingState = DataLoadingState.Loading,
     val deckTitle: String = "",
     val cards: PersistentList<DeckPracticeCardUiState> = persistentListOf(),
+    val speech: DeckPracticeSpeechUiState = DeckPracticeSpeechUiState(),
     // Cards closed (graduated out of the session) — not a swipe count: a card
     // counts once when FSRS graduates it, never on an in-session reinjection.
     val completedCount: Int = 0,
@@ -67,6 +68,17 @@ public data class DeckPracticeUiState(
     /** BCP-47 tag of the learner's native language — drives long help-glossary descriptions. */
     val nativeLanguageTag: String = "ru",
 )
+
+public data class DeckPracticeSpeechUiState(
+    val activeTargetId: String? = null,
+    val phase: DeckPracticeSpeechPhase = DeckPracticeSpeechPhase.Idle,
+)
+
+public enum class DeckPracticeSpeechPhase {
+    Idle,
+    Loading,
+    Speaking,
+}
 
 public data class DeckPracticeCardUiState(
     // Identifies one *showing* of a card. The same [id] can appear multiple times in a session
@@ -115,6 +127,7 @@ public sealed interface DeckPracticeAction {
     public data object DismissDetails : DeckPracticeAction
 
     public data class SpeakText(
+        val targetId: String,
         val text: String,
     ) : DeckPracticeAction
 

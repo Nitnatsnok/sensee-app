@@ -441,7 +441,8 @@ private fun DeckPracticeLearningCard(
                 card = card,
                 labels = state.uiState.grammarLabels,
                 studyLanguageTag = state.uiState.studyLanguageTag,
-                onSpeak = { text -> onAction(DeckPracticeAction.SpeakText(text)) },
+                speech = state.uiState.speech,
+                onAction = onAction,
             )
             if (isTopCard && !state.uiState.tapToFlipEnabled && !isFlipped) {
                 RevealMeaningButton(
@@ -459,7 +460,8 @@ private fun DeckPracticeLearningCard(
                 card = card,
                 labels = state.uiState.grammarLabels,
                 studyLanguageTag = state.uiState.studyLanguageTag,
-                onSpeak = { text -> onAction(DeckPracticeAction.SpeakText(text)) },
+                speech = state.uiState.speech,
+                onAction = onAction,
             )
         },
     )

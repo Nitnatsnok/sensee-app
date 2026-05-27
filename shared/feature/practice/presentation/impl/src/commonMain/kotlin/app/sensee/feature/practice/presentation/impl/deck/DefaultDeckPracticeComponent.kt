@@ -1,5 +1,6 @@
 package app.sensee.feature.practice.presentation.impl.deck
 
+import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
 import app.sensee.core.decompose.context.appChildPanels
@@ -17,7 +18,6 @@ import app.sensee.feature.practice.presentation.api.DeckPracticeUiState
 import app.sensee.feature.practice.presentation.navigationApi.PracticeConfig
 import app.sensee.tts.core.Speaker
 import app.sensee.tts.core.SpeechLocale
-import app.sensee.tts.core.SpeechRequest
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.panels.ChildPanelsMode
 import com.arkivanov.decompose.router.panels.Panels
@@ -31,7 +31,13 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalDecomposeApi::class, kotlinx.serialization.ExperimentalSerializationApi::class)
 @AssistedInject
@@ -41,15 +47,22 @@ public class DefaultDeckPracticeComponent(
     private val deckPracticeLogicFactory: DeckPracticeLogic.Factory,
     private val cardDetailFactory: CardDetailComponent.Factory,
     private val speaker: Speaker,
+    appDispatchers: AppDispatchers,
 ) : DeckPracticeComponent,
     AppComponentContext by componentContext {
+    private val componentScope = CoroutineScope(appDispatchers.main.immediate + SupervisorJob())
+    private val speechController = DeckPracticeSpeechController(speaker)
+
     private val logic =
         getOrCreateLogic(LogicKey("DeckPracticeLogic:${args.deckId}")) {
             deckPracticeLogicFactory.create(deckId = args.deckId)
         }
 
     init {
-        lifecycle.doOnDestroy { speaker.stop() }
+        lifecycle.doOnDestroy {
+            speechController.stopAll()
+            componentScope.cancel()
+        }
     }
 
     private val panelsNavigation =
@@ -57,7 +70,14 @@ public class DefaultDeckPracticeComponent(
 
     private val deckPanelHost: AppComponent = object : AppComponent {}
 
-    override val uiState: StateFlow<DeckPracticeUiState> = logic.uiState
+    override val uiState: StateFlow<DeckPracticeUiState> =
+        combine(logic.uiState, speechController.state) { uiState, speech ->
+            uiState.copy(speech = speech)
+        }.stateIn(
+            scope = componentScope,
+            started = SharingStarted.Eagerly,
+            initialValue = logic.uiState.value.copy(speech = speechController.state.value),
+        )
 
     override val panels: Value<DeckPracticeChildPanels> =
         appChildPanels(
@@ -86,7 +106,13 @@ public class DefaultDeckPracticeComponent(
             is DeckPracticeAction.FocusCard -> focusCard(action.cardId)
             DeckPracticeAction.DismissDetails -> dismissDetails()
             DeckPracticeAction.Close -> navigation.back()
-            is DeckPracticeAction.SpeakText -> speak(action.text)
+            is DeckPracticeAction.SpeakText ->
+                speechController.speak(
+                    targetId = action.targetId,
+                    text = action.text,
+                    locale = speechLocaleFor(logic.uiState.value.studyLanguageTag),
+                    scope = componentScope,
+                )
             DeckPracticeAction.Retry,
             DeckPracticeAction.RetryGrammarLabels,
             DeckPracticeAction.ToggleTapToFlip,
@@ -94,12 +120,6 @@ public class DefaultDeckPracticeComponent(
             DeckPracticeAction.OpenHelp,
             -> logic.onAction(action)
         }
-    }
-
-    private fun speak(text: String) {
-        if (text.isBlank()) return
-        // Practice card content is the studied language (English here).
-        speaker.speak(SpeechRequest(text = text, locale = SpeechLocale.English))
     }
 
     private fun focusCard(cardId: String) {
@@ -111,6 +131,18 @@ public class DefaultDeckPracticeComponent(
 
     private fun dismissDetails() {
         panelsNavigation.navigate(details = null, extra = null)
+    }
+
+    private fun speechLocaleFor(languageTag: String): SpeechLocale {
+        val normalized = languageTag.trim()
+        return when (normalized.lowercase()) {
+            "",
+            "en",
+            -> SpeechLocale.English
+
+            "ru" -> SpeechLocale.Russian
+            else -> SpeechLocale(normalized)
+        }
     }
 
     /**

@@ -4,6 +4,7 @@
     <string name="text_field_reveal_show">Показать</string>
     <string name="text_field_reveal_hide">Скрыть</string>
     <string name="speak_button">Озвучить</string>
+    <string name="stop_speaking_button">Остановить озвучку</string>
     <string name="nav_rail_expand">Развернуть меню</string>
     <string name="nav_rail_collapse">Свернуть меню</string>
 </resources>

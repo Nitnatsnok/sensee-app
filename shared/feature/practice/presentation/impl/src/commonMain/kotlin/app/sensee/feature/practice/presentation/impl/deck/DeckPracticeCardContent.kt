@@ -21,7 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import app.sensee.feature.practice.domain.PracticeCardFront
+import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeCardUiState
+import app.sensee.feature.practice.presentation.api.DeckPracticeSpeechUiState
 import app.sensee.feature.practice.presentation.impl.grammar.grammarTagBadgeColors
 import app.sensee.feature.practice.presentation.impl.grammar.grammarUnitBadgeColors
 import app.sensee.feature.practice.presentation.impl.text.shortLabel
@@ -33,6 +35,7 @@ import app.sensee.grammar.domain.SurfaceToken
 import app.sensee.ui.designSystem.component.badge.SenseeBadge
 import app.sensee.ui.designSystem.component.button.SenseeSpeakIconButton
 import app.sensee.ui.designSystem.component.button.SenseeSpeakIconButtonDefaults
+import app.sensee.ui.designSystem.component.button.SenseeSpeakIconButtonState
 import app.sensee.ui.designSystem.component.sentence.SenseeSentence
 import app.sensee.ui.designSystem.component.sentence.SenseeSentencePart
 import app.sensee.ui.designSystem.component.sentence.SenseeSentencePlaceholderState
@@ -48,7 +51,8 @@ internal fun PracticeCardFrontContent(
     card: DeckPracticeCardUiState,
     labels: GrammarLabels,
     studyLanguageTag: String,
-    onSpeak: (text: String) -> Unit,
+    speech: DeckPracticeSpeechUiState,
+    onAction: (DeckPracticeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (card.practiceFront) {
@@ -57,7 +61,8 @@ internal fun PracticeCardFrontContent(
                 card = card,
                 labels = labels,
                 studyLanguageTag = studyLanguageTag,
-                onSpeak = onSpeak,
+                speech = speech,
+                onAction = onAction,
                 modifier = modifier,
             )
 
@@ -74,14 +79,16 @@ internal fun PracticeCardBackContent(
     card: DeckPracticeCardUiState,
     labels: GrammarLabels,
     studyLanguageTag: String,
-    onSpeak: (text: String) -> Unit,
+    speech: DeckPracticeSpeechUiState,
+    onAction: (DeckPracticeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (card.practiceFront) {
         PracticeCardFront.English ->
             RussianRevealedCardContent(
                 card = card,
-                onSpeak = onSpeak,
+                speech = speech,
+                onAction = onAction,
                 modifier = modifier,
             )
 
@@ -90,7 +97,8 @@ internal fun PracticeCardBackContent(
                 card = card,
                 labels = labels,
                 studyLanguageTag = studyLanguageTag,
-                onSpeak = onSpeak,
+                speech = speech,
+                onAction = onAction,
                 modifier = modifier,
             )
     }
@@ -101,7 +109,8 @@ private fun EnglishCardContent(
     card: DeckPracticeCardUiState,
     labels: GrammarLabels,
     studyLanguageTag: String,
-    onSpeak: (text: String) -> Unit,
+    speech: DeckPracticeSpeechUiState,
+    onAction: (DeckPracticeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = SenseeTheme.spacing
@@ -118,7 +127,10 @@ private fun EnglishCardContent(
         verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        SpeakableSlot(onSpeak = { onSpeak(card.headword) }) {
+        SpeakableSlot(
+            onSpeak = { onAction(speakTextAction(card, SpeechTarget.Headword)) },
+            speakButtonState = speech.buttonStateFor(card, SpeechTarget.Headword),
+        ) {
             Text(
                 text = headwordText,
                 textAlign = TextAlign.Center,
@@ -131,7 +143,8 @@ private fun EnglishCardContent(
         ContextSentenceLine(
             sentence = buildContextSentence(card.contextSentence, card.headword, revealed = true),
             color = colors.textPrimary,
-            onSpeak = { onSpeak(card.contextSentence) },
+            onSpeak = { onAction(speakTextAction(card, SpeechTarget.ContextSentence)) },
+            speakButtonState = speech.buttonStateFor(card, SpeechTarget.ContextSentence),
         )
     }
 }
@@ -139,7 +152,8 @@ private fun EnglishCardContent(
 @Composable
 private fun RussianRevealedCardContent(
     card: DeckPracticeCardUiState,
-    onSpeak: (text: String) -> Unit,
+    speech: DeckPracticeSpeechUiState,
+    onAction: (DeckPracticeAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = SenseeTheme.spacing
@@ -163,7 +177,8 @@ private fun RussianRevealedCardContent(
         ContextSentenceLine(
             sentence = buildContextSentence(card.contextSentence, card.headword, revealed = true),
             color = colors.textPrimary,
-            onSpeak = { onSpeak(card.contextSentence) },
+            onSpeak = { onAction(speakTextAction(card, SpeechTarget.ContextSentence)) },
+            speakButtonState = speech.buttonStateFor(card, SpeechTarget.ContextSentence),
         )
     }
 }
@@ -226,6 +241,7 @@ private fun TranslationSlot(
 private fun SpeakableSlot(
     onSpeak: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    speakButtonState: SenseeSpeakIconButtonState = SenseeSpeakIconButtonState.Idle,
     content: @Composable () -> Unit,
 ) {
     val spacing = SenseeTheme.spacing
@@ -235,7 +251,10 @@ private fun SpeakableSlot(
         content = {
             Box(contentAlignment = Alignment.Center, content = { content() })
             if (onSpeak != null) {
-                SenseeSpeakIconButton(onClick = onSpeak)
+                SenseeSpeakIconButton(
+                    onClick = onSpeak,
+                    state = speakButtonState,
+                )
             }
         },
     ) { measurables, constraints ->
@@ -354,9 +373,13 @@ private fun ContextSentenceLine(
     sentence: SenseeSentence,
     color: Color,
     onSpeak: (() -> Unit)?,
+    speakButtonState: SenseeSpeakIconButtonState = SenseeSpeakIconButtonState.Idle,
 ) {
     val typography = SenseeTheme.typography
-    SpeakableSlot(onSpeak = onSpeak) {
+    SpeakableSlot(
+        onSpeak = onSpeak,
+        speakButtonState = speakButtonState,
+    ) {
         SenseeSentenceText(
             sentence = sentence,
             textStyle = typography.bodyLarge.copy(color = color),
