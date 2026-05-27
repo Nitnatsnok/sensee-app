@@ -12,24 +12,34 @@ import app.sensee.srs.core.model.SrsAlgorithmInfo
 import app.sensee.srs.core.model.SrsCardSnapshot
 import app.sensee.srs.core.model.SrsCardState
 import app.sensee.srs.core.model.toReviewSnapshot
+import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
-public class FsrsScheduler : SrsScheduler<FsrsParameters> {
+public class FsrsScheduler(
+    private val random: Random = Random.Default,
+) : SrsScheduler<FsrsParameters> {
     override val algorithm: SrsAlgorithmInfo = FsrsAlgorithm.V6
 
     override fun schedule(input: SrsSchedulingInput<FsrsParameters>): SrsSchedulingResult {
         val math = FsrsMath(input.parameters)
         val previousCard = input.card
 
-        val updatedCard =
+        val scheduledCard =
             scheduleCard(
                 card = previousCard,
                 rating = input.rating,
                 reviewedAt = input.reviewedAt,
                 parameters = input.parameters,
                 math = math,
+            )
+
+        val updatedCard =
+            applyIntervalFuzzIfNeeded(
+                card = scheduledCard,
+                reviewedAt = input.reviewedAt,
+                parameters = input.parameters,
             )
 
         val reviewLog =
@@ -74,6 +84,38 @@ public class FsrsScheduler : SrsScheduler<FsrsParameters> {
             sourceCard = input.card,
             reviewedAt = input.reviewedAt,
             ratings = ratings,
+        )
+    }
+
+    /**
+     * Applies py-fsrs-style interval jitter to a freshly scheduled Review card.
+     *
+     * Fuzz is intentionally skipped for `preview()` so that the rating tiles a user sees in
+     * the UI stay deterministic between renders — only the actual `schedule()` call rolls
+     * the dice. Non-Review states and disabled-fuzzing parameters are passed through.
+     */
+    private fun applyIntervalFuzzIfNeeded(
+        card: SrsCardSnapshot,
+        reviewedAt: Instant,
+        parameters: FsrsParameters,
+    ): SrsCardSnapshot {
+        if (!parameters.enableFuzzing) return card
+        if (card.state != SrsCardState.Review) return card
+        val originalInterval = card.scheduledInterval ?: return card
+
+        val originalDays = originalInterval.inWholeDays.toInt()
+        val fuzzedDays =
+            fuzzedIntervalDays(
+                intervalDays = originalDays,
+                maximumIntervalDays = parameters.maximumIntervalDays,
+                random = random,
+            )
+        if (fuzzedDays == originalDays) return card
+
+        val fuzzedInterval = fuzzedDays.days
+        return card.copy(
+            scheduledInterval = fuzzedInterval,
+            dueAt = reviewedAt + fuzzedInterval,
         )
     }
 
@@ -412,43 +454,67 @@ private fun nextMemoryStateForReview(
     rating: ReviewRating,
     elapsedDays: Double,
 ): FsrsAlgorithmState {
-    val retrievability =
-        math.retrievability(
-            elapsedDays = elapsedDays,
-            stability = currentMemoryState.stability,
-        )
-
     val nextDifficulty =
         math.nextDifficulty(
             currentDifficulty = currentMemoryState.difficulty,
             rating = rating,
         )
 
+    // ADR-004 keeps same-day Review re-reviews out of the normal session flow; this branch
+    // mirrors py-fsrs `days_since_last_review < 1 → _short_term_stability` so migrations,
+    // CLI tooling, and any future policy change use the reference formula for elapsed ≈ 0.
     val nextStability =
-        when (rating) {
-            ReviewRating.Again ->
-                math.nextForgetStability(
-                    difficulty = currentMemoryState.difficulty,
-                    stability = currentMemoryState.stability,
-                    retrievability = retrievability,
-                )
-
-            ReviewRating.Hard,
-            ReviewRating.Good,
-            ReviewRating.Easy,
-            ->
-                math.nextRecallStability(
-                    difficulty = currentMemoryState.difficulty,
-                    stability = currentMemoryState.stability,
-                    retrievability = retrievability,
-                    rating = rating,
-                )
+        if (elapsedDays < 1.0) {
+            math.nextShortTermStability(
+                currentStability = currentMemoryState.stability,
+                rating = rating,
+            )
+        } else {
+            longTermStability(
+                math = math,
+                currentMemoryState = currentMemoryState,
+                rating = rating,
+                elapsedDays = elapsedDays,
+            )
         }
 
     return FsrsAlgorithmState(
         difficulty = nextDifficulty,
         stability = nextStability,
     )
+}
+
+private fun longTermStability(
+    math: FsrsMath,
+    currentMemoryState: FsrsAlgorithmState,
+    rating: ReviewRating,
+    elapsedDays: Double,
+): Double {
+    val retrievability =
+        math.retrievability(
+            elapsedDays = elapsedDays,
+            stability = currentMemoryState.stability,
+        )
+
+    return when (rating) {
+        ReviewRating.Again ->
+            math.nextForgetStability(
+                difficulty = currentMemoryState.difficulty,
+                stability = currentMemoryState.stability,
+                retrievability = retrievability,
+            )
+
+        ReviewRating.Hard,
+        ReviewRating.Good,
+        ReviewRating.Easy,
+        ->
+            math.nextRecallStability(
+                difficulty = currentMemoryState.difficulty,
+                stability = currentMemoryState.stability,
+                retrievability = retrievability,
+                rating = rating,
+            )
+    }
 }
 
 private fun scheduledReviewCardData(

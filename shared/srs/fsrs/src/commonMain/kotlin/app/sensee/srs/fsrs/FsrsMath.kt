@@ -25,7 +25,7 @@ internal class FsrsMath(
 
     fun initialState(rating: ReviewRating): FsrsAlgorithmState =
         FsrsAlgorithmState(
-            difficulty = initialDifficulty(rating),
+            difficulty = initialDifficultyRaw(rating).coerceIn(MIN_DIFFICULTY, MAX_DIFFICULTY),
             stability = initialStability(rating),
         )
 
@@ -64,9 +64,11 @@ internal class FsrsMath(
      * FSRS v6 difficulty update:
      * D' = clamp(meanReversion(D + linearDamping(-w[6] * (g - 3), D)), 1.0, 10.0)
      *
-     * w[6] scales the per-grade delta (g = fsrsGrade ∈ {1..4}; g = 3 ≡ Good ≡ no change).
-     * `linearDamping` shrinks the delta as D approaches 10; `meanReversion` (weighted by w[7])
-     * pulls toward the Easy-initial difficulty over the long run.
+     * The mean-reversion target is the **unclamped** D₀(Easy), matching py-fsrs
+     * (`_initial_difficulty(rating=Easy, clamp=False)`) and fsrs-rs (`init_difficulty(4)`).
+     * Only the final result is clamped to `[1, 10]`. Clamping the target early biases the
+     * update upward whenever D₀(Easy) raw lies outside `[1, 10]` (with default weights it is
+     * negative), and the bias scales with `w[7]`.
      */
     fun nextDifficulty(
         currentDifficulty: Double,
@@ -84,18 +86,18 @@ internal class FsrsMath(
         val nextDifficulty = currentDifficulty + dampedDelta
 
         return meanReversion(
-            initDifficulty = initialDifficulty(ReviewRating.Easy),
+            initDifficulty = initialDifficultyRaw(ReviewRating.Easy),
             nextDifficulty = nextDifficulty,
-        ).coerceIn(1.0, 10.0)
+        ).coerceIn(MIN_DIFFICULTY, MAX_DIFFICULTY)
     }
 
     /**
      * FSRS v6 short-term stability update (used inside the learning step / same-day window):
-     * S' = S * max(SI, 1.0 if g ≥ 3 else SI)
+     * S' = max(S * SI, STABILITY_MIN), where SI floors at 1.0 only for Good/Easy.
      * SI = exp(w[17] * (g - 3 + w[18])) * S^(-w[19])
      *
-     * The `coerceAtLeast(1.0)` floor only applies for non-Again ratings — Again is allowed to
-     * shrink stability even on a same-day repeat.
+     * The `max(SI, 1.0)` floor only applies for Good/Easy — Again and Hard are allowed to
+     * shrink stability even on a same-day repeat (match py-fsrs `rating in (Good, Easy)`).
      */
     fun nextShortTermStability(
         currentStability: Double,
@@ -111,12 +113,12 @@ internal class FsrsMath(
             stabilityIncrease = stabilityIncrease.coerceAtLeast(1.0)
         }
 
-        return currentStability * stabilityIncrease
+        return (currentStability * stabilityIncrease).coerceAtLeast(STABILITY_MIN)
     }
 
     /**
      * FSRS v6 stability update on successful recall (Hard / Good / Easy):
-     * S' = S * (1 + SI)
+     * S' = max(S * (1 + SI), STABILITY_MIN)
      * SI = exp(w[8]) * (11 - D) * S^(-w[9]) * (exp((1 - R) * w[10]) - 1) * hardPenalty * easyBonus
      *
      * hardPenalty = w[15] for Hard, 1.0 otherwise; easyBonus = w[16] for Easy, 1.0 otherwise.
@@ -151,18 +153,18 @@ internal class FsrsMath(
                 hardPenalty *
                 easyBonus
 
-        return stability * (1.0 + stabilityIncrease)
+        return (stability * (1.0 + stabilityIncrease)).coerceAtLeast(STABILITY_MIN)
     }
 
     /**
      * FSRS v6 stability update on a failed recall (Again):
-     * S' = clamp(min(S_forget, S_min), 0.01, ∞)
-     * S_forget  = w[11] * D^(-w[12]) * ((S + 1)^w[13] - 1) * exp((1 - R) * w[14])
-     * S_min     = S / exp(w[17] * w[18])      // floor: lapse cannot drop S below same-day baseline
+     * S' = max(min(S_forget, S_min), STABILITY_MIN)
+     * S_forget = w[11] * D^(-w[12]) * ((S + 1)^w[13] - 1) * exp((1 - R) * w[14])
+     * S_min    = S / exp(w[17] * w[18])      // floor: lapse cannot exceed same-day baseline
      *
-     * The `min(..., S_min)` cap prevents lapse stability from exceeding the same-day floor
-     * derived from the short-term stability formula; the `coerceAtLeast(0.01)` keeps S strictly
-     * positive so subsequent `retrievability()` does not divide by zero.
+     * `min(..., S_min)` caps lapse stability at the same-day floor derived from the short-term
+     * formula; the final `coerceAtLeast(STABILITY_MIN)` keeps S above the official 0.001 floor
+     * so downstream `retrievability()` does not divide by a near-zero value.
      */
     fun nextForgetStability(
         difficulty: Double,
@@ -178,32 +180,27 @@ internal class FsrsMath(
                 ((stability + 1.0).pow(w[13]) - 1.0) *
                 exp((1.0 - retrievability) * w[14])
 
-        return min(nextStability, minimumStability)
-            .coerceAtLeast(0.01)
+        return min(nextStability, minimumStability).coerceAtLeast(STABILITY_MIN)
     }
 
     /**
      * Initial stability after a brand-new card's first answer.
      * w[0..3] hold the per-rating starting stabilities (index = fsrsGrade - 1, so
-     * Again=w[0], Hard=w[1], Good=w[2], Easy=w[3]). Floored at 0.001 to keep
-     * downstream division by stability finite.
+     * Again=w[0], Hard=w[1], Good=w[2], Easy=w[3]). Floored at STABILITY_MIN.
      */
-    private fun initialStability(rating: ReviewRating): Double =
-        w[rating.fsrsGrade - 1]
-            .coerceAtLeast(0.001)
+    private fun initialStability(rating: ReviewRating): Double = w[rating.fsrsGrade - 1].coerceAtLeast(STABILITY_MIN)
 
     /**
-     * Initial difficulty after a brand-new card's first answer:
-     * D₀ = clamp(w[4] - exp(w[5] * (g - 1)) + 1, 1.0, 10.0)
+     * Unclamped initial difficulty:
+     * D₀(g) = w[4] - exp(w[5] * (g - 1)) + 1
      *
-     * w[4] sets the Again baseline (g = 1 ⇒ exp(0) = 1, so D₀ = w[4]); w[5] controls how
-     * sharply better first ratings reduce starting difficulty.
+     * Used **raw** as the mean-reversion target inside [nextDifficulty]. For brand-new cards,
+     * [initialState] clamps it to `[MIN_DIFFICULTY, MAX_DIFFICULTY]` (match py-fsrs
+     * `_initial_difficulty(clamp=True)`).
      */
-    private fun initialDifficulty(rating: ReviewRating): Double {
+    private fun initialDifficultyRaw(rating: ReviewRating): Double {
         val grade = rating.fsrsGrade
-
-        return (w[4] - exp(w[5] * (grade - 1)) + 1.0)
-            .coerceIn(1.0, 10.0)
+        return w[4] - exp(w[5] * (grade - 1)) + 1.0
     }
 
     private fun linearDamping(
@@ -215,4 +212,10 @@ internal class FsrsMath(
         initDifficulty: Double,
         nextDifficulty: Double,
     ): Double = w[7] * initDifficulty + (1.0 - w[7]) * nextDifficulty
+
+    private companion object {
+        const val STABILITY_MIN: Double = 0.001
+        const val MIN_DIFFICULTY: Double = 1.0
+        const val MAX_DIFFICULTY: Double = 10.0
+    }
 }

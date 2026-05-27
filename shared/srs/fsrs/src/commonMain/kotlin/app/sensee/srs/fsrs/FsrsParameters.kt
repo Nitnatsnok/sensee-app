@@ -21,6 +21,12 @@ public data class FsrsParameters(
             10.minutes,
         ),
     val maximumIntervalDays: Int = 36_500,
+    /**
+     * Applies a small uniform jitter to Review-state intervals so cards reviewed on the
+     * same day do not all come due together (py-fsrs `_get_fuzzed_interval`). Applied
+     * only by `FsrsScheduler.schedule()`; `preview()` always returns deterministic
+     * intervals.
+     */
     val enableFuzzing: Boolean = true,
 ) : SrsAlgorithmParameters {
     init {

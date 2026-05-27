@@ -10,9 +10,12 @@ algorithm library with its own tests (`commonTest`, `FsrsSchedulerTest`).
 `FsrsScheduler` is the **single source of truth** for review scheduling. The practice
 session never schedules: it only *projects* a presentation queue from the card the engine
 already wrote (see `DeckPracticeLogic.submitReview`). Do not add a second in-session
-scheduler or a session-only re-show path — re-showing an FSRS-graduated `Review` card in
-the same session corrupts difficulty/stability (elapsed ≈ 0 days). This was decided and
-costed in ADR-004.
+scheduler or a session-only re-show path. Re-showing an FSRS-graduated `Review` card in
+the same session is forbidden by ADR-004 on learning-semantics grounds: a same-day extra
+recall inflates stability with no real learning signal and distorts future intervals.
+The math layer itself routes same-day Review re-reviews through the short-term formula
+(matching py-fsrs `days_since_last_review < 1`), so migration paths and tooling stay
+correct — but that is an implementation safety net, not a license to relax the rule.
 
 `scheduleCard` routes `New` through the **same learning-step path as `Learning`**
 (`New, Learning -> scheduleLearningCard`). This is deliberate FSRS-with-learning-steps /
