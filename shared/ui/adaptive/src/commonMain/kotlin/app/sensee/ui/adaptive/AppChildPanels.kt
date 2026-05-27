@@ -928,6 +928,8 @@ public data class AppChildPanelsAnimation(
 
 private const val DEFAULT_MAIN_PANE_WEIGHT = 0.5f
 private const val DEFAULT_DETAIL_PANE_WEIGHT = 0.5f
+// Weights are not normalized to 1.0 — the geometry divides by the sum of *visible* weights,
+// so the same constants give the right proportions whether two or three panes are showing.
 private const val DEFAULT_MAIN_PANE_WEIGHT_3PANE = 0.3f
 private const val DEFAULT_DETAIL_PANE_WEIGHT_3PANE = 0.4f
 private const val DEFAULT_EXTRA_PANE_WEIGHT_3PANE = 0.6f
