@@ -266,38 +266,44 @@ private fun SpeakableSlot(
                 naturalWidth > centerableMax &&
                 naturalWidth <= singleLineMax
         val textMinHeight = buttonPlaceable?.height ?: 0
+        val textMaxWidth = if (pinSingleLine) singleLineMax else centerableMax
         val textPlaceable =
             measurables[0].measure(
-                if (pinSingleLine) {
-                    constraints.copy(
-                        minWidth = 0,
-                        maxWidth = singleLineMax,
-                        minHeight = textMinHeight,
-                    )
-                } else {
-                    constraints.copy(
-                        minWidth = 0,
-                        maxWidth = centerableMax,
-                        minHeight = textMinHeight,
-                    )
-                },
+                speakableSlotTextConstraints(
+                    constraints = constraints,
+                    maxWidth = textMaxWidth,
+                    minHeight = textMinHeight,
+                ),
             )
 
-        val containerHeight = maxOf(textPlaceable.height, buttonPlaceable?.height ?: 0)
+        val containerHeight =
+            maxOf(textPlaceable.height, buttonPlaceable?.height ?: 0)
+                .coerceIn(constraints.minHeight, constraints.maxHeight)
 
         layout(containerWidth, containerHeight) {
             val textX =
                 if (pinSingleLine) leftReserve else (containerWidth - textPlaceable.width) / 2
-            textPlaceable.place(textX, 0)
+            textPlaceable.place(textX, (containerHeight - textPlaceable.height) / 2)
 
             if (buttonPlaceable != null) {
                 val visibleIconLeft = textX - gapPx - iconVisualSize
                 val btnX = (visibleIconLeft - touchInset).coerceAtLeast(0)
-                buttonPlaceable.place(btnX, 0)
+                buttonPlaceable.place(btnX, (containerHeight - buttonPlaceable.height) / 2)
             }
         }
     }
 }
+
+internal fun speakableSlotTextConstraints(
+    constraints: Constraints,
+    maxWidth: Int,
+    minHeight: Int,
+): Constraints =
+    constraints.copy(
+        minWidth = 0,
+        maxWidth = maxWidth.coerceAtLeast(0),
+        minHeight = minHeight.coerceIn(0, constraints.maxHeight),
+    )
 
 @Composable
 private fun rememberHeadwordAnnotated(
