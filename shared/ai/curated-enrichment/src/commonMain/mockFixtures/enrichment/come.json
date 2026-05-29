@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "приходить",
+      "surface_form": "come",
+      "unit_type": "irregular_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "explanation": "перемещаться в сторону говорящего или в указанное место",
+      "examples": [
+        {
+          "sentence": "Please [[come]] to my office after lunch.",
+          "translation": "Пожалуйста, зайдите ко мне в кабинет после обеда.",
+          "alignment": [
+            {
+              "source": "Please",
+              "target": "Пожалуйста"
+            },
+            {
+              "source": "come to my office",
+              "target": "зайдите ко мне в кабинет"
+            },
+            {
+              "source": "after lunch",
+              "target": "после обеда"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "arrive",
+        "approach",
+        "reach"
+      ],
+      "antonyms": [
+        "go",
+        "leave",
+        "depart"
+      ],
+      "collocations": [
+        "come home",
+        "come back",
+        "come closer",
+        "come early"
+      ],
+      "word_family": [
+        {
+          "lemma": "comeback",
+          "unit_type": "noun"
+        },
+        {
+          "lemma": "newcomer",
+          "unit_type": "noun"
+        },
+        {
+          "lemma": "upcoming",
+          "unit_type": "adjective"
+        },
+        {
+          "lemma": "oncoming",
+          "unit_type": "adjective"
+        }
+      ],
+      "grammar_tags": [
+        {
+          "category": "verb_irregular",
+          "form": "infinitive"
+        },
+        {
+          "category": "transitivity",
+          "form": "intransitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "come",
+        "past": "came",
+        "past_participle": "come"
+      },
+      "cefr": "A1"
+    }
+  ]
+}

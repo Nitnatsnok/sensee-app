@@ -10,8 +10,8 @@ model {
     link ../arc42/sections/03_context_and_scope.adoc
   }
 
-  provider_apis = external_system 'AI/TTS Provider APIs' {
-    description 'OpenAI-compatible LLM APIs, ElevenLabs/OpenAI TTS APIs и другие provider endpoints, доступные только через клиентские seams.'
+  provider_apis = external_system 'External Provider APIs' {
+    description 'OpenAI-compatible LLM APIs, ElevenLabs/OpenAI TTS APIs, Free Dictionary, Datamuse, LanguageTool и другие provider endpoints, доступные только через клиентские seams.'
     technology 'External provider APIs'
     link ../arc42/sections/03_context_and_scope.adoc
   }
@@ -104,7 +104,7 @@ model {
 
     learning_impl = layer 'Feature Presentation Implementation' {
       #shared
-      description 'Реализации section host components: practice (deck/home/card detail), library (каталог + adoption), profile (AI/TTS-настройки), capture-экран; раздел Home — placeholder screen.'
+      description 'Реализации section host components: practice (deck/home/card detail), library (каталог + adoption), profile (AI/TTS/App/Learning-настройки), capture-экран; раздел Home — placeholder screen.'
       technology 'shared/feature/*/presentation/impl'
       link ../arc42/sections/05_building_block_view.adoc
     }
@@ -212,16 +212,23 @@ model {
 
     ai_enrichment = layer 'AI Enrichment Seam' {
       #shared
-      description 'Provider-agnostic boundary contract, settings-backed routing и anti-corruption mapping для `MeaningCandidate` (ADR-005).'
+      description 'Provider-agnostic boundary contract, settings-backed routing и anti-corruption mapping для `SenseCandidate` (ADR-005).'
       technology 'shared/ai/core + shared/ai/integration'
       link ../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc
     }
 
-    ai_fixture = layer 'AI Fixture Adapter' {
+    ai_curated = layer 'AI Curated Adapter' {
       #shared
-      description 'Zero-config offline enrichment implementation: deterministic candidates without user key or live provider.'
-      technology 'shared/ai/fixture'
+      description 'Курированный enrichment с бэкенда: вручную подготовленное покрытие частых phrasal verbs и idioms, которое на hit полностью обходит LLM.'
+      technology 'shared/ai/curated-enrichment'
       link ../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc
+    }
+
+    lexical_verification = layer 'Lexical Verification Seam' {
+      #shared
+      description 'Лексическая верификация с лицензионным барьером: backend-served curated reference (sensee-curated по HTTP), network adapters, aggregation, L1/L2 cache, evidence до AI и per-candidate snapshots после AI.'
+      technology 'shared/verification/core + shared/verification/sensee-curated + shared/verification/integration'
+      link ../adr/0007-lexical-verification-seam-with-license-aware-aggregator.adoc
     }
 
     llm_adapter = layer 'LLM Provider Adapter' {
@@ -275,37 +282,37 @@ model {
 
     vocabulary_editor = layer 'Vocabulary Editor Target' {
       #shared
-      description 'Раздел Vocabulary Editor с реализованным capture-экраном. Хостит компоненты добавления (`QuickCapture`) и редактирования записи (`Editor(entryId)`). Кнопка в primary navigation ведёт в add-path; редактирование открывается deep-link из карточки.'
+      description 'Раздел Vocabulary Editor с реализованным add-path: `QuickCapture` создаёт запись через AI enrichment. Write workflow для замены confirmed `LexicalEntry` подготовлен в domain/data; UI edit-surface и deep-link в `Editor(entryId)` остаются planned.'
       technology 'VocabularyEditorSectionComponent'
       link ../arc42/sections/06_runtime_view.adoc
     }
 
     vocabulary_capture = layer 'Vocabulary Capture Capability' {
       #shared
-      description 'Реализованный primary product capability (ADR-001): ввод → AI-граница → набор `MeaningCandidate` → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Поток одностраничный, выбор и есть подтверждение. Планируемое — lemma-семья и деривация derived-карточек.'
+      description 'Реализованный primary product capability (ADR-001): ввод → verification evidence → AI/curated enrichment → verification snapshots → набор `SenseCandidate` → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Поток одностраничный, выбор и есть подтверждение.'
       technology 'vocabulary authoring flow'
       link ../arc42/sections/06_runtime_view.adoc
     }
 
     lexical_model = layer 'Lexical Source Model' {
       #shared
-      description 'Реализованная canonical source model: `LexicalEntry`, `Meaning`, `ContextualApplication`, `MeaningCandidate`, `EntryStatus` в `shared/feature/vocabulary-editor/domain` (durable через `data`+`database-schema`); нейтральный grammar-словарь (`GrammarUnitType`/`GrammarTag`/`SurfaceForm`) в `shared/grammar/domain`.'
+      description 'Реализованная canonical source model: центральный `Sense` (+`ContextualApplication`/`AlignmentChunk`/`WordFamilyMember`) и нейтральный read model `LexicalEntry`/`EntryStatus`/`LexiconRepository` в `shared/lexicon/domain`; общий `SenseDto` в `shared/lexicon/serialization`; `SenseCandidate` и write workflow — в `shared/feature/vocabulary-editor/domain`; enrichment→`Sense` mapper — в `shared/lexicon/enrichment`; нейтральный grammar-словарь (`GrammarUnitType`/`GrammarTag`/`SurfaceForm`) в `shared/grammar/domain`.'
       technology 'domain model'
       link ../domain-information-model.adoc
     }
 
     vocabulary_storage = local_storage 'Vocabulary Database Schema' {
       #shared
-      description 'Feature-owned SQLDelight schema для durable `LexicalEntry`/`Meaning` state.'
+      description 'Feature-owned SQLDelight schema для durable `LexicalEntry`/`Sense` state (`Sense` сериализуется общим `SenseDto` в `senses_json`).'
       technology 'shared/feature/vocabulary-editor/database-schema'
       icon tech:sqlite
       link ../arc42/sections/05_building_block_view.adoc
     }
 
     card_derivation = layer 'Card Derivation Capability' {
-      #future
-      description 'Планируемое derivation logic для создания related learning cards из confirmed lexical material.'
-      technology 'future derivation logic'
+      #shared
+      description 'Реализованная projection-логика `CapturedCatalogDerivation`: confirmed lexical material превращается в captured deck, группируется по `headLemma` и создаёт form-variant cards для irregular verbs. UI-навигация по family остаётся planned.'
+      technology 'shared/feature/library/data'
       link ../domain-information-model.adoc
     }
 
@@ -340,7 +347,7 @@ model {
 
     profile_target = layer 'Profile Target' {
       #shared
-      description 'Раздел Profile — владелец пользовательских настроек. Реализовано: категория `Ai` (`ProfileHomeLogic`) — выбор AI/TTS-провайдера, верификация ключа, progressive disclosure модели/голоса над `UserSettingsRepository`. Планируется: экран `Settings` по остальным `UserSettingsCategory` + About. Объём бережный: Account/синхронизация и статистика — честные заглушки. Scope по умолчанию `Device`, `User` — будущий sync без переключателя до auth.'
+      description 'Раздел Profile — владелец пользовательских настроек. Реализовано: категории `Ai`, `Learning` и `App` (`themeMode`) над `UserSettingsRepository`. Планируется: `Practice`, `Experimental`, `About`, Account/синхронизация и статистика. Scope по умолчанию `Device`, `User` — будущий sync без переключателя до auth.'
       technology 'ProfileSectionComponent'
       link ../arc42/sections/06_runtime_view.adoc
     }
@@ -372,6 +379,7 @@ model {
     persistence -> practice_schema 'aggregates feature-owned schema' '`shared/database` собирает корневой `SenseeDatabase` через schema dependency' 'SQLDelight aggregation'
     app_shell -> settings_data 'wires settings repository' '`shared/settings/data` подключён в app-level dependencies' 'Metro DI'
     app_shell -> ai_enrichment 'wires AI enrichment seam' '`shared/ai/integration` подключает routing и provider selection через настройки' 'Metro DI'
+    app_shell -> lexical_verification 'wires lexical verification seam' '`shared/verification/integration` подключает routing, curated backend reference и cache' 'Metro DI'
     app_shell -> tts_seam 'wires speech services' '`shared/tts/integration` подключает speech providers/playback/cache' 'Metro DI'
     app_shell -> grammar_taxonomy 'preloads runtime taxonomy' '`RootComponent` и `StartupComponent` используют `PreloadAppStartupUseCase`: labels + invariants поверх общего `CachingGrammarTaxonomyProvider`' 'In-process'
     settings_data -> settings_domain 'implements settings contract' '`DefaultUserSettingsRepository` реализует `UserSettingsRepository`' 'In-process'
@@ -383,22 +391,27 @@ model {
     library_catalog -> mock_backend 'contributes catalog fixtures' '`CatalogMockFixtures` поставляет service sets/decks для mock backend' 'Fixture data'
     app_shell -> persistence 'depends on shared persistence module' '`shared/database` подключён в общих зависимостях app shell' 'SQLDelight'
     persistence -> platform_services 'uses platform SQL drivers' '`DriverFactory` создаёт platform-specific `SqlDriver`' 'Platform APIs'
-    vocabulary_editor -> vocabulary_capture 'hosts the authoring flow' 'Vocabulary Editor — host для add (capture, реализовано) и для edit записи (edit-path planned); поток одностраничный, выбор и есть подтверждение' 'Runtime shell'
+    vocabulary_editor -> vocabulary_capture 'hosts the authoring flow' 'Vocabulary Editor — host для add-path: capture создаёт Draft, enrichment возвращает `SenseCandidate`, подтверждение сохраняет `Sense`-набор. Edit UI поверх prepared write workflow остаётся planned' 'Runtime shell'
     review_target -> vocabulary_editor 'opens entry editing from a card' 'Из карточки practice deep-link открывает редактирование соответствующей `LexicalEntry` в Vocabulary Editor (planned)' 'Runtime navigation'
-    vocabulary_capture -> ai_enrichment 'requests candidate enrichment' 'Candidate meanings, contexts и grammar cues приходят через provider-agnostic AI-границу как `MeaningCandidate`; без ключа — offline-fixture, деградация first-class, ручной смысл всё равно доходит до Confirmed' 'In-process'
-    ai_enrichment -> ai_fixture 'falls back offline' 'Zero-config deterministic candidates without user key' 'In-process'
+    vocabulary_capture -> lexical_verification 'verifies before and after AI' '`SuggestVocabularySensesUseCase` получает license-gated evidence до AI; `VerifyVocabularySuggestionsUseCase` прикрепляет snapshots после AI' 'In-process'
+    lexical_verification -> persistence 'uses persistent cache' '`PersistedCachingLexicalVerifier` пишет license-gated L2 cache в `SenseeDatabase`' 'SQLDelight'
+    lexical_verification -> network 'calls network adapters under query policy' 'Free Dictionary, Datamuse и LanguageTool идут через Ktor при `VerificationPolicy.allowNetwork=true`' 'Ktor client'
+    lexical_verification -> provider_apis 'calls verification provider APIs' 'Free Dictionary, Datamuse и LanguageTool вызываются как внешние HTTP API; `allowNetwork=false` в конкретном запросе отключает эти обращения' 'HTTPS'
+    vocabulary_capture -> ai_enrichment 'requests candidate enrichment' 'Candidate senses, contexts и grammar cues приходят через provider-agnostic AI-границу, затем общий mapper `shared/lexicon/enrichment` приводит их к `Sense`; Vocabulary Editor оборачивает результат в `SenseCandidate`. На покрытых леммах сразу отвечает curated-слой, без ключа на miss — Unavailable, ручной смысл всё равно доходит до Confirmed' 'In-process'
+    ai_enrichment -> ai_curated 'serves curated hits first' 'Вручную подготовленное top-N покрытие приходит через backend boundary и обходит LLM до вызова; детерминированно и без пользовательского ключа' 'In-process'
+    ai_curated -> mock_backend 'fetches curated enrichment fixtures' '`CuratedAiEnrichmentClient` читает `enrichment/{lemma-slug}` через обычную HTTP/mock-backend границу' 'Ktor client'
     ai_enrichment -> llm_adapter 'routes to configured LLM' 'Settings-backed provider/key/model selection' 'In-process'
     ai_enrichment -> settings_domain 'reads AI settings' '`AiSettings` выбирает provider/key/model и degradation path' 'In-process'
     llm_adapter -> provider_apis 'calls compatible model APIs' 'OpenAI-compatible models/list/enrichment requests' 'HTTPS'
-    vocabulary_capture -> lexical_model 'confirms lexical material' 'Пользователь подтверждает meanings, contextual applications и grammar cues' 'In-process'
-    vocabulary_capture -> grammar_taxonomy 'uses neutral grammar cues' '`MeaningCandidate`/`Meaning` используют `GrammarUnitType`, `GrammarTag` и structured `SurfaceForm`' 'In-process'
+    vocabulary_capture -> lexical_model 'confirms lexical material' 'Пользователь подтверждает senses, contextual applications и grammar cues' 'In-process'
+    vocabulary_capture -> grammar_taxonomy 'uses neutral grammar cues' '`SenseCandidate`/`Sense` используют `GrammarUnitType`, `GrammarTag` и structured `SurfaceForm`' 'In-process'
     lexical_model -> persistence 'stores canonical local state' 'Confirmed lexical material хранится отдельно от review state' 'SQLDelight'
     persistence -> vocabulary_storage 'aggregates vocabulary schema' '`shared/database` подключает feature-owned `lexical_entry` schema' 'SQLDelight aggregation'
-    lexical_model -> vocabulary_storage 'owns lexical schema' '`DurableVocabularyRepository` хранит `LexicalEntry`/`Meaning` durable' 'SQLDelight'
-    lexical_model -> card_derivation 'derives learning artifacts' 'Cards и будущие exercise artifacts создаются из confirmed source data' 'In-process'
+    lexical_model -> vocabulary_storage 'owns lexical schema' '`DurableVocabularyRepository` хранит `LexicalEntry`/`Sense` durable' 'SQLDelight'
+    lexical_model -> card_derivation 'derives learning artifacts' 'Captured deck, sense cards и irregular form cards создаются из confirmed source data; будущие exercise artifacts смогут использовать тот же source' 'In-process'
     card_derivation -> review_target 'feeds practice target' 'Practice использует derived learning cards, а не raw authoring data' 'Runtime data flow'
     library_target -> library_catalog 'uses catalog repositories' 'Library Home читает собственный материал и adoption-состояние сервисных наборов' 'In-process'
-    library_catalog -> lexical_model 'derives captured material' 'Захваченный материал попадает в catalog projection без передачи ownership в practice' 'In-process'
+    library_catalog -> lexical_model 'derives captured material' 'Library читает confirmed lexical material через `LexiconRepository`; захваченный материал попадает в catalog projection без передачи ownership в practice' 'In-process'
     library_catalog -> persistence 'stores catalog state' 'Catalog/adoption state сохраняется через SQLDelight' 'SQLDelight'
     persistence -> library_schema 'aggregates library schema' '`shared/database` подключает feature-owned catalog schema' 'SQLDelight aggregation'
     library_catalog -> library_schema 'owns catalog tables' 'SQLDelight queries для catalog/deck/adoption state' 'SQLDelight'

@@ -13,6 +13,11 @@ CREATE TABLE practice_card (
     grammar_tags_json TEXT NOT NULL DEFAULT '[]',
     sense_summary TEXT NOT NULL,
     explanation TEXT NOT NULL DEFAULT '',
+    -- The confirmed Sense (SenseDto JSON) the card projects, mapped once from the
+    -- ideal enrichment at sync. Same persisted shape as a captured sense, so a
+    -- Service deck and a user-captured card store the same thing. '{}' when
+    -- absent; the lean columns above stay authoritative for list queries.
+    sense_json TEXT NOT NULL DEFAULT '{}',
     created_at_epoch_ms INTEGER NOT NULL,
     updated_at_epoch_ms INTEGER NOT NULL,
     FOREIGN KEY (lemma_id) REFERENCES practice_lemma(id)
@@ -145,10 +150,11 @@ INSERT OR REPLACE INTO practice_card(
     grammar_tags_json,
     sense_summary,
     explanation,
+    sense_json,
     created_at_epoch_ms,
     updated_at_epoch_ms
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 clearDeckCards:
 DELETE FROM practice_deck_card

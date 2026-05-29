@@ -1,35 +1,15 @@
 package app.sensee.ai.llm.catalog
 
-import app.sensee.ai.llm.config.LlmConfig
-import app.sensee.core.network.NetworkConfig
-import app.sensee.core.network.NetworkHttpClientFactory
-import io.ktor.client.engine.HttpClientEngine
-import kotlinx.serialization.json.Json
+import io.ktor.client.HttpClient
 
 /**
- * Builds a single, long-lived [LlmModelCatalog] over a real-network engine
- * (the models endpoint uses bearer auth and must not hit the app's mock).
+ * Builds a single, long-lived [LlmModelCatalog] over the shared LLM
+ * [httpClient] (see [app.sensee.ai.llm.api.LlmHttpClientFactory]). The models
+ * endpoint uses bearer auth and resolves the base URL per request.
  */
 public object LlmModelCatalogFactory {
-    public fun create(
-        engine: HttpClientEngine,
-        json: Json,
-    ): LlmModelCatalog =
+    public fun create(httpClient: HttpClient): LlmModelCatalog =
         LlmModelCatalog(
-            api =
-                LlmModelsApi(
-                    httpClient =
-                        NetworkHttpClientFactory.create(
-                            engine = engine,
-                            config =
-                                NetworkConfig(
-                                    baseUrl = LlmConfig.DEFAULT_BASE_URL,
-                                    requestTimeoutMillis = REQUEST_TIMEOUT_MILLIS,
-                                ),
-                            json = json,
-                        ),
-                ),
+            api = LlmModelsApi(httpClient = httpClient),
         )
-
-    private const val REQUEST_TIMEOUT_MILLIS: Long = 30_000L
 }

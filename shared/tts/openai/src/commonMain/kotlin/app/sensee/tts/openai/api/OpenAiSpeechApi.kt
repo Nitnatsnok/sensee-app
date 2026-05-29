@@ -1,5 +1,6 @@
 package app.sensee.tts.openai.api
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.tts.core.TtsError
 import app.sensee.tts.core.TtsException
 import app.sensee.tts.openai.config.OpenAiCredentialsProvider
@@ -17,7 +18,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.utils.io.readAvailable
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -32,7 +32,7 @@ internal class OpenAiSpeechApi(
 
     suspend fun synthesize(body: SpeechRequestDto): ByteArray {
         val apiKey = credentials.apiKey()
-        return try {
+        return runCatchingCancellable {
             httpClient
                 .post(endpoint) {
                     headers {
@@ -41,10 +41,8 @@ internal class OpenAiSpeechApi(
                     }
                     contentType(ContentType.Application.Json)
                     setBody(body)
-                }.body()
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+                }.body<ByteArray>()
+        }.getOrElse { throwable ->
             throw throwable.toTtsException()
         }
     }
@@ -56,7 +54,7 @@ internal class OpenAiSpeechApi(
     fun stream(body: SpeechRequestDto): Flow<ByteArray> =
         flow {
             val apiKey = credentials.apiKey()
-            try {
+            runCatchingCancellable {
                 httpClient
                     .preparePost(endpoint) {
                         headers {
@@ -74,9 +72,7 @@ internal class OpenAiSpeechApi(
                             if (read > 0) emit(buffer.copyOf(read))
                         }
                     }
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
+            }.getOrElse { throwable ->
                 throw throwable.toTtsException()
             }
         }

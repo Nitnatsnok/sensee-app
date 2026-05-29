@@ -1,0 +1,151 @@
+{
+  "defaultPos": "verb",
+  "lemmas": {
+    "come": [
+      { "id": "come.1", "label": "move towards the speaker or a place", "cefr": "A1" },
+      { "id": "come.2", "label": "arrive at a place or event", "cefr": "A1" },
+      { "id": "come.3", "label": "happen or occur", "cefr": "B1" },
+      { "id": "come.4", "label": "be available or offered", "cefr": "B2" }
+    ],
+    "get": [
+      { "id": "get.1", "label": "obtain or receive", "cefr": "A1" },
+      { "id": "get.2", "label": "become or grow", "cefr": "A2" },
+      { "id": "get.3", "label": "arrive at a place", "cefr": "A2" },
+      { "id": "get.4", "label": "understand", "cefr": "B1" },
+      { "id": "get.5", "label": "fetch or bring", "cefr": "A2" }
+    ],
+    "take": [
+      { "id": "take.1", "label": "grasp and carry; remove", "cefr": "A1" },
+      { "id": "take.2", "label": "accept or receive (e.g. a job)", "cefr": "B1" },
+      { "id": "take.3", "label": "require time or effort", "cefr": "B1" },
+      { "id": "take.4", "label": "use a means of transport", "cefr": "A2" },
+      { "id": "take.5", "label": "swallow or consume (medicine)", "cefr": "A2" }
+    ],
+    "make": [
+      { "id": "make.1", "label": "create or produce", "cefr": "A1" },
+      { "id": "make.2", "label": "cause someone to do something", "cefr": "B1" },
+      { "id": "make.3", "label": "earn money", "cefr": "B1" },
+      { "id": "make.4", "label": "reach or achieve", "cefr": "B2" }
+    ],
+    "go": [
+      { "id": "go.1", "label": "move away from a place", "cefr": "A1" },
+      { "id": "go.2", "label": "function (a machine works)", "cefr": "B1" },
+      { "id": "go.3", "label": "match or suit (colours, ideas)", "cefr": "B2" }
+    ],
+    "run": [
+      { "id": "run.1", "label": "move quickly on foot", "cefr": "A1" },
+      { "id": "run.2", "label": "operate (a business)", "cefr": "B1" },
+      { "id": "run.3", "label": "flow (water, paint)", "cefr": "B1" },
+      { "id": "run.4", "label": "extend for a length (the road runs north)", "cefr": "B2" }
+    ],
+    "look": [
+      { "id": "look.1", "label": "direct one's gaze", "cefr": "A1" },
+      { "id": "look.2", "label": "have a particular appearance", "cefr": "A2" },
+      { "id": "look.3", "label": "search for something", "cefr": "A2" }
+    ],
+    "put": [
+      { "id": "put.1", "label": "place something somewhere", "cefr": "A1" },
+      { "id": "put.2", "label": "express in words", "cefr": "B1" },
+      { "id": "put.3", "label": "cause to be in a particular state", "cefr": "B2" }
+    ],
+    "turn": [
+      { "id": "turn.1", "label": "rotate or change direction", "cefr": "A2" },
+      { "id": "turn.2", "label": "become (turn red, turn cold)", "cefr": "B1" },
+      { "id": "turn.3", "label": "switch on/off", "cefr": "A2" }
+    ],
+    "give": [
+      { "id": "give.1", "label": "hand over to someone", "cefr": "A1" },
+      { "id": "give.2", "label": "provide (information, advice)", "cefr": "B1" },
+      { "id": "give.3", "label": "yield under pressure", "cefr": "C1" }
+    ],
+    "set": [
+      { "id": "set.1", "label": "put or place in position", "cefr": "A2" },
+      { "id": "set.2", "label": "establish or arrange", "cefr": "B1" },
+      { "id": "set.3", "label": "fix at a particular value", "cefr": "B1" },
+      { "id": "set.4", "label": "harden (concrete sets)", "cefr": "B2" }
+    ],
+    "keep": [
+      { "id": "keep.1", "label": "have or retain", "cefr": "A1" },
+      { "id": "keep.2", "label": "continue doing something", "cefr": "A2" },
+      { "id": "keep.3", "label": "cause to remain in a state", "cefr": "B1" },
+      { "id": "keep.4", "label": "store food without spoiling", "cefr": "B2" }
+    ],
+    "pull": [
+      { "id": "pull.1", "label": "exert force to draw towards oneself", "cefr": "A2" },
+      { "id": "pull.2", "label": "attract (a crowd, attention)", "cefr": "B1" },
+      { "id": "pull.3", "label": "remove by tugging (tooth, weed)", "cefr": "B1" }
+    ],
+    "break": [
+      { "id": "break.1", "label": "separate into pieces by force", "cefr": "A1" },
+      { "id": "break.2", "label": "violate a rule or promise", "cefr": "B1" },
+      { "id": "break.3", "label": "interrupt or pause an activity", "cefr": "B1" },
+      { "id": "break.4", "label": "publicly announce news", "cefr": "B2" }
+    ],
+    "hold": [
+      { "id": "hold.1", "label": "grasp and keep in one's hand", "cefr": "A1" },
+      { "id": "hold.2", "label": "contain or have capacity for", "cefr": "B1" },
+      { "id": "hold.3", "label": "convene (a meeting, event)", "cefr": "B1" },
+      { "id": "hold.4", "label": "remain valid (an argument holds)", "cefr": "B2" }
+    ],
+    "bring": [
+      { "id": "bring.1", "label": "carry or convey something to a place", "cefr": "A1" },
+      { "id": "bring.2", "label": "cause to occur or happen", "cefr": "B1" },
+      { "id": "bring.3", "label": "lead someone to a state or condition", "cefr": "B2" },
+      { "id": "bring.4", "label": "introduce a legal action", "cefr": "C1" }
+    ],
+    "cut": [
+      { "id": "cut.1", "label": "divide or separate using a sharp tool", "cefr": "A1" },
+      { "id": "cut.2", "label": "reduce in amount or quantity", "cefr": "B1" },
+      { "id": "cut.3", "label": "shorten by trimming (hair, grass)", "cefr": "A2" },
+      { "id": "cut.4", "label": "make or shape by cutting (a path, an album)", "cefr": "B2" }
+    ],
+    "drive": [
+      { "id": "drive.1", "label": "operate a vehicle and control its movement", "cefr": "A1" },
+      { "id": "drive.2", "label": "transport someone in a vehicle", "cefr": "A2" },
+      { "id": "drive.3", "label": "force or push someone into a state or action", "cefr": "B2" },
+      { "id": "drive.4", "label": "provide the motive power for", "cefr": "B2" }
+    ],
+    "find": [
+      { "id": "find.1", "label": "discover something by searching or by chance", "cefr": "A1" },
+      { "id": "find.2", "label": "consider or perceive something to be the case", "cefr": "A2" },
+      { "id": "find.3", "label": "obtain (time, money, energy) for a purpose", "cefr": "B1" },
+      { "id": "find.4", "label": "reach a judgement in court", "cefr": "C1" }
+    ],
+    "fall": [
+      { "id": "fall.1", "label": "move downward typically because of gravity", "cefr": "A1" },
+      { "id": "fall.2", "label": "decrease in number or amount", "cefr": "B1" },
+      { "id": "fall.3", "label": "pass into a specified state (fall asleep)", "cefr": "B1" },
+      { "id": "fall.4", "label": "occur or take place on a particular date", "cefr": "B2" }
+    ],
+    "mean": [
+      { "id": "mean.1", "label": "intend to express or refer to", "cefr": "A1" },
+      { "id": "mean.2", "label": "have as a consequence or result", "cefr": "A2" },
+      { "id": "mean.3", "label": "have intention to do something", "cefr": "B1" },
+      { "id": "mean.4", "label": "be of specified importance to someone", "cefr": "B2" }
+    ],
+    "move": [
+      { "id": "move.1", "label": "change position or location", "cefr": "A1" },
+      { "id": "move.2", "label": "change residence or workplace", "cefr": "A2" },
+      { "id": "move.3", "label": "cause to feel strong emotion", "cefr": "B1" },
+      { "id": "move.4", "label": "propose formally in a meeting", "cefr": "C1" }
+    ],
+    "read": [
+      { "id": "read.1", "label": "look at and understand written words", "cefr": "A1" },
+      { "id": "read.2", "label": "say aloud what is written", "cefr": "A2" },
+      { "id": "read.3", "label": "interpret or understand the meaning of something", "cefr": "B2" },
+      { "id": "read.4", "label": "show a particular measurement (a gauge reads 50)", "cefr": "B2" }
+    ],
+    "send": [
+      { "id": "send.1", "label": "cause to go or be taken to a destination", "cefr": "A2" },
+      { "id": "send.2", "label": "transmit (a message, signal)", "cefr": "A2" },
+      { "id": "send.3", "label": "order or direct someone to go somewhere", "cefr": "B1" },
+      { "id": "send.4", "label": "cause to be in a particular state (send into shock)", "cefr": "B2" }
+    ],
+    "stop": [
+      { "id": "stop.1", "label": "cease moving or operating", "cefr": "A1" },
+      { "id": "stop.2", "label": "prevent something from happening", "cefr": "A2" },
+      { "id": "stop.3", "label": "no longer continue an activity", "cefr": "A2" },
+      { "id": "stop.4", "label": "block or close an opening", "cefr": "B2" }
+    ]
+  }
+}

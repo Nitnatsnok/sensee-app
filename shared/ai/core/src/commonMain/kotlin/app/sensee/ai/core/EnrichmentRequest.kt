@@ -22,6 +22,7 @@ public data class EnrichmentRequest(
     val userNote: String? = null,
     val senseCoverage: SenseCoverage = SenseCoverage.Common,
     val topicPreferences: List<String> = emptyList(),
+    val evidence: EnrichmentEvidence? = null,
 )
 
 /**

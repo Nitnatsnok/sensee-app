@@ -1,0 +1,1754 @@
+{
+  "families": {
+    "come": {
+      "canonicalLemma": "come",
+      "units": [
+        {
+          "type": "word",
+          "display": "come"
+        },
+        {
+          "type": "phrasal",
+          "display": "come across",
+          "secondaryText": "across",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come along",
+          "secondaryText": "along",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come around",
+          "secondaryText": "around",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come by",
+          "secondaryText": "by",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "come down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "come up with",
+          "secondaryText": "up with",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "come of age",
+          "fixedObject": "of age"
+        },
+        {
+          "type": "idiom",
+          "display": "come what may",
+          "fixedObject": "what may"
+        }
+      ]
+    },
+    "get": {
+      "canonicalLemma": "get",
+      "units": [
+        {
+          "type": "word",
+          "display": "get"
+        },
+        {
+          "type": "phrasal",
+          "display": "get across",
+          "secondaryText": "across",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get along",
+          "secondaryText": "along",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get around",
+          "secondaryText": "around",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get by",
+          "secondaryText": "by",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "get down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "get up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "get a grip",
+          "fixedObject": "a grip"
+        },
+        {
+          "type": "idiom",
+          "display": "get cold feet",
+          "fixedObject": "cold feet"
+        }
+      ]
+    },
+    "take": {
+      "canonicalLemma": "take",
+      "units": [
+        {
+          "type": "word",
+          "display": "take"
+        },
+        {
+          "type": "phrasal",
+          "display": "take after",
+          "secondaryText": "after",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "take apart",
+          "secondaryText": "apart",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "take up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "take place",
+          "fixedObject": "place"
+        },
+        {
+          "type": "idiom",
+          "display": "take for granted",
+          "fixedObject": "for granted"
+        }
+      ]
+    },
+    "run": {
+      "canonicalLemma": "run",
+      "units": [
+        {
+          "type": "word",
+          "display": "run"
+        },
+        {
+          "type": "phrasal",
+          "display": "run across",
+          "secondaryText": "across",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "run after",
+          "secondaryText": "after",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "run away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "run down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "run into",
+          "secondaryText": "into",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "run off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "run out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "run over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "run through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "run up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "run amok",
+          "fixedObject": "amok"
+        },
+        {
+          "type": "idiom",
+          "display": "run for office",
+          "fixedObject": "for office"
+        }
+      ]
+    },
+    "look": {
+      "canonicalLemma": "look",
+      "units": [
+        {
+          "type": "word",
+          "display": "look"
+        },
+        {
+          "type": "phrasal",
+          "display": "look after",
+          "secondaryText": "after",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "look around",
+          "secondaryText": "around",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "look at",
+          "secondaryText": "at",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "look back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "look down on",
+          "secondaryText": "down on",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "look for",
+          "secondaryText": "for",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "look forward to",
+          "secondaryText": "forward to",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "look into",
+          "secondaryText": "into",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "look out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "look over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "look through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "look up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "look up to",
+          "secondaryText": "up to",
+          "secondaryRole": "preposition"
+        }
+      ]
+    },
+    "put": {
+      "canonicalLemma": "put",
+      "units": [
+        {
+          "type": "word",
+          "display": "put"
+        },
+        {
+          "type": "phrasal",
+          "display": "put across",
+          "secondaryText": "across",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put aside",
+          "secondaryText": "aside",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put forward",
+          "secondaryText": "forward",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put together",
+          "secondaryText": "together",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "put up with",
+          "secondaryText": "up with",
+          "secondaryRole": "particle"
+        }
+      ]
+    },
+    "turn": {
+      "canonicalLemma": "turn",
+      "units": [
+        {
+          "type": "word",
+          "display": "turn"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn around",
+          "secondaryText": "around",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn into",
+          "secondaryText": "into",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "turn up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "turn a blind eye",
+          "fixedObject": "a blind eye"
+        }
+      ]
+    },
+    "give": {
+      "canonicalLemma": "give",
+      "units": [
+        {
+          "type": "word",
+          "display": "give"
+        },
+        {
+          "type": "phrasal",
+          "display": "give away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "give back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "give in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "give off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "give out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "give up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "give it a try",
+          "fixedObject": "it a try"
+        },
+        {
+          "type": "idiom",
+          "display": "give a hand",
+          "fixedObject": "a hand"
+        }
+      ]
+    },
+    "make": {
+      "canonicalLemma": "make",
+      "units": [
+        {
+          "type": "word",
+          "display": "make"
+        },
+        {
+          "type": "phrasal",
+          "display": "make do",
+          "secondaryText": "do",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "make for",
+          "secondaryText": "for",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "make of",
+          "secondaryText": "of",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "make off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "make out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "make over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "make up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "make up for",
+          "secondaryText": "up for",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "make a difference",
+          "fixedObject": "a difference"
+        },
+        {
+          "type": "idiom",
+          "display": "make ends meet",
+          "fixedObject": "ends meet"
+        }
+      ]
+    },
+    "go": {
+      "canonicalLemma": "go",
+      "units": [
+        {
+          "type": "word",
+          "display": "go"
+        },
+        {
+          "type": "phrasal",
+          "display": "go after",
+          "secondaryText": "after",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "go ahead",
+          "secondaryText": "ahead",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go along",
+          "secondaryText": "along",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go around",
+          "secondaryText": "around",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go by",
+          "secondaryText": "by",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "go down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "go up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "go viral",
+          "fixedObject": "viral"
+        }
+      ]
+    },
+    "set": {
+      "canonicalLemma": "set",
+      "units": [
+        {
+          "type": "word",
+          "display": "set"
+        },
+        {
+          "type": "phrasal",
+          "display": "set about",
+          "secondaryText": "about",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "set apart",
+          "secondaryText": "apart",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set aside",
+          "secondaryText": "aside",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "set up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "set the bar",
+          "fixedObject": "the bar"
+        }
+      ]
+    },
+    "keep": {
+      "canonicalLemma": "keep",
+      "units": [
+        {
+          "type": "word",
+          "display": "keep"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep at",
+          "secondaryText": "at",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "keep up with",
+          "secondaryText": "up with",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "keep tabs on",
+          "fixedObject": "tabs on"
+        }
+      ]
+    },
+    "pull": {
+      "canonicalLemma": "pull",
+      "units": [
+        {
+          "type": "word",
+          "display": "pull"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull apart",
+          "secondaryText": "apart",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "pull up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "pull strings",
+          "fixedObject": "strings"
+        }
+      ]
+    },
+    "break": {
+      "canonicalLemma": "break",
+      "units": [
+        {
+          "type": "word",
+          "display": "break"
+        },
+        {
+          "type": "phrasal",
+          "display": "break away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "break down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "break in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "break into",
+          "secondaryText": "into",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "break off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "break out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "break through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "break up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "break the ice",
+          "fixedObject": "the ice"
+        }
+      ]
+    },
+    "hold": {
+      "canonicalLemma": "hold",
+      "units": [
+        {
+          "type": "word",
+          "display": "hold"
+        },
+        {
+          "type": "phrasal",
+          "display": "hold back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "hold down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "hold off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "hold on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "hold out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "hold up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "hold your horses",
+          "fixedObject": "your horses"
+        }
+      ]
+    },
+    "bring": {
+      "canonicalLemma": "bring",
+      "units": [
+        {
+          "type": "word",
+          "display": "bring"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring about",
+          "secondaryText": "about",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring along",
+          "secondaryText": "along",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring forward",
+          "secondaryText": "forward",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring round",
+          "secondaryText": "round",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "bring up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "bring to light",
+          "fixedObject": "to light"
+        }
+      ]
+    },
+    "cut": {
+      "canonicalLemma": "cut",
+      "units": [
+        {
+          "type": "word",
+          "display": "cut"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut across",
+          "secondaryText": "across",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut through",
+          "secondaryText": "through",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "cut up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "cut corners",
+          "fixedObject": "corners"
+        },
+        {
+          "type": "idiom",
+          "display": "cut to the chase",
+          "fixedObject": "to the chase"
+        }
+      ]
+    },
+    "drive": {
+      "canonicalLemma": "drive",
+      "units": [
+        {
+          "type": "word",
+          "display": "drive"
+        },
+        {
+          "type": "phrasal",
+          "display": "drive away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "drive back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "drive off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "drive on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "drive out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "drive up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "drive a hard bargain",
+          "fixedObject": "a hard bargain"
+        },
+        {
+          "type": "idiom",
+          "display": "drive someone crazy",
+          "fixedObject": "someone crazy"
+        }
+      ]
+    },
+    "find": {
+      "canonicalLemma": "find",
+      "units": [
+        {
+          "type": "word",
+          "display": "find"
+        },
+        {
+          "type": "phrasal",
+          "display": "find out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "find against",
+          "secondaryText": "against",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "find for",
+          "secondaryText": "for",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "idiom",
+          "display": "find fault with",
+          "fixedObject": "fault with"
+        },
+        {
+          "type": "idiom",
+          "display": "find oneself",
+          "fixedObject": "oneself"
+        },
+        {
+          "type": "idiom",
+          "display": "find one's feet",
+          "fixedObject": "one's feet"
+        }
+      ]
+    },
+    "fall": {
+      "canonicalLemma": "fall",
+      "units": [
+        {
+          "type": "word",
+          "display": "fall"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall apart",
+          "secondaryText": "apart",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall back on",
+          "secondaryText": "back on",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall behind",
+          "secondaryText": "behind",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall for",
+          "secondaryText": "for",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "fall through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "fall in love",
+          "fixedObject": "in love"
+        }
+      ]
+    },
+    "mean": {
+      "canonicalLemma": "mean",
+      "units": [
+        {
+          "type": "word",
+          "display": "mean"
+        },
+        {
+          "type": "idiom",
+          "display": "mean well",
+          "fixedObject": "well"
+        },
+        {
+          "type": "idiom",
+          "display": "mean business",
+          "fixedObject": "business"
+        },
+        {
+          "type": "idiom",
+          "display": "mean the world to",
+          "fixedObject": "the world to"
+        }
+      ]
+    },
+    "move": {
+      "canonicalLemma": "move",
+      "units": [
+        {
+          "type": "word",
+          "display": "move"
+        },
+        {
+          "type": "phrasal",
+          "display": "move along",
+          "secondaryText": "along",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move around",
+          "secondaryText": "around",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move forward",
+          "secondaryText": "forward",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move on",
+          "secondaryText": "on",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "move up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        }
+      ]
+    },
+    "read": {
+      "canonicalLemma": "read",
+      "units": [
+        {
+          "type": "word",
+          "display": "read"
+        },
+        {
+          "type": "phrasal",
+          "display": "read out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "read over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "read through",
+          "secondaryText": "through",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "read up on",
+          "secondaryText": "up on",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "idiom",
+          "display": "read between the lines",
+          "fixedObject": "between the lines"
+        },
+        {
+          "type": "idiom",
+          "display": "read the room",
+          "fixedObject": "the room"
+        }
+      ]
+    },
+    "send": {
+      "canonicalLemma": "send",
+      "units": [
+        {
+          "type": "word",
+          "display": "send"
+        },
+        {
+          "type": "phrasal",
+          "display": "send away",
+          "secondaryText": "away",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "send back",
+          "secondaryText": "back",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "send down",
+          "secondaryText": "down",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "send for",
+          "secondaryText": "for",
+          "secondaryRole": "preposition"
+        },
+        {
+          "type": "phrasal",
+          "display": "send in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "send off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "send out",
+          "secondaryText": "out",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "send up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        }
+      ]
+    },
+    "stop": {
+      "canonicalLemma": "stop",
+      "units": [
+        {
+          "type": "word",
+          "display": "stop"
+        },
+        {
+          "type": "phrasal",
+          "display": "stop by",
+          "secondaryText": "by",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "stop in",
+          "secondaryText": "in",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "stop off",
+          "secondaryText": "off",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "stop over",
+          "secondaryText": "over",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "phrasal",
+          "display": "stop up",
+          "secondaryText": "up",
+          "secondaryRole": "particle"
+        },
+        {
+          "type": "idiom",
+          "display": "stop at nothing",
+          "fixedObject": "at nothing"
+        },
+        {
+          "type": "idiom",
+          "display": "stop dead",
+          "fixedObject": "dead"
+        }
+      ]
+    }
+  }
+}

@@ -21,16 +21,16 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"приходить","surface_form":"come","unit_type":"irregular_verb",
                    "base_lemma":"come","explanation":"двигаться по направлению к говорящему",
-                   "examples":["[[Come]] here."],
+                   "examples":[{"sentence":"[[Come]] here."}],
                    "grammar_tags":[{"category":"verb_irregular","form":"infinitive"}],
                    "irregular_forms":{"base":"come","past":"came","past_participle":"come"}},
                   {"translation":"стать (делать что-то)","surface_form":"come to <verb>",
                    "unit_type":"irregular_verb","base_lemma":"come",
                    "explanation":"постепенно начать что-то делать",
-                   "examples":["I [[came to]] like it."],
+                   "examples":[{"sentence":"I [[came to]] like it."}],
                    "complementation":["to_infinitive"],
                    "irregular_forms":{"base":"come","past":"came","past_participle":"come"}}
                 ]}
@@ -49,16 +49,16 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"смотреть на","surface_form":"look at","unit_type":"phrasal_verb",
                    "base_lemma":"look","explanation":"направлять взгляд на что-то",
-                   "examples":["[[Look at]] this."]},
+                   "examples":[{"sentence":"[[Look at]] this."}]},
                   {"translation":"присматривать за","surface_form":"look after",
                    "unit_type":"phrasal_verb","base_lemma":"look",
-                   "explanation":"заботиться о ком-то","examples":["She [[looks after]] him."]},
+                   "explanation":"заботиться о ком-то","examples":[{"sentence":"She [[looks after]] him."}]},
                   {"translation":"искать","surface_form":"look for","unit_type":"phrasal_verb",
                    "base_lemma":"look","explanation":"пытаться найти",
-                   "examples":["I'm [[looking for]] keys."]}
+                   "examples":[{"sentence":"I'm [[looking for]] keys."}]}
                 ]}
                 """.trimIndent(),
             )
@@ -75,11 +75,11 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"презирать","surface_form":"look down on <someone>",
                    "unit_type":"phrasal_verb","base_lemma":"look",
                    "explanation":"считать кого-то ниже себя, презирать",
-                   "examples":["They [[look down on]] outsiders."],
+                   "examples":[{"sentence":"They [[look down on]] outsiders."}],
                    "grammar_tags":[{"category":"separability","form":"inseparable"}]}
                 ]}
                 """.trimIndent(),
@@ -96,13 +96,13 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"наткнуться, случайно встретить",
                    "surface_form":"come across <someone/something>",
                    "unit_type":"phrasal_verb","base_lemma":"come",
                    "explanation":"случайно найти или встретить",
-                   "examples":["She [[came across]] old letters.",
-                               "I [[came across]] an old friend."]}
+                   "examples":[{"sentence":"She [[came across]] old letters."},
+                               {"sentence":"I [[came across]] an old friend."}]}
                 ]}
                 """.trimIndent(),
             )
@@ -111,7 +111,7 @@ class EnrichmentSchemaContractTest {
         assertEquals("come across <someone/something>", sense.surfaceForm)
         assertEquals(
             listOf("She [[came across]] old letters.", "I [[came across]] an old friend."),
-            sense.examples,
+            sense.examples.map { it.sentence },
         )
     }
 
@@ -120,19 +120,19 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"случайно найти","surface_form":"come across <someone/something>",
                    "unit_type":"phrasal_verb","base_lemma":"come",
                    "explanation":"случайно найти или встретить",
-                   "examples":["I [[came across]] an old photo."]},
+                   "examples":[{"sentence":"I [[came across]] an old photo."}]},
                   {"translation":"производить впечатление","surface_form":"come across [as]",
                    "unit_type":"phrasal_verb","base_lemma":"come",
                    "explanation":"казаться, восприниматься определённым образом",
-                   "examples":["He [[comes across]] as confident."]},
+                   "examples":[{"sentence":"He [[comes across]] as confident."}]},
                   {"translation":"быть понятно выраженным","surface_form":"come across",
                    "unit_type":"phrasal_verb","base_lemma":"come",
                    "explanation":"быть ясно донесённым до аудитории",
-                   "examples":["Her message [[came across]] clearly."]}
+                   "examples":[{"sentence":"Her message [[came across]] clearly."}]}
                 ]}
                 """.trimIndent(),
             )
@@ -145,7 +145,14 @@ class EnrichmentSchemaContractTest {
             listOf("come across <someone/something>", "come across [as]", "come across"),
             result.suggestions.map { it.surfaceForm },
         )
-        assertTrue(result.suggestions.all { it.examples.single().contains("[[") })
+        assertTrue(
+            result.suggestions.all {
+                it.examples
+                    .single()
+                    .sentence
+                    .contains("[[")
+            },
+        )
     }
 
     @Test
@@ -153,10 +160,10 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"проще простого","surface_form":"a piece of cake",
                    "unit_type":"idiom","explanation":"что-то очень лёгкое",
-                   "examples":["The exam was [[a piece of cake]]."],
+                   "examples":[{"sentence":"The exam was [[a piece of cake]]."}],
                    "grammar_tags":[{"category":"expression_type","form":"fixed"}]}
                 ]}
                 """.trimIndent(),
@@ -173,10 +180,10 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"чтобы","surface_form":"in order to <verb>","unit_type":"phrase",
                    "explanation":"выражает цель действия",
-                   "examples":["He left early [[in order to]] catch the train."],
+                   "examples":[{"sentence":"He left early [[in order to]] catch the train."}],
                    "complementation":["bare_infinitive"]}
                 ]}
                 """.trimIndent(),
@@ -192,11 +199,11 @@ class EnrichmentSchemaContractTest {
         val result =
             map(
                 """
-                {"version":1,"items":[
+                {"version": 1,"items":[
                   {"translation":"заинтересованный","surface_form":"interested",
                    "unit_type":"adjective","base_lemma":"interested",
                    "explanation":"проявляющий интерес к чему-то",
-                   "examples":["She is [[interested]] in art."],
+                   "examples":[{"sentence":"She is [[interested]] in art."}],
                    "preposition_government":[{"alternatives":["in"]}]}
                 ]}
                 """.trimIndent(),

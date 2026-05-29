@@ -8,11 +8,12 @@ import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.data.local.CatalogLocalDataSource
 import app.sensee.feature.library.data.remote.CatalogRemoteDataSource
-import app.sensee.feature.vocabularyEditor.domain.EntryId
-import app.sensee.feature.vocabularyEditor.domain.EntryStatus
-import app.sensee.feature.vocabularyEditor.domain.LexicalEntry
-import app.sensee.feature.vocabularyEditor.domain.Meaning
-import app.sensee.feature.vocabularyEditor.domain.VocabularyRepository
+import app.sensee.grammar.domain.IrregularForms
+import app.sensee.lexicon.domain.EntryId
+import app.sensee.lexicon.domain.EntryStatus
+import app.sensee.lexicon.domain.LexicalEntry
+import app.sensee.lexicon.domain.LexiconRepository
+import app.sensee.lexicon.domain.Sense
 import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.fsrs.FsrsParameters
 import app.sensee.srs.testKit.InMemorySrsStorage
@@ -45,31 +46,20 @@ class CapturedCatalogRepositoryTest {
         override suspend fun database(): SenseeDatabase = db
     }
 
-    private class FakeVocabularyRepository(
+    private class FakeLexiconRepository(
         private val entries: List<LexicalEntry>,
-    ) : VocabularyRepository {
-        override suspend fun createDraft(term: String): LexicalEntry = error("unused")
-
-        override suspend fun updateDraftTerm(
-            id: EntryId,
-            term: String,
-        ): LexicalEntry = error("unused")
-
+    ) : LexiconRepository {
         override suspend fun getEntry(id: EntryId): LexicalEntry? = entries.firstOrNull { it.id == id }
 
         override suspend fun listEntries(): List<LexicalEntry> = entries
 
         override fun observeEntries(): Flow<List<LexicalEntry>> = flowOf(entries)
-
-        override suspend fun confirmMeanings(
-            id: EntryId,
-            meanings: List<Meaning>,
-        ): LexicalEntry = error("unused")
-
-        override suspend fun deleteEntry(id: EntryId) = Unit
     }
 
-    private fun newRepository(srsStorage: InMemorySrsStorage<FsrsParameters>): CapturedCatalogRepository {
+    private fun newRepository(
+        srsStorage: InMemorySrsStorage<FsrsParameters>,
+        entries: List<LexicalEntry> = defaultEntries(),
+    ): CapturedCatalogRepository {
         val driver =
             JdbcSqliteDriver(
                 JdbcSqliteDriver.IN_MEMORY,
@@ -99,17 +89,7 @@ class CapturedCatalogRepositoryTest {
         val base = DefaultCatalogRepository(localDataSource, remoteDataSource)
         return CapturedCatalogRepository(
             base = base,
-            vocabulary =
-                FakeVocabularyRepository(
-                    listOf(
-                        LexicalEntry(
-                            id = EntryId("e1"),
-                            term = "come across",
-                            status = EntryStatus.Confirmed,
-                            meanings = listOf(Meaning(translation = "наткнуться")),
-                        ),
-                    ),
-                ),
+            lexicon = FakeLexiconRepository(entries),
             srsStorage = srsStorage,
         )
     }
@@ -140,4 +120,50 @@ class CapturedCatalogRepositoryTest {
                 "a confirmed capture entry appears as the captured deck without any adoption",
             )
         }
+
+    @Test
+    fun `loading a captured form card stays in the captured repository path`() =
+        runTest {
+            val srsStorage = InMemorySrsStorage(initialParameters = FsrsParameters.defaultV6())
+            val repository =
+                newRepository(
+                    srsStorage = srsStorage,
+                    entries =
+                        listOf(
+                            LexicalEntry(
+                                id = EntryId("e1"),
+                                term = "come",
+                                status = EntryStatus.Confirmed,
+                                senses =
+                                    listOf(
+                                        Sense(
+                                            translation = "приходить",
+                                            baseLemma = "come",
+                                            irregularForms = IrregularForms("come", "came", "come"),
+                                        ),
+                                    ),
+                            ),
+                        ),
+                )
+            val formCard =
+                repository
+                    .loadDeck(CapturedCatalogDerivation.DECK_ID)
+                    .cards
+                    .first { it.headword == "came" }
+
+            val loaded = repository.loadCard(formCard.id)
+
+            assertEquals(formCard.id, loaded.id)
+            assertNotNull(srsStorage.getCard(SrsCardId(formCard.id.value)))
+        }
+
+    private fun defaultEntries(): List<LexicalEntry> =
+        listOf(
+            LexicalEntry(
+                id = EntryId("e1"),
+                term = "come across",
+                status = EntryStatus.Confirmed,
+                senses = listOf(Sense(translation = "наткнуться")),
+            ),
+        )
 }

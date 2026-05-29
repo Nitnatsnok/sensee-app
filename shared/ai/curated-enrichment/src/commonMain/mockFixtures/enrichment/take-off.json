@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "снимать (одежду)",
+      "surface_form": "take off <something>",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "take",
+      "head_lemma": "take",
+      "components": [
+        {
+          "text": "take",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "off",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "убирать предмет одежды с тела",
+      "examples": [
+        {
+          "sentence": "He [[took off]] his coat at the door.",
+          "translation": "Он снял пальто у двери.",
+          "alignment": [
+            {
+              "source": "He",
+              "target": "Он"
+            },
+            {
+              "source": "took off",
+              "target": "снял"
+            },
+            {
+              "source": "his coat",
+              "target": "пальто"
+            },
+            {
+              "source": "at the door",
+              "target": "у двери"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "remove"
+      ],
+      "antonyms": [
+        "put on"
+      ],
+      "collocations": [
+        "take off your shoes",
+        "take off your coat",
+        "take off your hat"
+      ],
+      "complementation": [
+        "noun"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "separable"
+        },
+        {
+          "category": "transitivity",
+          "form": "transitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "take",
+        "past": "took",
+        "past_participle": "taken"
+      },
+      "cefr": "A2"
+    },
+    {
+      "translation": "взлетать",
+      "surface_form": "take off",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "take",
+      "head_lemma": "take",
+      "components": [
+        {
+          "text": "take",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "off",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "о самолёте: отрываться от земли при взлёте",
+      "examples": [
+        {
+          "sentence": "Our plane [[took off]] two hours late.",
+          "translation": "Наш самолёт взлетел с опозданием на два часа.",
+          "alignment": [
+            {
+              "source": "Our plane",
+              "target": "Наш самолёт"
+            },
+            {
+              "source": "took off",
+              "target": "взлетел"
+            },
+            {
+              "source": "two hours late",
+              "target": "с опозданием на два часа"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "lift off",
+        "depart"
+      ],
+      "antonyms": [
+        "land",
+        "touch down"
+      ],
+      "collocations": [
+        "the plane took off",
+        "take off on time",
+        "take off from the runway"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "inseparable"
+        },
+        {
+          "category": "transitivity",
+          "form": "intransitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "take",
+        "past": "took",
+        "past_participle": "taken"
+      },
+      "cefr": "B1"
+    }
+  ]
+}

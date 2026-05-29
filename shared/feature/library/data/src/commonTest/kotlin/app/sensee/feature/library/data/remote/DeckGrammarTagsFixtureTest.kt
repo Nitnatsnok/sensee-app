@@ -22,12 +22,15 @@ class DeckGrammarTagsFixtureTest {
         deckFixtures.forEach { (path, fixture) ->
             val deck = json.decodeFromString<DeckDto>(fixture)
             deck.cards.forEach { card ->
+                // Grammar tags now live on the card's enrichment item — the card is
+                // a projection of its Sense, with no flat duplicate (Phase 3).
+                val grammarTags = card.enrichment.grammarTags
                 assertEquals(
                     true,
-                    card.grammarTags.isNotEmpty(),
+                    grammarTags.isNotEmpty(),
                     "Missing grammar tags for $path/${card.id}",
                 )
-                card.grammarTags.forEach { tag ->
+                grammarTags.forEach { tag ->
                     val allowedForms = allowedFormsByCategory[tag.category].orEmpty()
                     assertEquals(
                         true,

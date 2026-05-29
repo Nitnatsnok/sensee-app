@@ -2,7 +2,7 @@ CREATE TABLE lexical_entry (
     id TEXT NOT NULL PRIMARY KEY,
     term TEXT NOT NULL,
     status TEXT NOT NULL,
-    meanings_json TEXT NOT NULL DEFAULT '[]',
+    senses_json TEXT NOT NULL DEFAULT '[]',
     updated_at_epoch_ms INTEGER NOT NULL
 );
 
@@ -19,7 +19,7 @@ FROM lexical_entry
 WHERE id = ?;
 
 upsertEntry:
-INSERT OR REPLACE INTO lexical_entry(id, term, status, meanings_json, updated_at_epoch_ms)
+INSERT OR REPLACE INTO lexical_entry(id, term, status, senses_json, updated_at_epoch_ms)
 VALUES (?, ?, ?, ?, ?);
 
 deleteEntry:

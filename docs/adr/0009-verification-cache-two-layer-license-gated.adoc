@@ -1,0 +1,54 @@
+= ADR-009: Двухуровневый кэш верификации — L1 в памяти + SQLDelight L2 с лицензионным барьером
+:revdate: 2026-05-28
+
+Статус:: Accepted
+Дата:: 2026-05-28
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Performance Efficiency (повторные верификации одного слова в сессии и между сессиями не должны платить сетью), Maintainability (QG-3: добавление адаптера не требует знаний о кэше — лицензионный флаг адаптера определяет персистентность), Privacy/Compliance (коммерческие источники и источники со строгой лицензией не должны утечь в постоянное хранилище), Reliability (рестарт процесса не должен «потерять» 5-минутный TTL — иначе горячая пакетная верификация после рестарта вся уходит в сеть)
+
+Контекст::
+До этого ADR верификация шла через кэш в памяти `CachingLexicalVerifier` (LRU на 256 записей, TTL `min(per-source maxCacheTtlMillis, policy, 5 мин)`). Холодный запуск терял весь кэш; поток захвата сразу после рестарта дёргал каждый сетевой адаптер заново. Часть источников (Free Dictionary, Datamuse) толерантны к персистентному кэшу; часть (коммерческие словари в будущем) — нет. Нужен механизм, который удлиняет жизнь кэша между запусками и при этом не нарушает лицензионный барьер из ADR-007.
+
+Решение::
+Кэш — двухуровневый, оба слоя инкапсулированы в `PersistedCachingLexicalVerifier` (привязанная в DI реализация `LexicalVerifier`):
+
+. **L1 — LRU в памяти**. `LinkedHashMap<CacheKey, CacheEntry>` под `Mutex`, мягкий предел `MAX_MEMORY_ENTRIES = 256`. Обращение к записи перемещает её в хвост LRU. Несёт содержимое источников со строгой лицензией — данные никогда не попадают на диск.
+. **L2 — SQLDelight `lexical_verification_cache`**. Колонки `cache_key`, `key_fingerprint`, `report_json`, `written_at_epoch_ms`, `expires_at_epoch_ms`, `last_accessed_at_epoch_ms`. `cache_key` хранит только версионированный digest (`v4:...`), а `key_fingerprint` защищает от коллизии digest и старых строк несовместимого формата без раскрытия исходного текста query/sense hints. Индексы по `last_accessed` (LRU-вытеснение) и `expires` (чистка просроченного). Предел `MAX_DISK_ENTRIES = 4096`. Запись JSON через общий `Json` из `core.network` (одна конфигурация по всему графу — иначе дрейф `ignoreUnknownKeys` / `encodeDefaults` ломает round-trip между приложениями кэша и сервисами).
+
+`CacheKey` строится из нормализованного термина, языков, ожидаемых подсказок (`expectedEntryType`, `expectedPartOfSpeech`, `senseHints`), несущих полей `VerificationPolicy` (`timeoutPerProviderMillis`, `maxCacheAgeMillis`, `includeFamily`, `familySiblingCap`, `allowNetwork`) и digest текущего каталога источников (`source id`, `versionTag`, persist/LLM flags, TTL). Это дробит кэш по полям, которые могут изменить результат, срок годности отчёта или лицензионную пригодность старой строки. В L2 пишется только стабильный digest ключа (`v4:<hash>`) и отдельный `key_fingerprint`, поэтому `senseHints` не сохраняют пользовательский/AI-текст в plaintext primary key.
+
+Лицензионный барьер (несущее правило): **запись на L2 происходит только для `Available` отчёта с непустым `report.sources`, где каждый источник разрешает `storeContentAllowed`**. Любой строгий источник в составе отчёта оставляет запись только в L1. Это позволяет в будущем подключить коммерческий словарь без правок кэш-кода — флаг адаптера определит политику.
+
+TTL: `min(per-source maxCacheTtlMillis, policy.maxCacheAgeMillis, DEFAULT_TTL_MILLIS = 24 ч)`. TTL применяется к обоим уровням; ленивая чистка просроченных строк на старте (`runStartupCleanupOnce` дёргает `deleteExpired` один раз за инстанс — bounded background work).
+
+Ограничение записи: `touchAccess` на L2 дёргается не чаще раза в минуту на ключ (`TOUCH_THROTTLE_MILLIS`). Горячий ключ иначе вызывал бы `UPDATE` на каждый запрос.
+
+Обход кэша: запросы с `examplesToValidate.isNotEmpty()` не используют кэш. `report.exampleFindings` зависит от конкретных предложений; кэш по лемме иначе возвращал бы устаревшие findings для новой пачки примеров.
+
+Альтернативы::
+
+* Однослойный L2 без L1. Отклонено: per-request JSON-decode съедает ~миллисекунды; L1 убирает их на горячих повторах в одной сессии.
+* L2 как key-value (`shared/core/secure-storage` или Settings). Отклонено: SQLDelight уже в графе, индексы по `last_accessed`/`expires` нужны для O(log n) eviction; key-value таскал бы все записи в память.
+* Кэш каждого источника на уровне адаптеров. Отклонено: слияние в агрегаторе может объединять данные с разными TTL и разными лицензионными флагами; единая точка кэширования упрощает invariant «`storeContentAllowed=false` ⇒ не пишем».
+* Сериализация через Protobuf/binary вместо JSON. Отклонено: одна сериализационная инфраструктура (kotlinx-serialization), общий `Json` обслуживает HTTP + кэш одинаково; бинарный формат даёт ~30% по размеру, но добавляет зависимость и усложняет эволюцию схемы для типов с дефолтами.
+
+Последствия (реализованные, 2026-05-28)::
+
+* `shared/verification/database-schema` — отдельный `database-schema` модуль по конвенции из ADR-002. Подключён к агрегату `SenseeDatabase` через `evaluationDependsOn` + `dependency(project(...))`.
+* `core` типы (`LexicalVerificationReport` и всё транзитивное — `EvidenceSet`, `Observation`, `LexicalSource`, `VerifierAvailability`, `SuggestedAction`, …) помечены `@Serializable` с явными `@SerialName` на sealed-иерархиях для стабильного wire-format. `IntRange` использует custom surrogate-serializer.
+* `Json` инжектится единственным экземпляром из `core.network.JsonProviders` — один конфиг на HTTP-клиенты и кэш.
+* Eviction в L1 — `while (size > cap)` (не один-за-раз), prune в L2 — мульти-row delete через `selectOldestKeys` + per-key `deleteByKey`.
+* `SourceCatalogCompletenessTest` (`integration/commonTest`) проверяет: каждый `*Source.ID` адаптер-модуля присутствует в `provideKnownLexicalSources`. Гард против тихого выпадения evidence из `report.sources` при добавлении нового адаптера.
+* `PersistedCachingLexicalVerifierTest` (`integration/jvmTest`, SQLite в памяти через `JdbcSqliteDriver.IN_MEMORY`) пинит: hit после холодного рестарта, повторный запрос после истечения TTL, отказ от L2 для источника со строгой лицензией, разделение ключей по `policy`/подсказкам запроса/source catalog, отсутствие plaintext `senseHints` в persisted key и отказ от L2 для отчётов без source metadata.
+
+Последствия (ожидаемые)::
+
+* Адаптер с коммерческой лицензией (Cambridge/Oxford под лицензией) — добавление одного модуля `Adapter` с `storeContentAllowed = false` автоматически держит контент только в L1. Кэш-код не правится.
+* Размер БД может расти — предел L2 4096 записей × ~3 КБ JSON ≈ 12 МБ. Если станет проблемой — настроить предел или переключить на SQLite WAL + стратегию очистки через ROWID.
+* `PersistedCachingLexicalVerifierTest` сейчас JVM-only (драйвер). Перенос в `commonTest` через `expect`/`actual` driver factory — отдельный шаг (отложен из-за усложнения JS/Wasm web-driver-setup).
+* Sensee-curated справочные данные (`sensee-curated`, бэкенд по HTTP) — `storeContentAllowed = true`, ложатся в L2 свободно.
+
+Связанные ADR::
+
+* link:0002-feature-owned-schema-with-aggregated-database.adoc[ADR-002] (mirrors) — feature-owned schema, отдельный `database-schema` модуль.
+* link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] (extends) — граница верификации, где живёт `LicensePolicy`.

@@ -1,17 +1,15 @@
 package app.sensee.tts.integration
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.tts.core.TtsCatalog
 import app.sensee.tts.core.TtsError
 import app.sensee.tts.core.TtsException
 import app.sensee.tts.core.TtsKeyCheck
 import app.sensee.tts.core.TtsKeyVerificationRequest
-import app.sensee.tts.elevenlabs.api.ElevenLabsClientFactory
 import app.sensee.tts.elevenlabs.catalog.ElevenLabsCatalogFactory
 import app.sensee.tts.elevenlabs.config.ElevenLabsConfig
 import app.sensee.tts.elevenlabs.config.StaticElevenLabsCredentialsProvider
-import io.ktor.client.engine.HttpClientEngine
-import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.json.Json
+import io.ktor.client.HttpClient
 
 /**
  * The bound [TtsCatalog]. Provider-specific catalog calls stay here, in the
@@ -19,24 +17,17 @@ import kotlinx.serialization.json.Json
  * request. OpenAI TTS keys are OpenAI-compatible and are verified through the
  * AI seam instead (handled by the settings logic).
  *
- * Pure: the network engine is supplied by [TtsIntegrationProviders] (the DI
- * layer owns network wiring, like the AI seam), so tests can pass a MockEngine.
+ * Pure: the [HttpClient] is supplied by [TtsIntegrationProviders] (the DI layer
+ * owns network wiring, like the AI seam), so tests can pass a client built on a
+ * MockEngine.
  */
 public class RoutingTtsCatalog(
-    json: Json,
-    engine: HttpClientEngine,
+    private val httpClient: HttpClient,
+    private val config: ElevenLabsConfig,
 ) : TtsCatalog {
     private companion object {
         const val ELEVEN_LABS_PROVIDER_ID = "elevenlabs"
     }
-
-    private val config = ElevenLabsConfig()
-    private val httpClient =
-        ElevenLabsClientFactory.create(
-            engine = engine,
-            config = config,
-            json = json,
-        )
 
     override suspend fun verifyKey(request: TtsKeyVerificationRequest): TtsKeyCheck {
         if (request.providerId != ELEVEN_LABS_PROVIDER_ID) {
@@ -52,14 +43,12 @@ public class RoutingTtsCatalog(
                 config = config,
                 credentials = StaticElevenLabsCredentialsProvider(apiKey),
             )
-        return try {
+        return runCatchingCancellable {
             TtsKeyCheck.Valid(
                 models = catalog.modelIds(),
                 voices = catalog.voiceIds(),
             )
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+        }.getOrElse { throwable ->
             TtsKeyCheck.Invalid(ttsKeyCheckReason(throwable))
         }
     }

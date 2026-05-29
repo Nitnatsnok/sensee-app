@@ -9,6 +9,7 @@ import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.concurrent.Volatile
 
 /**
  * App-scoped [TaxonomyInvariantsProvider] backed by the shared taxonomy cache.
@@ -22,6 +23,8 @@ public class CachingTaxonomyInvariantsProvider(
     private val taxonomyProvider: CachingGrammarTaxonomyProvider,
 ) : TaxonomyInvariantsProvider {
     private val mutex = Mutex()
+
+    @Volatile
     private var cached: TaxonomyInvariants? = null
 
     override suspend fun invariants(): TaxonomyInvariants? {

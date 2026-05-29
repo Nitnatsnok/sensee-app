@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "вставать",
+      "surface_form": "get up",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "get",
+      "head_lemma": "get",
+      "components": [
+        {
+          "text": "get",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "up",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "подниматься с постели или с места",
+      "examples": [
+        {
+          "sentence": "I usually [[get up]] before sunrise.",
+          "translation": "Обычно я встаю до рассвета.",
+          "alignment": [
+            {
+              "source": "I usually",
+              "target": "Обычно я"
+            },
+            {
+              "source": "get up",
+              "target": "встаю"
+            },
+            {
+              "source": "before sunrise",
+              "target": "до рассвета"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "rise",
+        "stand up",
+        "get out of bed"
+      ],
+      "antonyms": [
+        "lie down",
+        "go to bed"
+      ],
+      "collocations": [
+        "get up early",
+        "get up late",
+        "get up at dawn"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "inseparable"
+        },
+        {
+          "category": "transitivity",
+          "form": "intransitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "get",
+        "past": "got",
+        "past_participle": "got"
+      },
+      "cefr": "A1"
+    }
+  ]
+}

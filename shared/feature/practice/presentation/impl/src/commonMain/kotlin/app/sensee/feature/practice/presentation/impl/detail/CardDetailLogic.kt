@@ -1,6 +1,7 @@
 package app.sensee.feature.practice.presentation.impl.detail
 
 import app.sensee.core.coroutines.AppDispatchers
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.decompose.logic.BaseLogic
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState

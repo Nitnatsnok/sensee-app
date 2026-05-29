@@ -8,7 +8,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.StrongBoxUnavailableException
 import android.util.Base64
-import kotlinx.coroutines.CancellationException
+import app.sensee.core.coroutines.runCatchingCancellable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -57,11 +57,9 @@ internal class AndroidSecureStorage(
     override suspend fun read(key: SecureStorageKey): String? =
         withContext(ioDispatcher) {
             val ciphertext = preferences.getString(key.value, null) ?: return@withContext null
-            try {
+            runCatchingCancellable {
                 decrypt(ciphertext)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
+            }.getOrElse { throwable ->
                 // A decrypt failure typically means the Keystore master key
                 // was wiped (factory reset, app-data clear, TEE reset) while
                 // the SharedPreferences blob survived. Don't silently drop —
@@ -116,11 +114,9 @@ internal class AndroidSecureStorage(
     }
 
     private fun loadAndroidKeyStore(): KeyStore =
-        try {
+        runCatchingCancellable {
             KeyStore.getInstance(ANDROID_KEYSTORE_NAME).apply { load(null) }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+        }.getOrElse { throwable ->
             throw SecureStorageException("AndroidKeyStore unavailable", throwable)
         }
 
@@ -137,23 +133,20 @@ internal class AndroidSecureStorage(
 
     @TargetApi(Build.VERSION_CODES.P)
     private fun generateStrongBoxMasterKeyOrNull(): SecretKey? =
-        try {
+        runCatchingCancellable {
             generateMasterKey(strongBox = true)
-        } catch (_: StrongBoxUnavailableException) {
-            // Fall back to a regular Keystore-backed AES key below.
-            null
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
-            throw SecureStorageException("Failed to generate Keystore master key", throwable)
+        }.getOrElse { throwable ->
+            when (throwable) {
+                // Fall back to a regular Keystore-backed AES key below.
+                is StrongBoxUnavailableException -> null
+                else -> throw SecureStorageException("Failed to generate Keystore master key", throwable)
+            }
         }
 
     private fun generateRegularMasterKey(): SecretKey =
-        try {
+        runCatchingCancellable {
             generateMasterKey(strongBox = false)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+        }.getOrElse { throwable ->
             throw SecureStorageException("Failed to generate Keystore master key", throwable)
         }
 

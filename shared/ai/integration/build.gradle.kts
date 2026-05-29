@@ -8,8 +8,9 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.shared.ai.core)
-                api(projects.shared.ai.fixture)
+                api(projects.shared.ai.curatedEnrichment)
                 api(projects.shared.ai.llm)
+                implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.settings.domain)
                 implementation(projects.shared.core.network)
                 implementation(projects.shared.core.observability)
@@ -24,6 +25,15 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.ktor.client.mock)
+            }
+        }
+
+        // jvmTest drives `CuratedAiEnrichmentClient` over a Ktor MockEngine,
+        // which needs JSON content negotiation.
+        jvmTest {
+            dependencies {
+                implementation(libs.ktor.client.contentNegotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
     }

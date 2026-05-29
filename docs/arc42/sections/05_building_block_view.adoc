@@ -15,7 +15,7 @@
 [options="header",cols="1,2,1"]
 |===
 |Capability|Смысл для продукта|Статус
-|Vocabulary Capture and Sense Disambiguation|Внесение слова или выражения, разделение смыслов, фиксация контекстов и грамматических уточнений, создание связанных учебных артефактов|реализованный срез: ввод, AI-подсказки, мультивыбор, ручной смысл, подтверждение; planned: lemma-семья и производные карточки
+|Vocabulary Capture and Sense Disambiguation|Внесение слова или выражения, верификация, разделение смыслов, фиксация контекстов и грамматических уточнений, создание связанных учебных артефактов|реализованный срез: ввод, verification evidence, AI/curated-подсказки, verification snapshots, мультивыбор, ручной смысл, подтверждение, captured deck projection, lemma grouping и irregular form cards; planned: UI-навигация по семье и курирование
 |Library Catalog and Curation|Каталог записей и карточек, курирование колод (many-to-many), правка/удаление своих карточек, добавление сервисных наборов целиком или частично|реализованный срез: `Home` в `Library` (обзор сервисных наборов и собственного материала, добавление набора целиком, отмена), Practice видит только собственный материал; planned: курирование, `EntryDetail`/`LemmaDetail`, частичное добавление
 |Practice and Review|Прохождение уже созданных карточек, планирование повторений и повторение материала|реализованный срез
 |Shared Shell and Navigation|Единый платформенно-независимый вход, базовая навигация и координация feature-разделов|реализованная базовая оболочка
@@ -32,7 +32,7 @@
 |Shared App Shell|`shared/app-shell` собирает тему, adaptive environment, root component и platform environment
 |Feature Presentation API|`shared/feature/*/presentation/api` задаёт контракты компонентов для разделов `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`
 |Feature Navigation API|`shared/feature/*/presentation/navigation-api` задаёт сериализуемые `ScreenConfig` для переходов между разделами и будущих deeplink'ов
-|Feature Presentation Implementation|`shared/feature/*/presentation/impl` реализует хост-компоненты разделов, базовые экраны, Practice deck, Library catalog/adoption, Profile AI/TTS settings и Vocabulary capture
+|Feature Presentation Implementation|`shared/feature/*/presentation/impl` реализует хост-компоненты разделов, базовые экраны, Practice deck, Library catalog/adoption, Profile AI/TTS/App/Learning settings и Vocabulary capture
 |Practice Domain/Data|`shared/feature/practice/domain` и `shared/feature/practice/data` задают repository boundary, domain-модель карточек и поток данных на фикстурах
 |Practice Database Schema|`shared/feature/practice/database-schema` хранит SQLDelight-схему practice-карточек и SRS-состояния
 |Shared Settings|`shared/settings/domain`, `shared/settings/data` и `shared/settings/database-schema` задают типизированное хранилище пользовательских настроек по категориям
@@ -40,7 +40,8 @@
 |Core Runtime|`shared/core/decompose` задаёт инфраструктуру компонентов и навигации, `shared/core/presentation` — общие presentation states, `shared/core/compose` — переиспользуемые Compose-утилиты; DI собирается Metro-графом `AppGraph` в `shared/app-shell`
 |Client Integration Foundations|`shared/database`, `shared/core/network`, `shared/core/mock-backend` и `shared/core/observability` предоставляют хранение, `HttpClient` boundary, транспорт на фикстурах и границу runtime diagnostics для текущих сценариев
 |SRS Libraries|`shared/srs/*` содержат domain/engine/FSRS библиотеки, которые используются practice data flow для планирования повторений
-|AI Enrichment Boundary|`shared/ai/*` — `core` (provider-agnostic boundary contract + request/response extension points: `EnrichmentRequestModifier`, `AiEnrichmentExtension`), `fixture` (offline impl), `llm` (LLM-провайдеры, schema из таксономии времени выполнения), `integration` (routing-by-config + DI композиция). Anti-corruption граница для вертикали ввода (ADR-005, ADR-006)
+|AI Enrichment Boundary|`shared/ai/*` — `core` (provider-agnostic boundary contract + request/response extension points: `EnrichmentRequestModifier`, `AiEnrichmentExtension`), `curated-enrichment` (курированное покрытие, отдаётся бэкендом по HTTP), `llm` (LLM-провайдеры, schema из таксономии времени выполнения), `integration` (curated-first routing + DI композиция). Anti-corruption граница для вертикали ввода (ADR-005, ADR-006)
+|Lexical Verification Boundary|`shared/verification/*` — `core` contracts, `sensee-curated` backend-served reference providers (frequency/CEFR/senses/family по HTTP), network adapters, `database-schema` L2 cache и `integration` aggregator. Capture использует его до AI как license-gated evidence и после AI как per-candidate snapshots
 |TTS Seam|`shared/tts/*` — `core` contract, `system`/`elevenlabs`/`openai` impl-адаптеры, `playback`, `cache`, `integration` композиция. Та же seam-конвенция, что и AI
 |Neutral Grammar|`shared/grammar/domain` и `shared/grammar/data` задают нейтральную грамматическую таксономию, не привязанную к конкретному языку или AI-провайдеру
 |===
@@ -59,7 +60,8 @@
 |Practice Database Schema → Persistence Module|`shared/feature/practice/database-schema` владеет feature-схемой, а `shared/database` агрегирует её в корневой `SenseeDatabase`
 |Shared Settings Data → Persistence Module|`shared/settings/data` реализует `UserSettingsRepository` поверх SQLDelight, а `shared/settings/database-schema` агрегируется в `SenseeDatabase`
 |Practice Data → SRS Libraries|Practice data layer применяет SRS engine/storage для review state
-|Vocabulary Capture -> AI Enrichment Boundary|Capture получает `MeaningCandidate` через provider-agnostic `shared/ai/*`, а не через прямой SDK/endpoint
+|Vocabulary Capture -> Lexical Verification Boundary|Capture получает verification evidence до AI и snapshots после AI через provider-agnostic `shared/verification/*`
+|Vocabulary Capture -> AI Enrichment Boundary|Capture получает `SenseCandidate` через provider-agnostic `shared/ai/*`, а не через прямой SDK/endpoint; curated coverage отвечает до LLM
 |Profile -> AI/TTS Boundaries|Profile проверяет provider keys/model/voice metadata через `shared/ai/*` и `shared/tts/*`, а настройки хранит через `UserSettingsRepository`
 |Grammar Domain → Practice/Vocabulary|`shared/grammar/*` задаёт общие `GrammarUnitType`, `GrammarTag` и labels для карточек и смыслов
 |Shared App Shell → Core Runtime|App shell использует Decompose и Metro для component graph и root wiring
@@ -158,24 +160,28 @@
 
 NOTE: Каталог записей и колоды принадлежат `Library`: `CatalogRepository`/`Deck`/`DeckWithCards` в `shared/feature/library/domain` (реализация — `library/data`); practice — read-only потребитель курируемых Library колод, захваченный материал добавляется декоратором каталога. Решение — ADR-001.
 
-=== Белый ящик: Vocabulary Editor Domain/Data/Schema
+=== Белый ящик: Lexicon Domain/Enrichment + Vocabulary Editor Data/Schema
 
 Назначение::
-Удерживать source-of-truth модель лексического материала (ADR-001) отдельно от UI и границы AI-интеграции, с устойчивым хранением.
+Удерживать нейтральную source-of-truth модель лексического материала (ADR-001) отдельно от UI, write workflow и границы AI-интеграции, с устойчивым хранением.
 
 Содержащиеся строительные блоки:
 
-* `shared/feature/vocabulary-editor/domain`
+* `shared/lexicon/domain`
+* `Sense`
 * `LexicalEntry`
-* `Meaning` / `MeaningCandidate`
-* `ContextualApplication`
+* `EntryStatus`
+* `LexiconRepository`
+* `shared/lexicon/enrichment`
+* `shared/feature/vocabulary-editor/domain`
+* `SenseCandidate`
 * `VocabularyRepository`
 * `shared/feature/vocabulary-editor/data`
 * `DurableVocabularyRepository`
 * `shared/feature/vocabulary-editor/database-schema`
 
 Ответственность::
-Принимать `MeaningCandidate` от границы AI-интеграции (anti-corruption mapper, ADR-005), устойчиво хранить подтверждённые `Meaning` в `lexical_entry` агрегатной `SenseeDatabase` (feature-owned schema, ADR-002) и отдавать presentation layer структурную модель смысла: `surfaceForm`, `unitType`, контексты и grammar cues.
+Маппить provider-agnostic AI enrichment в центральный `Sense`, оборачивать его в `SenseCandidate` только внутри Vocabulary Editor для выбора/verification snapshots, устойчиво хранить и редактировать подтверждённые `LexicalEntry`/`Sense` в `lexical_entry` агрегатной `SenseeDatabase` (feature-owned schema, ADR-002) и отдавать `Library` read-only контракт `LexiconRepository`.
 
 Грамматическая таксономия — нейтральный `shared/grammar/domain`: sealed-типы с `Unknown(id)`-ветками, парные инварианты — `TaxonomyInvariants` времени выполнения, ADR-006.
 

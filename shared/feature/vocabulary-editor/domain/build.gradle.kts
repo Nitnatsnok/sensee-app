@@ -8,8 +8,12 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.shared.grammar.domain)
+                api(projects.shared.lexicon.domain)
+                api(projects.shared.lexicon.enrichment)
                 api(projects.shared.ai.core)
+                api(projects.shared.verification.core)
                 api(libs.kotlinx.coroutines.core)
+                implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.observability)
                 implementation(libs.metro.runtime)
             }

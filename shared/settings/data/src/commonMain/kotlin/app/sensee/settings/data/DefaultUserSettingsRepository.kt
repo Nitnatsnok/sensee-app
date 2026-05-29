@@ -1,5 +1,6 @@
 package app.sensee.settings.data
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.database.User_setting
 import app.sensee.core.secureStorage.SecureStorage
 import app.sensee.core.secureStorage.SecureStorageKey
@@ -19,7 +20,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metro.binding
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
@@ -80,11 +80,9 @@ public class DefaultUserSettingsRepository(
     // so a user attempting to save a new key learns immediately if the vault
     // is unhealthy.
     private suspend fun readSecret(key: SecureStorageKey): String? =
-        try {
+        runCatchingCancellable {
             secureStorage.read(key)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (_: Throwable) {
+        }.getOrElse {
             null
         }
 

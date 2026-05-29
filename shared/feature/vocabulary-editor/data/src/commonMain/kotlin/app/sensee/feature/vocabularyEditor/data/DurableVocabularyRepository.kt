@@ -7,11 +7,15 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.database.Lexical_entry
 import app.sensee.database.SenseeDatabaseProvider
-import app.sensee.feature.vocabularyEditor.domain.EntryId
-import app.sensee.feature.vocabularyEditor.domain.EntryStatus
-import app.sensee.feature.vocabularyEditor.domain.LexicalEntry
-import app.sensee.feature.vocabularyEditor.domain.Meaning
 import app.sensee.feature.vocabularyEditor.domain.VocabularyRepository
+import app.sensee.lexicon.domain.EntryId
+import app.sensee.lexicon.domain.EntryStatus
+import app.sensee.lexicon.domain.LexicalEntry
+import app.sensee.lexicon.domain.Sense
+import app.sensee.lexicon.domain.deriveSenseContentKey
+import app.sensee.lexicon.serialization.SenseDto
+import app.sensee.lexicon.serialization.toDomain
+import app.sensee.lexicon.serialization.toDto
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -29,8 +33,8 @@ import kotlin.time.Clock
 
 /**
  * Durable, feature-owned persistence for captured entries (ADR-002): rows in
- * the aggregate `SenseeDatabase`, confirmed meanings serialized as JSON via
- * [MeaningDto] (domain stays free of serialization). Replaces the in-memory
+ * the aggregate `SenseeDatabase`, confirmed senses serialized as JSON via
+ * [SenseDto] (domain stays free of serialization). Replaces the in-memory
  * PoC so capture survives process death; the rich sense model round-trips
  * through the same neutral parse/resolve the AI boundary uses.
  */
@@ -99,29 +103,72 @@ public class DurableVocabularyRepository(
             )
         }
 
-    override suspend fun confirmMeanings(
+    override suspend fun confirmSenses(
         id: EntryId,
-        meanings: List<Meaning>,
+        senses: List<Sense>,
     ): LexicalEntry =
         mutationMutex.withLock {
             // Read-modify-write is one transaction: the repository mutex serializes
             // draft updates and confirms; the DB transaction keeps the read/write
             // pair atomic so a concurrent confirm or a confirm racing a draft upsert
-            // cannot last-writer-wins meanings away.
+            // cannot last-writer-wins senses away.
             val database = databaseProvider.database()
             database.transactionWithResult {
                 val current = getEntry(id) ?: error("Unknown entry $id")
-                if (current.status != EntryStatus.Draft || meanings.isEmpty()) {
-                    current
-                } else {
-                    val updated =
-                        current.copy(
-                            status = EntryStatus.Confirmed,
-                            meanings = current.meanings + meanings,
-                        )
-                    upsert(updated)
-                    updated
+                if (current.status != EntryStatus.Draft || senses.isEmpty()) {
+                    return@transactionWithResult current
                 }
+                // Cross-entry dedup: a re-capture of "come across" (a new draft)
+                // must roll into the existing Confirmed entry instead of forking a
+                // second row. Otherwise the SRS state on the existing senses
+                // would orphan and the family page would split into two stubs.
+                val termKey = current.term.trim().lowercase()
+                val existing = findConfirmedByTerm(termKey, except = current.id)
+                if (existing != null) {
+                    val merged = existing.copy(senses = mergeSenses(existing.senses, senses))
+                    upsert(merged)
+                    // Drop the empty draft row that prompted the merge — its
+                    // identity has already served its purpose as a capture seat.
+                    database.lexicalEntryEntityQueries.deleteEntry(current.id.value)
+                    return@transactionWithResult merged
+                }
+                val updated =
+                    current.copy(
+                        status = EntryStatus.Confirmed,
+                        senses = current.senses + senses,
+                    )
+                upsert(updated)
+                updated
+            }
+        }
+
+    override suspend fun updateConfirmedEntry(
+        id: EntryId,
+        term: String,
+        senses: List<Sense>,
+    ): LexicalEntry? =
+        mutationMutex.withLock {
+            val database = databaseProvider.database()
+            database.transactionWithResult {
+                val current = getEntry(id) ?: return@transactionWithResult null
+                if (current.status != EntryStatus.Confirmed || senses.isEmpty()) {
+                    return@transactionWithResult null
+                }
+                val trimmedTerm = term.trim()
+                val existing = findConfirmedByTerm(trimmedTerm.lowercase(), except = current.id)
+                if (existing != null) {
+                    val merged = existing.copy(senses = mergeSenses(existing.senses, senses))
+                    upsert(merged)
+                    database.lexicalEntryEntityQueries.deleteEntry(current.id.value)
+                    return@transactionWithResult merged
+                }
+                val updated =
+                    current.copy(
+                        term = trimmedTerm,
+                        senses = mergeSenses(existing = emptyList(), incoming = senses),
+                    )
+                upsert(updated)
+                updated
             }
         }
 
@@ -134,6 +181,34 @@ public class DurableVocabularyRepository(
             Unit
         }
 
+    private suspend fun findConfirmedByTerm(
+        normalizedTerm: String,
+        except: EntryId,
+    ): LexicalEntry? =
+        databaseProvider
+            .database()
+            .lexicalEntryEntityQueries
+            .selectAllEntries()
+            .awaitAsList()
+            .asSequence()
+            .map { it.toDomain() }
+            .firstOrNull { candidate ->
+                candidate.id != except &&
+                    candidate.status == EntryStatus.Confirmed &&
+                    candidate.term.trim().lowercase() == normalizedTerm
+            }
+
+    private fun mergeSenses(
+        existing: List<Sense>,
+        incoming: List<Sense>,
+    ): List<Sense> {
+        val existingKeys = existing.mapTo(mutableSetOf(), ::deriveSenseContentKey)
+        // Same identity → existing wins (keeps SRS state and any user edits); a
+        // new key is appended in the order it arrived.
+        val newSenses = incoming.filter { existingKeys.add(deriveSenseContentKey(it)) }
+        return existing + newSenses
+    }
+
     private suspend fun upsert(entry: LexicalEntry) {
         databaseProvider
             .database()
@@ -142,7 +217,7 @@ public class DurableVocabularyRepository(
                 id = entry.id.value,
                 term = entry.term,
                 status = entry.status.name,
-                meanings_json = json.encodeToString(entry.meanings.map { it.toDto() }),
+                senses_json = json.encodeToString(entry.senses.map { it.toDto() }),
                 updated_at_epoch_ms = clock.now().toEpochMilliseconds(),
             )
     }
@@ -152,9 +227,9 @@ public class DurableVocabularyRepository(
             id = EntryId(id),
             term = term,
             status = EntryStatus.entries.firstOrNull { it.name == status } ?: EntryStatus.Draft,
-            meanings =
+            senses =
                 try {
-                    json.decodeFromString<List<MeaningDto>>(meanings_json).map { it.toDomain() }
+                    json.decodeFromString<List<SenseDto>>(senses_json).map { it.toDomain() }
                 } catch (_: SerializationException) {
                     emptyList()
                 },

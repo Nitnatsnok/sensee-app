@@ -17,7 +17,7 @@
 Сейчас в коде есть:
 
 - общий `shared/app-shell`, запускаемый на Android, iOS, Desktop JVM, JS и Wasm;
-- реализованные разделы: `Practice` (колода, домашний экран, детали карточки), `Library` (каталог и добавление наборов), `Profile` (AI/TTS-настройки) и `Vocabulary Editor` (ввод → AI-подсказки → выбор смыслов → сохранение);
+- реализованные разделы: `Practice` (колода, домашний экран, детали карточки), `Library` (каталог и добавление наборов), `Profile` (AI/TTS/App/Learning-настройки) и `Vocabulary Editor` (ввод → verification evidence → AI/curated-подсказки → выбор смыслов → verification snapshots → сохранение);
 - стартовая навигация и `Home`, который пока показывает `UnimplementedScreen`;
 - переиспользуемый `shared/ui/learning-deck` с переворотом, свайпом, клавиатурным управлением и отменой действия;
 - отдельные модули `shared/srs/*`, `shared/database`, `shared/core/network`, `shared/core/mock-backend`, `shared/core/observability`, `shared/ai/*` и `shared/grammar/domain`, участвующие в текущих срезах.
@@ -79,7 +79,7 @@ npx likec4 build docs/c4 -o docs/c4/dist
 - `startup_flow`
 - `deck_interaction_flow`
 - `vocabulary_capture_flow`
-- `planned_card_derivation_flow`
+- `card_derivation_flow`
 - `planned_library_curation_flow`
 - `primary_navigation_shell`
 

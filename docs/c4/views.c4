@@ -34,8 +34,9 @@ views 'Sensee Client' {
     include settings_schema
     include grammar_taxonomy
     include ai_enrichment
-    include ai_fixture
+    include ai_curated
     include llm_adapter
+    include lexical_verification
     include tts_seam
     include learning_deck
     include core_presentation
@@ -54,6 +55,7 @@ views 'Sensee Client' {
     include vocabulary_editor
     include vocabulary_capture
     include lexical_model
+    include lexical_verification
     include ai_enrichment
     include library_catalog
     include card_derivation
@@ -65,14 +67,14 @@ views 'Sensee Client' {
     include future_backend
     autoLayout LeftRight 170 120
 
-    style card_derivation, service_catalog, provider_apis, future_backend {
+    style service_catalog, provider_apis, future_backend {
       color muted
     }
   }
 
   view current_learning_slice of client {
     title 'Структура / Текущий учебный срез'
-    description 'Части, которые реально участвуют в текущем app shell: practice, library adoption, vocabulary capture, profile AI/TTS settings, local persistence и provider seams.'
+    description 'Части, которые реально участвуют в текущем app shell: practice, library adoption, vocabulary capture, profile settings, local persistence, verification и provider seams.'
     include entrypoints
     include app_shell
     include core_runtime
@@ -95,8 +97,9 @@ views 'Sensee Client' {
     include settings_schema
     include grammar_taxonomy
     include ai_enrichment
-    include ai_fixture
+    include ai_curated
     include llm_adapter
+    include lexical_verification
     include tts_seam
     include learning_deck
     include persistence
@@ -124,6 +127,7 @@ views 'Sensee Client' {
     include library_schema
     include settings_data
     include settings_schema
+    include lexical_verification
     include platform_services
     autoLayout LeftRight 170 120
 
@@ -195,6 +199,9 @@ views 'Sensee Client' {
     include network
     include mock_backend
     include ai_enrichment
+    include ai_curated
+    include llm_adapter
+    include lexical_verification
     include tts_seam
     include provider_apis
     include platform_services
@@ -218,8 +225,9 @@ views 'Sensee Client' {
     include lexical_model
     include grammar_taxonomy
     include ai_enrichment
-    include ai_fixture
+    include ai_curated
     include llm_adapter
+    include lexical_verification
     include library_target
     include library_catalog
     include profile_target
@@ -271,24 +279,27 @@ views 'Sensee Client' {
 
   dynamic view vocabulary_capture_flow {
     title 'Vocabulary Capture Flow'
-    description 'Реализованный основной продуктовый сценарий: ввод → enrichment через AI-границу → набор `MeaningCandidate` → мультивыбор + ручной смысл → подтверждение → durable persist. Поток одностраничный, выбор и есть подтверждение. Planned: edit-path из карточки и деривация derived-карточек (см. `card_derivation_flow`).'
+    description 'Реализованный основной продуктовый сценарий: ввод → verification evidence → curated/LLM enrichment → verification snapshots → набор `SenseCandidate` → мультивыбор + ручной смысл → подтверждение → durable persist → captured catalog projection. Domain/data write workflow для confirmed записи подготовлен; UI edit-path через `Editor(entryId)` и кнопки deep-link остаются planned.'
 
     learner -> client.primary_navigation 'нажимает кнопку `Vocabulary Editor` (add-path)'
     client.primary_navigation -> client.vocabulary_editor 'открывает `QuickCapture`'
     learner -> client.vocabulary_editor 'вводит слово/фразу; создаётся `Draft`'
-    client.vocabulary_editor -> client.ai_enrichment 'запрашивает `MeaningCandidate` через AI-границу (ADR-005)'
-    client.ai_enrichment -> client.ai_fixture 'без ключа использует offline fixture'
-    client.ai_enrichment -> client.llm_adapter 'при настроенном ключе маршрутизирует в LLM adapter'
+    client.vocabulary_editor -> client.lexical_verification 'до AI получает evidence: lemma, entry type, CEFR, frequency, family'
+    client.vocabulary_editor -> client.ai_enrichment 'запрашивает enrichment через AI-границу; общий mapper приводит ответ к `Sense`, editor оборачивает в `SenseCandidate`'
+    client.ai_enrichment -> client.ai_curated 'сначала проверяет curated enrichment (backend HTTP); hit short-circuits LLM'
+    client.ai_enrichment -> client.llm_adapter 'при miss и настроенном ключе маршрутизирует в LLM adapter'
     client.llm_adapter -> provider_apis 'вызывает provider API'
     client.ai_enrichment -> client.vocabulary_editor 'возвращает набор смыслов (или пусто/недоступно → ручной режим, деградация first-class)'
+    client.vocabulary_editor -> client.lexical_verification 'после AI прикрепляет per-candidate verification snapshots'
     learner -> client.vocabulary_editor 'мультивыбор смыслов и/или ручной смысл (опц. «дополнить ассистентом»)'
     client.vocabulary_editor -> client.vocabulary_capture 'выбор и есть подтверждение → `EntryStatus.Confirmed`'
-    client.vocabulary_editor -> client.persistence 'сохраняет `Draft` и confirmed `LexicalEntry`/`Meaning` durable'
+    client.vocabulary_editor -> client.persistence 'сохраняет `Draft` и confirmed `LexicalEntry`/`Sense` durable'
+    client.lexical_model -> client.card_derivation 'проецирует confirmed material в captured deck, lemma grouping и form cards'
   }
 
-  dynamic view planned_card_derivation_flow {
-    title 'Planned / Card Derivation Flow'
-    description 'Планируемый переход от confirmed lexical material к related learning cards и downstream practice flow.'
+  dynamic view card_derivation_flow {
+    title 'Card Derivation Flow'
+    description 'Реализованная projection-логика: confirmed lexical material превращается в captured deck, sibling grouping по `headLemma` и form-variant cards для irregular verbs. Planned остаётся UI-навигация по family/detail.'
 
     learner -> client.vocabulary_editor 'подтверждает lexical material'
     client.vocabulary_editor -> client.vocabulary_capture 'завершает authoring flow'

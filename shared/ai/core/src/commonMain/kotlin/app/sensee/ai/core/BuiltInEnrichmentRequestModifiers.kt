@@ -8,6 +8,7 @@ public val DefaultEnrichmentRequestModifiers: Set<EnrichmentRequestModifier> =
         SenseSplittingModifier,
         LanguageModifier,
         SenseCoverageModifier,
+        EvidenceModifier,
         PolysemyHintsModifier,
         PreferredTopicsModifier,
         PhrasalVerbCoverageModifier,
@@ -173,6 +174,123 @@ public object PreferredTopicsModifier : EnrichmentRequestModifier {
                 "steering distort the sense, translation, grammar or any non-example field."
         return PromptContribution(systemFragments = listOf(fragment))
     }
+}
+
+/**
+ * Renders verified dictionary evidence as a prompt block before sense
+ * coverage shaping. The orchestrator gates the contents by the source's
+ * `usableAsLlmContext` license flag (ADR-007); this modifier just formats
+ * what it is given. An empty/null evidence collapses to no contribution —
+ * the prompt behaves exactly as before.
+ */
+public object EvidenceModifier : EnrichmentRequestModifier {
+    override val id: String = "evidence"
+    override val phase: PromptPhase = PromptPhase.Coverage
+
+    override fun contribute(context: EnrichmentRequestContext): PromptContribution {
+        val evidence = context.request.evidence ?: return PromptContribution.EMPTY
+        val fragment = buildEvidenceFragment(evidence) ?: return PromptContribution.EMPTY
+        return PromptContribution(systemFragments = listOf(fragment))
+    }
+
+    private fun buildEvidenceFragment(evidence: EnrichmentEvidence): String? {
+        val lines = mutableListOf<String>()
+        appendCoreFacts(lines, evidence)
+        evidence.unit?.let { appendUnit(lines, it) }
+        appendCorpusFacts(lines, evidence)
+        appendPronunciation(lines, evidence.pronunciations)
+        appendKnownSenses(lines, evidence.knownSenseSummaries)
+        evidence.family?.let { appendFamily(lines, it) }
+        if (lines.isEmpty()) return null
+        return evidenceHeader(evidence.confidence) + "\n" + lines.joinToString("\n")
+    }
+
+    private fun appendCoreFacts(
+        lines: MutableList<String>,
+        evidence: EnrichmentEvidence,
+    ) {
+        evidence.normalized?.let { lines += "- normalized: ${it.canonical} (${it.kind})" }
+        evidence.lemma?.let { lines += "- lemma: $it" }
+        evidence.entryType?.let { lines += "- entry_type: $it" }
+    }
+
+    private fun appendUnit(
+        lines: MutableList<String>,
+        unit: UnitFact,
+    ) {
+        lines += "- unit_display: ${unit.displayForm}"
+        unit.headLemma?.let { lines += "- unit_head_lemma: $it" }
+        if (unit.components.isNotEmpty()) {
+            lines +=
+                "- unit_components: " +
+                unit.components.joinToString(", ") { "${it.text}(${it.role})" }
+        }
+    }
+
+    private fun appendCorpusFacts(
+        lines: MutableList<String>,
+        evidence: EnrichmentEvidence,
+    ) {
+        if (evidence.knownPartsOfSpeech.isNotEmpty()) {
+            lines += "- parts_of_speech: ${evidence.knownPartsOfSpeech.joinToString(", ")}"
+        }
+        evidence.cefr?.let { lines += "- cefr: $it" }
+        evidence.frequency?.let { freq ->
+            val parts = mutableListOf<String>()
+            freq.zipf?.let { parts += "zipf=$it" }
+            freq.band?.let { parts += "band=$it" }
+            if (parts.isNotEmpty()) lines += "- frequency: ${parts.joinToString(" ")}"
+        }
+    }
+
+    private fun appendPronunciation(
+        lines: MutableList<String>,
+        variants: List<PronunciationFact>,
+    ) {
+        val rendered =
+            variants.mapNotNull { variant ->
+                listOfNotNull(variant.accent, variant.ipa)
+                    .joinToString(":")
+                    .ifBlank { null }
+            }
+        if (rendered.isEmpty()) return
+        lines += "- pronunciation: " + rendered.joinToString(", ")
+    }
+
+    private fun appendKnownSenses(
+        lines: MutableList<String>,
+        senses: List<SenseSummary>,
+    ) {
+        if (senses.isEmpty()) return
+        val rendered =
+            senses.mapNotNull { sense ->
+                val parts = mutableListOf<String>()
+                sense.pos?.let { parts += "pos=$it" }
+                sense.cefr?.let { parts += "cefr=$it" }
+                sense.shortLabel?.let { parts += "label=$it" }
+                if (parts.isEmpty()) null else "    · ${parts.joinToString(" ")}"
+            }
+        if (rendered.isEmpty()) return
+        lines += "- known_senses (non-exhaustive — you may still add a missing common sense):"
+        lines += rendered
+    }
+
+    private fun appendFamily(
+        lines: MutableList<String>,
+        family: FamilyFact,
+    ) {
+        lines += "- family_head: ${family.head}"
+        if (family.siblings.isEmpty()) return
+        lines +=
+            "- family_siblings: " +
+            family.siblings.joinToString(", ") { "${it.displayForm}(${it.entryType})" } +
+            if (family.truncated) " (truncated)" else ""
+    }
+
+    private fun evidenceHeader(confidence: EvidenceConfidence): String =
+        "Verified dictionary evidence (confidence=${confidence.name.lowercase()}). " +
+            "Treat its factual fields (lemma, entry_type, parts_of_speech, IPA, CEFR, frequency) " +
+            "as ground truth — do NOT contradict them. Do NOT quote sources by name in your output."
 }
 
 /** Opt-in inclusion of phrasal-verb senses for non-phrasal-verb inputs. */

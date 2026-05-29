@@ -8,6 +8,7 @@ kotlin {
             dependencies {
                 api(projects.shared.srs.core)
                 api(projects.shared.grammar.domain)
+                api(projects.shared.lexicon.domain)
                 api(libs.kotlinx.coroutines.core)
             }
         }

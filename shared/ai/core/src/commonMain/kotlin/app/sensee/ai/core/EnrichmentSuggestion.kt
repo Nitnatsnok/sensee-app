@@ -3,25 +3,23 @@ package app.sensee.ai.core
 import kotlinx.serialization.json.JsonElement
 
 /**
- * A single AI-proposed sense for a term. Always a candidate, never canonical
- * content (ADR-001): consumers map this into their own candidate model and
- * require explicit user selection before it becomes domain data.
- *
- * Neutral by design — no provider shape, no feature/grammar domain type. The
- * structured surface form, unit type and grammar tags are carried as plain
- * ids/strings; the feature boundary mapper turns them into structured domain
- * values and drops anything that violates the grammar invariant.
- *
- * [extensions] is an opaque bucket keyed by wire field name, populated by
- * [AiEnrichmentExtension] consumers. Built-in fields never leak here.
+ * A single AI-proposed candidate sense (ADR-001: never canonical without user
+ * selection). [extensions] holds [AiEnrichmentExtension] fields keyed by wire
+ * name; built-ins never leak here.
  */
 public data class EnrichmentSuggestion(
     val translation: String,
     val surfaceForm: String? = null,
     val unitType: String? = null,
     val baseLemma: String? = null,
+    val headLemma: String? = null,
+    val components: List<UnitComponentHint> = emptyList(),
     val explanation: String? = null,
-    val examples: List<String> = emptyList(),
+    val examples: List<EnrichmentExample> = emptyList(),
+    val synonyms: List<String> = emptyList(),
+    val antonyms: List<String> = emptyList(),
+    val collocations: List<String> = emptyList(),
+    val wordFamily: List<WordFamilyHint> = emptyList(),
     val governedPrepositions: List<PrepositionGovernmentHint> = emptyList(),
     val complementation: List<String> = emptyList(),
     val usageLabels: List<UsageLabelHint> = emptyList(),
@@ -29,6 +27,39 @@ public data class EnrichmentSuggestion(
     val grammarTags: List<GrammarTagHint> = emptyList(),
     val irregularForms: IrregularFormsHint? = null,
     val extensions: Map<String, JsonElement> = emptyMap(),
+)
+
+/**
+ * Usage example with optional translation + per-segment alignment.
+ * [sentence] wraps the studied unit in `[[ ]]`.
+ */
+public data class EnrichmentExample(
+    val sentence: String,
+    val translation: String? = null,
+    val alignment: List<AlignmentChunk> = emptyList(),
+)
+
+/** One (source, target) chunk pair within an [EnrichmentExample.alignment]. */
+public data class AlignmentChunk(
+    val source: String,
+    val target: String,
+)
+
+/**
+ * One component of a multi-word unit. [salience] ranks its significance to the
+ * unit's meaning (`primary`/`secondary`/`incidental`) for UI emphasis — e.g.
+ * `come` is primary and `across` secondary in "come across".
+ */
+public data class UnitComponentHint(
+    val text: String,
+    val role: String,
+    val salience: String? = null,
+)
+
+/** One derivative ([lemma]) of the sense's base lemma, tagged with its [unitType]. */
+public data class WordFamilyHint(
+    val lemma: String,
+    val unitType: String,
 )
 
 /** A neutral (axisId, valueId) usage-nuance pair; resolved/validated at the feature boundary. */
@@ -50,10 +81,8 @@ public data class PrepositionGovernmentHint(
 )
 
 /**
- * Neutral principal parts of an irregular verb (e.g. come / came / come). All
- * three slots are required: the mapper drops the whole hint when any one is
- * missing — storing partial principal parts would be worse than no hint at all
- * (the consumer cannot tell which form is canonical).
+ * Principal parts of an irregular verb. The mapper drops the whole hint when
+ * any one slot is missing.
  */
 public data class IrregularFormsHint(
     val base: String,

@@ -7,18 +7,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /**
- * Single source of truth for the [EnrichmentResponseV1] wire shape: one
- * [Field] per [EnrichmentItemV1] property. Both representations derive from
- * [fields]:
- * - [jsonSkeleton] — compact shape example, embedded in the user prompt.
- * - [buildJsonSchema] — JSON Schema (`json_schema` response_format). The four
- *   taxonomy-bound fields get enum/oneOf from caller-supplied neutral sets,
- *   so a structured-output provider cannot return an id outside the loaded
- *   taxonomy.
- *
- * `EnrichmentSchemaTest` asserts the wire DTO and this catalog stay aligned
- * (ADR-005: schema changes are deliberate). Cross-cutting prompt rules live
- * in [EnrichmentRequestModifier]s, not here.
+ * Single source of truth for the [EnrichmentResponseV1] wire shape. Drives
+ * both [jsonSkeleton] (prompt example) and [buildJsonSchema] (JSON Schema for
+ * `json_schema` response_format).
  */
 public object EnrichmentSchema {
     public sealed interface ShapeType {
@@ -33,16 +24,41 @@ public object EnrichmentSchema {
         ) : ShapeType
     }
 
+    /**
+     * Taxonomy-bound constraint a built-in field carries into [buildJsonSchema].
+     * Lives on the [Field] declaration so the constraint travels with the field
+     * instead of a separate name-keyed lookup; the builder reads the matching
+     * [EnrichmentTaxonomy] slice. Extension fields are always [None].
+     */
+    public sealed interface FieldConstraint {
+        /** No taxonomy constraint; the field keeps its structural [ShapeType]. */
+        public data object None : FieldConstraint
+
+        /** A single string constrained to the taxonomy's unit-type ids. */
+        public data object UnitType : FieldConstraint
+
+        /** An array of strings constrained to the taxonomy's complement ids. */
+        public data object Complementation : FieldConstraint
+
+        /** An array of {axis, value} pairs, one `oneOf` branch per usage axis. */
+        public data object UsageLabels : FieldConstraint
+
+        /** An array of {category, form} pairs, one `oneOf` branch per grammar category. */
+        public data object GrammarTags : FieldConstraint
+    }
+
     public data class Field(
         val serialName: String,
         val shape: ShapeType,
         val guidance: String = "",
+        val constraint: FieldConstraint = FieldConstraint.None,
     )
 
     private fun text(
         serialName: String,
         guidance: String = "",
-    ): Field = Field(serialName, ShapeType.Text, guidance)
+        constraint: FieldConstraint = FieldConstraint.None,
+    ): Field = Field(serialName, ShapeType.Text, guidance, constraint)
 
     /** Order matches [EnrichmentItemV1] so [jsonSkeleton] stays stable. */
     public val fields: List<Field> =
@@ -64,8 +80,34 @@ public object EnrichmentSchema {
                     "conjunction, interjection). Multi-word: phrasal_verb, idiom, " +
                     "phrase. A prepositional / phrasal-prepositional verb is " +
                     "phrasal_verb with its fixed parts in surface_form",
+                constraint = FieldConstraint.UnitType,
             ),
             text("base_lemma", "dictionary base form of the unit"),
+            text(
+                "head_lemma",
+                "the family head's base form: for a phrasal verb (`come across`) or " +
+                    "verbal idiom (`come of age`) this is the verb head's lemma " +
+                    "(`come`); for a single-word unit it equals base_lemma; for an " +
+                    "idiom with no clear head omit",
+            ),
+            Field(
+                serialName = "components",
+                shape =
+                    ShapeType.ArrayOf(
+                        ShapeType.ObjectOf(listOf(text("text"), text("role"), text("salience"))),
+                    ),
+                guidance =
+                    "structural breakdown of a multi-word unit, ordered as the unit " +
+                        "is written. Each entry is {text, role, salience}; role is one " +
+                        "of: head, particle, preposition, fixed_object, modifier, other; " +
+                        "salience ranks the part's significance to the meaning — primary " +
+                        "(the semantic head, e.g. come in `come across`), secondary (a " +
+                        "meaning-shaping particle/preposition, e.g. across), incidental " +
+                        "(a fixed grammatical filler, e.g. the in `kick the bucket`). " +
+                        "Example: `come across` → [{text:come, role:head, " +
+                        "salience:primary}, {text:across, role:particle, " +
+                        "salience:secondary}]. Omit for single-word units",
+            ),
             text(
                 "explanation",
                 "concise meaning of this sense, in the NATIVE language — the learner " +
@@ -73,15 +115,75 @@ public object EnrichmentSchema {
             ),
             Field(
                 serialName = "examples",
-                shape = ShapeType.ArrayOf(ShapeType.Text),
+                shape =
+                    ShapeType.ArrayOf(
+                        ShapeType.ObjectOf(
+                            listOf(
+                                text("sentence"),
+                                text("translation"),
+                                Field(
+                                    serialName = "alignment",
+                                    shape =
+                                        ShapeType.ArrayOf(
+                                            ShapeType.ObjectOf(
+                                                listOf(text("source"), text("target")),
+                                            ),
+                                        ),
+                                ),
+                            ),
+                        ),
+                    ),
                 guidance =
                     "at least one; one per significant construction/variant of THIS " +
-                        "sense. Wrap the exact occurrence in [[ ]] span(s), " +
-                        "exactly as it appears — inflected (\"She [[came across]] the " +
-                        "letters.\"), separated phrasal verbs (\"He [[turned]] the light " +
-                        "[[on]].\") or multi-word (\"It was [[a piece of cake]].\"). Use " +
-                        "multiple spans only when one occurrence is discontinuous; never " +
-                        "split a contiguous occurrence into several spans",
+                        "sense. Each entry is {sentence, translation, alignment}. " +
+                        "`sentence` is the study-language example — wrap the exact " +
+                        "occurrence in [[ ]] span(s), exactly as it appears — inflected " +
+                        "(\"She [[came across]] the letters.\"), separated phrasal verbs " +
+                        "(\"He [[turned]] the light [[on]].\") or multi-word " +
+                        "(\"It was [[a piece of cake]].\"). Use multiple spans only when " +
+                        "one occurrence is discontinuous; never split a contiguous " +
+                        "occurrence into several spans. `translation` is the " +
+                        "native-language rendering of the same sentence. `alignment` is " +
+                        "the pre-segmented phrase-pair list mapping study-language chunks " +
+                        "to their native-language counterparts; chunks should be " +
+                        "contiguous and cover the full sentence",
+            ),
+            Field(
+                serialName = "synonyms",
+                shape = ShapeType.ArrayOf(ShapeType.Text),
+                guidance =
+                    "near-synonyms for THIS sense in the study language (the unit's own " +
+                        "language), closest first; omit if none are genuinely close",
+            ),
+            Field(
+                serialName = "antonyms",
+                shape = ShapeType.ArrayOf(ShapeType.Text),
+                guidance =
+                    "opposites for THIS sense in the study language; omit when the sense " +
+                        "has no real antonym",
+            ),
+            Field(
+                serialName = "collocations",
+                shape = ShapeType.ArrayOf(ShapeType.Text),
+                guidance =
+                    "characteristic collocations for THIS sense — frequent multi-word " +
+                        "partners as short study-language phrases (e.g. for the 'severe' " +
+                        "sense of heavy: heavy rain, heavy traffic); omit if none are " +
+                        "distinctive",
+            ),
+            Field(
+                serialName = "word_family",
+                shape =
+                    ShapeType.ArrayOf(
+                        ShapeType.ObjectOf(listOf(text("lemma"), text("unit_type"))),
+                    ),
+                guidance =
+                    "derivational family of base_lemma: dictionary words built from the " +
+                        "same root, each {lemma, unit_type} (e.g. for decide: " +
+                        "{decision, noun}, {decisive, adjective}, {decisively, adverb}). " +
+                        "This is the lemma→derivative link the app shows. Omit for " +
+                        "multi-word units (phrasal verbs, idioms, phrases) and when no " +
+                        "common relatives exist",
             ),
             Field(
                 serialName = "preposition_government",
@@ -109,6 +211,7 @@ public object EnrichmentSchema {
                     "what this sense takes, ids from: noun, gerund, to_infinitive, " +
                         "bare_infinitive, that_clause, wh_clause, adjective, " +
                         "prepositional_phrase, intransitive",
+                constraint = FieldConstraint.Complementation,
             ),
             Field(
                 serialName = "usage_labels",
@@ -123,6 +226,7 @@ public object EnrichmentSchema {
                         "domain(law/medicine/it/science/business), " +
                         "connotation(neutral_connotation/approving/disapproving/euphemistic), " +
                         "temporality(current/dated/archaic/obsolete)",
+                constraint = FieldConstraint.UsageLabels,
             ),
             text(
                 "usage_note",
@@ -140,6 +244,7 @@ public object EnrichmentSchema {
                         "{verb_irregular, infinitive} for an irregular verb, " +
                         "{separability, inseparable} for an inseparable phrasal verb, " +
                         "{expression_type, fixed} for an idiom/fixed expression",
+                constraint = FieldConstraint.GrammarTags,
             ),
             Field(
                 serialName = "irregular_forms",
@@ -154,6 +259,9 @@ public object EnrichmentSchema {
             ),
         )
 
+    /** Wire-field names of the built-in item shape; single source for collision checks. */
+    public val builtInFieldNames: Set<String> = fields.mapTo(LinkedHashSet()) { it.serialName }
+
     private fun compact(shape: ShapeType): String =
         when (shape) {
             ShapeType.Text -> "\"string\""
@@ -166,7 +274,7 @@ public object EnrichmentSchema {
 
     /** The compact JSON example handed to the model in the prompt. */
     public val jsonSkeleton: String =
-        "{\"version\":1,\"items\":[${compact(ShapeType.ObjectOf(fields))}]}"
+        "{\"version\":${EnrichmentResponseV1.SCHEMA_VERSION},\"items\":[${compact(ShapeType.ObjectOf(fields))}]}"
 
     private fun schemaOf(
         shape: ShapeType,
@@ -195,24 +303,18 @@ public object EnrichmentSchema {
             if (guidance.isNotBlank()) put("description", guidance)
         }
 
-    private const val UNIT_TYPE = "unit_type"
-    private const val COMPLEMENTATION = "complementation"
-    private const val USAGE_LABELS = "usage_labels"
-    private const val GRAMMAR_TAGS = "grammar_tags"
-
     /**
-     * JSON Schema for the [EnrichmentResponseV1] envelope. Empty sets/maps
-     * collapse to the structural shape (free string or `{key, value}` object)
-     * so a failed taxonomy fetch still produces a usable schema. Non-strict:
-     * optional DTO fields stay optional, matching the "omit unknown fields"
-     * prompt rule (ADR-005).
+     * JSON Schema for the [EnrichmentResponseV1] envelope. Empty taxonomy
+     * sets/maps collapse to the structural shape so a failed taxonomy fetch
+     * still yields a usable schema.
+     *
+     * Advisory by design: the LLM seam sends this in non-strict `json_schema`
+     * mode (no `strict: true`, no item-level `required`). Hard correctness is
+     * enforced downstream by [EnrichmentResponseMapper] and the feature-side
+     * runtime taxonomy `resolve`, so partial/degraded answers still parse.
      */
-    @Suppress("ProfiledLongParameterList")
     public fun buildJsonSchema(
-        unitTypeIds: Set<String>,
-        complementIds: Set<String>,
-        usageAxesAndValues: Map<String, Set<String>>,
-        grammarCategoriesAndForms: Map<String, Set<String>>,
+        taxonomy: EnrichmentTaxonomy,
         extensions: Set<AiEnrichmentExtension> = emptySet(),
     ): JsonElement =
         buildJsonObject {
@@ -220,35 +322,34 @@ public object EnrichmentSchema {
             put(
                 "properties",
                 buildJsonObject {
-                    put("version", buildJsonObject { put("type", "integer") })
+                    put(
+                        "version",
+                        buildJsonObject {
+                            put("type", "integer")
+                            put("const", EnrichmentResponseV1.SCHEMA_VERSION)
+                        },
+                    )
                     put(
                         "items",
                         buildJsonObject {
                             put("type", "array")
-                            put(
-                                "items",
-                                itemSchema(
-                                    unitTypeIds = unitTypeIds,
-                                    complementIds = complementIds,
-                                    usageAxesAndValues = usageAxesAndValues,
-                                    grammarCategoriesAndForms = grammarCategoriesAndForms,
-                                    extensions = extensions,
-                                ),
-                            )
+                            put("items", itemSchema(taxonomy, extensions))
                         },
                     )
                 },
             )
-            put("required", buildJsonArray { add("items") })
+            put(
+                "required",
+                buildJsonArray {
+                    add("version")
+                    add("items")
+                },
+            )
             put("additionalProperties", false)
         }
 
-    @Suppress("ProfiledLongParameterList")
     private fun itemSchema(
-        unitTypeIds: Set<String>,
-        complementIds: Set<String>,
-        usageAxesAndValues: Map<String, Set<String>>,
-        grammarCategoriesAndForms: Map<String, Set<String>>,
+        taxonomy: EnrichmentTaxonomy,
         extensions: Set<AiEnrichmentExtension>,
     ): JsonElement =
         buildJsonObject {
@@ -256,18 +357,8 @@ public object EnrichmentSchema {
             put(
                 "properties",
                 buildJsonObject {
-                    val builtInNames = fields.mapTo(mutableSetOf()) { it.serialName }
                     fields.forEach { field ->
-                        put(
-                            field.serialName,
-                            constrainedFieldSchema(
-                                field = field,
-                                unitTypeIds = unitTypeIds,
-                                complementIds = complementIds,
-                                usageAxesAndValues = usageAxesAndValues,
-                                grammarCategoriesAndForms = grammarCategoriesAndForms,
-                            ),
-                        )
+                        put(field.serialName, fieldSchema(field, taxonomy))
                     }
                     // Built-ins win on key collision: ADR-006 mandates disjoint
                     // ownership but a misconfigured extension shouldn't be able
@@ -275,7 +366,7 @@ public object EnrichmentSchema {
                     extensions
                         .flatMap { it.fields() }
                         .forEach { field ->
-                            if (field.serialName in builtInNames) return@forEach
+                            if (field.serialName in builtInFieldNames) return@forEach
                             put(field.serialName, schemaOf(field.shape, field.guidance))
                         }
                 },
@@ -283,36 +374,33 @@ public object EnrichmentSchema {
             put("additionalProperties", false)
         }
 
-    private fun constrainedFieldSchema(
+    private fun fieldSchema(
         field: Field,
-        unitTypeIds: Set<String>,
-        complementIds: Set<String>,
-        usageAxesAndValues: Map<String, Set<String>>,
-        grammarCategoriesAndForms: Map<String, Set<String>>,
+        taxonomy: EnrichmentTaxonomy,
     ): JsonElement =
-        when (field.serialName) {
-            UNIT_TYPE -> stringEnumSchema(unitTypeIds, field.guidance)
-            COMPLEMENTATION ->
+        when (field.constraint) {
+            FieldConstraint.None -> schemaOf(field.shape, field.guidance)
+            FieldConstraint.UnitType -> stringEnumSchema(taxonomy.unitTypeIds, field.guidance)
+            FieldConstraint.Complementation ->
                 buildJsonObject {
                     put("type", "array")
-                    put("items", stringEnumSchema(complementIds, guidance = ""))
+                    put("items", stringEnumSchema(taxonomy.complementIds, guidance = ""))
                     if (field.guidance.isNotBlank()) put("description", field.guidance)
                 }
-            USAGE_LABELS ->
+            FieldConstraint.UsageLabels ->
                 arrayOfTaggedPairs(
                     discriminatorKey = "axis",
                     valueKey = "value",
-                    allowedByDiscriminator = usageAxesAndValues,
+                    allowedByDiscriminator = taxonomy.usageAxesAndValues,
                     guidance = field.guidance,
                 )
-            GRAMMAR_TAGS ->
+            FieldConstraint.GrammarTags ->
                 arrayOfTaggedPairs(
                     discriminatorKey = "category",
                     valueKey = "form",
-                    allowedByDiscriminator = grammarCategoriesAndForms,
+                    allowedByDiscriminator = taxonomy.grammarCategoriesAndForms,
                     guidance = field.guidance,
                 )
-            else -> schemaOf(field.shape, field.guidance)
         }
 
     private fun stringEnumSchema(

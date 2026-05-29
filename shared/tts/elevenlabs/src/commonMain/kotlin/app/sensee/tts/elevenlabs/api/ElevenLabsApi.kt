@@ -1,5 +1,6 @@
 package app.sensee.tts.elevenlabs.api
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.tts.core.TtsError
 import app.sensee.tts.core.TtsException
 import app.sensee.tts.elevenlabs.config.ElevenLabsConfig
@@ -24,7 +25,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.utils.io.readAvailable
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.io.IOException
@@ -137,10 +137,8 @@ private fun classifyResponseException(exception: ResponseException): TtsError {
 }
 
 private suspend inline fun <T> wrapErrors(crossinline block: suspend () -> T): T =
-    try {
+    runCatchingCancellable {
         block()
-    } catch (cancellation: CancellationException) {
-        throw cancellation
-    } catch (throwable: Throwable) {
+    }.getOrElse { throwable ->
         throw throwable.toTtsException()
     }

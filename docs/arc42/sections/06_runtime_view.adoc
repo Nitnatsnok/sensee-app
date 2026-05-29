@@ -40,32 +40,34 @@
 
 * обращения к live backend;
 * production-аутентификации, синхронизации и полноценного серверного профиля;
-* серверной AI-оркестрации;
-* хранения пользовательских секретов на клиенте.
+* серверной AI-оркестрации.
 
-Network, local persistence и SRS уже подключены к текущему срезу, но через инфраструктуру на фикстурах и локальную data orchestration.
+Сетевой слой, локальное хранение, secure storage для provider-ключей и SRS уже подключены к текущему срезу, но через инфраструктуру на фикстурах и локальную data orchestration.
 
 == Основной продуктовый сценарий. Внесение слова или выражения и разделение смыслов
 
-Статус:: реализованный срез (capture); planned — lemma-семья и производные карточки
+Статус:: реализованный срез (capture, verification-first pipeline, captured deck projection, lemma grouping и irregular form cards); planned — UI-навигация по family/detail и курирование
 
 На уровне продуктового приоритета Sensee в первую очередь строится не вокруг review, а вокруг внесения и структурирования лексического материала. Раздел `Vocabulary Editor` реализует capture-вертикаль: `DefaultVocabularyEditorSectionComponent` содержит `VocabularyCaptureComponent`/`VocabularyCaptureScreen`, а не заглушку.
 
 Реализованное поведение:
 
 * ввод короткий: одно поле, язык ввода определяется автоматически (`en`/`ru`);
-* enrichment идёт через provider-agnostic границу AI-интеграции и возвращает единую структурную модель ответа (`MeaningCandidate`) для слова, фразы или идиомы;
+* перед AI вызывается lexical verifier: license-gated evidence (lemma, entry type, CEFR, frequency, family) попадает в `EnrichmentRequest`;
+* enrichment идёт через provider-agnostic границу AI-интеграции: сначала курированное покрытие с бэкенда, затем LLM при настроенном ключе; общий mapper `shared/lexicon/enrichment` приводит ответ к центральному `Sense`, а Vocabulary Editor оборачивает его в `SenseCandidate` для выбора;
+* после enrichment verifier прикрепляет per-candidate snapshots и findings, не переписывая AI-материал молча;
 * поток одностраничный: пользователь мультивыбором отмечает смыслы, которые хочет добавить, и/или добавляет свой смысл вручную;
 * опциональное действие «дополнить ассистентом» не меняет правило подтверждения: выбранный пользователем смысл становится подтверждённым;
-* `LexicalEntry`/`Meaning` устойчиво сохраняются в `SenseeDatabase` (`DurableVocabularyRepository`).
+* `LexicalEntry`/`Sense` устойчиво сохраняются в `SenseeDatabase` (`DurableVocabularyRepository`), а read-only доступ наружу идёт через `LexiconRepository`;
+* `CapturedCatalogDerivation` проецирует confirmed material в captured deck, группирует siblings по `headLemma` и создаёт form-variant cards для неправильных глаголов.
 
-Планируемое: группировка под леммой-родителем и деривация learning cards для основного practice-сценария. Решение — ADR-001; граница AI-интеграции — ADR-005. Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии без тега, планируемые помечены `@planned`); схемы — `docs/c4/`; доменные типы — `shared/feature/vocabulary-editor/domain`.
+Планируемое: UI-навигация по семье леммы, полноценные detail-экраны и курирование derived cards. Решение — ADR-001; граница AI-интеграции — ADR-005; граница lexical verification — ADR-007. Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`); схемы — `docs/c4/`; доменные типы — `shared/lexicon/domain` и `shared/feature/vocabulary-editor/domain`.
 
 == Реализованный срез и планируемое курирование. Библиотека каталога
 
 Статус:: реализованный срез (`Library` Home: каталог + adoption сервисного набора); planned — курирование, `EntryDetail`/`LemmaDetail`/`DeckDetail`, частичное добавление
 
-Library — владелец каталога лексического материала и колод (`CatalogRepository`/`CatalogAdoptionRepository` в `shared/feature/library/domain`, реализация — `library/data`); practice выступает read-only потребителем курируемых Library колод (ADR-001). Пошаговое поведение зафиксировано в `docs/scenarios/library.feature` (реализованные сценарии без тега, планируемые помечены `@planned`).
+Library — владелец каталога лексического материала и колод (`CatalogRepository`/`CatalogAdoptionRepository` в `shared/feature/library/domain`, реализация — `library/data`); practice выступает read-only потребителем курируемых Library колод (ADR-001). Пошаговое поведение зафиксировано в `docs/scenarios/library.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`).
 
 Реализовано (`LibraryHomeLogic`/`DefaultLibraryHomeComponent`/`LibrarySectionScreen`):
 
@@ -74,7 +76,7 @@ Library — владелец каталога лексического мате�
 
 Планируется:
 
-3. Drill: `EntryDetail(entryId)` показывает сегрегированные `Meaning` с переводами, `ContextualApplication`, структурными grammar cues и производными карточками; `LemmaDetail(lemmaId)` даёт пивот по семье леммы.
+3. Drill: `EntryDetail(entryId)` показывает сегрегированные `Sense` с переводами, `ContextualApplication`, структурными grammar cues и производными карточками; `LemmaDetail(lemmaId)` даёт пивот по семье леммы.
 4. Правка своей карточки открывает прямую ссылку в `Vocabulary Editor` на экран правки соответствующей `LexicalEntry` (тот же поток уточнения, что и ввод). Та же точка входа доступна из карточки practice.
 5. Удаление карточки убирает её из каталога и всех колод, но сохраняет confirmed lexical material записи.
 6. В `DeckDetail(deckId)` пользователь курирует колоды: одна карточка может входить в несколько колод (many-to-many); удаление из одной колоды не затрагивает другие и каталог.
@@ -90,19 +92,19 @@ Library — владелец каталога лексического мате�
 2. Перевод контекстного предложения показывается по тапу (`contextTranslation=on-tap` по умолчанию), а не постоянно.
 3. Транскрипция показывается на английской стороне по настройке `showTranscription`; для этого в модель карты добавляется поле транскрипции (сейчас настройка есть, поля нет — сознательный разрыв).
 4. При `practiceFront=Russian` и `answerInput=typed` пользователь вводит ответ в группу пилюль для самопроверки; при `answerInput=off` доступен только flip.
-5. Detail-панель — хаб исследования: полный `Meaning` (переводы, контексты с предлогом/коллокацией, explanation, grammar cues с описаниями), связанные словоформы (формы неправильного глагола, производные части речи), семья леммы и связанные грамматические правила.
+5. Detail-панель — хаб исследования: полный `Sense` (переводы, контексты с предлогом/коллокацией, explanation, grammar cues с описаниями), связанные словоформы (формы неправильного глагола, производные части речи), семья леммы и связанные грамматические правила.
 6. Из detail можно выбрать часть связанных карточек и добавить их в курируемую Library колоду; курирование остаётся ответственностью Library.
 7. Справка объясняет процесс (свайпы↔рейтинги, flip / tap-to-flip, режим заглушек и typed-input, перевод по тапу), а не только глоссарий меток.
 8. Кнопка `settings` в practice открывает отдельный экран только со связанными с практикой настройками; полный набор настроек живёт в разделе `Profile`.
 
 == Реализованный срез и планируемое расширение. Profile и настройки
 
-Статус:: реализованный срез (меню категорий `ProfileHome` + двух/трёхпанельный режим; экран категории `Ai` — `ProfileAiSettingsLogic`: настройки + верификация AI/TTS-ключа над `UserSettingsRepository`; в категории `Learning` реализован выбор тем для AI-примеров); planned — экраны категорий `App`/`Practice`, языковые поля `Learning`, `About`-навигация, Account/синхронизация, статистика
+Статус:: реализованный срез (меню категорий `ProfileHome` + двух/трёхпанельный режим; категории `Ai`, `Learning` и `App` над `UserSettingsRepository`); planned — категории `Practice`/`Experimental`, языковые поля `Learning`, `About`-навигация, Account/синхронизация, статистика
 
 Объём ограничен ядром настроек и будущим `About`; Account/синхронизация, статистика и data management пока не реализованы и не имитируются фиктивным UI. Пошаговое поведение — в `docs/scenarios/profile.feature`.
 
-1. Пользователь открывает `Profile`; раздел показывает меню `ProfileHome` с группой «Настройки» и пунктами по `UserSettingsCategory`. `ProfileConfig` содержит `Home` и конфигурации категорий (`Settings.App`/`Settings.Learning`/`Settings.Practice`/`Settings.Ai`/`Settings.Experimental`); `DefaultProfileSectionComponent` через `appChildPanels` показывает меню и экран категории рядом на широких экранах, по очереди — на узких. Опциональный `ProfileExtraConfig.TopicPicker` открывается как третья панель на `SupportingPane` или как `SenseeModalBottomSheet` на более узких раскладках.
-2. Категория `Ai` реализована: `ProfileAiSettingsLogic` читает `UserSettingsRepository.readSettings()` и, если AI/TTS-ключ сохранён, верифицирует его метаданным-вызовом провайдера (бесплатный, без расхода квоты; офлайн деградирует к ручному вводу с сохранённым значением). Категория `Learning` реализует выбор `LearningSettings.preferredTopicIds` через каталог тем; категории `App`/`Practice`/`Experimental` пока открывают явную заглушку planned-состояния.
+1. Пользователь открывает `Profile`; раздел показывает меню `ProfileHome` с группой видимых категорий настроек. `ProfileConfig` содержит `Home` и конфигурации категорий (`Settings.App`/`Settings.Learning`/`Settings.Practice`/`Settings.Ai`/`Settings.Experimental`); `DefaultProfileSectionComponent` через `appChildPanels` показывает меню и экран категории рядом на широких экранах, по очереди — на узких. Опциональный `ProfileExtraConfig.TopicPicker` открывается как третья панель на `SupportingPane` или как `SenseeModalBottomSheet` на более узких раскладках.
+2. Категория `Ai` реализована: `ProfileAiSettingsLogic` читает `UserSettingsRepository.readSettings()` и, если AI/TTS-ключ сохранён, верифицирует его метаданным-вызовом провайдера (бесплатный, без расхода квоты; офлайн деградирует к ручному вводу с сохранённым значением). Категория `Learning` реализует выбор `LearningSettings.preferredTopicIds` через каталог тем. Категория `App` реализует выбор `AppSettings.themeMode`; категории `Practice`/`Experimental` пока открывают явную заглушку planned-состояния.
 3. Категория `Practice` планируется как полный набор practice-настроек; локальный practice-экран остаётся подмножеством над тем же репозиторием (единый источник).
 4. Категория `Experimental` пока без data class и полей в `UserSettingsSnapshot` — явно помечена как planned-состояние, без неработающих тумблеров.
 5. Настройки сохраняются в области `Device` по умолчанию; `UserSettingsScope.User` зарезервирован под будущую per-user синхронизацию; переключатель Device/User не показывается, пока нет авторизации.

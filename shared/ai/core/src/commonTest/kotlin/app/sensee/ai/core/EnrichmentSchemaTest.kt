@@ -1,5 +1,8 @@
 package app.sensee.ai.core
 
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -12,23 +15,30 @@ import kotlin.test.assertTrue
 
 class EnrichmentSchemaTest {
     @Test
-    fun `catalog mirrors the wire item fields in order so the schema cannot drift`() {
-        val descriptor = EnrichmentItemV1.serializer().descriptor
-        val wireFields = (0 until descriptor.elementsCount).map(descriptor::getElementName)
-
-        assertEquals(wireFields, EnrichmentSchema.fields.map { it.serialName })
+    fun `catalog mirrors the wire item shape recursively so nested drift cannot hide`() {
+        assertShapeMatchesDescriptor(
+            EnrichmentSchema.ShapeType.ObjectOf(EnrichmentSchema.fields),
+            EnrichmentItemV1.serializer().descriptor,
+        )
     }
 
     @Test
     fun `json skeleton wraps the item fields in the versioned envelope`() {
         assertEquals(
-            "{\"version\":1,\"items\":[{" +
+            "{\"version\":${EnrichmentResponseV1.SCHEMA_VERSION},\"items\":[{" +
                 "\"translation\":\"string\"," +
                 "\"surface_form\":\"string\"," +
                 "\"unit_type\":\"string\"," +
                 "\"base_lemma\":\"string\"," +
+                "\"head_lemma\":\"string\"," +
+                "\"components\":[{\"text\":\"string\",\"role\":\"string\",\"salience\":\"string\"}]," +
                 "\"explanation\":\"string\"," +
-                "\"examples\":[\"string\"]," +
+                "\"examples\":[{\"sentence\":\"string\",\"translation\":\"string\"," +
+                "\"alignment\":[{\"source\":\"string\",\"target\":\"string\"}]}]," +
+                "\"synonyms\":[\"string\"]," +
+                "\"antonyms\":[\"string\"]," +
+                "\"collocations\":[\"string\"]," +
+                "\"word_family\":[{\"lemma\":\"string\",\"unit_type\":\"string\"}]," +
                 "\"preposition_government\":[{\"alternatives\":[\"string\"],\"example\":\"string\"}]," +
                 "\"complementation\":[\"string\"]," +
                 "\"usage_labels\":[{\"axis\":\"string\",\"value\":\"string\"}]," +
@@ -42,9 +52,20 @@ class EnrichmentSchemaTest {
 
     @Test
     fun `built json schema does not force a minimum item count`() {
-        val schema = EnrichmentSchema.buildJsonSchema(emptySet(), emptySet(), emptyMap(), emptyMap())
+        val schema = EnrichmentSchema.buildJsonSchema(EnrichmentTaxonomy.EMPTY)
 
         assertTrue(!schema.toString().contains("minItems"))
+    }
+
+    @Test
+    fun `built json schema pins the envelope version`() {
+        val schema = buildEmpty()
+
+        val version = schema.obj("properties").obj("version")
+
+        assertEquals("integer", version.str("type"))
+        assertEquals(EnrichmentResponseV1.SCHEMA_VERSION.toString(), version.str("const"))
+        assertEquals(listOf("version", "items"), schema.arr("required").asContentList())
     }
 
     @Test
@@ -63,10 +84,7 @@ class EnrichmentSchemaTest {
         val schema =
             EnrichmentSchema
                 .buildJsonSchema(
-                    unitTypeIds = setOf("verb", "noun", "adjective"),
-                    complementIds = emptySet(),
-                    usageAxesAndValues = emptyMap(),
-                    grammarCategoriesAndForms = emptyMap(),
+                    EnrichmentTaxonomy(unitTypeIds = setOf("verb", "noun", "adjective")),
                 ).jsonObject
 
         val unitType = itemProperties(schema).obj("unit_type")
@@ -80,10 +98,7 @@ class EnrichmentSchemaTest {
         val schema =
             EnrichmentSchema
                 .buildJsonSchema(
-                    unitTypeIds = emptySet(),
-                    complementIds = setOf("noun", "gerund", "to_infinitive"),
-                    usageAxesAndValues = emptyMap(),
-                    grammarCategoriesAndForms = emptyMap(),
+                    EnrichmentTaxonomy(complementIds = setOf("noun", "gerund", "to_infinitive")),
                 ).jsonObject
 
         val items = itemProperties(schema).obj("complementation").obj("items")
@@ -96,14 +111,13 @@ class EnrichmentSchemaTest {
         val schema =
             EnrichmentSchema
                 .buildJsonSchema(
-                    unitTypeIds = emptySet(),
-                    complementIds = emptySet(),
-                    usageAxesAndValues =
-                        mapOf(
-                            "register" to setOf("formal", "informal"),
-                            "region" to setOf("bre", "ame"),
-                        ),
-                    grammarCategoriesAndForms = emptyMap(),
+                    EnrichmentTaxonomy(
+                        usageAxesAndValues =
+                            mapOf(
+                                "register" to setOf("formal", "informal"),
+                                "region" to setOf("bre", "ame"),
+                            ),
+                    ),
                 ).jsonObject
 
         val usageItems = itemProperties(schema).obj("usage_labels").obj("items")
@@ -125,14 +139,13 @@ class EnrichmentSchemaTest {
         val schema =
             EnrichmentSchema
                 .buildJsonSchema(
-                    unitTypeIds = emptySet(),
-                    complementIds = emptySet(),
-                    usageAxesAndValues = emptyMap(),
-                    grammarCategoriesAndForms =
-                        mapOf(
-                            "verb_irregular" to setOf("infinitive", "past_tense", "past_participle"),
-                            "separability" to setOf("separable", "inseparable"),
-                        ),
+                    EnrichmentTaxonomy(
+                        grammarCategoriesAndForms =
+                            mapOf(
+                                "verb_irregular" to setOf("infinitive", "past_tense", "past_participle"),
+                                "separability" to setOf("separable", "inseparable"),
+                            ),
+                    ),
                 ).jsonObject
 
         val tagItems = itemProperties(schema).obj("grammar_tags").obj("items")
@@ -174,13 +187,8 @@ class EnrichmentSchemaTest {
 
         val schema =
             EnrichmentSchema
-                .buildJsonSchema(
-                    unitTypeIds = emptySet(),
-                    complementIds = emptySet(),
-                    usageAxesAndValues = emptyMap(),
-                    grammarCategoriesAndForms = emptyMap(),
-                    extensions = setOf(collider),
-                ).jsonObject
+                .buildJsonSchema(EnrichmentTaxonomy.EMPTY, extensions = setOf(collider))
+                .jsonObject
 
         val translation = itemProperties(schema).obj("translation")
         assertEquals("string", translation.str("type"), "built-in wins, extension cannot redefine the field")
@@ -205,21 +213,41 @@ class EnrichmentSchemaTest {
 
         val schema =
             EnrichmentSchema
-                .buildJsonSchema(
-                    unitTypeIds = emptySet(),
-                    complementIds = emptySet(),
-                    usageAxesAndValues = emptyMap(),
-                    grammarCategoriesAndForms = emptyMap(),
-                    extensions = setOf(extension),
-                ).jsonObject
+                .buildJsonSchema(EnrichmentTaxonomy.EMPTY, extensions = setOf(extension))
+                .jsonObject
 
         val props = itemProperties(schema)
         assertTrue("etymology" in props.keys, "extension field is present in item properties")
         assertEquals("string", props.obj("etymology").str("type"))
     }
 
-    private fun buildEmpty(): JsonObject =
-        EnrichmentSchema.buildJsonSchema(emptySet(), emptySet(), emptyMap(), emptyMap()).jsonObject
+    private fun buildEmpty(): JsonObject = EnrichmentSchema.buildJsonSchema(EnrichmentTaxonomy.EMPTY).jsonObject
+
+    private fun assertShapeMatchesDescriptor(
+        shape: EnrichmentSchema.ShapeType,
+        descriptor: SerialDescriptor,
+    ) {
+        when (shape) {
+            EnrichmentSchema.ShapeType.Text ->
+                assertEquals(
+                    PrimitiveKind.STRING,
+                    descriptor.kind,
+                    "expected a string wire field for ${descriptor.serialName}",
+                )
+            is EnrichmentSchema.ShapeType.ArrayOf -> {
+                assertEquals(StructureKind.LIST, descriptor.kind, "expected a list wire field")
+                assertShapeMatchesDescriptor(shape.element, descriptor.getElementDescriptor(0))
+            }
+            is EnrichmentSchema.ShapeType.ObjectOf -> {
+                assertEquals(StructureKind.CLASS, descriptor.kind, "expected an object wire field")
+                val wireNames = (0 until descriptor.elementsCount).map(descriptor::getElementName)
+                assertEquals(shape.fields.map { it.serialName }, wireNames, "field names/order drift")
+                shape.fields.forEachIndexed { index, field ->
+                    assertShapeMatchesDescriptor(field.shape, descriptor.getElementDescriptor(index))
+                }
+            }
+        }
+    }
 
     private fun itemProperties(schema: JsonObject): JsonObject =
         schema

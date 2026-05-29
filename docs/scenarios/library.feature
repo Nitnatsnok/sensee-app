@@ -17,9 +17,9 @@
   `Collections`, `DeckDetail`, частичное добавление, запуск practice из
   библиотеки, фильтры и режим списка карточек.
 
-  Связанные планируемые `LikeC4 view` в `docs/c4/`:
+  Связанные `LikeC4 view` в `docs/c4/`:
   - `planned_library_curation_flow`
-  - `planned_card_derivation_flow`
+  - `card_derivation_flow`
 
   Источники реализации:
   - `shared/feature/library/presentation/impl`: `LibraryHomeLogic`,
@@ -88,7 +88,7 @@
   @planned
   Сценарий: Drill в запись
     Когда пользователь открывает `EntryDetail(entryId)`
-    Тогда показываются сегрегированные `Meaning`, у каждого переводы, `ContextualApplication`, структурные grammar cues и производные карточки
+    Тогда показываются сегрегированные `Sense`, у каждого переводы, `ContextualApplication`, структурные grammar cues и производные карточки
     И review state показан как сводка, а не как первичная модель содержания
 
   @planned

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "растопить лёд",
+      "surface_form": "break the ice",
+      "unit_type": "idiom",
+      "base_lemma": "break",
+      "head_lemma": "break",
+      "components": [
+        {
+          "text": "break",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "the",
+          "role": "other",
+          "salience": "incidental"
+        },
+        {
+          "text": "ice",
+          "role": "fixed_object",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "снять первоначальную неловкость в разговоре между незнакомыми людьми",
+      "examples": [
+        {
+          "sentence": "A quick joke is a good way to [[break the ice]] at a meeting.",
+          "translation": "Короткая шутка — хороший способ растопить лёд на встрече.",
+          "alignment": [
+            {
+              "source": "A quick joke",
+              "target": "Короткая шутка"
+            },
+            {
+              "source": "is a good way",
+              "target": "хороший способ"
+            },
+            {
+              "source": "to break the ice",
+              "target": "растопить лёд"
+            },
+            {
+              "source": "at a meeting",
+              "target": "на встрече"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "get the ball rolling"
+      ],
+      "collocations": [
+        "break the ice with a joke",
+        "help break the ice"
+      ],
+      "grammar_tags": [
+        {
+          "category": "expression_type",
+          "form": "fixed"
+        }
+      ],
+      "cefr": "B2"
+    }
+  ]
+}

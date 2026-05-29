@@ -20,10 +20,10 @@ AI-enrichment оформлен как **явный версионируемый 
 * Жёстко зашить одного провайдера. Отклонено: vendor lock-in на архитектурном уровне.
 
 Последствия (реализованные, 2026-05-17)::
-* В коде `shared/ai/{core,fixture,llm,integration}`: контракт не зависит от провайдера и feature-домена, fixture-реализация работает без ключа, OpenAI-совместимый LLM, маршрутизация идёт по настройкам, деградация наблюдаема. Anti-corruption (`EnrichmentSuggestion → MeaningCandidate`) — на границе feature. `HttpClient` — app-синглтон на реальном per-platform движке (best practice Ktor), отделён от mock-движка. Покрыто тестами на границе.
+* В коде `shared/ai/{core,curated-enrichment,llm,integration}`: контракт не зависит от провайдера и feature-домена, curated enrichment работает без ключа для покрытых лемм, OpenAI-совместимый LLM используется при настроенном ключе, маршрутизация идёт по настройкам, деградация наблюдаема. Anti-corruption (`EnrichmentSuggestion → Sense`) живёт в `shared/lexicon/enrichment`; Vocabulary Editor добавляет `SenseCandidate` только как authoring/selection wrapper. `HttpClient` — app-синглтон на реальном per-platform движке (best practice Ktor), отделён от mock-движка. Покрыто тестами на границе.
 
 Последствия (ожидаемые)::
-* Провайдера можно заменить или подменить mock-реализацией, не трогая feature/домен; fixture-путь переиспользуем.
+* Провайдера можно заменить или подменить mock-реализацией, не трогая feature/домен; curated-first routing остаётся внутри `shared/ai/integration`.
 * Цена: versioned contract + mapping-слой и контрактные тесты на границе.
 
 Связанные ADR::

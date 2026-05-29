@@ -12,6 +12,17 @@ public data class Lemma(
     val id: LemmaId,
     val text: String,
     val relatedCards: List<CardSummary>,
+    val derivatives: List<LemmaDerivative> = emptyList(),
+)
+
+/**
+ * A derivative in a lemma's word family — [text] with its part of speech
+ * [unitType]. Surfaces the lemma→derivative relationship on the lemma page
+ * (e.g. `decide` → `decision`/noun, `decisive`/adjective).
+ */
+public data class LemmaDerivative(
+    val text: String,
+    val unitType: GrammarUnitType? = null,
 )
 
 /**

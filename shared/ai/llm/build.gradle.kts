@@ -9,6 +9,7 @@ kotlin {
             dependencies {
                 api(projects.shared.ai.core)
                 api(projects.shared.grammar.domain)
+                implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.network)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)

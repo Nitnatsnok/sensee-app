@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "выдумывать",
+      "surface_form": "make up <something>",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "make",
+      "head_lemma": "make",
+      "components": [
+        {
+          "text": "make",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "up",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "сочинять историю или объяснение, обычно неправдивые",
+      "examples": [
+        {
+          "sentence": "She [[made up]] a story about a lost dog.",
+          "translation": "Она выдумала историю о потерявшейся собаке.",
+          "alignment": [
+            {
+              "source": "She",
+              "target": "Она"
+            },
+            {
+              "source": "made up",
+              "target": "выдумала"
+            },
+            {
+              "source": "a story",
+              "target": "историю"
+            },
+            {
+              "source": "about a lost dog",
+              "target": "о потерявшейся собаке"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "invent",
+        "fabricate",
+        "concoct"
+      ],
+      "collocations": [
+        "make up a story",
+        "make up an excuse",
+        "make up a lie"
+      ],
+      "complementation": [
+        "noun"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "separable"
+        },
+        {
+          "category": "transitivity",
+          "form": "transitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "make",
+        "past": "made",
+        "past_participle": "made"
+      },
+      "cefr": "B1"
+    }
+  ]
+}

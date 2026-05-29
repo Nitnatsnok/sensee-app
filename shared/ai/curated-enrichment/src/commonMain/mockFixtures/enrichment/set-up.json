@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "настраивать",
+      "surface_form": "set up <something>",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "set",
+      "head_lemma": "set",
+      "components": [
+        {
+          "text": "set",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "up",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "подготавливать устройство или систему к использованию",
+      "examples": [
+        {
+          "sentence": "Could you help me [[set up]] my new laptop?",
+          "translation": "Не поможешь мне настроить новый ноутбук?",
+          "alignment": [
+            {
+              "source": "Could you",
+              "target": "Не поможешь"
+            },
+            {
+              "source": "help me",
+              "target": "мне"
+            },
+            {
+              "source": "set up",
+              "target": "настроить"
+            },
+            {
+              "source": "my new laptop",
+              "target": "новый ноутбук"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "configure",
+        "install",
+        "arrange"
+      ],
+      "antonyms": [
+        "dismantle"
+      ],
+      "collocations": [
+        "set up an account",
+        "set up a meeting",
+        "set up equipment"
+      ],
+      "complementation": [
+        "noun"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "separable"
+        },
+        {
+          "category": "transitivity",
+          "form": "transitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "set",
+        "past": "set",
+        "past_participle": "set"
+      },
+      "cefr": "A2"
+    }
+  ]
+}

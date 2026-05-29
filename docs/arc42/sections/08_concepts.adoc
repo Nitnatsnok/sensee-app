@@ -75,8 +75,8 @@ Companion reference::
 == Lexical Authoring Model
 
 * Источником учебного материала должен быть не набор карточек, а lexical material, внесённый пользователем.
-* Базовая цепочка доменных понятий выглядит так: `Lexical Entry` -> `Meaning / Sense` -> `Contextual Application` / `Grammar Cue` -> `Derived Learning Card`.
-* Один lexical entry может иметь несколько meanings; один meaning может иметь несколько contextual applications и grammar cues.
+* Базовая цепочка доменных понятий выглядит так: `Lexical Entry` -> `Sense` -> `Contextual Application` / `Grammar Cue` -> `Derived Learning Card`.
+* Один lexical entry может иметь несколько senses; один sense может иметь несколько contextual applications и grammar cues.
 * Карточки, practice и review являются производными представлениями подтверждённого материала, а не первичной моделью содержания.
 
 == Candidate versus Confirmed Data
@@ -96,9 +96,9 @@ Companion reference::
 
 == Settings Scope
 
-* Настройки имеют два планируемых scope-представления над одним `UserSettingsRepository`: локальный экран практики должен показывать только связанное с практикой подмножество, а раздел `Profile` — полный набор, сгруппированный по `UserSettingsCategory`.
+* Настройки имеют два UI-представления над одним `UserSettingsRepository`: локальный экран практики должен показывать только связанное с практикой подмножество, а раздел `Profile` показывает видимые profile-targets (`App`, `Learning`, `Practice`, `Ai`, `Experimental`).
 * Кнопка `settings` в practice top bar скрыта, пока локальный экран настроек не реализован; целевое поведение — отдельный практический экран настроек, не переход в `Profile`. См. `docs/arc42/sections/06_runtime_view.adoc`.
-* Объём `Profile` ограничен реализованной категорией `Ai` и выбором тем в `Learning`; полный экран настроек, About, Account/синхронизация, статистика и data management остаются planned и не имитируются фиктивным UI.
+* Объём `Profile` ограничен реализованными категориями `App`, `Ai` и выбором тем в `Learning`; полный экран настроек, About, Account/синхронизация, статистика и data management остаются planned и не имитируются фиктивным UI.
 * Storage scope: дефолт `UserSettingsScope.Device`; `User` зарезервирован под будущую per-user синхронизацию, переключатель Device/User не показывается, пока нет авторизации.
 * Категория `UserSettingsCategory.Experimental` существует, но не имеет data class и поля в `UserSettingsSnapshot` — это явное planned-состояние.
 

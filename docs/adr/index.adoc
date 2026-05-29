@@ -18,6 +18,9 @@ ADR используются для решений, которые:
 | link:0004-fsrs-is-single-scheduling-source-of-truth.adoc[ADR-004] | FSRS — единственный источник расписания; возврат карточки в сессию как presentation-проекция | Accepted
 | link:0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc[ADR-005] | Граница AI-enrichment — явный versioned contract с anti-corruption mapping | Accepted
 | link:0006-ai-enrichment-backend-driven-and-forward-compat.adoc[ADR-006] | AI enrichment — backend-driven schema, forward-compatible domain, request/response extension points | Accepted
+| link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] | Граница лексической верификации — license-aware агрегатор источников | Accepted
+| link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] | Лексическая иерархия и дедупликация capture-материала | Accepted
+| link:0009-verification-cache-two-layer-license-gated.adoc[ADR-009] | Двухуровневый кэш верификации — L1 в памяти + SQLDelight L2 с license-gating | Accepted
 |===
 
 == Соглашения по ведению ADR

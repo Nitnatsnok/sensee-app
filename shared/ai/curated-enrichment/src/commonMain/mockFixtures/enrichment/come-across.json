@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "наткнуться",
+      "surface_form": "come across <somebody/something>",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        {
+          "text": "come",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "across",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "случайно обнаружить или встретить кого-то или что-то",
+      "examples": [
+        {
+          "sentence": "I [[came across]] an old letter in the attic.",
+          "translation": "Я наткнулся на старое письмо на чердаке.",
+          "alignment": [
+            {
+              "source": "I",
+              "target": "Я"
+            },
+            {
+              "source": "came across",
+              "target": "наткнулся на"
+            },
+            {
+              "source": "an old letter",
+              "target": "старое письмо"
+            },
+            {
+              "source": "in the attic",
+              "target": "на чердаке"
+            }
+          ]
+        },
+        {
+          "sentence": "We [[came across]] a tiny village on the trail.",
+          "translation": "Мы наткнулись на крошечную деревню на тропе.",
+          "alignment": [
+            {
+              "source": "We",
+              "target": "Мы"
+            },
+            {
+              "source": "came across",
+              "target": "наткнулись на"
+            },
+            {
+              "source": "a tiny village",
+              "target": "крошечную деревню"
+            },
+            {
+              "source": "on the trail",
+              "target": "на тропе"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "encounter",
+        "stumble upon",
+        "run into",
+        "chance upon"
+      ],
+      "collocations": [
+        "come across a problem",
+        "come across information",
+        "come across an old photo"
+      ],
+      "complementation": [
+        "noun"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "inseparable"
+        },
+        {
+          "category": "transitivity",
+          "form": "transitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "come",
+        "past": "came",
+        "past_participle": "come"
+      },
+      "cefr": "B2"
+    },
+    {
+      "translation": "производить впечатление",
+      "surface_form": "come across [as]",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        {
+          "text": "come",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "across",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "восприниматься окружающими определённым образом",
+      "examples": [
+        {
+          "sentence": "She [[comes across as]] genuinely curious.",
+          "translation": "Она производит впечатление искренне любопытной.",
+          "alignment": [
+            {
+              "source": "She",
+              "target": "Она"
+            },
+            {
+              "source": "comes across as",
+              "target": "производит впечатление"
+            },
+            {
+              "source": "genuinely curious",
+              "target": "искренне любопытной"
+            }
+          ]
+        },
+        {
+          "sentence": "He [[came across]] really well during the panel.",
+          "translation": "Он отлично проявил себя во время дискуссии.",
+          "alignment": [
+            {
+              "source": "He",
+              "target": "Он"
+            },
+            {
+              "source": "came across really well",
+              "target": "отлично проявил себя"
+            },
+            {
+              "source": "during the panel",
+              "target": "во время дискуссии"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "seem",
+        "appear"
+      ],
+      "collocations": [
+        "come across as honest",
+        "come across as arrogant",
+        "come across well"
+      ],
+      "preposition_government": [
+        {
+          "alternatives": [
+            "as"
+          ]
+        }
+      ],
+      "complementation": [
+        "adjective",
+        "noun"
+      ],
+      "usage_note": "о впечатлении, которое человек производит на других",
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "inseparable"
+        },
+        {
+          "category": "transitivity",
+          "form": "intransitive"
+        }
+      ],
+      "irregular_forms": {
+        "base": "come",
+        "past": "came",
+        "past_participle": "come"
+      },
+      "cefr": "B2"
+    }
+  ]
+}

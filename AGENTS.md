@@ -23,8 +23,9 @@ Primary goals when changing code:
 - `shared/database` - SQLDelight-based persistence layer.
 - `shared/feature` - feature modules.
 - `shared/srs` - spaced repetition domain and engine modules.
-- `shared/ai` - AI enrichment seam (`core` contract, provider/fixture implementations, `integration` composition).
+- `shared/ai` - AI enrichment seam (`core` contract, curated/LLM implementations, `integration` composition).
 - `shared/tts` - text-to-speech seam (`core` contract, provider/playback implementations, `integration` composition).
+- `shared/verification` - lexical verification seam (`core` contract, dictionary/network providers, `integration` composition).
 - `shared/grammar` / `shared/settings` - neutral grammar taxonomy and user-settings domain/data.
 - `shared/ui` - reusable UI libraries such as design system, adaptive UI, and learning deck.
 - `gradle-plugins` - local convention plugins and shared Gradle build logic.
@@ -48,7 +49,7 @@ Module boundaries:
 - UI composition belongs in `shared/app-shell` or `shared/ui/*`.
 - Navigation and component infrastructure belongs in `shared/core/decompose`; persistence in `shared/database`.
 - Shared network clients, engines, headers, logging, and mock transport wiring belong in `shared/core/network` and `shared/core/mock-backend`; features inject data sources or repositories instead of constructing `HttpClient`.
-- An external-integration seam (`shared/ai`, `shared/tts`) follows one convention: `<area>/core` is the provider-agnostic boundary contract (no vendor SDK, no feature domain); sibling modules are implementations (offline fixture + per-provider adapters — one adapter per external API, since e.g. OpenAI-chat is multi-provider but ElevenLabs/OpenAI TTS are not API-compatible); `<area>/integration` is the single composition module the app depends on — it `api`-aggregates `core` + impls and holds implementation selection (routing-by-config), settings adapters, and Metro `@Provides`/`@ContributesTo`. The composition root (`shared/app-shell`) depends only on `<area>/integration`, never on `core`/impls directly.
+- External-integration seams (`shared/ai`, `shared/tts`, `shared/verification`) follow one convention: `<area>/core` is the provider-agnostic boundary contract (no vendor SDK, no feature domain); sibling modules are implementations (curated/offline modules, playback/cache modules, backend-served curated reference data, or one adapter per external API); `<area>/integration` is the single composition module the app depends on — it `api`-aggregates `core` + impls and holds implementation selection (routing-by-config), settings adapters, and Metro `@Provides`/`@ContributesTo`. The composition root (`shared/app-shell`) depends only on `<area>/integration`, never on `core`/impls directly.
 - Feature modules live under `shared/feature/<feature-name>/`; every path segment uses lowercase kebab-case.
 
 Feature module layout — add submodules only when justified, never by template:

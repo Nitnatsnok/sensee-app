@@ -4,10 +4,12 @@ import app.sensee.ai.core.AiEnrichmentExtension
 import app.sensee.ai.core.DefaultEnrichmentRequestModifiers
 import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.EnrichmentResponseV1
 import app.sensee.ai.core.EnrichmentSchema
 import app.sensee.ai.core.SenseCoverage
 import app.sensee.ai.core.UserEnrichmentPreferences
 import app.sensee.ai.core.UserEnrichmentPreferencesProvider
+import app.sensee.ai.llm.api.LlmHttpClientFactory
 import app.sensee.ai.llm.config.LlmConfig
 import app.sensee.grammar.domain.TaxonomyInvariants
 import app.sensee.grammar.domain.TaxonomyInvariantsProvider
@@ -45,8 +47,34 @@ class LlmAiEnrichmentClientTest {
                 }
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { null },
+                    configProvider = { LlmConfig() },
+                    taxonomyInvariantsProvider = NoTaxonomyProvider,
+                    modifiers = DefaultEnrichmentRequestModifiers,
+                    preferencesProvider = NoOpPreferencesProvider,
+                    json = json,
+                )
+
+            val result = client.enrich(request)
+
+            assertTrue(result.availability is EnrichmentAvailability.Unavailable)
+            assertEquals(false, called)
+        }
+
+    @Test
+    fun `credentials failure degrades to unavailable without calling the provider`() =
+        runBlocking {
+            var called = false
+            val engine =
+                MockEngine {
+                    called = true
+                    respond("{}")
+                }
+            val client =
+                LlmAiEnrichmentClientFactory.create(
+                    httpClient = llmHttpClient(engine),
+                    credentials = { error("vault unavailable") },
                     configProvider = { LlmConfig() },
                     taxonomyInvariantsProvider = NoTaxonomyProvider,
                     modifiers = DefaultEnrichmentRequestModifiers,
@@ -63,7 +91,7 @@ class LlmAiEnrichmentClientTest {
     @Test
     fun `well-formed provider answer is mapped through the seam`() =
         runBlocking {
-            val content = """{"version":1,"items":[{"translation":"бежать","definition":"to move fast"}]}"""
+            val content = """{"version": 1,"items":[{"translation":"бежать","definition":"to move fast"}]}"""
             val engine =
                 MockEngine {
                     val encoded = json.encodeToString(content)
@@ -75,7 +103,7 @@ class LlmAiEnrichmentClientTest {
                 }
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig() },
                     taxonomyInvariantsProvider = NoTaxonomyProvider,
@@ -101,7 +129,7 @@ class LlmAiEnrichmentClientTest {
                 }
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig() },
                     taxonomyInvariantsProvider = NoTaxonomyProvider,
@@ -126,7 +154,7 @@ class LlmAiEnrichmentClientTest {
                 }
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig(structuredOutput = true) },
                     taxonomyInvariantsProvider = NoTaxonomyProvider,
@@ -155,7 +183,7 @@ class LlmAiEnrichmentClientTest {
                 TaxonomyInvariants.EMPTY.copy(knownUnitTypeIds = setOf("noun", "verb"))
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig(structuredOutput = true) },
                     taxonomyInvariantsProvider = TaxonomyInvariantsProvider { invariants },
@@ -187,7 +215,7 @@ class LlmAiEnrichmentClientTest {
                             ),
                         )
                 }
-            val content = """{"version":1,"items":[{"translation":"бежать","etymology":"Old English"}]}"""
+            val content = """{"version": 1,"items":[{"translation":"бежать","etymology":"Old English"}]}"""
             val engine =
                 MockEngine { httpRequest ->
                     body = httpRequest.body.toByteArray().decodeToString()
@@ -200,7 +228,7 @@ class LlmAiEnrichmentClientTest {
                 }
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig(structuredOutput = true) },
                     taxonomyInvariantsProvider = NoTaxonomyProvider,
@@ -237,7 +265,7 @@ class LlmAiEnrichmentClientTest {
 
                     override fun fields(): List<EnrichmentSchema.Field> = emptyList()
                 }
-            val content = """{"version":1,"items":[{"translation":"бежать"}]}"""
+            val content = """{"version": 1,"items":[{"translation":"бежать"}]}"""
             val engine =
                 MockEngine {
                     respond(
@@ -250,7 +278,7 @@ class LlmAiEnrichmentClientTest {
                 }
             val client =
                 LlmAiEnrichmentClientFactory.create(
-                    engine = engine,
+                    httpClient = llmHttpClient(engine),
                     credentials = { "sk-test" },
                     configProvider = { LlmConfig() },
                     taxonomyInvariantsProvider = NoTaxonomyProvider,
@@ -396,9 +424,11 @@ class LlmAiEnrichmentClientTest {
             assertTrue(!body.contains("The learner is interested in these topics"))
         }
 
+    private fun llmHttpClient(engine: MockEngine) = LlmHttpClientFactory.create(engine = engine, json = json)
+
     private fun client(engine: MockEngine) =
         LlmAiEnrichmentClientFactory.create(
-            engine = engine,
+            httpClient = llmHttpClient(engine),
             credentials = { "sk-test" },
             configProvider = { LlmConfig() },
             taxonomyInvariantsProvider = NoTaxonomyProvider,
@@ -412,7 +442,7 @@ class LlmAiEnrichmentClientTest {
             content = """{"choices":[{"message":{"role":"assistant","content":${
                 json.encodeToString(
                     buildString {
-                        append("{\"version\":1,\"items\":[")
+                        append("{\"version\":${EnrichmentResponseV1.SCHEMA_VERSION},\"items\":[")
                         append(translations.joinToString(",") { "{\"translation\":\"$it\"}" })
                         append("]}")
                     },

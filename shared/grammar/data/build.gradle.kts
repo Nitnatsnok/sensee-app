@@ -36,6 +36,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.ktor.client.core)
                 implementation(libs.metro.runtime)
+                implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.mockBackend)
                 implementation(projects.shared.core.network)
             }

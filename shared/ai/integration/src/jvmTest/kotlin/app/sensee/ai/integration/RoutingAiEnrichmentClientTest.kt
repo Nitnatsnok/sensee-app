@@ -3,9 +3,11 @@ package app.sensee.ai.integration
 import app.sensee.ai.core.DefaultEnrichmentRequestModifiers
 import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.SenseCoverage
 import app.sensee.ai.core.UserEnrichmentPreferences
 import app.sensee.ai.core.UserEnrichmentPreferencesProvider
-import app.sensee.ai.fixture.FixtureAiEnrichmentClient
+import app.sensee.ai.curatedEnrichment.CuratedAiEnrichmentClient
+import app.sensee.ai.llm.api.LlmHttpClientFactory
 import app.sensee.ai.llm.client.LlmAiEnrichmentClientFactory
 import app.sensee.ai.llm.config.LlmConfig
 import app.sensee.core.observability.analytics.NoOpAnalyticsTracker
@@ -21,13 +23,16 @@ import app.sensee.settings.domain.TopicCatalogRepository
 import app.sensee.settings.domain.UserSettingsRepository
 import app.sensee.settings.domain.UserSettingsScope
 import app.sensee.settings.domain.UserSettingsSnapshot
+import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.toByteArray
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -55,6 +60,19 @@ class RoutingAiEnrichmentClientTest {
         ): UserSettingsSnapshot = transform(snapshot)
     }
 
+    private class FailingSettings : UserSettingsRepository {
+        override fun observeSettings(scope: UserSettingsScope): Flow<UserSettingsSnapshot> =
+            error("settings unavailable")
+
+        override suspend fun readSettings(scope: UserSettingsScope): UserSettingsSnapshot =
+            error("settings unavailable")
+
+        override suspend fun updateSettings(
+            scope: UserSettingsScope,
+            transform: (UserSettingsSnapshot) -> UserSettingsSnapshot,
+        ): UserSettingsSnapshot = error("settings unavailable")
+    }
+
     private class FakeTopicCatalog(
         private val topics: List<LearningTopic> = emptyList(),
     ) : TopicCatalogRepository {
@@ -74,41 +92,71 @@ class RoutingAiEnrichmentClientTest {
             analyticsTracker = NoOpAnalyticsTracker,
         )
 
-    private fun router(ai: AiSettings): RoutingAiEnrichmentClient {
-        val settings = FakeSettings(UserSettingsSnapshot(ai = ai))
-        val guardedLlm =
-            LlmAiEnrichmentClientFactory.create(
-                engine = MockEngine { error("LLM must not be called when no key is configured") },
-                credentials = { null },
-                configProvider = { LlmConfig() },
-                taxonomyInvariantsProvider = NoTaxonomyProvider,
-                modifiers = DefaultEnrichmentRequestModifiers,
-                preferencesProvider = NoOpPreferencesProvider,
-                json = Json,
-            )
-        return RoutingAiEnrichmentClient(
-            fixture = FixtureAiEnrichmentClient(),
-            llm = guardedLlm,
-            settings = settings,
-            topicCatalog = FakeTopicCatalog(),
-            appDiagnostics = diagnostics(),
-        )
+    // The curated layer is an HTTP source: the client does
+    // `GET enrichment/{lemma-slug}`, a miss is a 404. These helpers stand up a
+    // Ktor MockEngine serving the curated fixture for known slugs.
+    private fun curatedClient(): CuratedAiEnrichmentClient =
+        curatedHttpClient { path -> if (path == "enrichment/come-across") COME_ACROSS_RESPONSE else null }
+
+    private fun failingCuratedClient(): CuratedAiEnrichmentClient {
+        val engine = MockEngine { respond("upstream boom", HttpStatusCode.InternalServerError) }
+        return CuratedAiEnrichmentClient(HttpClient(engine) { expectSuccess = true }, emptySet())
     }
+
+    private fun curatedClientWithItems(
+        term: String,
+        vararg itemJson: String,
+    ): CuratedAiEnrichmentClient {
+        val slug = term.trim().lowercase().replace(' ', '-')
+        val body = """{"version": 1,"items":[${itemJson.joinToString(",")}]}"""
+        return curatedHttpClient { path -> if (path == "enrichment/$slug") body else null }
+    }
+
+    private fun curatedHttpClient(respondFor: (path: String) -> String?): CuratedAiEnrichmentClient {
+        val engine =
+            MockEngine { request ->
+                when (val body = respondFor(request.url.encodedPath.trimStart('/'))) {
+                    null ->
+                        respond(
+                            content = """{"error":"not_found"}""",
+                            status = HttpStatusCode.NotFound,
+                            headers = JSON_HEADERS,
+                        )
+                    else -> respond(content = body, status = HttpStatusCode.OK, headers = JSON_HEADERS)
+                }
+            }
+        val client =
+            HttpClient(engine) {
+                expectSuccess = true
+                install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+            }
+        return CuratedAiEnrichmentClient(client, emptySet())
+    }
+
+    // The LLM client over a test MockEngine; only the engine and configured key
+    // vary across cases, the rest of the wiring is constant.
+    private fun llmClient(
+        engine: MockEngine,
+        apiKey: String?,
+    ) = LlmAiEnrichmentClientFactory.create(
+        httpClient = LlmHttpClientFactory.create(engine = engine, json = Json),
+        credentials = { apiKey },
+        configProvider = { LlmConfig() },
+        taxonomyInvariantsProvider = NoTaxonomyProvider,
+        modifiers = DefaultEnrichmentRequestModifiers,
+        preferencesProvider = NoOpPreferencesProvider,
+        json = Json,
+    )
 
     private fun routerWithFailingLlm(): RoutingAiEnrichmentClient {
         val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = "sk-configured")))
         val failingLlm =
-            LlmAiEnrichmentClientFactory.create(
-                engine = MockEngine { respond("upstream boom", HttpStatusCode.InternalServerError) },
-                credentials = { "sk-configured" },
-                configProvider = { LlmConfig() },
-                taxonomyInvariantsProvider = NoTaxonomyProvider,
-                modifiers = DefaultEnrichmentRequestModifiers,
-                preferencesProvider = NoOpPreferencesProvider,
-                json = Json,
+            llmClient(
+                MockEngine { respond("upstream boom", HttpStatusCode.InternalServerError) },
+                "sk-configured",
             )
         return RoutingAiEnrichmentClient(
-            fixture = FixtureAiEnrichmentClient(),
+            curated = curatedClient(),
             llm = failingLlm,
             settings = settings,
             topicCatalog = FakeTopicCatalog(),
@@ -117,7 +165,324 @@ class RoutingAiEnrichmentClientTest {
     }
 
     @Test
-    fun `a configured key whose LLM fails degrades rather than silently falling back to the fixture`() =
+    fun `a lemma in the curated dataset short-circuits before the LLM is called`() =
+        runBlocking {
+            val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = "sk-configured")))
+            // If the curated layer fails to short-circuit, this LLM mock will
+            // execute the error lambda and fail the test - exactly what we want.
+            val mustNotBeCalledLlm =
+                llmClient(
+                    MockEngine { error("LLM must not be called when curated covers the term") },
+                    "sk-configured",
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = mustNotBeCalledLlm,
+                    settings = settings,
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "come across"))
+
+            assertEquals(EnrichmentAvailability.Available, result.availability)
+            assertTrue(
+                result.suggestions.size >= 2,
+                "the curated 'come across' covers two phrasal-verb variants, got ${result.suggestions.size}",
+            )
+            // Curated examples carry the new structured shape end-to-end.
+            assertTrue(
+                result.suggestions.all { suggestion ->
+                    suggestion.examples.all { it.sentence.isNotBlank() }
+                },
+                "every curated example must have a sentence",
+            )
+            assertTrue(
+                result.suggestions.any { suggestion ->
+                    suggestion.examples.any { it.translation != null && it.alignment.isNotEmpty() }
+                },
+                "the curated layer should surface at least one example with translation + alignment",
+            )
+        }
+
+    @Test
+    fun `manual minimal requests bypass curated coverage and use the LLM`() =
+        runBlocking {
+            val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = "sk-configured")))
+            val llm =
+                llmClient(
+                    MockEngine {
+                        respond(
+                            content =
+                                """{"choices":[{"message":{"role":"assistant","content":${
+                                    Json.encodeToString(
+                                        """{"version": 1,"items":[{"translation":"ручной смысл"}]}""",
+                                    )
+                                }}}]}""",
+                            status = HttpStatusCode.OK,
+                            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        )
+                    },
+                    "sk-configured",
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = llm,
+                    settings = settings,
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result =
+                router.enrich(
+                    EnrichmentRequest(
+                        term = "come across",
+                        userNote = "значение, которое описал пользователь",
+                        senseCoverage = SenseCoverage.Minimal,
+                    ),
+                )
+
+            assertEquals(listOf("ручной смысл"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `topic preferences route a curated-covered lemma to the LLM`() =
+        runBlocking {
+            val settings =
+                FakeSettings(
+                    UserSettingsSnapshot(
+                        ai = AiSettings(aiApiKey = "sk-configured"),
+                        learning = LearningSettings(preferredTopicIds = setOf("business")),
+                    ),
+                )
+            val llm =
+                llmClient(
+                    MockEngine {
+                        respond(
+                            content =
+                                """{"choices":[{"message":{"role":"assistant","content":${
+                                    Json.encodeToString(
+                                        """{"version": 1,"items":[{"translation":"topic-steered смысл"}]}""",
+                                    )
+                                }}}]}""",
+                            status = HttpStatusCode.OK,
+                            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        )
+                    },
+                    "sk-configured",
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = llm,
+                    settings = settings,
+                    topicCatalog =
+                        FakeTopicCatalog(
+                            listOf(
+                                LearningTopic(id = "business", displayName = "Business", promptKeyword = "business"),
+                            ),
+                        ),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "come across"))
+
+            // Curated covers "come across", but topic steering routes past it: the
+            // answer is the LLM's, not the curated variants.
+            assertEquals(listOf("topic-steered смысл"), result.suggestions.map { it.translation })
+        }
+
+    @Test
+    fun `saved topic preference ids route past curated even when no keyword resolves`() =
+        runBlocking {
+            val settings =
+                FakeSettings(
+                    UserSettingsSnapshot(
+                        ai = AiSettings(aiApiKey = "sk-configured"),
+                        learning = LearningSettings(preferredTopicIds = setOf("missing")),
+                    ),
+                )
+            val catalog = FakeTopicCatalog(topics = emptyList())
+            val llm =
+                llmClient(
+                    MockEngine {
+                        respond(
+                            content =
+                                """{"choices":[{"message":{"role":"assistant","content":${
+                                    Json.encodeToString(
+                                        """{"version": 1,"items":[{"translation":"LLM без темы"}]}""",
+                                    )
+                                }}}]}""",
+                            status = HttpStatusCode.OK,
+                            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        )
+                    },
+                    "sk-configured",
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = llm,
+                    settings = settings,
+                    topicCatalog = catalog,
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "come across"))
+
+            assertEquals(listOf("LLM без темы"), result.suggestions.map { it.translation })
+            assertEquals(1, catalog.calls)
+        }
+
+    @Test
+    fun `degraded curated suggestions do not bypass a configured LLM`() =
+        runBlocking {
+            val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = "sk-configured")))
+            var llmCalls = 0
+            val llm =
+                llmClient(
+                    MockEngine {
+                        llmCalls++
+                        respond(
+                            content =
+                                """{"choices":[{"message":{"role":"assistant","content":${
+                                    Json.encodeToString(
+                                        """{"version": 1,"items":[{"translation":"богатый LLM-вариант"},{"translation":"второй LLM-вариант"}]}""",
+                                    )
+                                }}}]}""",
+                            status = HttpStatusCode.OK,
+                            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        )
+                    },
+                    "sk-configured",
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated =
+                        curatedClientWithItems(
+                            term = "rough",
+                            """{"translation":"черновой curated-вариант","surface_form":"rough","unit_type":"verb"}""",
+                            // Structurally invalid item (component without a `role`) → dropped as malformed.
+                            """{"components":[{"text":"x"}]}""",
+                        ),
+                    llm = llm,
+                    settings = settings,
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "rough"))
+
+            assertEquals(1, llmCalls)
+            assertEquals(EnrichmentAvailability.Available, result.availability)
+            assertEquals(
+                listOf("богатый LLM-вариант", "второй LLM-вариант"),
+                result.suggestions.map { it.translation },
+            )
+        }
+
+    @Test
+    fun `a lemma not in the curated dataset and no key configured reports Unavailable`() =
+        runBlocking {
+            val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = null)))
+            val guardedLlm =
+                llmClient(
+                    MockEngine { error("LLM must not be called when no key is configured") },
+                    null,
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = guardedLlm,
+                    settings = settings,
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "run"))
+
+            assertTrue(
+                result.availability is EnrichmentAvailability.Unavailable,
+                "no-key + curated-miss must surface Unavailable, not Available; got ${result.availability}",
+            )
+            assertEquals(emptyList(), result.suggestions)
+        }
+
+    @Test
+    fun `curated failure with no configured key reports Degraded rather than Unavailable`() =
+        runBlocking {
+            val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = null)))
+            val guardedLlm =
+                llmClient(
+                    MockEngine { error("LLM must not be called when no key is configured") },
+                    null,
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = failingCuratedClient(),
+                    llm = guardedLlm,
+                    settings = settings,
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "come across"))
+
+            assertTrue(result.availability is EnrichmentAvailability.Degraded)
+            assertEquals(emptyList(), result.suggestions)
+        }
+
+    @Test
+    fun `a blank key is treated as unconfigured and also reports Unavailable on a curated miss`() =
+        runBlocking {
+            val settings = FakeSettings(UserSettingsSnapshot(ai = AiSettings(aiApiKey = "   ")))
+            val guardedLlm =
+                llmClient(
+                    MockEngine { error("LLM must not be called when no key is configured") },
+                    null,
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = guardedLlm,
+                    settings = settings,
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "walk"))
+
+            assertTrue(result.availability is EnrichmentAvailability.Unavailable)
+            assertEquals(emptyList(), result.suggestions)
+        }
+
+    @Test
+    fun `a settings read failure fails closed and does not call the LLM`() =
+        runBlocking {
+            val guardedLlm =
+                llmClient(
+                    MockEngine { error("LLM must not be called when settings cannot prove a key exists") },
+                    null,
+                )
+            val router =
+                RoutingAiEnrichmentClient(
+                    curated = curatedClient(),
+                    llm = guardedLlm,
+                    settings = FailingSettings(),
+                    topicCatalog = FakeTopicCatalog(),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val result = router.enrich(EnrichmentRequest(term = "run"))
+
+            assertTrue(result.availability is EnrichmentAvailability.Unavailable)
+            assertEquals(emptyList(), result.suggestions)
+        }
+
+    @Test
+    fun `a configured key whose LLM fails degrades on a curated miss`() =
         runBlocking {
             val result = routerWithFailingLlm().enrich(EnrichmentRequest(term = "run"))
 
@@ -125,34 +490,7 @@ class RoutingAiEnrichmentClientTest {
                 result.availability != EnrichmentAvailability.Available,
                 "a failing LLM degrades the seam, it does not report Available",
             )
-            assertTrue(
-                result.suggestions.isEmpty(),
-                "a failing LLM must not be masked by fixture suggestions (ADR-005)",
-            )
-        }
-
-    @Test
-    fun `no configured key routes to the offline fixture`() =
-        runBlocking {
-            val result =
-                router(AiSettings(aiApiKey = null)).enrich(
-                    EnrichmentRequest(term = "run"),
-                )
-
-            assertEquals(EnrichmentAvailability.Available, result.availability)
-            assertTrue(result.suggestions.isNotEmpty())
-        }
-
-    @Test
-    fun `blank key is treated as unconfigured and still routes to fixture`() =
-        runBlocking {
-            val result =
-                router(AiSettings(aiApiKey = "   ")).enrich(
-                    EnrichmentRequest(term = "walk"),
-                )
-
-            assertEquals(EnrichmentAvailability.Available, result.availability)
-            assertTrue(result.suggestions.isNotEmpty())
+            assertEquals(emptyList(), result.suggestions)
         }
 
     @Test
@@ -170,18 +508,13 @@ class RoutingAiEnrichmentClientTest {
                     ),
                 )
             val guardedLlm =
-                LlmAiEnrichmentClientFactory.create(
-                    engine = MockEngine { error("LLM must not be called when no key is configured") },
-                    credentials = { null },
-                    configProvider = { LlmConfig() },
-                    taxonomyInvariantsProvider = NoTaxonomyProvider,
-                    modifiers = DefaultEnrichmentRequestModifiers,
-                    preferencesProvider = NoOpPreferencesProvider,
-                    json = Json,
+                llmClient(
+                    MockEngine { error("LLM must not be called when no key is configured") },
+                    null,
                 )
             val router =
                 RoutingAiEnrichmentClient(
-                    fixture = FixtureAiEnrichmentClient(),
+                    curated = curatedClient(),
                     llm = guardedLlm,
                     settings = settings,
                     topicCatalog = catalog,
@@ -190,8 +523,7 @@ class RoutingAiEnrichmentClientTest {
 
             val result = router.enrich(EnrichmentRequest(term = "run"))
 
-            assertEquals(EnrichmentAvailability.Available, result.availability)
-            assertTrue(result.suggestions.isNotEmpty())
+            assertTrue(result.availability is EnrichmentAvailability.Unavailable)
             assertEquals(0, catalog.calls)
         }
 
@@ -215,38 +547,32 @@ class RoutingAiEnrichmentClientTest {
                     ),
                 )
             val llm =
-                LlmAiEnrichmentClientFactory.create(
-                    engine =
-                        MockEngine { httpRequest ->
-                            promptBodies += httpRequest.body.toByteArray().decodeToString()
-                            respond(
-                                content =
-                                    """{"choices":[{"message":{"role":"assistant","content":${
-                                        Json.encodeToString(
-                                            """{"version":1,"items":[{"translation":"x"},{"translation":"y"}]}""",
-                                        )
-                                    }}}]}""",
-                                status = HttpStatusCode.OK,
-                                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
-                            )
-                        },
-                    credentials = { "sk-configured" },
-                    configProvider = { LlmConfig() },
-                    taxonomyInvariantsProvider = NoTaxonomyProvider,
-                    modifiers = DefaultEnrichmentRequestModifiers,
-                    preferencesProvider = NoOpPreferencesProvider,
-                    json = Json,
+                llmClient(
+                    MockEngine { httpRequest ->
+                        promptBodies += httpRequest.body.toByteArray().decodeToString()
+                        respond(
+                            content =
+                                """{"choices":[{"message":{"role":"assistant","content":${
+                                    Json.encodeToString(
+                                        """{"version": 1,"items":[{"translation":"x"},{"translation":"y"}]}""",
+                                    )
+                                }}}]}""",
+                            status = HttpStatusCode.OK,
+                            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+                        )
+                    },
+                    "sk-configured",
                 )
             val router =
                 RoutingAiEnrichmentClient(
-                    fixture = FixtureAiEnrichmentClient(),
+                    curated = curatedClient(),
                     llm = llm,
                     settings = settings,
                     topicCatalog = catalog,
                     appDiagnostics = diagnostics(),
                 )
 
-            router.enrich(EnrichmentRequest(term = "run"))
+            router.enrich(EnrichmentRequest(term = "come across"))
 
             val promptBody = promptBodies.joinToString("\n")
             assertTrue(promptBody.contains("travel and tourism"), "selected topic keyword reaches the prompt")
@@ -259,3 +585,41 @@ private val NoTaxonomyProvider: TaxonomyInvariantsProvider = TaxonomyInvariantsP
 
 private val NoOpPreferencesProvider: UserEnrichmentPreferencesProvider =
     UserEnrichmentPreferencesProvider { UserEnrichmentPreferences.EMPTY }
+
+private val JSON_HEADERS = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+
+// Stand-in for the `enrichment/come-across` fixture: two phrasal-verb variants,
+// each with an example carrying a translation + alignment.
+private val COME_ACROSS_RESPONSE =
+    """
+    {
+      "version": 1,
+      "items": [
+        {
+          "translation": "наткнуться",
+          "surface_form": "come across <something>",
+          "unit_type": "phrasal_verb",
+          "examples": [
+            {
+              "sentence": "I came across an old letter.",
+              "translation": "Я наткнулся на старое письмо.",
+              "alignment": [ { "source": "came across", "target": "наткнулся на" } ]
+            }
+          ],
+          "cefr": "B2"
+        },
+        {
+          "translation": "производить впечатление",
+          "surface_form": "come across [as]",
+          "unit_type": "phrasal_verb",
+          "examples": [
+            {
+              "sentence": "She comes across as curious.",
+              "translation": "Она производит впечатление любопытной.",
+              "alignment": [ { "source": "comes across as", "target": "производит впечатление" } ]
+            }
+          ]
+        }
+      ]
+    }
+    """.trimIndent()

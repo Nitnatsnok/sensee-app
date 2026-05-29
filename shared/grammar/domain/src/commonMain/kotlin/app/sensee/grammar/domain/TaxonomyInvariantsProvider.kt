@@ -3,7 +3,7 @@ package app.sensee.grammar.domain
 /**
  * App-scoped reader for the loaded [TaxonomyInvariants]. Mirrors
  * [GrammarLabelsProvider] except that "not loaded" is `null`, not an empty
- * value — `MeaningCandidateMapper` flips its strict / pass-through mode on
+ * value — `SenseCandidateMapper` flips its strict / pass-through mode on
  * exactly that signal (ADR-006).
  *
  * - [invariants] — canonical suspending fetch. Cached on success; a failed

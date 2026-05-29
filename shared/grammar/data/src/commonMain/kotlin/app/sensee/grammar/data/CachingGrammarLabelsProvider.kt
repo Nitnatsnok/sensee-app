@@ -10,6 +10,7 @@ import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.concurrent.Volatile
 
 /**
  * App-scoped [GrammarLabelsProvider] backed by the shared taxonomy cache.
@@ -23,6 +24,8 @@ public class CachingGrammarLabelsProvider(
     private val taxonomyProvider: CachingGrammarTaxonomyProvider,
 ) : GrammarLabelsProvider {
     private val mutex = Mutex()
+
+    @Volatile
     private var cached: GrammarLabels? = null
 
     override suspend fun labels(): GrammarLabels =

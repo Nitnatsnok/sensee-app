@@ -2,8 +2,8 @@ package app.sensee.ai.llm.catalog
 
 import app.sensee.ai.core.AiKeyCheck
 import app.sensee.ai.core.AiModelCatalog
+import app.sensee.core.coroutines.runCatchingCancellable
 import io.ktor.client.plugins.ResponseException
-import kotlinx.coroutines.CancellationException
 
 /**
  * Verifies a key over any OpenAI-compatible `/v1/models` endpoint and, on
@@ -32,21 +32,21 @@ public class LlmModelCatalog internal constructor(
         if (apiKey.isBlank()) {
             return AiKeyCheck.Invalid("API key is empty")
         }
-        return try {
+        return runCatchingCancellable {
             when (val fetch = api.fetchModelIds(apiKey, baseUrl)) {
                 is ModelsFetch.Ok -> AiKeyCheck.Valid(fetch.ids.filter(::isChatSuitable))
                 is ModelsFetch.Rejected ->
                     AiKeyCheck.Invalid(reasonFor(fetch.statusCode))
             }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (response: ResponseException) {
-            // expectSuccess=true surfaces non-2xx as an exception; classify it here too.
-            AiKeyCheck.Invalid(reasonFor(response.response.status.value))
-        } catch (throwable: Throwable) {
-            AiKeyCheck.Invalid(
-                "Provider unreachable: ${throwable.message ?: throwable::class.simpleName}",
-            )
+        }.getOrElse { throwable ->
+            when (throwable) {
+                // expectSuccess=true surfaces non-2xx as an exception; classify it here too.
+                is ResponseException -> AiKeyCheck.Invalid(reasonFor(throwable.response.status.value))
+                else ->
+                    AiKeyCheck.Invalid(
+                        "Provider unreachable: ${throwable.message ?: throwable::class.simpleName}",
+                    )
+            }
         }
     }
 

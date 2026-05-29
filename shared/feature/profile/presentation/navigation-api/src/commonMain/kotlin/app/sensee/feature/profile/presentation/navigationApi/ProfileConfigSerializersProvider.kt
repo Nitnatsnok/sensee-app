@@ -1,22 +1,17 @@
 package app.sensee.feature.profile.presentation.navigationApi
 
-import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.core.decompose.navigation.ScreenConfigSerializersProvider
+import app.sensee.core.decompose.navigation.screenConfigSerializersModule
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoSet
 import dev.zacsweers.metro.Inject
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
 
 @ContributesIntoSet(AppScope::class)
 @Inject
 public class ProfileConfigSerializersProvider : ScreenConfigSerializersProvider {
     @OptIn(ExperimentalSerializationApi::class)
     override val serializersModule: SerializersModule =
-        SerializersModule {
-            polymorphic(ScreenConfig::class) {
-                subclassesOfSealed<ProfileConfig>()
-            }
-        }
+        screenConfigSerializersModule { subclassesOfSealed<ProfileConfig>() }
 }

@@ -3,6 +3,7 @@ package app.sensee.ai.core
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class EnrichmentResponseMapperTest {
@@ -34,8 +35,18 @@ class EnrichmentResponseMapperTest {
                             surfaceForm = "come across [as]",
                             unitType = "phrasal_verb",
                             baseLemma = "come",
+                            headLemma = "come",
+                            components =
+                                listOf(
+                                    UnitComponentDtoV1("come", "head"),
+                                    UnitComponentDtoV1("across", "particle"),
+                                ),
                             explanation = "to give a particular impression",
-                            examples = listOf("She comes across as shy.", "He came across well."),
+                            examples =
+                                listOf(
+                                    EnrichmentExampleV1(sentence = "She comes across as shy."),
+                                    EnrichmentExampleV1(sentence = "He came across well."),
+                                ),
                             prepositionGovernment =
                                 listOf(PrepositionGovernmentDtoV1(listOf("as"), "comes across as shy")),
                             complementation = listOf("prepositional_phrase"),
@@ -52,6 +63,11 @@ class EnrichmentResponseMapperTest {
         assertEquals("come across [as]", suggestion.surfaceForm)
         assertEquals("phrasal_verb", suggestion.unitType)
         assertEquals("come", suggestion.baseLemma)
+        assertEquals("come", suggestion.headLemma)
+        assertEquals(
+            listOf(UnitComponentHint("come", "head"), UnitComponentHint("across", "particle")),
+            suggestion.components,
+        )
         assertEquals(2, suggestion.examples.size)
         assertEquals(
             listOf(PrepositionGovernmentHint(listOf("as"), "comes across as shy")),
@@ -62,6 +78,112 @@ class EnrichmentResponseMapperTest {
         assertEquals("of impressions, not objects", suggestion.usageNote)
         assertEquals(GrammarTagHint("verb_irregular", "infinitive"), suggestion.grammarTags.single())
         assertEquals(IrregularFormsHint("come", "came", "come"), suggestion.irregularForms)
+    }
+
+    @Test
+    fun `synonyms antonyms and collocations map through with blanks dropped`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(
+                            translation = "наткнуться",
+                            synonyms = listOf("encounter", "  ", "stumble upon"),
+                            antonyms = listOf("avoid"),
+                            collocations = listOf("come across as", "   "),
+                        ),
+                    ),
+            )
+
+        val suggestion = EnrichmentResponseMapper.map(response).suggestions.single()
+
+        assertEquals(listOf("encounter", "stumble upon"), suggestion.synonyms)
+        assertEquals(listOf("avoid"), suggestion.antonyms)
+        assertEquals(listOf("come across as"), suggestion.collocations)
+    }
+
+    @Test
+    fun `word family derivatives map through with incomplete entries dropped`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(
+                            translation = "решать",
+                            baseLemma = "decide",
+                            wordFamily =
+                                listOf(
+                                    WordFamilyEntryDtoV1("decision", "noun"),
+                                    WordFamilyEntryDtoV1("  ", "adjective"),
+                                    WordFamilyEntryDtoV1("decisive", "  "),
+                                    WordFamilyEntryDtoV1("decisively", "adverb"),
+                                ),
+                        ),
+                    ),
+            )
+
+        val suggestion = EnrichmentResponseMapper.map(response).suggestions.single()
+
+        assertEquals(
+            listOf(WordFamilyHint("decision", "noun"), WordFamilyHint("decisively", "adverb")),
+            suggestion.wordFamily,
+        )
+    }
+
+    @Test
+    fun `component salience is carried through the mapper`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(
+                            translation = "наткнуться",
+                            components =
+                                listOf(
+                                    UnitComponentDtoV1("come", "head", "primary"),
+                                    UnitComponentDtoV1("across", "particle", "secondary"),
+                                ),
+                        ),
+                    ),
+            )
+
+        val components =
+            EnrichmentResponseMapper
+                .map(response)
+                .suggestions
+                .single()
+                .components
+
+        assertEquals(
+            listOf(
+                UnitComponentHint("come", "head", "primary"),
+                UnitComponentHint("across", "particle", "secondary"),
+            ),
+            components,
+        )
+    }
+
+    @Test
+    fun `a component with blank text or role is dropped not constructed`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(
+                            translation = "наткнуться",
+                            components =
+                                listOf(
+                                    UnitComponentDtoV1("come", "head"),
+                                    UnitComponentDtoV1("", "particle"),
+                                    UnitComponentDtoV1("across", "  "),
+                                ),
+                        ),
+                    ),
+            )
+
+        val suggestion = EnrichmentResponseMapper.map(response).suggestions.single()
+
+        assertEquals(listOf(UnitComponentHint("come", "head")), suggestion.components)
     }
 
     @Test
@@ -84,6 +206,92 @@ class EnrichmentResponseMapperTest {
 
         assertEquals(JsonPrimitive("Old English"), suggestions[0].extensions["etymology"])
         assertEquals(JsonPrimitive("Norse"), suggestions[1].extensions["etymology"])
+    }
+
+    @Test
+    fun `a sentence-only example normalises into a bare EnrichmentExample`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(
+                            translation = "идти",
+                            examples = listOf(EnrichmentExampleV1(sentence = "She [[walks]] to school.")),
+                        ),
+                    ),
+            )
+
+        val example =
+            EnrichmentResponseMapper
+                .map(response)
+                .suggestions
+                .single()
+                .examples
+                .single()
+
+        assertEquals("She [[walks]] to school.", example.sentence)
+        assertNull(example.translation)
+        assertEquals(emptyList(), example.alignment)
+    }
+
+    @Test
+    fun `a structured example carries its translation and alignment through the mapper`() {
+        val structured =
+            EnrichmentExampleV1(
+                sentence = "She [[came across]] an old photo.",
+                translation = "Она наткнулась на старую фотографию.",
+                alignment =
+                    listOf(
+                        AlignmentChunkV1(source = "She", target = "Она"),
+                        AlignmentChunkV1(source = "came across", target = "наткнулась на"),
+                        AlignmentChunkV1(source = "an old photo", target = "старую фотографию"),
+                    ),
+            )
+        val response =
+            EnrichmentResponseV1(
+                items = listOf(EnrichmentItemV1(translation = "наткнуться", examples = listOf(structured))),
+            )
+
+        val example =
+            EnrichmentResponseMapper
+                .map(response)
+                .suggestions
+                .single()
+                .examples
+                .single()
+
+        assertEquals("She [[came across]] an old photo.", example.sentence)
+        assertEquals("Она наткнулась на старую фотографию.", example.translation)
+        assertEquals(3, example.alignment.size)
+        assertEquals(AlignmentChunk("came across", "наткнулась на"), example.alignment[1])
+    }
+
+    @Test
+    fun `an example with a blank sentence is dropped not crash the mapping`() {
+        val response =
+            EnrichmentResponseV1(
+                items =
+                    listOf(
+                        EnrichmentItemV1(
+                            translation = "идти",
+                            examples =
+                                listOf(
+                                    EnrichmentExampleV1(sentence = "   "),
+                                    EnrichmentExampleV1(sentence = "She [[walks]] to school."),
+                                ),
+                        ),
+                    ),
+            )
+
+        val examples =
+            EnrichmentResponseMapper
+                .map(response)
+                .suggestions
+                .single()
+                .examples
+
+        assertEquals(1, examples.size)
+        assertEquals("She [[walks]] to school.", examples.single().sentence)
     }
 
     @Test

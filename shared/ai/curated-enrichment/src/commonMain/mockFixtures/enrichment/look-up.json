@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "translation": "искать (в справочнике)",
+      "surface_form": "look up <something>",
+      "unit_type": "phrasal_verb",
+      "base_lemma": "look",
+      "head_lemma": "look",
+      "components": [
+        {
+          "text": "look",
+          "role": "head",
+          "salience": "primary"
+        },
+        {
+          "text": "up",
+          "role": "particle",
+          "salience": "secondary"
+        }
+      ],
+      "explanation": "находить информацию в словаре, справочнике или базе данных",
+      "examples": [
+        {
+          "sentence": "Let me [[look up]] the address for you.",
+          "translation": "Дай-ка я найду тебе адрес.",
+          "alignment": [
+            {
+              "source": "Let me",
+              "target": "Дай-ка я"
+            },
+            {
+              "source": "look up",
+              "target": "найду"
+            },
+            {
+              "source": "the address",
+              "target": "адрес"
+            },
+            {
+              "source": "for you",
+              "target": "тебе"
+            }
+          ]
+        }
+      ],
+      "synonyms": [
+        "search for",
+        "find",
+        "check"
+      ],
+      "collocations": [
+        "look up a word",
+        "look up the address",
+        "look up a number"
+      ],
+      "complementation": [
+        "noun"
+      ],
+      "grammar_tags": [
+        {
+          "category": "separability",
+          "form": "separable"
+        },
+        {
+          "category": "transitivity",
+          "form": "transitive"
+        }
+      ],
+      "cefr": "A2"
+    }
+  ]
+}

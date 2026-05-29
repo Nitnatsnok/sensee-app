@@ -45,8 +45,14 @@ public object EnrichmentResponseMapper {
             surfaceForm = item.surfaceForm?.trim().nullIfBlank(),
             unitType = item.unitType?.trim().nullIfBlank(),
             baseLemma = item.baseLemma?.trim().nullIfBlank(),
+            headLemma = item.headLemma?.trim().nullIfBlank(),
+            components = item.components.mapNotNull(::toComponentHint),
             explanation = item.explanation?.trim().nullIfBlank(),
-            examples = item.examples.mapNotNull { it.trim().nullIfBlank() },
+            examples = item.examples.mapNotNull { it.toExample() },
+            synonyms = item.synonyms.mapNotNull { it.trim().nullIfBlank() },
+            antonyms = item.antonyms.mapNotNull { it.trim().nullIfBlank() },
+            collocations = item.collocations.mapNotNull { it.trim().nullIfBlank() },
+            wordFamily = item.wordFamily.mapNotNull(::toWordFamilyHint),
             governedPrepositions =
                 item.prepositionGovernment.mapNotNull { group ->
                     val alternatives = group.alternatives.mapNotNull { it.trim().nullIfBlank() }
@@ -72,6 +78,18 @@ public object EnrichmentResponseMapper {
             irregularForms = item.irregularForms?.let(::toIrregularFormsHint),
             extensions = extensions,
         )
+    }
+
+    private fun toComponentHint(component: UnitComponentDtoV1): UnitComponentHint? {
+        val text = component.text.trim().nullIfBlank() ?: return null
+        val role = component.role.trim().nullIfBlank() ?: return null
+        return UnitComponentHint(text, role, component.salience?.trim().nullIfBlank())
+    }
+
+    private fun toWordFamilyHint(entry: WordFamilyEntryDtoV1): WordFamilyHint? {
+        val lemma = entry.lemma.trim().nullIfBlank() ?: return null
+        val unitType = entry.unitType.trim().nullIfBlank() ?: return null
+        return WordFamilyHint(lemma, unitType)
     }
 
     private fun toIrregularFormsHint(forms: IrregularFormsDtoV1): IrregularFormsHint? {
@@ -101,4 +119,20 @@ public object EnrichmentResponseMapper {
     }
 
     private fun String?.nullIfBlank(): String? = this?.takeIf { it.isNotBlank() }
+
+    private fun EnrichmentExampleV1.toExample(): EnrichmentExample? {
+        val trimmedSentence = sentence.trim().nullIfBlank() ?: return null
+        val trimmedTranslation = translation?.trim().nullIfBlank()
+        val mappedAlignment =
+            alignment.mapNotNull { chunk ->
+                val source = chunk.source.trim().nullIfBlank() ?: return@mapNotNull null
+                val target = chunk.target.trim().nullIfBlank() ?: return@mapNotNull null
+                AlignmentChunk(source, target)
+            }
+        return EnrichmentExample(
+            sentence = trimmedSentence,
+            translation = trimmedTranslation,
+            alignment = mappedAlignment,
+        )
+    }
 }

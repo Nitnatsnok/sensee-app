@@ -1,8 +1,8 @@
 package app.sensee.core.secureStorage
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import com.github.javakeyring.Keyring
 import com.github.javakeyring.PasswordAccessException
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -45,11 +45,9 @@ internal class DesktopSecureStorage(
     }
 
     private fun resolveBackend(): KeyringBackend =
-        try {
+        runCatchingCancellable {
             OsKeyringBackend(keyring = Keyring.create(), service = service)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+        }.getOrElse { throwable ->
             InMemoryKeyringBackend(reason = throwable.message ?: throwable::class.simpleName.orEmpty())
         }
 
@@ -69,38 +67,37 @@ internal class DesktopSecureStorage(
         private val service: String,
     ) : KeyringBackend {
         override fun read(account: String): String? =
-            try {
+            runCatchingCancellable {
                 keyring.getPassword(service, account)
-            } catch (notFound: PasswordAccessException) {
-                if (notFound.isMissingEntry()) null else throw notFound.asSecureStorageException(account)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
-                throw SecureStorageException("OS keyring read for $account failed", throwable)
+            }.getOrElse { throwable ->
+                when (throwable) {
+                    is PasswordAccessException ->
+                        if (throwable.isMissingEntry()) null else throw throwable.asSecureStorageException(account)
+                    else -> throw SecureStorageException("OS keyring read for $account failed", throwable)
+                }
             }
 
         override fun write(
             account: String,
             value: String,
         ) {
-            try {
+            runCatchingCancellable {
                 keyring.setPassword(service, account, value)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
+            }.getOrElse { throwable ->
                 throw SecureStorageException("OS keyring write for $account failed", throwable)
             }
         }
 
         override fun delete(account: String) {
-            try {
+            runCatchingCancellable {
                 keyring.deletePassword(service, account)
-            } catch (notFound: PasswordAccessException) {
-                if (!notFound.isMissingEntry()) throw notFound.asSecureStorageException(account)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
-                throw SecureStorageException("OS keyring delete for $account failed", throwable)
+            }.getOrElse { throwable ->
+                when (throwable) {
+                    is PasswordAccessException -> {
+                        if (!throwable.isMissingEntry()) throw throwable.asSecureStorageException(account)
+                    }
+                    else -> throw SecureStorageException("OS keyring delete for $account failed", throwable)
+                }
             }
         }
 

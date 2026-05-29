@@ -41,6 +41,7 @@ kotlin {
                 implementation(projects.shared.core.secureStorage)
                 implementation(projects.shared.core.tracing)
                 implementation(projects.shared.ai.integration)
+                implementation(projects.shared.verification.integration)
                 implementation(projects.shared.grammar.data)
 
                 implementation(projects.shared.feature.home.presentation.api)

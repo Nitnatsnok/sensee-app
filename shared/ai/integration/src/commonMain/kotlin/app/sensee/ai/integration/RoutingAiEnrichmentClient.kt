@@ -4,8 +4,10 @@ import app.sensee.ai.core.AiEnrichmentClient
 import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
 import app.sensee.ai.core.EnrichmentResult
-import app.sensee.ai.fixture.FixtureAiEnrichmentClient
+import app.sensee.ai.core.SenseCoverage
+import app.sensee.ai.curatedEnrichment.CuratedAiEnrichmentClient
 import app.sensee.ai.llm.client.LlmAiEnrichmentClient
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.settings.domain.TopicCatalogRepository
 import app.sensee.settings.domain.UserSettingsRepository
@@ -14,18 +16,10 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metro.binding
-import kotlinx.coroutines.CancellationException
 
 /**
- * The single bound [AiEnrichmentClient]. Selection is by configuration, not by
- * fallback-on-failure: a configured key routes to the live LLM (over the real
- * network engine, not the app's mock), an absent key routes to the offline
- * fixture. When the LLM is reachable but unhappy it returns a first-class
- * `Unavailable`/`Degraded` (ADR-005) and the wizard degrades to manual — the
- * router does not silently mask that with fixture output.
- *
- * Both delegates are app singletons; the LLM client holds one long-lived
- * HttpClient (Ktor best practice) and resolves endpoint/key per request.
+ * The single bound [AiEnrichmentClient]: curated first, LLM second. See
+ * `shared/ai/AGENTS.md` (Routing) for the layer contract.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -34,7 +28,7 @@ import kotlinx.coroutines.CancellationException
 )
 @Inject
 public class RoutingAiEnrichmentClient(
-    private val fixture: FixtureAiEnrichmentClient,
+    private val curated: CuratedAiEnrichmentClient,
     private val llm: LlmAiEnrichmentClient,
     private val settings: UserSettingsRepository,
     private val topicCatalog: TopicCatalogRepository,
@@ -43,17 +37,87 @@ public class RoutingAiEnrichmentClient(
     private val logger = appDiagnostics.logger.tag("AiEnrichment")
 
     override suspend fun enrich(request: EnrichmentRequest): EnrichmentResult {
-        val snapshot = settings.readSettings()
-        val hasKey = !snapshot.ai.aiApiKey.isNullOrBlank()
-        logger.debug { "Routing enrichment via ${if (hasKey) "LLM provider" else "offline fixture"}" }
-
-        val result =
-            if (hasKey) {
-                llm.enrich(request.withTopicPreferences(snapshot.learning.preferredTopicIds))
-            } else {
-                fixture.enrich(request)
+        val route = request.prepareRoute()
+        val curatedResult = enrichWithCuratedIfEligible(route)
+        if (curatedResult.isCompleteCuratedHit()) {
+            logger.debug {
+                "Curated layer covered '${route.request.term}' with ${curatedResult.suggestions.size} suggestion(s)"
             }
+            return curatedResult
+        }
 
+        if (!route.hasKey) {
+            return unavailableWithoutKey(route.request, curatedResult)
+        }
+
+        val llmResult = enrichWithLlm(route.request)
+        if (llmResult.suggestions.isEmpty() && curatedResult.suggestions.isNotEmpty()) {
+            logger.warn { "LLM enrichment returned no suggestions; falling back to degraded curated suggestions" }
+            return curatedResult
+        }
+        return llmResult
+    }
+
+    private suspend fun EnrichmentRequest.prepareRoute(): EnrichmentRoute {
+        val snapshot =
+            runCatchingCancellable {
+                settings.readSettings()
+            }.getOrElse { throwable ->
+                logger.warn {
+                    "AI settings unavailable (${throwable.message ?: throwable::class.simpleName}); " +
+                        "enrichment proceeds as no-key"
+                }
+                return EnrichmentRoute(request = this, hasKey = false)
+            }
+        val hasKey = !snapshot.ai.aiApiKey.isNullOrBlank()
+        val hasSavedTopicPreferences = snapshot.learning.preferredTopicIds.isNotEmpty()
+        val request =
+            if (hasKey) {
+                withTopicPreferences(snapshot.learning.preferredTopicIds)
+            } else {
+                this
+            }
+        return EnrichmentRoute(
+            request = request,
+            hasKey = hasKey,
+            skipCurated = hasKey && hasSavedTopicPreferences,
+        )
+    }
+
+    private suspend fun enrichWithCuratedIfEligible(route: EnrichmentRoute): EnrichmentResult =
+        if (route.skipCurated) {
+            logger.debug { "Skipping curated enrichment because saved topic preferences require LLM steering" }
+            EnrichmentResult(EnrichmentAvailability.Available, emptyList())
+        } else if (route.request.canUseCuratedLayer()) {
+            curated.enrich(route.request)
+        } else {
+            logger.debug { "Skipping curated enrichment because request needs LLM-specific handling" }
+            EnrichmentResult(EnrichmentAvailability.Available, emptyList())
+        }
+
+    private fun unavailableWithoutKey(
+        request: EnrichmentRequest,
+        curatedResult: EnrichmentResult,
+    ): EnrichmentResult {
+        if (curatedResult.availability is EnrichmentAvailability.Degraded) {
+            logger.warn { "Curated enrichment degraded and no AI key is configured" }
+            return curatedResult
+        }
+        logger.debug {
+            "No AI configured and curated layer did not cover '${request.term}'; reporting Unavailable"
+        }
+        return EnrichmentResult(
+            availability =
+                EnrichmentAvailability.Unavailable(
+                    "no AI configured and no curated coverage for '${request.term}'",
+                ),
+            suggestions = emptyList(),
+        )
+    }
+
+    private suspend fun enrichWithLlm(request: EnrichmentRequest): EnrichmentResult {
+        logger.debug { "Routing enrichment via LLM provider" }
+        val result = llm.enrich(request)
         when (val availability = result.availability) {
             is EnrichmentAvailability.Unavailable ->
                 logger.warn { "Enrichment unavailable, wizard degrades to manual: ${availability.reason}" }
@@ -65,9 +129,22 @@ public class RoutingAiEnrichmentClient(
         return result
     }
 
-    // Topic preferences are a global user setting, not a per-call input, so the
-    // router threads them in — the capture caller stays unaware of them. A
-    // catalog hiccup degrades to no steering; it never blocks enrichment.
+    private data class EnrichmentRoute(
+        val request: EnrichmentRequest,
+        val hasKey: Boolean,
+        val skipCurated: Boolean = false,
+    )
+
+    private fun EnrichmentResult.isCompleteCuratedHit(): Boolean =
+        availability is EnrichmentAvailability.Available && suggestions.isNotEmpty()
+
+    private fun EnrichmentRequest.canUseCuratedLayer(): Boolean =
+        studyLanguageTag.lowercase() in CURATED_STUDY_LANGUAGES &&
+            nativeLanguageTag.lowercase() in CURATED_NATIVE_LANGUAGES &&
+            userNote.isNullOrBlank() &&
+            senseCoverage == SenseCoverage.Common &&
+            topicPreferences.isEmpty()
+
     private suspend fun EnrichmentRequest.withTopicPreferences(preferredTopicIds: Set<String>): EnrichmentRequest {
         if (preferredTopicIds.isEmpty()) {
             return this
@@ -82,7 +159,7 @@ public class RoutingAiEnrichmentClient(
     }
 
     private suspend fun resolveTopicKeywords(preferredTopicIds: Set<String>): List<String> =
-        try {
+        runCatchingCancellable {
             val resolved =
                 topicCatalog
                     .topics()
@@ -95,13 +172,16 @@ public class RoutingAiEnrichmentClient(
                 }
             }
             resolved
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+        }.getOrElse { throwable ->
             logger.warn {
                 "Topic catalog unavailable (${throwable.message ?: throwable::class.simpleName}); " +
                     "enrichment proceeds without topic steering"
             }
             emptyList()
         }
+
+    private companion object {
+        val CURATED_STUDY_LANGUAGES: Set<String> = setOf("en", "en-us", "en-gb")
+        val CURATED_NATIVE_LANGUAGES: Set<String> = setOf("ru", "ru-ru")
+    }
 }

@@ -1,11 +1,11 @@
 package app.sensee.settings.data
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.database.User_setting
 import app.sensee.core.secureStorage.SecureStorage
 import app.sensee.core.secureStorage.SecureStorageKey
 import app.sensee.settings.domain.UserSettingsCategory
 import app.sensee.settings.domain.UserSettingsScope
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerializationException
@@ -54,15 +54,13 @@ internal class LegacyAiSecretsMigration(
         target: SecureStorageKey,
     ): Boolean {
         val legacy = legacyValue(rows, legacyName) ?: return true
-        return try {
+        return runCatchingCancellable {
             if (secureStorage.read(target).isNullOrBlank()) {
                 secureStorage.write(target, legacy)
             }
             localDataSource.deleteEntry(scope, UserSettingsCategory.Ai, legacyName)
             true
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (_: Throwable) {
+        }.getOrElse {
             false
         }
     }

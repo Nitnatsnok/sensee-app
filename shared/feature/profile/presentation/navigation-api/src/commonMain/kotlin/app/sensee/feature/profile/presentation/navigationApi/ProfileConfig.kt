@@ -9,7 +9,7 @@ public sealed interface ProfileConfig : ScreenConfig {
     @Serializable
     public object Home : ProfileConfig
 
-    /** Detail-pane targets — one per `UserSettingsCategory`. */
+    /** Detail-pane targets exposed in the Profile settings menu. */
     @Serializable
     public sealed interface Settings : ProfileConfig {
         @Serializable

@@ -1,0 +1,56 @@
+CREATE TABLE lexical_verification_cache (
+    cache_key TEXT NOT NULL PRIMARY KEY,
+    key_fingerprint TEXT NOT NULL,
+    report_json TEXT NOT NULL,
+    written_at_epoch_ms INTEGER NOT NULL,
+    expires_at_epoch_ms INTEGER NOT NULL,
+    last_accessed_at_epoch_ms INTEGER NOT NULL
+);
+
+CREATE INDEX lexical_verification_cache_last_accessed
+    ON lexical_verification_cache(last_accessed_at_epoch_ms);
+
+CREATE INDEX lexical_verification_cache_expires
+    ON lexical_verification_cache(expires_at_epoch_ms);
+
+selectVerificationByKey:
+SELECT key_fingerprint, report_json, expires_at_epoch_ms, last_accessed_at_epoch_ms
+FROM lexical_verification_cache
+WHERE cache_key = ?;
+
+upsert:
+INSERT OR REPLACE INTO lexical_verification_cache(
+    cache_key,
+    key_fingerprint,
+    report_json,
+    written_at_epoch_ms,
+    expires_at_epoch_ms,
+    last_accessed_at_epoch_ms
+)
+VALUES (?, ?, ?, ?, ?, ?);
+
+touchAccess:
+UPDATE lexical_verification_cache
+SET last_accessed_at_epoch_ms = ?
+WHERE cache_key = ?;
+
+countEntries:
+SELECT COUNT(*) AS entry_count
+FROM lexical_verification_cache;
+
+selectOldestKeys:
+SELECT cache_key
+FROM lexical_verification_cache
+ORDER BY last_accessed_at_epoch_ms ASC
+LIMIT ?;
+
+deleteByKey:
+DELETE FROM lexical_verification_cache
+WHERE cache_key = ?;
+
+deleteExpired:
+DELETE FROM lexical_verification_cache
+WHERE expires_at_epoch_ms <= ?;
+
+deleteAll:
+DELETE FROM lexical_verification_cache;

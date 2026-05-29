@@ -1,0 +1,48 @@
+= ADR-008: Лексическая иерархия и дедупликация capture-материала
+:revdate: 2026-05-27
+
+Статус:: Accepted
+Дата:: 2026-05-27
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Functional Suitability (family-навигация выводится из простого добавления карточек — пользовательский сценарий из обсуждений), Reliability (повторный capture не сносит SRS-прогресс), Maintainability (QG-3: family и form-карточки выводятся из confirm-данных, без отдельной модели хранения)
+
+Контекст::
+Library уже имела модель `Lemma` + `Card`, помеченную как family-носитель, но capture не наполнял `Sense.headLemma`. В итоге `come`, `come across`, `come up` падали под разные lemma-id и family-граф не выстраивался. Дополнительно: form-карточки нерегулярных глаголов привязывались к `entry.id`, и при повторном capture-е того же глагола ID менялись — SRS-состояние сиротилось. И каждое подтверждение того же term-а создавало второй `LexicalEntry`-row, дублируя material.
+
+Решение::
+Иерархия — три уровня без новых таблиц: `LexicalLemma` (виртуальный, derived из `Sense.headLemma`), `LexicalUnit` (тоже derived, identity = (term, GrammarUnitType)), `Card` (sense — текущее). Хранение всё в существующих `lexical_entry` + `SenseDto`-JSON (`Sense` живёт в нейтральном `shared/lexicon/domain`, `SenseDto` — в `shared/lexicon/serialization`); `Sense` несёт поля `headLemma: String?`, `components: List<UnitComponent>`. AI-suggest несёт эти же поля через `EnrichmentSuggestion`. Heuristic fallback в `CapturedCatalogDerivation` использует `headLemma` → `baseLemma` → `entry.term`, поэтому curated/LLM/manual capture группируется по семье корректно даже при частично заполненных данных.
+
+Form-карточки нерегулярных глаголов:
+
+* Триггер — `Sense.irregularForms != null`, POS-агностичный (раньше требовался `GrammarUnitType.IrregularVerb`).
+* Identity form-карточки — lemma-stable: `captured:lemma:<head>:form:<form-slot>`, не зависит от `entry.id` или `sense-index`. Повторный capture того же глагола использует существующие form-карточки, SRS-state не теряется.
+* Infinitive-вариант не генерируется — это сам headword, drill не даёт нового факта.
+
+Capture dedup:
+
+* `DurableVocabularyRepository.confirmSenses` при confirm-е проверяет, есть ли уже Confirmed-entry с тем же normalized term. Если есть — мёрджит новые senses в существующую entry (по `deriveSenseContentKey`), черновик удаляется. Если нет — обычный путь.
+* `deriveSenseContentKey(Sense)` хеширует identifying-поля sense (surfaceForm + unitType.id + translation), не `headLemma`/`baseLemma` и не explanation. Поэтому новая редакция объяснения или более позднее verifier-обогащение lemma-метаданными не плодит второй sense.
+
+Альтернативы::
+
+* Отдельная таблица `lexical_unit` с FK на лемму. Отклонено: для домена с derived-проекцией не даёт ничего сверх group-by по `headLemma`, удваивает source-of-truth и требует миграции.
+* Persisted `LexicalUnitId` per-sense. Отклонено по той же причине; identity-ключ выводится из (term, entryType) на лету.
+* Form-card identity через entry.id. Отклонено: реально наблюдалось — SRS-state сиротится.
+
+Последствия (реализованные, 2026-05-27)::
+
+* `Sense` (с полями `headLemma`/`components`) и read-model `LexicalEntry`/`EntryStatus` живут в `shared/lexicon/domain`, `SenseCandidate.verification` — в `feature/vocabulary-editor/domain`; персистится через `SenseDto`-JSON (`shared/lexicon/serialization`), без schema-bump-а.
+* `CapturedCatalogDerivation` группирует cards по `headLemma`-derived `LemmaId`; form-карточки — POS-агностичные и lemma-stable; повторный capture не дублирует form-карточки разных senses одного глагола.
+* `confirmSenses` мёрджит при совпадении normalized term, удаляет промежуточный draft; SRS-state существующих senses сохраняется.
+* AI-suggestion обогащена `unitType`/`headLemma`/`components`; маппер пробрасывает их в candidate. `entryType` остаётся verifier-термином и на AI wire не выносится.
+
+Последствия (ожидаемые)::
+
+* Family-навигация в Library через `Lemma.relatedCards` работает out-of-the-box на любых confirmed senses, как только заведена `headLemma`. UI этого ещё нет — карта рендерится через существующие Library-экраны без family-разреза.
+* Если в будущем понадобится unit-level metadata (например, кэш verifier-evidence per-unit), это потребует завести `lexical_unit` table — отдельный ADR, опираемый на текущие identity-форматы (так что миграция данных тривиальна).
+
+Связанные ADR::
+
+* link:0001-sense-first-lexical-model.adoc[ADR-001] (refines) — sense-сначала остаётся, family/form-карточки — derived проекции confirmed-материала.
+* link:0002-feature-owned-schema-with-aggregated-database.adoc[ADR-002] (mirrors) — `lexical_entry` остаётся feature-owned schema; иерархия — без новой schema-сущности.
+* link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] (consumes) — verifier использует те же identity-форматы для family-evidence.

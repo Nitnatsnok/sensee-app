@@ -8,7 +8,7 @@ import app.sensee.feature.library.domain.DeckId
 import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
 import app.sensee.feature.library.domain.LemmaId
-import app.sensee.feature.vocabularyEditor.domain.VocabularyRepository
+import app.sensee.lexicon.domain.LexiconRepository
 import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.engine.storage.SrsStorage
 import app.sensee.srs.fsrs.FsrsParameters
@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.combine
  * closes Capture -> Library -> Practice: a confirmed word appears as a card in
  * the existing Practice surface with no separate screen needed.
  *
- * Dependency direction stays correct (ADR-001): library/data depends on
- * vocabulary-editor/domain, never the reverse.
+ * Dependency direction stays correct: library/data depends on the neutral
+ * lexicon read model, not on vocabulary-editor's write workflow.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.combine
 @Inject
 public class CapturedCatalogRepository(
     private val base: DefaultCatalogRepository,
-    private val vocabulary: VocabularyRepository,
+    private val lexicon: LexiconRepository,
     private val srsStorage: SrsStorage<FsrsParameters>,
 ) : CatalogRepository {
     // Captured cards are re-derived each read (ADR-001 projection), but their
@@ -56,7 +56,7 @@ public class CapturedCatalogRepository(
     // the local catalog (adoption flips) or the captured projection (a new confirmed entry)
     // change, so the Library/Practice UI updates without manual reload.
     override fun observeOwnedMaterial(): Flow<List<Deck>> =
-        combine(base.observeOwnedMaterial(), vocabulary.observeEntries()) { owned, entries ->
+        combine(base.observeOwnedMaterial(), lexicon.observeEntries()) { owned, entries ->
             val captured = CapturedCatalogDerivation.capturedDeck(entries)
             if (captured == null) owned else owned + captured.deck
         }
@@ -68,7 +68,7 @@ public class CapturedCatalogRepository(
     override suspend fun loadDeck(deckId: DeckId): DeckWithCards {
         if (deckId == CapturedCatalogDerivation.DECK_ID) {
             val deck =
-                requireNotNull(CapturedCatalogDerivation.capturedDeck(vocabulary.listEntries())) {
+                requireNotNull(CapturedCatalogDerivation.capturedDeck(lexicon.listEntries())) {
                     "Captured deck requested but no confirmed entries exist"
                 }
             return deck.copy(cards = deck.cards.map { withMaterializedSrs(it) })
@@ -78,7 +78,7 @@ public class CapturedCatalogRepository(
 
     override suspend fun loadCard(cardId: CardId): Card {
         if (CapturedCatalogDerivation.isCapturedCard(cardId)) {
-            val cards = CapturedCatalogDerivation.capturedDeck(vocabulary.listEntries())?.cards.orEmpty()
+            val cards = CapturedCatalogDerivation.capturedDeck(lexicon.listEntries())?.cards.orEmpty()
             val card =
                 requireNotNull(cards.firstOrNull { it.id == cardId }) {
                     "Captured card $cardId not found"
@@ -91,7 +91,7 @@ public class CapturedCatalogRepository(
     override suspend fun loadLemma(lemmaId: LemmaId): Lemma {
         if (CapturedCatalogDerivation.isCapturedLemma(lemmaId)) {
             return requireNotNull(
-                CapturedCatalogDerivation.capturedLemma(vocabulary.listEntries(), lemmaId),
+                CapturedCatalogDerivation.capturedLemma(lexicon.listEntries(), lemmaId),
             ) { "Captured lemma $lemmaId requested but no confirmed senses exist" }
         }
         return base.loadLemma(lemmaId)

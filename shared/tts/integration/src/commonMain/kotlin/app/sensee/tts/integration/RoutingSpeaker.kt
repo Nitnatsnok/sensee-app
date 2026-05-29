@@ -1,6 +1,7 @@
 package app.sensee.tts.integration
 
 import app.sensee.core.coroutines.AppCoroutineScopes
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.observability.logging.AppLogger
 import app.sensee.settings.domain.AiSettings
 import app.sensee.settings.domain.UserSettingsRepository
@@ -52,7 +53,7 @@ public class RoutingSpeaker(
             scope.launch {
                 var delegate: SpeechHandle?
                 handle.update(SpeechState.Loading)
-                try {
+                runCatchingCancellable {
                     ensureActive()
                     delegate = route(settings.readSettings().ai, request)
                     ensureActive()
@@ -63,9 +64,7 @@ public class RoutingSpeaker(
                         .filter { it != SpeechState.Idle }
                         .onEach { handle.update(it) }
                         .first { it is SpeechState.Done || it is SpeechState.Failed }
-                } catch (cancellation: CancellationException) {
-                    throw cancellation
-                } catch (throwable: Throwable) {
+                }.onFailure { throwable ->
                     handle.update(SpeechState.Failed(TtsError.Unknown(throwable.message)))
                     log.error(throwable) { "route failed: ${throwable.message ?: "no message"}" }
                 }

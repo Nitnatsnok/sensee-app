@@ -9,6 +9,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.shared.feature.vocabularyEditor.domain)
+                implementation(projects.shared.lexicon.serialization)
                 implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.database)
                 implementation(libs.kotlinx.coroutines.core)

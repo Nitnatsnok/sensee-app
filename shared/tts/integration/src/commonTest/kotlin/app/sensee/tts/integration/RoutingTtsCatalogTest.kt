@@ -2,6 +2,8 @@ package app.sensee.tts.integration
 
 import app.sensee.tts.core.TtsKeyCheck
 import app.sensee.tts.core.TtsKeyVerificationRequest
+import app.sensee.tts.elevenlabs.api.ElevenLabsClientFactory
+import app.sensee.tts.elevenlabs.config.ElevenLabsConfig
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
@@ -19,7 +21,13 @@ import kotlin.test.assertTrue
 class RoutingTtsCatalogTest {
     private class FakeTransportException : Exception("connection reset")
 
-    private fun catalog(engine: MockEngine) = RoutingTtsCatalog(Json, engine)
+    private fun catalog(engine: MockEngine): RoutingTtsCatalog {
+        val config = ElevenLabsConfig()
+        return RoutingTtsCatalog(
+            httpClient = ElevenLabsClientFactory.create(engine = engine, config = config, json = Json),
+            config = config,
+        )
+    }
 
     private suspend fun RoutingTtsCatalog.verifyElevenLabs(apiKey: String): TtsKeyCheck =
         verifyKey(TtsKeyVerificationRequest(providerId = "elevenlabs", apiKey = apiKey))

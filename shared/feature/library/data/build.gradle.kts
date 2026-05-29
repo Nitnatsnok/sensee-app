@@ -28,6 +28,9 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(libs.sqldelight.extensions.coroutines)
                 implementation(libs.metro.runtime)
+                implementation(projects.shared.ai.core)
+                implementation(projects.shared.lexicon.enrichment)
+                implementation(projects.shared.lexicon.serialization)
                 implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.mockBackend)
                 implementation(projects.shared.core.network)
@@ -35,7 +38,6 @@ kotlin {
                 implementation(projects.shared.core.platform)
                 implementation(projects.shared.database)
                 implementation(projects.shared.feature.library.domain)
-                implementation(projects.shared.feature.vocabularyEditor.domain)
                 implementation(projects.shared.srs.core)
                 implementation(projects.shared.srs.engine)
                 implementation(projects.shared.srs.fsrs)
@@ -47,6 +49,9 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(projects.shared.ai.core)
+                implementation(projects.shared.lexicon.enrichment)
+                implementation(projects.shared.lexicon.domain)
             }
         }
 

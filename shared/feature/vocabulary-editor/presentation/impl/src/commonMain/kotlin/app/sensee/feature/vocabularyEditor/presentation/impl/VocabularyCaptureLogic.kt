@@ -5,6 +5,7 @@ import app.sensee.ai.core.EnrichmentAvailability
 import app.sensee.ai.core.EnrichmentRequest
 import app.sensee.ai.core.SenseCoverage
 import app.sensee.core.coroutines.AppDispatchers
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.decompose.logic.BaseLogic
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState

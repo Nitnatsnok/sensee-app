@@ -1,5 +1,6 @@
 package app.sensee.tts.elevenlabs.speaker
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.observability.logging.AppLogger
 import app.sensee.tts.core.Speaker
 import app.sensee.tts.core.SpeechHandle
@@ -69,16 +70,16 @@ public class ElevenLabsSpeaker(
         }
         var player: AudioPlayer? = null
         try {
-            handle.update(SpeechState.Loading)
-            player = createAttachedPlayer(handle)
-            handle.update(SpeechState.Speaking)
-            val bytes = playTracedStream(player, request, started)
-            handle.update(SpeechState.Done)
-            log.debug { "speak done in ${started.elapsedNow()}, $bytes bytes" }
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (other: Throwable) {
-            handleSpeechFailure(other, handle, started)
+            runCatchingCancellable {
+                handle.update(SpeechState.Loading)
+                player = createAttachedPlayer(handle)
+                handle.update(SpeechState.Speaking)
+                val bytes = playTracedStream(player, request, started)
+                handle.update(SpeechState.Done)
+                log.debug { "speak done in ${started.elapsedNow()}, $bytes bytes" }
+            }.onFailure { other ->
+                handleSpeechFailure(other, handle, started)
+            }
         } finally {
             releasePlayer(player, handle)
         }

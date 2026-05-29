@@ -28,6 +28,11 @@ internal val JsonObjectResponseFormat: JsonObject =
  * built by the caller from the runtime taxonomy (EnrichmentSchema.buildJsonSchema);
  * this only wraps it in the provider envelope, so the provider boundary stays
  * the single source of truth (ADR-005).
+ *
+ * Advisory by design: non-strict mode (no `strict: true`, no item-level
+ * `required`) so partial/degraded answers still parse. Hard correctness is
+ * enforced downstream by EnrichmentResponseMapper and the feature-side runtime
+ * taxonomy resolve, not by this schema.
  */
 internal fun jsonSchemaResponseFormat(schema: JsonElement): JsonObject =
     buildJsonObject {

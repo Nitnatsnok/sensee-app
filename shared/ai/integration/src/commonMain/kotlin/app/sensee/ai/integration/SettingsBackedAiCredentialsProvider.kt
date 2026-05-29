@@ -6,8 +6,8 @@ import dev.zacsweers.metro.Inject
 
 /**
  * The LLM key comes from device-scoped user settings. A blank/absent key is a
- * normal state — the LLM client degrades to `Unavailable` and the router falls
- * back to the offline fixture.
+ * normal state — the LLM client degrades to `Unavailable` and the router serves
+ * curated hits or reports `Unavailable` so the wizard degrades to manual entry.
  */
 @Inject
 public class SettingsBackedAiCredentialsProvider(

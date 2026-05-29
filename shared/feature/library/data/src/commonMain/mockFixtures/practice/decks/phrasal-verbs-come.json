@@ -6,150 +6,327 @@
     {
       "id": "card-come",
       "lemma_id": "lemma-come",
-      "headword": "come",
       "translation": "приходить, прибывать",
-      "context_sentence": "Please come to the meeting at ten.",
+      "surface_form": "come",
       "unit_type": "irregular_verb",
-      "grammar_tags": [
-        { "category": "verb_irregular", "form": "infinitive" }
-      ],
-      "sense_summary": "движение к месту или к говорящему",
-      "explanation": "Базовый глагол движения «к себе». Формы came/come — основа фразовых глаголов этой леммы."
-    },
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "explanation": "Перемещаться в сторону говорящего или к названному месту.",
+      "examples": [
         {
+          "sentence": "Please [[come]] to the meeting at ten.",
+          "translation": "Пожалуйста, приходите на встречу в десять.",
+          "alignment": [
+            { "source": "come to the meeting", "target": "приходите на встречу" },
+            { "source": "at ten", "target": "в десять" }
+          ]
+        }
+      ],
+      "synonyms": ["arrive", "approach", "reach"],
+      "antonyms": ["go", "leave"],
+      "collocations": ["come home", "come back", "come early"],
+      "word_family": [
+        { "lemma": "comeback", "unit_type": "noun" },
+        { "lemma": "newcomer", "unit_type": "noun" },
+        { "lemma": "upcoming", "unit_type": "adjective" },
+        { "lemma": "oncoming", "unit_type": "adjective" }
+      ],
+      "grammar_tags": [
+        { "category": "verb_irregular", "form": "infinitive" },
+        { "category": "transitivity", "form": "intransitive" }
+      ],
+      "irregular_forms": { "base": "come", "past": "came", "past_participle": "come" }
+    },
+    {
       "id": "card-come-up",
       "lemma_id": "lemma-come",
-      "headword": "come up",
       "translation": "возникать, неожиданно появиться",
-      "context_sentence": "Something has come up at work, so I'll be late tonight.",
+      "surface_form": "come up",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "up", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "О проблеме, теме или событии — неожиданно появиться и потребовать внимания.",
+      "examples": [
+        {
+          "sentence": "Something has [[come up]] at work, so I'll be late tonight.",
+          "translation": "На работе кое-что возникло, поэтому вечером я задержусь.",
+          "alignment": [
+            { "source": "Something", "target": "кое-что" },
+            { "source": "has come up", "target": "возникло" },
+            { "source": "at work", "target": "на работе" }
+          ]
+        }
+      ],
+      "synonyms": ["arise", "emerge"],
+      "collocations": ["a problem came up", "come up in conversation"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "о теме, проблеме, событии — внезапно появиться",
-      "explanation": "Используется про события и темы, которые «всплыли» сами по себе."
+      ]
     },
     {
       "id": "card-come-up-with",
       "lemma_id": "lemma-come",
-      "headword": "come up with",
       "translation": "придумать, предложить",
-      "context_sentence": "Can you come up with a better name for the project?",
+      "surface_form": "come up with <something>",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "up", "role": "particle", "salience": "secondary" },
+        { "text": "with", "role": "preposition", "salience": "secondary" }
+      ],
+      "explanation": "Найти и предложить идею, решение или ответ.",
+      "examples": [
+        {
+          "sentence": "Can you [[come up with]] a better name for the project?",
+          "translation": "Можешь придумать название для проекта получше?",
+          "alignment": [
+            { "source": "come up with", "target": "придумать" },
+            { "source": "a better name", "target": "название получше" },
+            { "source": "for the project", "target": "для проекта" }
+          ]
+        }
+      ],
+      "synonyms": ["devise", "invent", "think up"],
+      "collocations": ["come up with an idea", "come up with a solution"],
+      "complementation": ["noun"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "transitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "сгенерировать идею, решение, ответ",
-      "explanation": "После come up with — то, что было придумано: идея, имя, решение."
+      ]
     },
-        {
+    {
       "id": "card-come-across",
       "lemma_id": "lemma-come",
-      "headword": "come across",
       "translation": "случайно встретить, наткнуться",
-      "context_sentence": "I often come across old letters from my grandmother.",
+      "surface_form": "come across <somebody/something>",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "across", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Случайно обнаружить вещь или встретить человека, не ища специально.",
+      "examples": [
+        {
+          "sentence": "I often [[come across]] old letters from my grandmother.",
+          "translation": "Я часто натыкаюсь на старые письма от бабушки.",
+          "alignment": [
+            { "source": "I often", "target": "Я часто" },
+            { "source": "come across", "target": "натыкаюсь на" },
+            { "source": "old letters", "target": "старые письма" },
+            { "source": "from my grandmother", "target": "от бабушки" }
+          ]
+        }
+      ],
+      "synonyms": ["encounter", "stumble upon", "run into"],
+      "collocations": ["come across a problem", "come across information"],
+      "complementation": ["noun"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "transitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "найти что-то или встретить кого-то случайно",
-      "explanation": "Подчеркивает случайность находки или встречи."
+      ]
     },
     {
       "id": "card-come-around",
       "lemma_id": "lemma-come",
-      "headword": "come around",
       "translation": "прийти в сознание, очнуться",
-      "context_sentence": "She'll come around after a short rest.",
+      "surface_form": "come around",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "around", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Снова прийти в сознание после обморока или наркоза.",
+      "examples": [
+        {
+          "sentence": "She'll [[come around]] after a short rest.",
+          "translation": "Она очнётся после короткого отдыха.",
+          "alignment": [
+            { "source": "She'll come around", "target": "Она очнётся" },
+            { "source": "after a short rest", "target": "после короткого отдыха" }
+          ]
+        }
+      ],
+      "synonyms": ["come to", "regain consciousness"],
+      "usage_note": "о возвращении в сознание; часто после fainted или passed out",
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "вернуться в сознание после обморока или сна",
-      "explanation": "В этом значении часто после fainted/passed out."
+      ]
     },
     {
       "id": "card-come-back",
       "lemma_id": "lemma-come",
-      "headword": "come back",
       "translation": "вернуться",
-      "context_sentence": "I'll come back as soon as the call is over.",
+      "surface_form": "come back",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "back", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Вернуться туда, откуда ушёл или уехал.",
+      "examples": [
+        {
+          "sentence": "I'll [[come back]] as soon as the call is over.",
+          "translation": "Я вернусь, как только закончится звонок.",
+          "alignment": [
+            { "source": "I'll come back", "target": "Я вернусь" },
+            { "source": "as soon as the call is over", "target": "как только закончится звонок" }
+          ]
+        }
+      ],
+      "synonyms": ["return", "get back"],
+      "collocations": ["come back home", "come back later"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "возвращение в прежнее место",
-      "explanation": "Простое возвращение туда, откуда ушёл."
+      ]
     },
     {
       "id": "card-come-out",
       "lemma_id": "lemma-come",
-      "headword": "come out",
       "translation": "выходить, становиться известным",
-      "context_sentence": "The new version comes out next week.",
+      "surface_form": "come out",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "out", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Стать доступным или известным — о релизе, публикации или раскрытом факте.",
+      "examples": [
+        {
+          "sentence": "The new version [[comes out]] next week.",
+          "translation": "Новая версия выходит на следующей неделе.",
+          "alignment": [
+            { "source": "The new version", "target": "Новая версия" },
+            { "source": "comes out", "target": "выходит" },
+            { "source": "next week", "target": "на следующей неделе" }
+          ]
+        }
+      ],
+      "synonyms": ["be released", "appear"],
+      "collocations": ["a book comes out", "the truth came out"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "о выпуске, публикации или раскрытии факта",
-      "explanation": "Про релизы, новости и то, что «вышло наружу»."
+      ]
     },
     {
       "id": "card-come-along",
       "lemma_id": "lemma-come",
-      "headword": "come along",
       "translation": "продвигаться, идти вместе",
-      "context_sentence": "The project is coming along nicely.",
+      "surface_form": "come along",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "along", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Постепенно развиваться к лучшему; либо отправиться вместе с кем-то.",
+      "examples": [
+        {
+          "sentence": "The project is [[coming along]] nicely.",
+          "translation": "Проект хорошо продвигается.",
+          "alignment": [
+            { "source": "The project", "target": "Проект" },
+            { "source": "is coming along nicely", "target": "хорошо продвигается" }
+          ]
+        }
+      ],
+      "synonyms": ["progress", "develop"],
+      "collocations": ["coming along nicely", "come along with someone"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "о прогрессе или о том, чтобы присоединиться",
-      "explanation": "Часто про то, как «движется» работа."
+      ]
     },
     {
       "id": "card-come-down",
       "lemma_id": "lemma-come",
-      "headword": "come down",
       "translation": "снижаться, падать",
-      "context_sentence": "Prices have come down since last year.",
+      "surface_form": "come down",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "down", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Становиться меньше по величине или уровню.",
+      "examples": [
+        {
+          "sentence": "Prices have [[come down]] since last year.",
+          "translation": "Цены снизились с прошлого года.",
+          "alignment": [
+            { "source": "Prices", "target": "Цены" },
+            { "source": "have come down", "target": "снизились" },
+            { "source": "since last year", "target": "с прошлого года" }
+          ]
+        }
+      ],
+      "synonyms": ["decrease", "drop", "fall"],
+      "antonyms": ["go up", "rise"],
+      "collocations": ["prices come down", "come down in price"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "уменьшение величины или уровня",
-      "explanation": "Про снижение цен, чисел, температуры."
+      ]
     },
     {
       "id": "card-come-over",
       "lemma_id": "lemma-come",
-      "headword": "come over",
       "translation": "заходить в гости",
-      "context_sentence": "Come over this weekend and we'll talk it through.",
+      "surface_form": "come over",
       "unit_type": "phrasal_verb",
+      "base_lemma": "come",
+      "head_lemma": "come",
+      "components": [
+        { "text": "come", "role": "head", "salience": "primary" },
+        { "text": "over", "role": "particle", "salience": "secondary" }
+      ],
+      "explanation": "Ненадолго зайти к кому-то домой.",
+      "examples": [
+        {
+          "sentence": "[[Come over]] this weekend and we'll talk it through.",
+          "translation": "Заходи в эти выходные, и мы всё обсудим.",
+          "alignment": [
+            { "source": "Come over", "target": "Заходи" },
+            { "source": "this weekend", "target": "в эти выходные" },
+            { "source": "we'll talk it through", "target": "мы всё обсудим" }
+          ]
+        }
+      ],
+      "synonyms": ["visit", "drop by"],
+      "usage_note": "разговорное; обычно в приглашении",
+      "collocations": ["come over for dinner"],
       "grammar_tags": [
         { "category": "verb", "form": "infinitive" },
         { "category": "transitivity", "form": "intransitive" },
         { "category": "separability", "form": "inseparable" }
-      ],
-      "sense_summary": "прийти к кому-то домой ненадолго",
-      "explanation": "Неформальное приглашение зайти."
+      ]
     }
   ]
 }

@@ -11,9 +11,11 @@ import app.sensee.ai.core.EnrichmentResponseMapper
 import app.sensee.ai.core.EnrichmentResponseV1
 import app.sensee.ai.core.EnrichmentResult
 import app.sensee.ai.core.EnrichmentSchema
+import app.sensee.ai.core.EnrichmentTaxonomy
 import app.sensee.ai.core.PolysemyHintsModifier
 import app.sensee.ai.core.SenseCoverage
 import app.sensee.ai.core.UserEnrichmentPreferencesProvider
+import app.sensee.ai.core.extractItemExtensions
 import app.sensee.ai.llm.api.LlmEnrichmentApi
 import app.sensee.ai.llm.config.AiCredentialsProvider
 import app.sensee.ai.llm.config.LlmConfig
@@ -21,15 +23,14 @@ import app.sensee.ai.llm.config.LlmConfigProvider
 import app.sensee.ai.llm.dto.ChatMessageDto
 import app.sensee.ai.llm.dto.JsonObjectResponseFormat
 import app.sensee.ai.llm.dto.jsonSchemaResponseFormat
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.grammar.domain.TaxonomyInvariants
 import app.sensee.grammar.domain.TaxonomyInvariantsProvider
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
  * LLM-backed enrichment over any OpenAI-compatible chat endpoint. Honors the
@@ -53,11 +54,10 @@ public class LlmAiEnrichmentClient internal constructor(
     private val json: Json,
 ) : AiEnrichmentClient {
     override suspend fun enrich(request: EnrichmentRequest): EnrichmentResult {
-        val apiKey =
-            credentials.apiKey()?.takeIf { it.isNotBlank() }
-                ?: return EnrichmentResult.unavailable("AI provider is not configured")
-
-        return try {
+        return runCatchingCancellable {
+            val apiKey =
+                credentials.apiKey()?.takeIf { it.isNotBlank() }
+                    ?: return EnrichmentResult.unavailable("AI provider is not configured")
             val config = configProvider.config()
             val invariants = taxonomyInvariantsProvider.invariants() ?: TaxonomyInvariants.EMPTY
             val responseFormat = responseFormatFor(config, invariants)
@@ -82,9 +82,7 @@ public class LlmAiEnrichmentClient internal constructor(
                     basePrompt + ChatMessageDto(role = "user", content = retryAppendix(request)),
                 )
             if (retried.suggestions.size > first.suggestions.size) retried else first
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (throwable: Throwable) {
+        }.getOrElse { throwable ->
             EnrichmentResult.unavailable(
                 "AI provider unreachable: ${throwable.message ?: throwable::class.simpleName}",
             )
@@ -98,10 +96,13 @@ public class LlmAiEnrichmentClient internal constructor(
         if (config.structuredOutput) {
             jsonSchemaResponseFormat(
                 EnrichmentSchema.buildJsonSchema(
-                    unitTypeIds = invariants.knownUnitTypeIds,
-                    complementIds = invariants.knownComplementIds,
-                    usageAxesAndValues = invariants.allowedValuesByAxis,
-                    grammarCategoriesAndForms = invariants.allowedFormsByCategory,
+                    taxonomy =
+                        EnrichmentTaxonomy(
+                            unitTypeIds = invariants.knownUnitTypeIds,
+                            complementIds = invariants.knownComplementIds,
+                            usageAxesAndValues = invariants.allowedValuesByAxis,
+                            grammarCategoriesAndForms = invariants.allowedFormsByCategory,
+                        ),
                     extensions = extensions,
                 ),
             )
@@ -127,7 +128,7 @@ public class LlmAiEnrichmentClient internal constructor(
                 )
         return try {
             val element = json.parseToJsonElement(content)
-            val dto = json.decodeFromJsonElement<EnrichmentResponseV1>(element)
+            val dto = json.decodeFromJsonElement(EnrichmentResponseV1.serializer(), element)
             EnrichmentResponseMapper.map(dto, extensionValuesFrom(element))
         } catch (_: SerializationException) {
             EnrichmentResult(
@@ -138,20 +139,9 @@ public class LlmAiEnrichmentClient internal constructor(
 
     private fun extensionValuesFrom(element: JsonElement): List<Map<String, JsonElement>> {
         if (extensions.isEmpty()) return emptyList()
-        // Built-ins win on collision (mirrors EnrichmentSchema.itemSchema):
-        // without this the same field would surface twice — typed on the
-        // suggestion and again in the opaque extensions bucket.
-        val builtInNames = EnrichmentSchema.fields.mapTo(mutableSetOf()) { it.serialName }
-        val ownedKeys =
-            extensions
-                .flatMapTo(mutableSetOf()) { it.ownedKeys }
-                .apply { removeAll(builtInNames) }
-        if (ownedKeys.isEmpty()) return emptyList()
-        val root = element as? JsonObject ?: return emptyList()
-        val items = root["items"] as? JsonArray ?: return emptyList()
+        val items = (element as? JsonObject)?.get("items") as? JsonArray ?: return emptyList()
         return items.map { item ->
-            val itemObject = item as? JsonObject ?: return@map emptyMap()
-            ownedKeys.mapNotNull { key -> itemObject[key]?.let { key to it } }.toMap()
+            (item as? JsonObject)?.let { extensions.extractItemExtensions(it) }.orEmpty()
         }
     }
 

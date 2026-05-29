@@ -1,11 +1,11 @@
 # language: ru
 @profile
-Функция: Профиль и полный набор пользовательских настроек
+Функция: Профиль и пользовательские настройки
 
-  Profile — пользовательский интерфейс полного набора настроек поверх `UserSettingsRepository`.
+  Profile — пользовательский интерфейс настроек поверх `UserSettingsRepository`.
   Раздел открывается экраном-меню `ProfileHome` с группой «Настройки» и
-  пунктами по категориям `UserSettingsCategory`. На широких экранах меню и
-  экран категории показаны рядом (двухпанельный режим), на узких — по очереди.
+  видимыми категориями профиля. На широких экранах меню и экран категории
+  показаны рядом (двухпанельный режим), на узких — по очереди.
   Реализованные экраны категорий: `App` (`ProfileAppSettingsScreen`) для
   выбора темы приложения и тактильной отдачи, `Learning` для выбора тем для примеров и `Ai`
   (`ProfileAiSettingsScreen`) для AI/TTS-провайдера, верификации ключа и
@@ -13,8 +13,8 @@
   открывают явную заглушку planned-состояния.
   Навигация `About`, Account/синхронизация и статистика — планируемое.
 
-  Сценарии без тега описывают текущий код; `@planned` — спроектированное,
-  но ещё не реализованное. Объём сознательно бережный: ядро — настройки и
+  Сценарии с `@implemented` описывают текущий код; `@planned` —
+  спроектированное, но ещё не реализованное. Объём сознательно бережный: ядро — настройки и
   About; Account/синхронизация и data management пока не реализованы и не
   имитируются фиктивным UI.
 
@@ -28,7 +28,7 @@
     через `NavigationDispatcher.open(ProfileExtraConfig.TopicPicker)`),
     `DefaultProfileHomeComponent`/`ProfileHomeScreen` (меню категорий),
     `ProfileAppSettingsLogic`/`ProfileAppSettingsScreen` (категория `App`,
-    выбор `themeMode`),
+    выбор `themeMode` и `hapticFeedbackEnabled`),
     `ProfileAiSettingsLogic`/`ProfileAiSettingsScreen` (категория `Ai`),
     `ProfileLearningSettingsLogic`/`ProfileLearningSettingsScreen` (категория
     `Learning` — пока только строка-триггер выбора тем),
@@ -48,8 +48,7 @@
     `UserSettingsCategory{App, Learning, Practice, Ai, Experimental}`,
     `UserSettingsScope{Device, User}`, `AiSettings` (ключи/провайдер),
     `AppSettings.themeMode`/`AppSettings.hapticFeedbackEnabled`,
-    `LearningSettings.preferredTopicIds`, `LearningTopic`,
-    `TopicCatalogRepository`
+    `LearningSettings.preferredTopicIds`, `LearningTopic`, `TopicCatalogRepository`
   - `shared/settings/data/topic/*`: каталог тем с mock-бэкенда (`learning/topics`)
   - design-system: `SenseeTextField` со скрытым (secure) режимом для ключей,
     `SenseeSelectField` для выбора темы, `SenseeSwitch` для тактильной отдачи,
@@ -70,7 +69,7 @@
   Сценарий: Меню Profile с группой настроек
     Когда пользователь открывает раздел `Profile`
     Тогда показан экран-меню `ProfileHome` с группой «Настройки»
-    И в группе по пункту на каждую `UserSettingsCategory`: `App`, `Learning`, `Practice`, `Ai`, `Experimental`
+    И в группе по пункту на каждую видимую категорию: `App`, `Learning`, `Practice`, `Ai`, `Experimental`
     Когда пользователь выбирает пункт
     Тогда открывается экран этой категории
 
@@ -210,8 +209,8 @@
     И локальный экран настроек practice показывает то же подмножество над тем же `UserSettingsRepository`
     И изменение в одном месте видно в другом — единый источник
 
-  @planned
-  Сценарий: Категория Experimental явно помечена как planned-состояние
+  @implemented
+  Сценарий: Категория Experimental показывает заглушку вместо полей
     Допустим у категории `Experimental` пока нет data class и полей в `UserSettingsSnapshot`
     Когда пользователь открывает категорию `Experimental`
     Тогда показывается состояние «нет данных», а не неработающие тумблеры

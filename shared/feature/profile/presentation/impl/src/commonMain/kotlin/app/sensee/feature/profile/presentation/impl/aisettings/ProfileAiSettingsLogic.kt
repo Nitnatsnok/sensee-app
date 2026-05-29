@@ -3,6 +3,7 @@ package app.sensee.feature.profile.presentation.impl.aisettings
 import app.sensee.ai.core.AiKeyCheck
 import app.sensee.ai.core.AiModelCatalog
 import app.sensee.core.coroutines.AppDispatchers
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.decompose.logic.BaseLogic
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState

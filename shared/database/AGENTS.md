@@ -7,11 +7,14 @@ modules and are merged into a single `SenseeDatabase` here:
 - `shared/feature/practice/database-schema` — SRS tables (srs_card/srs_review_log),
   `practiceSrsEntityQueries`.
 - `shared/settings/database-schema`, `shared/tts/database-schema`.
+- `shared/verification/database-schema` — lexical-verification cache table,
+  `lexicalVerificationCacheEntityQueries`.
 
 Schema modules are owned by the feature that owns the data: catalog is Library-owned,
-SRS review state is Practice-owned. They are FK-independent, so they live in separate
-schema modules merged into the one aggregate `SenseeDatabase` (generated row types stay
-in the neutral `app.sensee.core.database` package).
+SRS review state is Practice-owned, verification cache is owned by the verification
+seam. They are FK-independent, so they live in separate schema modules merged into
+the one aggregate `SenseeDatabase` (generated row types stay in the neutral
+`app.sensee.core.database` package).
 
 ## Runtime config
 

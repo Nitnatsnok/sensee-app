@@ -26,7 +26,9 @@ import app.sensee.tts.system.systemSpeaker
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.Qualifier
 import dev.zacsweers.metro.SingleIn
+import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 
 /**
@@ -51,28 +53,45 @@ public interface TtsIntegrationProviders {
 
     @SingleIn(AppScope::class)
     @Provides
+    public fun provideElevenLabsConfig(): ElevenLabsConfig = ElevenLabsConfig()
+
+    /**
+     * The single ElevenLabs [HttpClient] for the app lifetime, shared by the
+     * synthesizer and the catalog/key-verification path — same host and config.
+     */
+    @ElevenLabsHttpClient
+    @SingleIn(AppScope::class)
+    @Provides
+    public fun provideElevenLabsHttpClient(
+        config: ElevenLabsConfig,
+        json: Json,
+        logger: AppLogger,
+    ): HttpClient =
+        ElevenLabsClientFactory.create(
+            engine = createRealHttpClientEngine(),
+            config = config,
+            json = json,
+            logger = NetworkLogger { message -> logger.tag("TtsHttp").debug { message } },
+        )
+
+    @Suppress("ProfiledLongParameterList")
+    @SingleIn(AppScope::class)
+    @Provides
     public fun provideElevenLabsSpeaker(
         scopes: AppCoroutineScopes,
         playerFactory: AudioPlayerFactory,
         settings: UserSettingsRepository,
         store: AudioClipStore,
-        json: Json,
+        @ElevenLabsHttpClient client: HttpClient,
+        config: ElevenLabsConfig,
         logger: AppLogger,
-    ): ElevenLabsSpeaker {
-        val config = ElevenLabsConfig()
-        val networkLogger = NetworkLogger { message -> logger.tag("TtsHttp").debug { message } }
-        return ElevenLabsSpeaker(
+    ): ElevenLabsSpeaker =
+        ElevenLabsSpeaker(
             synthesizer =
                 CachingSpeechSynthesizer(
                     delegate =
                         ElevenLabsSynthesizerFactory.create(
-                            httpClient =
-                                ElevenLabsClientFactory.create(
-                                    engine = createRealHttpClientEngine(),
-                                    config = config,
-                                    json = json,
-                                    logger = networkLogger,
-                                ),
+                            httpClient = client,
                             config = config,
                             credentials = {
                                 settings
@@ -89,7 +108,6 @@ public interface TtsIntegrationProviders {
             scope = scopes.applicationScope,
             logger = logger,
         )
-    }
 
     @SingleIn(AppScope::class)
     @Provides
@@ -156,9 +174,19 @@ public interface TtsIntegrationProviders {
 
     @SingleIn(AppScope::class)
     @Provides
-    public fun provideTtsCatalog(json: Json): TtsCatalog =
+    public fun provideTtsCatalog(
+        @ElevenLabsHttpClient client: HttpClient,
+        config: ElevenLabsConfig,
+    ): TtsCatalog =
         RoutingTtsCatalog(
-            json = json,
-            engine = createRealHttpClientEngine(),
+            httpClient = client,
+            config = config,
         )
 }
+
+/**
+ * Qualifies the real-network ElevenLabs [HttpClient], distinct from the
+ * mock-backend [HttpClient] bound as the default in the app graph.
+ */
+@Qualifier
+public annotation class ElevenLabsHttpClient

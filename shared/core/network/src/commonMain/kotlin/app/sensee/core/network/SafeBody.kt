@@ -1,5 +1,6 @@
 package app.sensee.core.network
 
+import app.sensee.core.coroutines.runCatchingCancellable
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -8,18 +9,15 @@ import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
-import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
 
 public suspend inline fun <reified T> safeBody(crossinline request: suspend () -> HttpResponse): NetworkResult<T> =
-    try {
-        NetworkResult.Success(request().body())
-    } catch (exception: CancellationException) {
-        throw exception
-    } catch (exception: Throwable) {
-        NetworkResult.Failure(exception.toNetworkError())
-    }
+    runCatchingCancellable { request().body<T>() }
+        .fold(
+            onSuccess = { NetworkResult.Success(it) },
+            onFailure = { NetworkResult.Failure(it.toNetworkError()) },
+        )
 
 @PublishedApi
 internal suspend fun Throwable.toNetworkError(): NetworkError =
@@ -44,10 +42,8 @@ internal suspend fun ResponseException.toNetworkHttpError(): NetworkError.Http =
     )
 
 private suspend fun safeBodyAsTextOrNull(response: HttpResponse): String? =
-    try {
+    runCatchingCancellable {
         response.bodyAsText()
-    } catch (cancellation: CancellationException) {
-        throw cancellation
-    } catch (_: Throwable) {
+    }.getOrElse {
         null
     }

@@ -8,6 +8,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(projects.shared.core.coroutines)
                 implementation(libs.metro.runtime)
                 implementation(libs.kotlinx.coroutines.core)
                 api(libs.kotlinx.serialization.json)

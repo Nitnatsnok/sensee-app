@@ -1,8 +1,8 @@
 package app.sensee.core.secureStorage
 
 import app.sensee.core.coroutines.AppDispatchers
+import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.platform.PlatformEnvironment
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -31,11 +31,9 @@ internal class WebSecureStorage(
 ) : SecureStorage {
     override suspend fun read(key: SecureStorageKey): String? =
         withContext(ioDispatcher) {
-            try {
+            runCatchingCancellable {
                 webLocalStorageGet(prefix + key.value)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
+            }.getOrElse { throwable ->
                 throw SecureStorageException("Failed to read ${key.value} from localStorage", throwable)
             }
         }
@@ -45,12 +43,10 @@ internal class WebSecureStorage(
         value: String?,
     ) {
         withContext(ioDispatcher) {
-            try {
+            runCatchingCancellable {
                 val storageKey = prefix + key.value
                 if (value == null) webLocalStorageRemove(storageKey) else webLocalStorageSet(storageKey, value)
-            } catch (cancellation: CancellationException) {
-                throw cancellation
-            } catch (throwable: Throwable) {
+            }.getOrElse { throwable ->
                 throw SecureStorageException("Failed to write ${key.value} to localStorage", throwable)
             }
         }

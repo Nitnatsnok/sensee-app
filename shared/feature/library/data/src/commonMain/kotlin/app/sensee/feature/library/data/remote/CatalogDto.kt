@@ -1,5 +1,6 @@
 package app.sensee.feature.library.data.remote
 
+import app.sensee.ai.core.EnrichmentItemV1
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -24,17 +25,17 @@ public data class DeckDto(
     val cards: List<CardDto>,
 )
 
-@Serializable
+// The card IS a projection of its Sense: the enrichment fields sit flat on the
+// card (no wrapper) with only the catalog identity (id, lemma_id) added, and the
+// lean catalog columns (headword, translation, context, unit type, grammar tags,
+// summary) are derived from it on sync (CatalogLocalDataSource.upsertCardInternal).
+// The flat wire shape is handled by [CardDtoSerializer]; [enrichment] stays a
+// typed EnrichmentItemV1 in code, so there is no field duplication.
+@Serializable(with = CardDtoSerializer::class)
 public data class CardDto(
     val id: String,
-    @SerialName("lemma_id") val lemmaId: String,
-    val headword: String,
-    val translation: String,
-    @SerialName("context_sentence") val contextSentence: String,
-    @SerialName("unit_type") val unitType: String,
-    @SerialName("grammar_tags") val grammarTags: List<GrammarTagDto> = emptyList(),
-    @SerialName("sense_summary") val senseSummary: String,
-    val explanation: String = "",
+    val lemmaId: String,
+    val enrichment: EnrichmentItemV1,
 )
 
 @Serializable

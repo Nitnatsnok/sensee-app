@@ -4,10 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Versioned wire DTO at the provider boundary. Providers (or fixtures) produce
- * this shape; it never leaks past [EnrichmentResponseMapper] into features. The
- * version field is forward-design (ADR-005), not a migration history: one
- * uniform sense model for word/phrase/idiom and for either input language.
+ * Versioned wire DTO at the provider boundary. Providers produce this shape;
+ * it never leaks past [EnrichmentResponseMapper] into features. The active
+ * development wire contract currently stays on schema version 1.
  */
 @Serializable
 public data class EnrichmentResponseV1(
@@ -25,8 +24,14 @@ public data class EnrichmentItemV1(
     @SerialName("surface_form") val surfaceForm: String? = null,
     @SerialName("unit_type") val unitType: String? = null,
     @SerialName("base_lemma") val baseLemma: String? = null,
+    @SerialName("head_lemma") val headLemma: String? = null,
+    @SerialName("components") val components: List<UnitComponentDtoV1> = emptyList(),
     @SerialName("explanation") val explanation: String? = null,
-    @SerialName("examples") val examples: List<String> = emptyList(),
+    @SerialName("examples") val examples: List<EnrichmentExampleV1> = emptyList(),
+    @SerialName("synonyms") val synonyms: List<String> = emptyList(),
+    @SerialName("antonyms") val antonyms: List<String> = emptyList(),
+    @SerialName("collocations") val collocations: List<String> = emptyList(),
+    @SerialName("word_family") val wordFamily: List<WordFamilyEntryDtoV1> = emptyList(),
     @SerialName("preposition_government")
     val prepositionGovernment: List<PrepositionGovernmentDtoV1> = emptyList(),
     @SerialName("complementation") val complementation: List<String> = emptyList(),
@@ -34,6 +39,24 @@ public data class EnrichmentItemV1(
     @SerialName("usage_note") val usageNote: String? = null,
     @SerialName("grammar_tags") val grammarTags: List<GrammarTagDtoV1> = emptyList(),
     @SerialName("irregular_forms") val irregularForms: IrregularFormsDtoV1? = null,
+)
+
+@Serializable
+public data class UnitComponentDtoV1(
+    @SerialName("text") val text: String,
+    @SerialName("role") val role: String,
+    @SerialName("salience") val salience: String? = null,
+)
+
+/**
+ * One derivative in the [EnrichmentItemV1.wordFamily]: a dictionary word formed
+ * from the same root as `base_lemma`, tagged with its part of speech — the
+ * lemma↔derivative relationship the app surfaces.
+ */
+@Serializable
+public data class WordFamilyEntryDtoV1(
+    @SerialName("lemma") val lemma: String,
+    @SerialName("unit_type") val unitType: String,
 )
 
 @Serializable
@@ -59,4 +82,22 @@ public data class IrregularFormsDtoV1(
     @SerialName("base") val base: String,
     @SerialName("past") val past: String,
     @SerialName("past_participle") val pastParticiple: String,
+)
+
+/**
+ * Wire shape of a single example: a sentence with optional native-language
+ * translation and per-segment alignment. Providers and the curated layer emit
+ * this shape; the mapper translates it into [EnrichmentExample] at the AI seam.
+ */
+@Serializable
+public data class EnrichmentExampleV1(
+    @SerialName("sentence") val sentence: String,
+    @SerialName("translation") val translation: String? = null,
+    @SerialName("alignment") val alignment: List<AlignmentChunkV1> = emptyList(),
+)
+
+@Serializable
+public data class AlignmentChunkV1(
+    @SerialName("source") val source: String,
+    @SerialName("target") val target: String,
 )

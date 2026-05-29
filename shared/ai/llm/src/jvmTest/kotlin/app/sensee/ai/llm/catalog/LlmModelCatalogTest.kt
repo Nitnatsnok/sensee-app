@@ -1,6 +1,7 @@
 package app.sensee.ai.llm.catalog
 
 import app.sensee.ai.core.AiKeyCheck
+import app.sensee.ai.llm.api.LlmHttpClientFactory
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.ContentType
@@ -20,7 +21,8 @@ import kotlin.test.assertTrue
 class LlmModelCatalogTest {
     private val json = Json { ignoreUnknownKeys = true }
 
-    private fun catalog(engine: MockEngine) = LlmModelCatalogFactory.create(engine = engine, json = json)
+    private fun catalog(engine: MockEngine) =
+        LlmModelCatalogFactory.create(httpClient = LlmHttpClientFactory.create(engine = engine, json = json))
 
     private fun jsonOk(content: String) =
         MockEngine {

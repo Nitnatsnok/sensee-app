@@ -9,6 +9,7 @@ import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.concurrent.Volatile
 
 /**
  * Lazily opens the single aggregate [SenseeDatabase]. A seam (not the concrete
@@ -30,6 +31,8 @@ public class DefaultSenseeDatabaseProvider(
     private val logger: AppLogger,
 ) : SenseeDatabaseProvider {
     private val mutex = Mutex()
+
+    @Volatile
     private var database: SenseeDatabase? = null
 
     override suspend fun database(): SenseeDatabase =

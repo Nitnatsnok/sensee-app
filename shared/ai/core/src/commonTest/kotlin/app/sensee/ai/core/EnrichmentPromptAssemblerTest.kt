@@ -2,6 +2,7 @@ package app.sensee.ai.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class EnrichmentPromptAssemblerTest {
@@ -141,6 +142,25 @@ class EnrichmentPromptAssemblerTest {
 
         assertEquals(emptyList(), off.systemFragments)
         assertTrue(on.systemFragments.single().contains("phrasal-verb senses"))
+    }
+
+    @Test
+    fun `evidence modifier omits empty bullets for all-null pronunciation and sense entries`() {
+        val evidence =
+            EnrichmentEvidence(
+                lemma = "run",
+                pronunciations = listOf(PronunciationFact(accent = null, ipa = null)),
+                knownSenseSummaries = listOf(SenseSummary(pos = null, shortLabel = null, cefr = null)),
+            )
+        val context = emptyContext.copy(request = EnrichmentRequest(term = "run", evidence = evidence))
+
+        val text = EvidenceModifier.contribute(context).systemFragments.single()
+
+        // The lemma still renders, but the all-null pronunciation/sense entries
+        // must not leak empty bullet lines into the prompt.
+        assertTrue(text.contains("- lemma: run"))
+        assertFalse(text.contains("- pronunciation:"))
+        assertFalse(text.contains("· "))
     }
 
     private fun stubModifier(

@@ -1,0 +1,46 @@
+= ADR-007: Граница лексической верификации — агрегатор источников с учётом лицензий
+:revdate: 2026-05-29
+
+Статус:: Accepted
+Дата:: 2026-05-27
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Functional Suitability (FS-4: AI-материал проходит независимую многоисточниковую проверку, «сначала смысл» из ADR-001 сохраняется), Maintainability (QG-3: добавление словарного источника — один модуль + один `@Provides`, без правок фич), Privacy/Reliability (FS-4: request-level отключение сетевых проверок и будущая server policy для consent, отказ адаптера не уносит остальные источники)
+
+Контекст::
+До ADR-007 у клиента не было независимой верификации лексического материала. AI-обогащение приходило к фиче и записывалось как канон (с учётом слоя кандидатов из ADR-001), но без второго мнения: правописание, существование единицы, POS, частотность, CEFR и граф семейств никто не проверял. Параллельно появилось требование подключать словарные источники с разными лицензиями (Free Dictionary, в перспективе Cambridge/M-W/WordNet), а часть провайдеров запрещает или ограничивает кеширование контента и его использование в сторонних `LLM`-подсказках.
+
+Решение::
+Верификация оформлена как отдельная граница `shared/verification/{core,sensee-curated,free-dictionary,datamuse,languagetool,database-schema,integration}` по тому же контракту, что `shared/ai` и `shared/tts`: `core` — провайдер-агностичные модели и дочерние контракты (`LexicalEntryLookup`, `SenseInventoryProvider`, `FrequencyProvider`, `CefrLevelProvider`, `ExampleQualityChecker`, `LexicalFamilyProvider`); `sensee-curated` — наши справочные данные (frequency/CEFR/senses/family), которые отдаёт бэкенд по HTTP (в этой сборке — мок-бэкенд `shared/core/mock-backend`); network-модули — адаптеры конкретных сторонних HTTP API; `integration` — `RoutingLexicalVerifier` (агрегатор с параллельным обходом источников) и `PersistedCachingLexicalVerifier` (привязанная в DI реализация `LexicalVerifier` с L1/L2-кэшем).
+
+Слияние источников — `EvidenceSet<T>`: ответы каждого источника прикладываются как `Observation` с атрибуцией, расхождения видны через `hasConflict`, а не теряются. Каждый `LexicalSource` несёт `LicensePolicy` с двумя несущими флагами: `usableAsLlmContext` (можно ли передавать фрагмент третьей стороне в `prompt`) и `storeContentAllowed` (можно ли класть ответ в L2-кэш на диск). `EnrichmentEvidenceBuilder` в `feature/vocabulary-editor/domain` фильтрует evidence-канал по `usableAsLlmContext` перед отправкой в LLM.
+
+Сетевой fan-out управляется policy конкретного запроса: сторонние сетевые адаптеры (`FreeDictionaryLexicalAdapter`, `DatamuseLexicalAdapter`, `LanguageToolExampleChecker`) при `VerificationPolicy.allowNetwork = false` сразу возвращают `VerifierAvailability.Unavailable` — без сетевого запроса. Пользовательской настройки в клиенте нет: текущая продуктовая модель подразумевает работу через backend-compatible boundaries, а consent на стороннюю обработку должен принадлежать серверной политике, когда маршрутизация внешних провайдеров переедет на backend.
+
+Альтернативы::
+
+* Делегировать «проверку» обратно в AI (просить LLM саму себя проверить). Отклонено: цена в токенах + circular reasoning, никакого независимого сигнала.
+* Один монолитный верификатор с встроенными источниками. Отклонено: смешивает сетевую и локальную зону, ломает лицензионный барьер каждого источника.
+* Хранить решение о лицензии в коде сразу около вызова. Отклонено: фильтр должен быть в одной точке (на границе с `LLM`-подсказкой и на границе с персистентным L2-кэшем), иначе протекает в каждое место вызова.
+
+Последствия (реализованные, актуально 2026-05-29)::
+
+* Источник каждого факта просачивается в `LexicalSourceRef.sourceId`; `Set<LexicalSource>` в `VerificationIntegrationProviders` содержит дескриптор каждого источника (`SenseeCuratedSource`, `FreeDictionarySource`, `DatamuseSource`, `LanguageToolSource`). Агрегатор трактует незарегистрированный contributed-источник как non-persistable (fail-closed). Runtime-агрегация контрактов идёт через `RoutingLexicalVerifier` (параллельный fan-out); `PersistedCachingLexicalVerifier` — DI-bound `LexicalVerifier` с двухуровневым кэшем (L1 + L2, ADR-009).
+* Агрегация контрактов через `VerificationContributors`: `Set<LexicalEntryLookup>`, `Set<FrequencyProvider>`, `Set<CefrLevelProvider>`, `Set<SenseInventoryProvider>`, `Set<ExampleQualityChecker>`, `Set<LexicalFamilyProvider>`. Новый источник = один `@Provides` в `VerificationIntegrationProviders` + entry в соответствующий Set. Полнота каталога `Set<LexicalSource>` гарантируется `SourceCatalogCompletenessTest`.
+* Снимок верификации привязывается per-candidate в `SenseVerificationSnapshot` (`feature/vocabulary-editor/domain`); persisted material снимок не несёт.
+* Evidence-канал: `EnrichmentEvidence` в `shared/ai/core` + `EvidenceModifier` в стандартный prompt-assembler; `SuggestVocabularySensesUseCase` вызывает verifier ДО AI и подмешивает evidence в `EnrichmentRequest`.
+* Лицензионный барьер: `LicensePolicy.usableAsLlmContext` фильтрует evidence-канал в `EnrichmentEvidenceBuilder`; `LicensePolicy.storeContentAllowed` управляет L2-персистентностью кэша (ADR-009).
+* Наши справочные данные — редактируемые JSON-фикстуры под `shared/verification/sensee-curated/src/commonMain/mockFixtures/verification/` (по фасету: frequency/cefr/senses/family); их отдаёт мок-бэкенд, реальный бэкенд позже — те же формы под тем же `SenseeCuratedSource`. Форма фикстуры — авторская точка входа и контракт API.
+* Per-provider timeout: `RoutingLexicalVerifier` уважает `query.policy.timeoutPerProviderMillis` для каждой fan-out ноги через `withTimeoutOrNull`. Зависший провайдер не блокирует остальные.
+
+Последствия (ожидаемые)::
+
+* Реальный Sensee-бэкенд заменяет мок-доставку справочных данных без правок клиента — те же эндпоинты/формы под тем же `SenseeCuratedSource`.
+* Подключение Cambridge/M-W/Oxford под контрактом — отдельный сетевой модуль + `@Provides` в `VerificationIntegrationProviders` для нужного Set-контракта + descriptor в `provideKnownLexicalSources` с честной `LicensePolicy`; `SourceCatalogCompletenessTest` фиксирует полноту каталога. Код оркестратора не меняется. `storeContentAllowed=false` ляжет только в L1.
+* Цикл исправления (AI ← findings → AI) можно надстроить поверх существующих snapshot + evidence без переработки границы.
+* Цена: минимум два вызова верификатора на один захват (для evidence перед AI и для snapshots после AI). `sensee-curated` адаптеры фетчат каталог один раз и кэшируют, L1 в памяти и персистентный L2 дают миллисекунды на горячих ключах; сторонние сетевые ответы кэшируются на 24 ч (стандартный TTL) с ограничениями каждого источника.
+
+Связанные ADR::
+
+* link:0001-sense-first-lexical-model.adoc[ADR-001] (refines) — candidate-модель переживает второй источник правды.
+* link:0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc[ADR-005] (extends) — тот же seam-паттерн; verifier потребляет AI-кандидатов и расширяет prompt evidence-блоком.
+* link:0006-ai-enrichment-backend-driven-and-forward-compat.adoc[ADR-006] (mirrors) — `Unknown(id)` через границы taxonomy сохраняется и в verifier-моделях.

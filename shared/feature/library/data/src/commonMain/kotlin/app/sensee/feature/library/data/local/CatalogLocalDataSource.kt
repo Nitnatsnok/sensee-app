@@ -4,6 +4,9 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.sensee.ai.core.EnrichmentItemV1
+import app.sensee.ai.core.EnrichmentResponseMapper
+import app.sensee.ai.core.EnrichmentResponseV1
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.database.CatalogEntityQueries
 import app.sensee.core.database.Practice_card
@@ -14,7 +17,6 @@ import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.data.remote.CardSummaryDto
 import app.sensee.feature.library.data.remote.DeckDto
 import app.sensee.feature.library.data.remote.DeckSummaryDto
-import app.sensee.feature.library.data.remote.GrammarTagDto
 import app.sensee.feature.library.data.remote.LemmaDto
 import app.sensee.feature.library.domain.Card
 import app.sensee.feature.library.domain.CardId
@@ -24,9 +26,14 @@ import app.sensee.feature.library.domain.Deck
 import app.sensee.feature.library.domain.DeckId
 import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
+import app.sensee.feature.library.domain.LemmaDerivative
 import app.sensee.feature.library.domain.LemmaId
-import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.lexicon.domain.Sense
+import app.sensee.lexicon.enrichment.toSense
+import app.sensee.lexicon.serialization.SenseDto
+import app.sensee.lexicon.serialization.toDomain
+import app.sensee.lexicon.serialization.toDto
 import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.core.model.SrsCardSnapshot
 import app.sensee.srs.engine.factory.SrsCardFactory
@@ -40,11 +47,8 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
-
-private val grammarTagListSerializer = ListSerializer(GrammarTagDto.serializer())
 
 /**
  * Catalog-side local store. Reads card content from the SQLDelight catalog tables; the per-card
@@ -219,15 +223,15 @@ public class CatalogLocalDataSource(
                 .selectLemmaById(lemmaId)
                 .awaitAsOneOrNull()
                 ?: return null
-        val related =
+        val cardRows =
             database.catalogEntityQueries
                 .selectCardsByLemma(lemmaId)
                 .awaitAsList()
-                .map { it.toCardSummary() }
         return Lemma(
             id = LemmaId(row.id),
             text = row.text,
-            relatedCards = related,
+            relatedCards = cardRows.map { it.toCardSummary() },
+            derivatives = derivativesOf(cardRows, json, logger),
         )
     }
 }
@@ -262,44 +266,88 @@ private suspend fun SenseeDatabase.upsertCardInternal(
         id = card.lemmaId,
         text = card.lemmaId.removePrefix("lemma-"),
     )
+    // The lean columns are a projection of the card's Sense, not a second
+    // source of truth: map the ideal enrichment into a Sense once here (the same
+    // boundary mappers the read path and capture use), persist the Sense as
+    // sense_json, and derive the flashcard essentials from it (mirrors
+    // CapturedCatalogDerivation). sense_json is the stored source of truth.
+    val fallbackTerm =
+        card.enrichment.surfaceForm?.takeIf { it.isNotBlank() }
+            ?: card.lemmaId.removePrefix("lemma-")
+    val sense = card.enrichment.toConfirmedSenseOrNull(fallbackTerm)
+    val unitType = sense?.unitType ?: GrammarUnitType.Phrase
+    val contextSentence =
+        sense
+            ?.contextualApplications
+            ?.firstOrNull()
+            ?.sentence
+            ?.marked()
+            .orEmpty()
     catalogEntityQueries.upsertCard(
         id = card.id,
         lemma_id = card.lemmaId,
-        headword = card.headword,
-        translation = card.translation,
-        context_sentence = card.contextSentence,
-        unit_type = card.unitType,
-        grammar_tags_json = encodeGrammarTags(json, card.grammarTags),
-        sense_summary = card.senseSummary,
-        explanation = card.explanation,
+        headword = sense?.surfaceForm?.display() ?: fallbackTerm,
+        translation = sense?.translation ?: card.enrichment.translation.orEmpty(),
+        context_sentence = contextSentence,
+        unit_type = unitType.id,
+        grammar_tags_json = encodeGrammarTags(json, sense?.grammarTags?.map { it.toDto() }.orEmpty()),
+        sense_summary = sense?.explanation ?: sense?.translation ?: card.enrichment.translation.orEmpty(),
+        explanation = sense?.explanation.orEmpty(),
+        sense_json = encodeSense(json, sense),
         created_at_epoch_ms = nowEpochMs,
         updated_at_epoch_ms = nowEpochMs,
     )
     srsStorage.saveCardIfAbsent(SrsCardFactory.newCard(SrsCardId(card.id)))
 }
 
-private fun encodeGrammarTags(
+private fun encodeSense(
     json: Json,
-    tags: List<GrammarTagDto>,
-): String = json.encodeToString(grammarTagListSerializer, tags)
+    sense: Sense?,
+): String = sense?.let { json.encodeToString(SenseDto.serializer(), it.toDto()) } ?: "{}"
 
-// Malformed payload is treated as "no tags" so a single bad card doesn't break
-// the whole deck; the failure is logged so it surfaces in diagnostics instead
-// of disappearing silently.
-private fun parseGrammarTags(
+// Maps an ideal-enrichment item into a confirmed Sense through the same boundary
+// mappers capture uses: enrichment wire -> neutral suggestion -> Sense. Done
+// ONCE at sync; the result is persisted as a SenseDto, so
+// reads never re-map. Returns null only when the item has no usable translation
+// (the mapper drops it), so the card degrades to its lean columns.
+private fun EnrichmentItemV1.toConfirmedSenseOrNull(fallbackTerm: String): Sense? =
+    EnrichmentResponseMapper
+        .map(EnrichmentResponseV1(items = listOf(this)))
+        .suggestions
+        .firstOrNull()
+        ?.toSense(fallbackTerm = fallbackTerm)
+
+// Reads the persisted Sense — the same SenseDto shape the capture path stores.
+// A blank/'{}' payload (a legacy lean row) or a malformed one yields null, so
+// the lean columns still work.
+private fun Practice_card.senseOrNull(
     json: Json,
-    raw: String,
-    cardId: String,
     logger: AppLogger,
-): List<GrammarTag> =
-    try {
-        json
-            .decodeFromString(grammarTagListSerializer, raw)
-            .mapNotNull(GrammarTagDto::toDomain)
+): Sense? {
+    if (sense_json.isBlank() || sense_json == "{}") return null
+    return try {
+        json.decodeFromString(SenseDto.serializer(), sense_json).toDomain()
     } catch (failure: SerializationException) {
-        logger.warn(failure) { "Malformed grammar_tags_json for card $cardId; falling back to no tags" }
-        emptyList()
+        logger.warn(failure) { "Malformed sense_json for card $id; no rich sense" }
+        null
     }
+}
+
+// The lemma page's word family: derivatives every related card's rich sense
+// declared, deduped by lemma (mirrors CapturedCatalogDerivation).
+private fun derivativesOf(
+    cardRows: List<Practice_card>,
+    json: Json,
+    logger: AppLogger,
+): List<LemmaDerivative> {
+    val seen = mutableSetOf<String>()
+    return cardRows
+        .flatMap { it.senseOrNull(json, logger)?.wordFamily.orEmpty() }
+        .mapNotNull { member ->
+            val text = member.lemma.trim()
+            if (text.isEmpty() || !seen.add(text.lowercase())) null else LemmaDerivative(text, member.unitType)
+        }
+}
 
 private fun Practice_card.toCard(
     json: Json,
@@ -316,6 +364,7 @@ private fun Practice_card.toCard(
         grammarTags = parseGrammarTags(json, grammar_tags_json, id, logger),
         senseSummary = sense_summary,
         explanation = explanation,
+        sense = senseOrNull(json, logger),
         srs = srs,
     )
 
@@ -362,10 +411,3 @@ internal fun LemmaDto.toLemma(): Lemma =
     )
 
 private fun parseUnitType(raw: String): GrammarUnitType = GrammarUnitType.fromId(raw)
-
-private fun GrammarTagDto.toDomain(): GrammarTag? =
-    GrammarTag.resolve(
-        categoryId = category,
-        formId = form,
-        allowedFormsByCategory = GrammarTag.knownAllowedFormsByCategory,
-    )

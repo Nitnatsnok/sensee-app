@@ -10,6 +10,7 @@ evaluationDependsOn(":shared:feature:practice:database-schema")
 evaluationDependsOn(":shared:feature:vocabulary-editor:database-schema")
 evaluationDependsOn(":shared:settings:database-schema")
 evaluationDependsOn(":shared:tts:database-schema")
+evaluationDependsOn(":shared:verification:database-schema")
 
 kotlin {
     sourceSets {
@@ -21,6 +22,7 @@ kotlin {
                 api(projects.shared.feature.vocabularyEditor.databaseSchema)
                 api(projects.shared.settings.databaseSchema)
                 api(projects.shared.tts.databaseSchema)
+                api(projects.shared.verification.databaseSchema)
                 api(libs.sqldelight.runtime)
                 implementation(projects.shared.core.observability)
                 implementation(libs.metro.runtime)
@@ -95,6 +97,7 @@ sqldelight {
             dependency(project(":shared:feature:vocabulary-editor:database-schema"))
             dependency(project(":shared:settings:database-schema"))
             dependency(project(":shared:tts:database-schema"))
+            dependency(project(":shared:verification:database-schema"))
         }
     }
 }
