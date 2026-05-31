@@ -6,11 +6,19 @@
       "Read(./.env.*)",
       "Read(./secrets/**)",
       "Read(./secrets.properties)",
+      "Read(./**/secrets.properties)",
       "Read(./*.jks)",
       "Read(./**/*.jks)",
       "Read(./*.keystore)",
       "Read(./**/*.keystore)",
-      "Read(./local.properties)"
+      "Read(./*.p12)",
+      "Read(./**/*.p12)",
+      "Read(./*.pem)",
+      "Read(./**/*.pem)",
+      "Read(./*.key)",
+      "Read(./**/*.key)",
+      "Read(./local.properties)",
+      "Read(./**/local.properties)"
     ]
   }
 }

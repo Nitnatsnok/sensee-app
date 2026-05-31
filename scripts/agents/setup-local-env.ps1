@@ -11,7 +11,7 @@ Usage: pwsh -File scripts/agents/setup-local-env.ps1
 
 Prepares a lightweight local agent worktree:
 - prints the working directory, Java version, and Gradle wrapper version;
-- writes local.properties when ANDROID_HOME or ANDROID_SDK_ROOT points to an SDK;
+- writes local.properties when ANDROID_HOME or ANDROID_SDK_ROOT points to an SDK-like directory;
 - runs .\gradlew.bat --no-daemon help.
 "@
 }
@@ -65,7 +65,15 @@ if ($env:ANDROID_HOME) {
 
 if ($androidSdk) {
     if (Test-Path -LiteralPath $androidSdk -PathType Container) {
-        $sdkDir = (Resolve-Path -LiteralPath $androidSdk).Path.Replace("\", "/")
+        $resolvedSdkDir = (Resolve-Path -LiteralPath $androidSdk).Path
+        $hasSdkMarkers =
+            (Test-Path -LiteralPath (Join-Path $resolvedSdkDir "platforms") -PathType Container) -or
+            (Test-Path -LiteralPath (Join-Path $resolvedSdkDir "cmdline-tools") -PathType Container)
+        if (-not $hasSdkMarkers) {
+            Write-Warning "Android SDK directory does not contain platforms/ or cmdline-tools/; local.properties was written anyway."
+        }
+
+        $sdkDir = $resolvedSdkDir.Replace("\", "/")
         Set-Content -LiteralPath "local.properties" -Value "sdk.dir=$sdkDir" -Encoding UTF8
         Write-Host "Wrote local.properties for the detected Android SDK."
     } else {

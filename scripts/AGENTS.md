@@ -11,7 +11,7 @@ Applies to:
 ## Local context
 
 - `scripts/setup-git-hooks.sh` bootstraps Lefthook and tracked hooks. It is intentionally more interactive than Git hooks themselves, but supports environment variables for automation.
-- `scripts/agents/validate-agent-instructions.py` validates agent-facing instruction files. It is read-only, non-interactive, and uses only the Python standard library.
+- `scripts/agents/validate-agent-instructions.py` validates a bounded set of agent-facing instruction and config files. It is read-only, non-interactive, and uses only the Python standard library.
 - `scripts/agents/setup-local-env.*`, `list-tasks.*`, and `validate.*` are shared Codex / Claude Code local environment entrypoints.
 - `scripts/codex/` and `scripts/claude/` contain thin wrappers only; shared behavior belongs in `scripts/agents/`.
 

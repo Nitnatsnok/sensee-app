@@ -21,8 +21,12 @@ node_modules/
 .env.*
 !.env.example
 !.env.template
+secrets/**
 secrets.properties
 *.jks
 *.keystore
+*.p12
+*.pem
+*.key
 CLAUDE.local.md
 .claude/settings.local.json

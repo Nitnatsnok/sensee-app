@@ -49,7 +49,7 @@ Current project policy: Sensee commits a minimal `.claude/settings.json` safety 
 The project settings file contains only:
 
 - `$schema` for editor validation against the official Claude Code settings schema.
-- `permissions.deny` rules that block reads of local environment files, secrets directories, keystores, and `local.properties`.
+- `permissions.deny` rules that block reads of local environment files, secrets directories, nested `secrets.properties`, keystores, certificate/private-key files, and nested `local.properties`.
 
 It intentionally does not contain:
 

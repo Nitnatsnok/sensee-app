@@ -8,7 +8,7 @@ Usage: sh scripts/agents/setup-local-env.sh
 Prepares a lightweight local agent worktree:
 - prints the working directory, Java version, and Gradle wrapper version;
 - makes ./gradlew executable on Unix;
-- writes local.properties when ANDROID_HOME or ANDROID_SDK_ROOT points to an SDK;
+- writes local.properties when ANDROID_HOME or ANDROID_SDK_ROOT points to an SDK-like directory;
 - runs ./gradlew --no-daemon help.
 EOF
 }
@@ -57,6 +57,9 @@ fi
 if [ -n "$android_sdk" ]; then
     if [ -d "$android_sdk" ]; then
         sdk_dir=$(CDPATH= cd -- "$android_sdk" && pwd)
+        if [ ! -d "$sdk_dir/platforms" ] && [ ! -d "$sdk_dir/cmdline-tools" ]; then
+            echo "Warning: Android SDK directory does not contain platforms/ or cmdline-tools/; local.properties was written anyway." >&2
+        fi
         printf 'sdk.dir=%s\n' "$sdk_dir" > local.properties
         echo "Wrote local.properties for the detected Android SDK."
     else

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -27,6 +28,31 @@ STALE_PATTERNS = (
 )
 ARCH_TOOL_NAME = "Struct" + "urizr"
 ARCH_TOOL_TOKEN = "struct" + "urizr"
+EXCLUDED_DIR_NAMES = {
+    ".git",
+    ".gradle",
+    ".idea",
+    ".kotlin",
+    "__pycache__",
+    "build",
+    "kotlin-js-store",
+    "node_modules",
+}
+AGENT_SUBTREES = (
+    REPO_ROOT / ".agents",
+    REPO_ROOT / ".codex",
+    REPO_ROOT / "docs" / "agents",
+    REPO_ROOT / "scripts" / "agents",
+    REPO_ROOT / "scripts" / "codex",
+    REPO_ROOT / "scripts" / "claude",
+)
+AGENT_REFERENCE_FILES = (
+    REPO_ROOT / ".claude" / "settings.json",
+    REPO_ROOT / ".gitignore",
+    REPO_ROOT / "docs" / "README.md",
+    REPO_ROOT / "docs" / "engineering" / "commits.md",
+    REPO_ROOT / "docs" / "c4" / "AGENTS.md",
+)
 
 
 @dataclass(frozen=True)
@@ -44,6 +70,7 @@ class ValidationReport:
     findings: list[Finding]
     checked_skill_count: int
     checked_eval_file_count: int
+    checked_agent_file_count: int
 
     @property
     def error_count(self) -> int:
@@ -72,44 +99,55 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
     return {}
 
 
-def iter_text_files(root: Path) -> list[Path]:
-    excluded_dirs = {".git", ".gradle", ".kotlin", "build", "kotlin-js-store"}
+def is_excluded_path(path: Path) -> bool:
+    try:
+        parts = path.relative_to(REPO_ROOT).parts
+    except ValueError:
+        parts = path.parts
+    return any(part in EXCLUDED_DIR_NAMES for part in parts)
+
+
+def iter_pruned_files(root: Path) -> list[Path]:
+    if not root.exists():
+        return []
+    if root.is_file():
+        return [] if is_excluded_path(root) else [root]
+
     files: list[Path] = []
-    for path in root.rglob("*"):
-        if any(part in excluded_dirs for part in path.relative_to(root).parts):
-            continue
-        if path.is_file():
-            files.append(path)
-    return files
+    for current_root, dir_names, file_names in os.walk(root):
+        dir_names[:] = sorted(name for name in dir_names if name not in EXCLUDED_DIR_NAMES)
+        current_path = Path(current_root)
+        for file_name in sorted(file_names):
+            path = current_path / file_name
+            if not is_excluded_path(path):
+                files.append(path)
+    return sorted(files)
+
+
+def iter_named_repo_files(file_names: set[str]) -> list[Path]:
+    files: list[Path] = []
+    for current_root, dir_names, names in os.walk(REPO_ROOT):
+        dir_names[:] = sorted(name for name in dir_names if name not in EXCLUDED_DIR_NAMES)
+        current_path = Path(current_root)
+        for file_name in sorted(names):
+            if file_name in file_names:
+                path = current_path / file_name
+                if not is_excluded_path(path):
+                    files.append(path)
+    return sorted(files)
 
 
 def agent_facing_files() -> list[Path]:
-    files: set[Path] = set()
-    for pattern in ("AGENTS.md", "CLAUDE.md", "SKILL.md"):
-        files.update(REPO_ROOT.rglob(pattern))
+    files: set[Path] = set(iter_named_repo_files({"AGENTS.md", "CLAUDE.md", "SKILL.md"}))
 
-    for subtree in (
-        REPO_ROOT / ".agents",
-        REPO_ROOT / "docs" / "agents",
-        REPO_ROOT / "scripts" / "agents",
-    ):
-        if subtree.exists():
-            files.update(path for path in subtree.rglob("*") if path.is_file())
+    for subtree in AGENT_SUBTREES:
+        files.update(iter_pruned_files(subtree))
 
-    for path in (
-        REPO_ROOT / "docs" / "README.md",
-        REPO_ROOT / "docs" / "engineering" / "commits.md",
-        REPO_ROOT / "docs" / "c4" / "AGENTS.md",
-    ):
+    for path in AGENT_REFERENCE_FILES:
         if path.exists():
             files.add(path)
 
-    return sorted(
-        path
-        for path in files
-        if ".git" not in path.relative_to(REPO_ROOT).parts
-        and "build" not in path.relative_to(REPO_ROOT).parts
-    )
+    return sorted(path for path in files if path.is_file() and not is_excluded_path(path))
 
 
 def repo_uses_structurizr() -> bool:
@@ -118,16 +156,21 @@ def repo_uses_structurizr() -> bool:
         "structurizr.dsl",
         "workspace.dsl",
     }
-    for path in iter_text_files(REPO_ROOT):
-        rel = path.relative_to(REPO_ROOT)
-        if path.name in structurizr_files or path.suffix == ".dsl":
+
+    for relative_path in structurizr_files:
+        if (REPO_ROOT / relative_path).exists():
+            return True
+
+    docs_dir = REPO_ROOT / "docs"
+    for path in iter_pruned_files(docs_dir):
+        if path.name in structurizr_files:
+            return True
+        if path.suffix == ".dsl":
             try:
                 if ARCH_TOOL_TOKEN in path.read_text(encoding="utf-8", errors="ignore").lower():
                     return True
             except OSError:
                 continue
-        if ARCH_TOOL_TOKEN in {part.lower() for part in rel.parts}:
-            return True
     return False
 
 
@@ -249,11 +292,12 @@ def validate_eval_json(skill_dirs: list[Path]) -> tuple[list[Finding], int]:
     return findings, checked_eval_file_count
 
 
-def validate_stale_patterns() -> list[Finding]:
+def validate_stale_patterns() -> tuple[list[Finding], int]:
     findings: list[Finding] = []
     structurizr_allowed = repo_uses_structurizr()
+    paths = agent_facing_files()
 
-    for path in agent_facing_files():
+    for path in paths:
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError as error:
@@ -267,7 +311,7 @@ def validate_stale_patterns() -> list[Finding]:
         if not structurizr_allowed and ARCH_TOOL_NAME in text:
             findings.append(Finding(path, f"{ARCH_TOOL_NAME} wording found, but the repository uses LikeC4"))
 
-    return findings
+    return findings, len(paths)
 
 
 def validate_commit_links() -> list[Finding]:
@@ -285,13 +329,11 @@ def validate_commit_links() -> list[Finding]:
 
 def validate_claude_shims() -> list[Finding]:
     findings: list[Finding] = []
-    claude_files = sorted(REPO_ROOT.rglob("CLAUDE.md"))
+    claude_files = iter_named_repo_files({"CLAUDE.md"})
     if not claude_files:
         return findings
 
     for path in claude_files:
-        if any(part in {".git", "build", ".gradle", ".kotlin"} for part in path.relative_to(REPO_ROOT).parts):
-            continue
         content = path.read_text(encoding="utf-8").strip()
         if content != "@AGENTS.md":
             findings.append(Finding(path, "CLAUDE.md must stay a thin @AGENTS.md shim"))
@@ -305,13 +347,15 @@ def run_validation() -> ValidationReport:
     findings.extend(validate_skills(skill_dirs))
     eval_findings, checked_eval_file_count = validate_eval_json(skill_dirs)
     findings.extend(eval_findings)
-    findings.extend(validate_stale_patterns())
+    stale_findings, checked_agent_file_count = validate_stale_patterns()
+    findings.extend(stale_findings)
     findings.extend(validate_commit_links())
     findings.extend(validate_claude_shims())
     return ValidationReport(
         findings=findings,
         checked_skill_count=len(skill_dirs),
         checked_eval_file_count=checked_eval_file_count,
+        checked_agent_file_count=checked_agent_file_count,
     )
 
 
@@ -321,6 +365,7 @@ def print_summary(report: ValidationReport) -> None:
     print(f"- warnings: {report.warning_count}")
     print(f"- checked skills: {report.checked_skill_count}")
     print(f"- checked eval files: {report.checked_eval_file_count}")
+    print(f"- checked agent-facing files: {report.checked_agent_file_count}")
 
 
 def main() -> int:

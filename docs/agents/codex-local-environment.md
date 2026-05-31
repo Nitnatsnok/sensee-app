@@ -18,21 +18,43 @@ This repository commits the project Local Environment config at:
 .codex/environments/environment.toml
 ```
 
-The committed automatic setup script is:
+The committed generated file currently exposes one automatic `[setup].script`:
 
 ```powershell
 pwsh -File scripts/codex/setup-local-env.ps1
 ```
 
-This matches the confirmed TOML shape from the Codex App generated example, which has a single `[setup]` script entry. The committed setup uses the Windows-safe PowerShell wrapper because this repository setup was validated on Windows and `pwsh` is available there.
+This is intentionally kept in the confirmed generated TOML shape, with a single setup entry. The automatic setup is therefore Windows/PowerShell-oriented today because this repository setup was validated on Windows and `pwsh` is available there.
 
-macOS and Linux users have platform-specific `Setup Local Env` actions in the same file:
+OpenAI Codex Local Environment docs describe platform-specific setup scripts, but they do not currently publish the committed TOML override shape on the Local Environments page. The generated repository evidence available here has:
+
+- one automatic `[setup].script`;
+- platform-specific `[[actions]]` entries with `platform = "darwin"`, `platform = "win32"`, and `platform = "linux"`;
+- no generated platform-specific setup blocks;
+- no generated shell-selection field;
+- no generated multiple-setup-command field;
+- no generated multiple-environments-per-platform example.
+
+Do not add guessed `[setup.<platform>]`, `[setup.darwin]`, `[setup.linux]`, `[setup.windows]`, or similar fields unless Codex App generates or documents the exact shape.
+
+macOS and Linux users should run the explicit platform-specific `Setup Local Env` action in the same file, or run:
 
 ```shell
 sh scripts/codex/setup-local-env.sh
 ```
 
+These actions are manual commands for Unix-like hosts; they do not change the automatic setup script used for new Codex worktrees. Do not treat the manual `Setup Local Env` action as a substitute for automatic setup.
+
 Both wrappers delegate to `scripts/agents/setup-local-env.*`, which runs only lightweight setup and `Gradle help`.
+
+Current automatic setup decision:
+
+| Option | Decision | Reason |
+| --- | --- | --- |
+| Platform-specific automatic setup fields | Not committed | Official docs confirm the concept but not the TOML field shape; generated evidence does not include those fields. |
+| Switch default setup to `bash` / `sh` | Not committed | That would improve Unix hosts but break the validated Windows host unless Codex supplies platform-specific automatic setup selection. |
+| Separate committed environments per platform | Not committed | No official or generated evidence in this repository confirms multiple committed environment files per platform. |
+| One generated environment with explicit Unix actions | Current policy | Matches the generated TOML shape and keeps Unix setup available as an explicit action without pretending it is automatic. |
 
 The config intentionally omits `[cleanup]`.
 
@@ -70,7 +92,7 @@ Decision: do not add new Gradle aggregate tasks in this agent-environment pass. 
 
 Codex App worktrees use Git worktrees. Each worktree has its own file checkout, so ignored local files such as `local.properties` are not carried over automatically.
 
-The setup script regenerates `local.properties` from `ANDROID_HOME` or `ANDROID_SDK_ROOT` when an Android SDK is available. If neither variable is set, the script warns and continues.
+The setup script regenerates `local.properties` from `ANDROID_HOME` or `ANDROID_SDK_ROOT` when an Android SDK directory is available. If the directory lacks common SDK markers such as `platforms/` or `cmdline-tools/`, the script warns but still writes the ignored file. If neither variable is set, the script warns and continues.
 
 Use Codex Handoff when moving a thread between Local and Worktree. Codex handles the Git movement between the two checkouts, but ignored files do not move with the thread. Before handoff, keep generated files, secrets, and local-only settings out of Git.
 
@@ -83,6 +105,7 @@ Decision: generated Codex config changes must be reviewed before committing:
 - no machine-specific paths;
 - no secrets;
 - setup/actions call `scripts/codex/` or `scripts/agents/`;
+- platform-specific automatic setup is committed only when the app-generated or documented TOML shape is confirmed;
 - no copied `AGENTS.md` or duplicated skills.
 
 ## References

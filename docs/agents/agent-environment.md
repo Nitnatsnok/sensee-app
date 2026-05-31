@@ -35,7 +35,7 @@ The adapters only call the shared setup scripts.
 - prints the current project directory;
 - prints Java and Gradle wrapper versions;
 - makes `./gradlew` executable on Unix;
-- writes ignored `local.properties` when `ANDROID_HOME` or `ANDROID_SDK_ROOT` points to an Android SDK;
+- writes ignored `local.properties` when `ANDROID_HOME` or `ANDROID_SDK_ROOT` points to an Android SDK-like directory, warning if common SDK markers are missing;
 - runs `./gradlew --no-daemon help`.
 
 It does not run full `check`, emulators, desktop/web app launches, screenshot capture, device checks, or UI recordings.
@@ -58,8 +58,9 @@ If Python is not discoverable as `python3`, `python`, or `py -3`, set `PYTHON` t
 ## Config Policy
 
 - Codex Local Environment config is committed at `.codex/environments/environment.toml`.
+- The committed Codex automatic setup currently uses the generated single `[setup].script` shape. Official Codex docs describe platform-specific setup scripts, but this repository has no confirmed TOML shape for platform-specific automatic setup, so Unix setup remains an explicit manual action until Codex App generates or documents that shape.
 - Future app-generated `.codex` changes must be reviewed before committing.
-- Claude Code project config is committed at `.claude/settings.json` and is limited to safety-oriented `permissions.deny` rules.
+- Claude Code project config is committed at `.claude/settings.json` and is limited to safety-oriented `permissions.deny` rules for local env files, secrets, keystores, certificates, private keys, and `local.properties`.
 - Do not create committed Claude hooks by default; hooks require a separate deliberate decision and documentation.
 - Keep Claude-specific repository behavior in `docs/agents/claude-code.md` and the thin `CLAUDE.md` shim.
 - Keep Codex-specific setup notes in `docs/agents/codex-local-environment.md`.
