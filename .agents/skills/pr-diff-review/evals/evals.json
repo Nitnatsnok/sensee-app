@@ -1,0 +1,15 @@
+{
+  "skill_name": "pr-diff-review",
+  "evals": [
+    {
+      "id": "behavior-without-test",
+      "prompt": "Review the current diff before I commit.",
+      "expected_output": "Leads with actionable findings, flags missing tests for behavior changes, and does not edit files."
+    },
+    {
+      "id": "architecture-drift",
+      "prompt": "Please review this navigation refactor.",
+      "expected_output": "Escalates to principal-level systemic review because navigation scope justifies it, checks Decompose configs, feature API boundaries, state restoration, docs/LikeC4 drift, and suggested verification."
+    }
+  ]
+}

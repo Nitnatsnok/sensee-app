@@ -1,0 +1,15 @@
+{
+  "skill_name": "commit-preparation",
+  "evals": [
+    {
+      "id": "single-logical-change",
+      "prompt": "Review the current diff and propose a commit message. Do not commit.",
+      "expected_output": "Identifies whether the diff is one logical change, proposes a concise conventional message, and does not run git state-changing commands."
+    },
+    {
+      "id": "mixed-docs-and-code",
+      "prompt": "Can this be one commit, or should I split it?",
+      "expected_output": "Separates unrelated docs, Gradle, generated, or behavior changes and references docs/engineering/commits.md."
+    }
+  ]
+}

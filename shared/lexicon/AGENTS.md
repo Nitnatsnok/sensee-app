@@ -1,26 +1,39 @@
-# shared/lexicon
+# Agent Instructions for `shared/lexicon`
 
-The neutral lexical-sense model shared by every feature that produces or
-consumes confirmed senses. It sits below features, like `shared/grammar`.
+This file extends the root `AGENTS.md`.
+Follow the root rules first; this file only adds local rules for the neutral lexical model.
 
-- `domain` — `Sense`, the **central model the app is built around** (Sensee),
-  plus the neutral lexical read model (`LexicalEntry`, `EntryId`,
-  `EntryStatus`, `LexiconRepository`). `Sense` is one confirmed sense of a
-  word/phrase with its translation, examples (`ContextualApplication` +
-  `AlignmentChunk`), components, grammar, usage labels,
-  synonyms/antonyms/collocations and `WordFamilyMember`s. Pure value types and
-  read contracts over `grammar.domain`. No DI, no persistence implementation,
-  no AI wire, no feature dependency.
-- `enrichment` — anti-corruption mapping from provider-agnostic AI enrichment
-  (`shared/ai/core`) into central `Sense`. It is shared by Vocabulary Editor
-  and Library so service catalog material and user-accepted enrichment converge
-  on the same model before persistence/projection.
+## Scope
 
-## Invariant — enrichment serves `Sense`, not the reverse
+Applies to:
+- `shared/lexicon/...`
 
-`Sense` is the target shape. The AI seam (`shared/ai`) is a *producer* that
-enriches the user's input into a `Sense`; capture (`vocabulary-editor`) and the
-catalog (`library`) both build on the same `Sense`, and the lemma / derivative /
-component graph is derived from it. A feature that needs rich lexical material
-depends on `lexicon/domain` or `lexicon/enrichment`, never on another feature's
-domain for it.
+## Local context
+
+`shared/lexicon` contains:
+- `domain` - `Sense`, lexical read models, and repository contracts.
+- `enrichment` - anti-corruption mapping from provider-agnostic AI enrichment into `Sense`.
+- `serialization` - shared DTO mapping for persisted `Sense` data.
+
+## Local rules
+
+- `Sense` is the target shape for confirmed lexical material. AI enrichment produces candidates that map into `Sense`, not the other way around.
+- Keep `domain` pure: no DI, persistence implementation, AI wire DTOs, or feature dependencies.
+- Features that need rich lexical material depend on `lexicon/domain` or `lexicon/enrichment`, not another feature's domain model.
+- Keep Vocabulary Editor and Library converging on the same central `Sense` model before persistence/projection.
+
+## Local verification
+
+- For enrichment mapper changes, run mapper tests and include unknown-taxonomy behavior when relevant.
+- For serialization changes, also follow `shared/lexicon/serialization/AGENTS.md`.
+
+## Do not
+
+- Do not introduce feature-private candidate state into `lexicon/domain`.
+- Do not make Library or Practice own the canonical lexical sense shape.
+- Do not bypass the shared enrichment mapper when converting AI suggestions to `Sense`.
+
+## Related skills
+
+- `.agents/skills/dictionary-enrichment-schema-review`
+- `.agents/skills/kmp-module-boundary-review`

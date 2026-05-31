@@ -1,0 +1,15 @@
+{
+  "skill_name": "likec4-architecture-model-review",
+  "evals": [
+    {
+      "id": "new-module-boundary",
+      "prompt": "Review whether the LikeC4 model should change after adding a new shared verification provider module.",
+      "expected_output": "Checks settings.gradle.kts, docs/c4 model/views, verification seam ownership, and recommends a focused model/view update or no-op."
+    },
+    {
+      "id": "crowded-view",
+      "prompt": "This LikeC4 view is getting crowded after adding persistence relationships. Review it.",
+      "expected_output": "Flags readability issues, suggests splitting by persistence/capability/runtime perspective, and preserves stable view names where possible."
+    }
+  ]
+}

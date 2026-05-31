@@ -1,33 +1,43 @@
-# shared/core/secure-storage
+# Agent Instructions for `shared/core/secure-storage`
 
-Platform secret storage for user-supplied credentials (third-party API keys).
-The contract is intentionally narrow: a string by typed key, read/write/delete,
-suspend at the boundary because every actual is backed by a system call or
-async IO.
+This file extends the root `AGENTS.md`.
+Follow the root rules first; this file only adds local rules for platform secret storage.
 
-## Invariants
+## Scope
 
-- `commonMain` carries the contract and a Metro `@Provides`. No platform code.
-- Actuals bind each platform or platform family to the native secret vault:
-  - Android — Keystore-backed AES-256-GCM, ciphertext in a private
-    `SharedPreferences` file. Hand-rolled because
-    `androidx.security:security-crypto` is `@Deprecated`; the primitives it
-    composed (Keystore master key + AES/GCM) are stable platform APIs.
-  - iOS — Keychain `SecItem*`, `kSecClassGenericPassword`,
-    `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.
-  - Desktop JVM — `java-keyring` (Windows Credential Vault / macOS Keychain /
-    Linux libsecret). When no OS keyring backend is available — typically a
-    Linux box without libsecret — `DesktopSecureStorage` falls back to a
-    process-local in-memory store (`InMemoryKeyringBackend`). The user
-    re-enters their key each launch, but AI/TTS still work in that session.
-    Plaintext-file persistence was rejected as worse than asking the user to
-    set up libsecret.
-  - JS / Wasm — a shared `webMain` actual backed by `window.localStorage`.
-    The browser security model makes this best-effort: same-origin JS can read
-    every value. Documented at the boundary; the demo build is not intended for
-    production secrets.
-- Reads return `null` for "not configured" but **throw** on actual platform
-  errors. Writes always throw on failure. Silent fallthrough hides crypto/OS
-  problems from the user; the AI/TTS seam already handles missing-key as a
-  first-class state.
-- No serialization beyond `String`; secrets are opaque to this module.
+Applies to:
+- `shared/core/secure-storage/...`
+
+## Local context
+
+This module stores user-supplied credentials such as third-party API keys behind a narrow common contract. Platform actuals use native secret storage where available and documented best-effort fallback where the platform cannot provide a real vault.
+
+## Local rules
+
+- Keep `commonMain` to the contract and Metro DI provider. Platform APIs belong in matching actual source sets.
+- Platform actuals bind each platform or platform family to the native secret vault:
+  - Android — Keystore-backed AES-256-GCM, ciphertext in a private `SharedPreferences` file. This is hand-rolled because `androidx.security:security-crypto` is `@Deprecated`; the primitives it composed are stable platform APIs.
+  - iOS — Keychain `SecItem*`, `kSecClassGenericPassword`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.
+  - Desktop JVM — `java-keyring` for Windows Credential Vault, macOS Keychain, or Linux libsecret. When no OS keyring backend is available, `DesktopSecureStorage` falls back to a process-local in-memory store and the user re-enters their key each launch.
+  - JS / Wasm — the shared `webMain` actual uses `window.localStorage`; same-origin JavaScript can read every value, so this is best-effort only.
+- Reads return `null` only for "not configured"; platform errors should surface instead of silently falling through.
+- Writes and deletes must fail loudly on platform errors.
+- Keep secrets opaque strings. Do not add serialization or inspect secret contents here.
+- Browser storage is best-effort only; do not describe JS/Wasm storage as production-grade secret protection.
+- Do not add plaintext-file persistence as a fallback for missing desktop keyring support.
+
+## Local verification
+
+- Run the affected source-set compile/test task for platform implementation changes.
+- For contract changes, run the consuming settings/profile or app-shell checks that bind secure storage.
+
+## Do not
+
+- Do not log, print, snapshot, or fixture real credentials.
+- Do not move platform vault APIs into `commonMain`.
+- Do not silently downgrade platform storage failures to "not configured".
+
+## Related skills
+
+- `.agents/skills/kmp-source-set-review`
+- `.agents/skills/observability-logging-review`

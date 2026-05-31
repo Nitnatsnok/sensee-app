@@ -1,42 +1,42 @@
-# shared/srs
+# Agent Instructions for `shared/srs`
 
-Cross-platform spaced-repetition libraries: `core` (algorithm/model/log contracts),
-`engine`, `fsrs` (FSRS implementation), `fsrs-engine`, `test-kit`. Consumed by
-`shared/feature/practice/data`. No Compose, no DI, no persistence here — keep it a pure
-algorithm library with its own tests (`commonTest`, `FsrsSchedulerTest`).
+This file extends the root `AGENTS.md`.
+Follow the root rules first; this file only adds local rules for spaced-repetition libraries.
 
-## Scheduling invariants — read ADR-004 before touching `FsrsScheduler`
+## Scope
 
-`FsrsScheduler` is the **single source of truth** for review scheduling. The practice
-session never schedules: it only *projects* a presentation queue from the card the engine
-already wrote (see `DeckPracticeLogic.submitReview`). Do not add a second in-session
-scheduler or a session-only re-show path. Re-showing an FSRS-graduated `Review` card in
-the same session is forbidden by ADR-004 on learning-semantics grounds: a same-day extra
-recall inflates stability with no real learning signal and distorts future intervals.
-The math layer itself routes same-day Review re-reviews through the short-term formula
-(matching py-fsrs `days_since_last_review < 1`), so migration paths and tooling stay
-correct — but that is an implementation safety net, not a license to relax the rule.
+Applies to:
+- `shared/srs/...`
 
-`scheduleCard` routes `New` through the **same learning-step path as `Learning`**
-(`New, Learning -> scheduleLearningCard`). This is deliberate FSRS-with-learning-steps /
-Anki behavior:
+## Local context
 
-- `New + Again/Hard/Good` stays in `Learning`; only `Good` past the last step or `Easy`
-  graduates to `Review`.
-- **Do not "fix" this back to `New + Good -> Review`.** That stock behavior skips the
-  steps, schedules a brand-new card days out after one answer, and breaks in-session
-  recycling. It looks like a bug; it is the intended, ADR-recorded decision.
+`shared/srs` contains pure cross-platform spaced-repetition libraries: `core`, `engine`, `fsrs`, `fsrs-engine`, and `test-kit`. It is consumed by practice data, but it has no Compose, DI, or persistence responsibilities.
 
-This is an app-wide spaced-repetition semantics choice. Changing state routing in
-`scheduleCard`, the learning-step transitions, or the New-card branch is an architectural
-change: update ADR-004 and `FsrsSchedulerTest` in the same task, never silently.
+## Local rules
 
-## Adding/altering algorithm behavior
+- Read ADR-004 before touching `FsrsScheduler` or scheduling semantics.
+- `FsrsScheduler` is the single scheduling source of truth. Practice sessions project queues from engine state; they do not schedule independently.
+- Do not reintroduce same-session re-show for FSRS-graduated `Review` cards.
+- Keep `New` cards on the learning-step path: `New + Again/Hard/Good` stays in `Learning`; only `Good` past the last step or `Easy` graduates to `Review`.
+- Keep math in `fsrs`/`fsrs-engine`; keep contracts in `core`. Feature and presentation code depend on `core` abstractions, not FSRS internals.
 
-- Keep math in `fsrs`/`fsrs-engine`; keep contracts in `core`. Presentation/feature code
-  must depend only on `core` interfaces (`SrsScheduler`, snapshots), never on `fsrs`
-  internals.
-- Any scheduling change needs a `commonTest` case asserting the transition, not just a
-  compile check — scheduling regressions are silent in the UI. The transition test ships
-  with the change (see `Tests and verifiability` in the root `AGENTS.md`);
-  `FsrsSchedulerTest` is the reference to copy.
+## Local verification
+
+- Scheduling changes need focused `commonTest` coverage in the affected SRS module.
+- Prefer:
+  ```shell
+  .\gradlew.bat :shared:srs:fsrs-engine:allTests
+  ```
+- If a change affects contracts used outside SRS, also run the narrowest consuming-module check.
+
+## Do not
+
+- Do not "fix" `New + Good` directly to `Review`; that breaks the ADR-004 learning-step model.
+- Do not ship scheduling behavior changes with compile-only verification.
+- Do not move persistence, DI, or UI behavior into `shared/srs`.
+
+## Related skills
+
+- `.agents/skills/fsrs-srs-engine-review`
+- `.agents/skills/kmp-module-boundary-review`
+- `.agents/skills/architecture-docs-sync`

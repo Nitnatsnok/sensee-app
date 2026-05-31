@@ -1,0 +1,15 @@
+{
+  "skill_name": "kmp-module-boundary-review",
+  "evals": [
+    {
+      "id": "feature-impl-coupling",
+      "prompt": "Review whether this new dependency from library presentation impl to practice presentation impl is acceptable.",
+      "expected_output": "Flags direct feature implementation coupling and recommends an API/navigation contract boundary."
+    },
+    {
+      "id": "integration-seam",
+      "prompt": "Check the AI module boundary after adding a provider adapter.",
+      "expected_output": "Verifies core remains provider-agnostic, implementation selection stays in integration, and app-shell does not depend on impl directly."
+    }
+  ]
+}

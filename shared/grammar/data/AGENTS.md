@@ -1,29 +1,36 @@
-# shared/grammar/data
+# Agent Instructions for `shared/grammar/data`
 
-Runtime data source for the grammar/usage/complement taxonomy. This module owns
-the wire DTO, the `practice/grammar/taxonomy` mock fixture, the remote/source
-adapter, and cached projections into `GrammarLabels` and `TaxonomyInvariants`.
-The broader taxonomy semantics live in the parent `shared/grammar/AGENTS.md`;
-this file only adds data-module rules.
+This file extends the root `AGENTS.md` and `shared/grammar/AGENTS.md`.
+Follow those rules first; this file only adds local rules for taxonomy data.
 
-## Invariants
+## Scope
 
-- Single source of truth: the taxonomy fixture here is the ONLY
-  `practice/grammar/taxonomy` `MockFixtureSet` contribution. No other module
-  may serve that key (a duplicate collides in `MergedFixtureReader`).
-- Projection builders are pure: `GrammarTaxonomyDto.toGrammarLabels()` and
-  `toTaxonomyInvariants()` have no Compose, no persistence, and no DI side
-  effects. Caching belongs in `CachingGrammarTaxonomyProvider` and its two
-  projection providers.
-- Labels are multi-language: the taxonomy carries one `{long, short}` pair per
-  id per BCP-47 language tag (e.g. `ru` for the learner's native language,
-  `en` for the study language). The same resolver serves both the detail
-  panel (native, long) and the sense-card badges (study, short); callers pick
-  language + form per lookup. Adding a new UI language is a fixture
-  extension here (add the tag under `labels` everywhere in
-  `src/commonMain/mockFixtures/practice/grammar/taxonomy.json`) — not a code
-  change in `domain`. Ids stay the wire/storage contract (canon
-  `docs/pos-and-forms.adoc`).
-- The `MockFixtureSet` class is generated from the JSON file by the
-  `app.sensee.gradle.mock-fixtures` plugin; edit the JSON, not the generated
-  Kotlin under `build/generated/`.
+Applies to:
+- `shared/grammar/data/...`
+
+## Local context
+
+This module owns the taxonomy wire DTO, the `practice/grammar/taxonomy` mock fixture, the source adapter, and cached projections into `GrammarLabels` and `TaxonomyInvariants`.
+
+## Local rules
+
+- This module is the only `practice/grammar/taxonomy` `MockFixtureSet` contributor. A duplicate key collides in `MergedFixtureReader`.
+- Keep projection builders pure: `GrammarTaxonomyDto.toGrammarLabels()` and `toTaxonomyInvariants()` must not perform Compose, persistence, or DI work.
+- Keep labels multi-language by BCP-47 tag. Adding a UI language is a fixture extension in `src/commonMain/mockFixtures/practice/grammar/taxonomy.json`.
+- Edit the JSON fixture, not generated Kotlin under `build/generated/`.
+
+## Local verification
+
+- Run the affected module tests after fixture or projection changes.
+- For mock fixture generation failures, inspect the generated output only for diagnosis; do not edit it.
+
+## Do not
+
+- Do not add a second fixture provider for `practice/grammar/taxonomy`.
+- Do not hardcode UI language assumptions into `domain`.
+- Do not move caching or preload orchestration into projection builders.
+
+## Related skills
+
+- `.agents/skills/dictionary-enrichment-schema-review`
+- `.agents/skills/kmp-source-set-review`

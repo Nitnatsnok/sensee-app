@@ -1,47 +1,40 @@
-# shared/ai
+# Agent Instructions for `shared/ai`
 
-The AI enrichment seam. `core` holds the provider-agnostic and
-feature-agnostic boundary: request/result types, the versioned wire DTO, the
-`AiEnrichmentClient` interface, and the `EnrichmentResponseMapper`
-anti-corruption mapping. Provider implementations (curated, LLM) live in
-sibling modules and depend on `core`, never the reverse.
+This file extends the root `AGENTS.md`.
+Follow the root rules first; this file only adds local rules for the AI enrichment seam.
 
-## Invariants — read ADR-005 before touching this
+## Scope
 
-- `core` depends on no AI vendor SDK and no feature domain type. Keep it
-  that way: leaking either breaks the boundary ADR-005 exists to enforce.
-- Availability is first-class. `Unavailable`/`Degraded` are normal results the
-  consuming feature can render or recover from — never throw across the seam,
-  never map a malformed provider response straight into feature domain.
-- Output is always a candidate (ADR-001). The seam never produces canonical
-  content; consumers map suggestions into their own candidate model and require
-  explicit user confirmation.
-- The wire DTO is versioned. Schema changes are deliberate, mapped migrations
-  with a `commonTest` case, not silent edits.
+Applies to:
+- `shared/ai/...`
 
-## Routing — curated wins, LLM fills the tail
+## Local context
 
-The bound `AiEnrichmentClient` is `RoutingAiEnrichmentClient`, two layers
-in order:
+`shared/ai` owns provider-agnostic enrichment contracts, curated enrichment fixtures, LLM integration, and routing composition. ADR-005 is the canonical architecture decision for this seam.
 
-1. `CuratedAiEnrichmentClient` — hand-authored top-N coverage
-   (`shared/ai/curated-enrichment`). On a non-empty result, returns
-   immediately; the LLM is not consulted.
-2. `LlmAiEnrichmentClient` — used when an API key is set in settings.
+## Local rules
 
-On no-key + curated-miss the router returns `Unavailable` and the wizard
-degrades to manual.
+- Keep `core` provider-agnostic and feature-agnostic: no AI vendor SDKs and no feature domain types.
+- Keep AI output as candidates. The seam never produces canonical content; consumers map suggestions into their own candidate model and require explicit user confirmation.
+- Treat availability as first-class. `Unavailable` and `Degraded` are normal results; do not throw malformed provider responses across the seam.
+- Keep the wire DTO versioned. Schema changes need deliberate mapping updates and `commonTest` coverage.
+- Keep routing in `integration`: curated enrichment wins for covered default-language requests; LLM fills the tail when a key/settings path enables it.
+- Edit curated coverage as JSON fixtures under `shared/ai/curated-enrichment/src/commonMain/mockFixtures/enrichment/`; do not edit generated fixture code.
 
-The curated layer is consulted only for an unsteered default-language request
-(no manual note, `SenseCoverage.Common`, no preferred topics). A key holder who
-set topic preferences routes straight to the LLM — curated examples are not
-topic-steered.
+## Local verification
 
-`CuratedAiEnrichmentClient` is served by the (mock) backend over HTTP:
-`GET enrichment/{lemma-slug}` returns a wire `EnrichmentResponseV1` for a
-covered lemma, `404` for a miss (the router then falls through to the LLM).
-Coverage lives as one editable JSON fixture per lemma under
-`shared/ai/curated-enrichment/src/commonMain/mockFixtures/enrichment/`; add or
-edit a lemma by adding/editing a file. The real backend will serve the same
-shape under the same client. Same delivery model as the verification side's
-`sensee-curated` reference data.
+- For core schema/mapper changes, run the affected `commonTest` task or module check.
+- For curated fixture shape changes, run the curated-enrichment fixture tests in the affected module.
+- For routing changes, run the `integration` tests before widening to broader checks.
+
+## Do not
+
+- Do not leak provider SDKs, feature domain types, or concrete settings UI concerns into `shared/ai/core`.
+- Do not silently accept unknown schema changes without mapper/test updates.
+- Do not route topic-steered requests to curated examples unless the routing decision is changed deliberately and documented.
+
+## Related skills
+
+- `.agents/skills/dictionary-enrichment-schema-review`
+- `.agents/skills/kmp-module-boundary-review`
+- `.agents/skills/architecture-docs-sync`

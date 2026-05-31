@@ -1,45 +1,43 @@
-# shared/grammar
+# Agent Instructions for `shared/grammar`
 
-Neutral grammar taxonomy shared by every feature that classifies lexical
-material. Two sibling modules:
+This file extends the root `AGENTS.md`.
+Follow the root rules first; this file only adds local rules for the neutral grammar taxonomy.
 
-- `domain` — pure value types and provider contracts. No DI, no persistence,
-  no Compose, no other module dependencies.
-- `data` — wire DTOs, the `practice/grammar/taxonomy` JSON fixture (codegen via
-  `app.sensee.gradle.mock-fixtures`), and the caching provider implementations.
-  Caching providers own only the cache; *when* to preload is the startup
-  feature's concern (`PreloadAppStartupUseCase`).
+## Scope
 
-## Invariants — read ADR-006 §2 (forward-compatible domain) and §3 (TaxonomyInvariants) before touching this
+Applies to:
+- `shared/grammar/...`
 
-- Taxonomy types are `sealed interface`s with a `data class Unknown(id)`
-  branch. `fromId(id)` is total: an unknown id surfaces as `Unknown(id)`
-  instead of being dropped or crashing exhaustive `when`s.
-- Pair invariants (`category → allowedForms`, `axis → allowedValues`,
-  `unit_type ∈ known`, `complement ∈ known`) are *runtime*, not
-  compile-time. `GrammarTag.resolve` / `UsageLabel.resolve` take an
-  optional map: `null` = pass-through, non-null = strict (drops
-  off-schema pairs at the AI boundary). Built-in client-known pairs
-  live in `GrammarTag.knownAllowedFormsByCategory` for offline fixtures
-  and storage.
-- `id` strings are a wire/storage contract (fixtures, DB). Adding a new
-  built-in id is a fixture extension + a new `data object` in `domain`;
-  renaming an existing id is a data migration, not a rename — change it
-  deliberately, with the consumer fixtures/tests in the same task.
-- Provider contracts are asymmetric on "not loaded" by design:
-  `TaxonomyInvariantsProvider.invariants()` returns `null` so the
-  AI-boundary mapper switches to pass-through; `GrammarLabelsProvider.labels()`
-  returns `GrammarLabels.EMPTY` so a UI lookup falls back to raw ids. Both
-  retry on a failed load. The synchronous `cached*()` snapshot mirrors this:
-  `null` / `GrammarLabels.EMPTY` before a successful load, the resolved value
-  after.
-- The splash awaits the preload, so screens normally see a populated snapshot.
-  A warm-restore deep-link can land before the preload finishes; in that case
-  callers get the degraded values and the UI shows raw ids until the retry
-  succeeds.
-- Error surfacing is explicit at startup: `PreloadAppStartupUseCase` preloads
-  labels and invariants, and `StartupState.Failed` keeps the splash on a
-  retryable state.
-- Both `library` (catalog) and `vocabulary-editor` (capture) may depend
-  on this; it sits below features so capture never depends on the
-  downstream catalog (ADR-001, EB-1).
+## Local context
+
+`shared/grammar` contains:
+- `domain` - pure value types and provider contracts.
+- `data` - taxonomy wire DTOs, mock fixtures, source adapter, and cached projections.
+
+The broader taxonomy rationale is in ADR-006 and `docs/pos-and-forms.adoc`.
+
+## Local rules
+
+- Keep taxonomy domain types forward-compatible: sealed types need an `Unknown(id)` branch and total `fromId(id)` parsing.
+- Treat id strings as wire/storage contracts. Renaming an id is a data migration, not a refactor.
+- Keep pair invariants runtime-resolved. `null` invariants mean pass-through; non-null invariants mean strict filtering at the AI boundary.
+- Preserve asymmetric degraded values: `TaxonomyInvariantsProvider.invariants()` may return `null`; `GrammarLabelsProvider.labels()` may return `GrammarLabels.EMPTY`.
+- Keep preload ownership in the startup feature. Grammar data providers own loading/caching, not splash orchestration.
+
+## Local verification
+
+- For domain changes, run the affected grammar module tests.
+- For data/fixture changes, also follow `shared/grammar/data/AGENTS.md`.
+- For AI-boundary taxonomy changes, include tests for unknown ids and strict/pass-through behavior.
+
+## Do not
+
+- Do not crash or drop unknown taxonomy ids by default.
+- Do not put Compose, persistence, DI side effects, or feature dependencies into `domain`.
+- Do not make `vocabulary-editor` depend on downstream catalog/library models for grammar taxonomy.
+
+## Related skills
+
+- `.agents/skills/dictionary-enrichment-schema-review`
+- `.agents/skills/kmp-module-boundary-review`
+- `.agents/skills/architecture-docs-sync`

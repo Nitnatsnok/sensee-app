@@ -1,0 +1,15 @@
+{
+  "skill_name": "agent-task-slicer",
+  "evals": [
+    {
+      "id": "cross-module-feature",
+      "prompt": "Plan how to add a new due-card shortcut from Home into Practice without implementing it yet.",
+      "expected_output": "Identifies app-shell, home, practice navigation/domain, docs/scenarios, and LikeC4 impact; proposes small implementation and verification slices."
+    },
+    {
+      "id": "gradle-and-docs",
+      "prompt": "Break down a task to add a new convention plugin and document the verification workflow.",
+      "expected_output": "Separates Gradle plugin changes, consuming-module adoption, docs updates, and build-logic verification."
+    }
+  ]
+}

@@ -1,31 +1,36 @@
-# shared/lexicon/serialization
+# Agent Instructions for `shared/lexicon/serialization`
 
-The **shared** serialized shape of [Sense] and its bidirectional mapping to the
-domain type. A neutral, non-feature module that sits below features (sibling to
-`lexicon/domain`). It holds ONLY shared DTOs — `SenseDto` + its sub-DTOs +
-`Sense.toDto()` / `SenseDto.toDomain()` — nothing feature-private.
+This file extends the root `AGENTS.md` and `shared/lexicon/AGENTS.md`.
+Follow those rules first; this file only adds local rules for shared lexical DTOs.
 
-It deliberately lives in a non-`data` package (`app.sensee.lexicon.serialization`)
-so feature data layers may depend on it: the sealed-data konsist rule
-(`FeatureLayeringKonsistTest`) forbids a feature data layer from importing any
-`*.data.*` package — that rule is for feature-private persistence internals, and
-it is correct as written. A shared serializable boundary contract is a different
-thing and belongs in a non-`data` package — the same reason the shared wire DTO
-`EnrichmentItemV1` lives in `ai.core`, not `ai.data`.
+## Scope
 
-- `SenseDto` mirrors every `Sense` field as serializable ids/markers; the mappers
-  re-resolve through the same neutral `parse`/`fromId` the AI boundary uses — no
-  second source of truth. On read the mapper is **pass-through** (an id outside
-  the sealed set surfaces as `Unknown(id)`, never dropped): values were written
-  through the strict AI-boundary mapper, so they are trusted, and pass-through
-  keeps stored data forward-compatible across taxonomy growth.
+Applies to:
+- `shared/lexicon/serialization/...`
 
-## Invariant — `Sense` is what gets persisted, enrichment is the producer format
+## Local context
 
-Both capture (`vocabulary-editor`) and the catalog (`library`) store a `Sense`
-via this DTO. Enrichment (`shared/ai`) is the *producer/wire* format on both
-paths: capture maps an AI candidate → `Sense` at confirm, the catalog maps an
-ideal-enrichment item → `Sense` at sync; from then on the persisted shape is the
-same `SenseDto`. A user-captured sense and a service-deck sense are therefore the
-same stored thing — which is the point (when the backend lands, the two must be
-identical).
+This module owns the shared serialized shape of `Sense` and bidirectional mapping between `Sense` and `SenseDto`. It is intentionally neutral and non-feature-owned.
+
+## Local rules
+
+- Keep only shared DTOs and mappers here: `SenseDto`, sub-DTOs, `Sense.toDto()`, and `SenseDto.toDomain()`.
+- Keep the package outside `*.data.*`; feature data layers may depend on this shared boundary without violating feature-private data layering.
+- Re-resolve ids through the same neutral parsing/fromId APIs used by the AI boundary.
+- Reads stay forward-compatible: unknown taxonomy ids surface as `Unknown(id)`, not dropped values.
+
+## Local verification
+
+- Run serialization mapper tests after DTO or mapping changes.
+- If persisted shape changes affect SQL schema or migrations, also follow `shared/database/AGENTS.md`.
+
+## Do not
+
+- Do not add feature-private persistence internals here.
+- Do not introduce a second taxonomy parser or id source of truth.
+- Do not make the read mapper strict unless a migration strategy exists.
+
+## Related skills
+
+- `.agents/skills/dictionary-enrichment-schema-review`
+- `.agents/skills/sqldelight-schema-aggregation-review`
