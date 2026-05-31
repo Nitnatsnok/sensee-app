@@ -9,6 +9,7 @@ kotlin {
             dependencies {
                 api(libs.compose.runtime)
                 api(libs.compose.foundation)
+                api(libs.compose.ui)
                 api(libs.kotlinx.collections.immutable)
                 api(projects.shared.core.presentation)
             }
@@ -17,6 +18,14 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.compose.uiTest)
+                implementation(libs.compose.uiTest.junit4)
+                implementation(compose.desktop.currentOs)
             }
         }
     }

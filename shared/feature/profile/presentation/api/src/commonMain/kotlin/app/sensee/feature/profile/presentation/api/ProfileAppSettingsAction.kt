@@ -6,4 +6,8 @@ public sealed interface ProfileAppSettingsAction {
     public data class SetThemeMode(
         val themeMode: AppThemeMode,
     ) : ProfileAppSettingsAction
+
+    public data class SetHapticFeedbackEnabled(
+        val enabled: Boolean,
+    ) : ProfileAppSettingsAction
 }

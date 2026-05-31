@@ -114,6 +114,7 @@ public class DefaultUserSettingsRepository(
                 AppSettings(
                     themeMode = codec.enumValue(values, AppKeys.ThemeMode, AppThemeMode.System),
                     interfaceLanguageTag = codec.stringValue(values, AppKeys.InterfaceLanguageTag, null),
+                    hapticFeedbackEnabled = codec.booleanValue(values, AppKeys.HapticFeedbackEnabled, true),
                 ),
             learning =
                 LearningSettings(
@@ -169,6 +170,7 @@ public class DefaultUserSettingsRepository(
         listOf(
             codec.entry(AppKeys.ThemeMode, app.themeMode.name),
             codec.entry(AppKeys.InterfaceLanguageTag, app.interfaceLanguageTag),
+            codec.entry(AppKeys.HapticFeedbackEnabled, app.hapticFeedbackEnabled),
             codec.entry(LearningKeys.StudyLanguageTag, learning.studyLanguageTag),
             codec.entry(LearningKeys.TranslationLanguageTag, learning.translationLanguageTag),
             codec.entry(LearningKeys.PreferredTopicIds, learning.preferredTopicIds.sorted()),
@@ -196,6 +198,7 @@ private enum class AppKeys(
 ) : SettingKey {
     ThemeMode("theme_mode"),
     InterfaceLanguageTag("interface_language_tag"),
+    HapticFeedbackEnabled("haptic_feedback_enabled"),
     ;
 
     override val category: UserSettingsCategory = UserSettingsCategory.App

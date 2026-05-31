@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class RootThemeModeTest {
     private class FakeSettings(
@@ -44,8 +45,34 @@ class RootThemeModeTest {
             )
         }
 
+    @Test
+    fun `haptic feedback enabled defaults to true`() =
+        runTest {
+            val settings = FakeSettings(UserSettingsSnapshot())
+
+            assertTrue(settings.observeHapticFeedbackEnabled().toList().last())
+        }
+
+    @Test
+    fun `settings haptic preference drives root haptic flag and dedups`() =
+        runTest {
+            val settings =
+                FakeSettings(
+                    hapticSnapshot(enabled = true),
+                    hapticSnapshot(enabled = true),
+                    hapticSnapshot(enabled = false),
+                )
+
+            val observed = settings.observeHapticFeedbackEnabled().toList()
+
+            assertEquals(listOf(true, false), observed)
+        }
+
     private companion object {
         fun snapshot(themeMode: AppThemeMode): UserSettingsSnapshot =
             UserSettingsSnapshot(app = AppSettings(themeMode = themeMode))
+
+        fun hapticSnapshot(enabled: Boolean): UserSettingsSnapshot =
+            UserSettingsSnapshot(app = AppSettings(hapticFeedbackEnabled = enabled))
     }
 }

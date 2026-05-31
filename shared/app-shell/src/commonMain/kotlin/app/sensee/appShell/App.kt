@@ -28,7 +28,12 @@ public fun App(
     contentFrame: AppContentFrame = { content -> content() },
 ) {
     val themeMode by rootComponent.themeMode.collectAsState()
-    AppComposeEnvironment(platform = rootComponent.platform, themeMode = themeMode) {
+    val hapticFeedbackEnabled by rootComponent.hapticFeedbackEnabled.collectAsState()
+    AppComposeEnvironment(
+        platform = rootComponent.platform,
+        themeMode = themeMode,
+        hapticFeedbackEnabled = hapticFeedbackEnabled,
+    ) {
         val contentPresentation = LocalAdaptiveInfo.current.contentLayoutType.toContentPresentation()
         SideEffect {
             rootComponent.setContentPresentation(contentPresentation)

@@ -13,11 +13,11 @@
 | Файл | Статус | Покрытие |
 |---|---|---|
 | `startup.feature` | `@implemented` | Запуск клиента, открытие основной навигационной оболочки, выбор `home` секции |
-| `practice-deck.feature` | `@implemented` (+ `@planned`) | Загрузка колоды, переворот карточки, озвучка, оценка через свайп/кнопки, детали карточки, завершение колоды; планируемые правка/удаление конкретной карточки |
+| `practice-deck.feature` | `@implemented` (+ `@planned`) | Загрузка колоды, переворот карточки, озвучка, оценка через свайп/кнопки, тактильная отдача на пороге свайпа, детали карточки, завершение колоды; планируемые правка/удаление конкретной карточки |
 | `navigation.feature` | `@implemented` + `@planned` | Распространение `ScreenConfig` по цепочке `local -> parent`, поведение `RootComponent` и `PrimaryShellComponent`; web-навигация: URL секции, история вложенного стека, холодный старт и тёплое восстановление; планируется вложенная ссылка во `VocabularyEditorConfig.Editor` (EB-7) |
 | `vocabulary-capture.feature` | `@implemented` (+ `@planned`) | Внесение слова, получение AI-подсказок, единая модель ответа, мультивыбор смыслов, ручной смысл, устойчивое подтверждение; планируется лемма-семья и производные карточки |
 | `library.feature` | `@implemented` (+ `@planned`) | `Home`: обзор сервисных наборов и собственного материала, добавление/отмена набора, Practice видит только собственный материал; планируется курирование, `EntryDetail`/`LemmaDetail`, частичное добавление |
-| `profile.feature` | `@implemented` (+ `@planned`) | Меню `Profile`, wide/compact раскладка категорий, `App` themeMode, `Learning` выбор тем, `Ai`/TTS-провайдеры и ключи, заглушки `Practice`/`Experimental`; планируются языки, полный `Practice`, `About`, Account/синхронизация |
+| `profile.feature` | `@implemented` (+ `@planned`) | Меню `Profile`, wide/compact раскладка категорий, `App` themeMode + тактильная отдача, `Learning` выбор тем, `Ai`/TTS-провайдеры и ключи, заглушки `Practice`/`Experimental`; планируются языки, полный `Practice`, `About`, Account/синхронизация |
 | `home.feature` | `@planned` | Дашборд: повторить сегодня (due-сессия), незавершённый ввод, быстрый ввод; агрегатор без своего домена |
 
 ## Соглашения

@@ -42,6 +42,10 @@ class ProfileAppSettingsLogicTest {
         fun emitThemeMode(themeMode: AppThemeMode) {
             flow.value = flow.value.copy(app = flow.value.app.copy(themeMode = themeMode))
         }
+
+        fun emitHapticFeedbackEnabled(enabled: Boolean) {
+            flow.value = flow.value.copy(app = flow.value.app.copy(hapticFeedbackEnabled = enabled))
+        }
     }
 
     private fun logic(settings: UserSettingsRepository): ProfileAppSettingsLogic =
@@ -82,6 +86,50 @@ class ProfileAppSettingsLogicTest {
         settings.emitThemeMode(AppThemeMode.Dark)
 
         assertEquals(AppThemeMode.Dark, logic.uiState.value.themeMode)
+    }
+
+    @Test
+    fun `load reflects stored haptic feedback setting`() {
+        val stored =
+            UserSettingsSnapshot(
+                app = AppSettings(hapticFeedbackEnabled = false),
+            )
+
+        val state = logic(FakeSettings(stored)).uiState.value
+
+        assertEquals(false, state.hapticFeedbackEnabled)
+    }
+
+    @Test
+    fun `disabling haptic feedback persists app settings and updates state`() {
+        val settings = FakeSettings()
+        val logic = logic(settings)
+
+        logic.setHapticFeedbackEnabled(false)
+
+        assertEquals(false, logic.uiState.value.hapticFeedbackEnabled)
+        assertEquals(false, settings.snapshot().app.hapticFeedbackEnabled)
+    }
+
+    @Test
+    fun `setting the active haptic feedback value does not persist a duplicate update`() {
+        val settings = FakeSettings()
+        val logic = logic(settings)
+
+        logic.setHapticFeedbackEnabled(true)
+
+        assertEquals(0, settings.updateAttempts)
+        assertEquals(true, logic.uiState.value.hapticFeedbackEnabled)
+    }
+
+    @Test
+    fun `external haptic feedback updates stay in sync`() {
+        val settings = FakeSettings()
+        val logic = logic(settings)
+
+        settings.emitHapticFeedbackEnabled(false)
+
+        assertEquals(false, logic.uiState.value.hapticFeedbackEnabled)
     }
 
     @Test

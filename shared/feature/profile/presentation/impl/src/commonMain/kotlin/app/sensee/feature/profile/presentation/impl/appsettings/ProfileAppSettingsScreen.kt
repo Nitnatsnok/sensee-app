@@ -3,16 +3,20 @@ package app.sensee.feature.profile.presentation.impl.appsettings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import app.sensee.core.compose.text.LocalTextProvider
 import app.sensee.core.presentation.text.TextProvider
 import app.sensee.core.presentation.text.withFallback
@@ -21,6 +25,7 @@ import app.sensee.feature.profile.presentation.api.ProfileAppSettingsComponent
 import app.sensee.settings.domain.AppThemeMode
 import app.sensee.ui.designSystem.component.layout.SenseeScreenContentFrame
 import app.sensee.ui.designSystem.component.selectField.SenseeSelectField
+import app.sensee.ui.designSystem.component.switch.SenseeSwitch
 import app.sensee.ui.designSystem.theme.LocalSenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import app.sensee.ui.designSystem.theme.senseeCompactLayoutMetrics
@@ -70,6 +75,37 @@ public fun ProfileAppSettingsScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )
+            }
+            SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
+                Text(
+                    text = textProvider.text(ProfileAppSettingsTextKeys.SectionInteraction),
+                    color = SenseeTheme.colors.textPrimary,
+                    style = SenseeTheme.typography.titleLarge,
+                )
+            }
+            SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = uiState.hapticFeedbackEnabled,
+                                role = Role.Switch,
+                                onValueChange = { enabled ->
+                                    component.onAction(ProfileAppSettingsAction.SetHapticFeedbackEnabled(enabled))
+                                },
+                            ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.medium),
+                ) {
+                    Text(
+                        text = textProvider.text(ProfileAppSettingsTextKeys.HapticFeedback),
+                        color = SenseeTheme.colors.textPrimary,
+                        style = SenseeTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f),
+                    )
+                    SenseeSwitch(checked = uiState.hapticFeedbackEnabled)
+                }
             }
         }
     }

@@ -76,6 +76,15 @@ public class DefaultRootComponent(
                 initialValue = SenseeThemeMode.System,
             )
 
+    override val hapticFeedbackEnabled: StateFlow<Boolean> =
+        settingsRepository
+            .observeHapticFeedbackEnabled()
+            .stateIn(
+                scope = componentScope,
+                started = SharingStarted.Eagerly,
+                initialValue = true,
+            )
+
     override val stack: Value<ChildStack<ScreenConfig, AppComponent>> =
         appChildStack(
             source = stackNavigation,

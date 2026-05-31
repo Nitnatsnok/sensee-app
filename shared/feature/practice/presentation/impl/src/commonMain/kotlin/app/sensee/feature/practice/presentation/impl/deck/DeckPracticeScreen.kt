@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import app.sensee.core.compose.haptics.HapticFeedbackOnThresholdCrossing
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.presentation.text.CommonTextKeys
 import app.sensee.core.presentation.text.TextProvider
@@ -52,6 +53,7 @@ import app.sensee.ui.designSystem.icons.Info24px
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import app.sensee.ui.learningDeck.LearningDeckConfig
 import app.sensee.ui.learningDeck.LearningDeckState
+import app.sensee.ui.learningDeck.LearningDeckSwipeState
 import app.sensee.ui.learningDeck.LearningSwipeDeck
 import app.sensee.ui.learningDeck.LearningSwipeDirection
 import app.sensee.ui.learningDeck.rememberLearningDeckState
@@ -372,6 +374,14 @@ private fun DeckPracticeCardDeck(
                 )
             },
         ) { card ->
+            if (isTopCard) {
+                // Fire one tactile pulse when a live drag first crosses the commit threshold.
+                // Direction changes past the threshold stay silent; dropping below the haptic
+                // re-arm threshold allows the next crossing to pulse again.
+                HapticFeedbackOnThresholdCrossing(
+                    progress = swipeThresholdHapticProgress(topCardSwipeState),
+                )
+            }
             DeckPracticeLearningCard(
                 state = state,
                 card = card,
@@ -383,6 +393,14 @@ private fun DeckPracticeCardDeck(
         }
     }
 }
+
+/**
+ * Swipe progress eligible for threshold haptics, or `null` outside a live drag. Dismiss/settle
+ * animations pin progress but must stay silent, and an impossible direction-less drag should not
+ * pulse either.
+ */
+internal fun swipeThresholdHapticProgress(swipeState: LearningDeckSwipeState): Float? =
+    swipeState.takeIf { it.isDragging && it.direction != null }?.progress
 
 private fun practiceDeckSizeModifier(landscape: Boolean): Modifier =
     if (landscape) {

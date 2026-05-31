@@ -202,6 +202,33 @@ class DefaultUserSettingsRepositoryTest {
         }
 
     @Test
+    fun `haptic feedback is enabled by default`() =
+        runTest {
+            val harness = Harness()
+
+            assertTrue(
+                harness.repository
+                    .readSettings()
+                    .app.hapticFeedbackEnabled,
+            )
+        }
+
+    @Test
+    fun `app settings round-trip preserves disabled haptic feedback`() =
+        runTest {
+            val harness = Harness()
+
+            harness.repository.updateAppSettings { it.copy(hapticFeedbackEnabled = false) }
+
+            assertEquals(
+                false,
+                harness.repository
+                    .readSettings()
+                    .app.hapticFeedbackEnabled,
+            )
+        }
+
+    @Test
     fun `learning settings round-trip preserves preferred topic ids`() =
         runTest {
             val harness = Harness()

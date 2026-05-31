@@ -23,6 +23,8 @@ public interface RootComponent :
 
     public val themeMode: StateFlow<SenseeThemeMode>
 
+    public val hapticFeedbackEnabled: StateFlow<Boolean>
+
     public fun setContentPresentation(presentation: AppContentPresentation)
 
     public fun interface Factory {

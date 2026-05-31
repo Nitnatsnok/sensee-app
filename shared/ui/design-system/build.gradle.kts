@@ -14,6 +14,7 @@ kotlin {
                 api(libs.compose.unstyled.theming)
                 api(libs.compose.unstyled.platformTheme)
                 api(libs.compose.unstyled.button)
+                api(libs.compose.unstyled.toggleSwitch)
                 api(libs.compose.unstyled.coloredIndication)
                 api(libs.compose.unstyled.icon)
                 api(libs.compose.unstyled.textField)

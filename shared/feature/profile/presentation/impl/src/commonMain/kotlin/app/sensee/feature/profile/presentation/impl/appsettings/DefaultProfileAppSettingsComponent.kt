@@ -30,6 +30,8 @@ public class DefaultProfileAppSettingsComponent(
     override fun onAction(action: ProfileAppSettingsAction) {
         when (action) {
             is ProfileAppSettingsAction.SetThemeMode -> logic.setThemeMode(action.themeMode)
+            is ProfileAppSettingsAction.SetHapticFeedbackEnabled ->
+                logic.setHapticFeedbackEnabled(action.enabled)
         }
     }
 

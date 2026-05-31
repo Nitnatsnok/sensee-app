@@ -12,6 +12,7 @@
   - `shared/feature/practice/presentation/impl/DeckPracticeSpeechController.kt`
   - `shared/feature/practice/presentation/impl/DefaultDeckPracticeComponent.kt`
   - `shared/ui/design-system/component/button/SenseeSpeakIconButton.kt`
+  - `shared/core/compose/haptics/SenseeHaptics.kt`
 
   Предыстория:
     Допустим открыт раздел `Practice` и `DefaultPracticeSectionComponent` находится на `PracticeConfig.Home`
@@ -89,6 +90,19 @@
       | `LearningSwipeDirection.Down`  | `Hard`  |
       | `LearningSwipeDirection.Up`    | `Good`  |
       | `LearningSwipeDirection.End`   | `Easy`  |
+
+  @implemented
+  Сценарий: Тактильная отдача при преодолении порога свайпа
+    Допустим верхняя карточка перевёрнута
+    И настройка `hapticFeedbackEnabled` (категория `App`) включена
+    Когда я тяну карточку и её смещение пересекает порог фиксации в допустимом направлении
+    Тогда `DeckPracticeScreen` через `LocalSenseeHaptics` даёт один тактильный импульс
+      (`HapticFeedbackType.GestureThresholdActivate`) на это пересечение
+    И смена направления за порогом не даёт повторный импульс
+    И повторный импульс возможен только после возврата ниже порога повторного взвода и нового пересечения
+    Когда настройка `hapticFeedbackEnabled` выключена
+    Тогда `SenseeHaptics` не вызывает отдачу при пересечении порога
+    # На платформах без тактильного движка (Desktop/JS/Wasm) вызов — no-op самой Compose.
 
   @implemented
   Сценарий: Кнопка оценки выполняет программный свайп

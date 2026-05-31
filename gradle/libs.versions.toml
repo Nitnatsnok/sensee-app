@@ -160,6 +160,7 @@ compose-unstyled-primitives = { module = "com.composables:composeunstyled-primit
 compose-unstyled-theming = { module = "com.composables:composeunstyled-theming", version.ref = "compose-unstyled" }
 compose-unstyled-platformTheme = { module = "com.composables:composeunstyled-platformtheme", version.ref = "compose-unstyled" }
 compose-unstyled-button = { module = "com.composables:composeunstyled-button", version.ref = "compose-unstyled" }
+compose-unstyled-toggleSwitch = { module = "com.composables:composeunstyled-toggle-switch", version.ref = "compose-unstyled" }
 compose-unstyled-coloredIndication = { module = "com.composables:composeunstyled-colored-indication", version.ref = "compose-unstyled" }
 compose-unstyled-icon = { module = "com.composables:composeunstyled-icon", version.ref = "compose-unstyled" }
 compose-unstyled-textField = { module = "com.composables:composeunstyled-text-field", version.ref = "compose-unstyled" }

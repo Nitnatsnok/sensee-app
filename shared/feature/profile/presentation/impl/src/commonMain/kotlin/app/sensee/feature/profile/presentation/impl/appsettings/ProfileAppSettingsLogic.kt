@@ -32,7 +32,12 @@ public class ProfileAppSettingsLogic(
     init {
         logicScope.launch {
             settingsRepository.observeSettings().collect { snapshot ->
-                mutableUiState.update { it.copy(themeMode = snapshot.app.themeMode) }
+                mutableUiState.update {
+                    it.copy(
+                        themeMode = snapshot.app.themeMode,
+                        hapticFeedbackEnabled = snapshot.app.hapticFeedbackEnabled,
+                    )
+                }
             }
         }
     }
@@ -46,6 +51,19 @@ public class ProfileAppSettingsLogic(
                 settingsRepository.updateAppSettings { app -> app.copy(themeMode = themeMode) }
             }.onFailure { throwable ->
                 logger.error(throwable) { "Failed to persist app theme mode" }
+            }
+        }
+    }
+
+    public fun setHapticFeedbackEnabled(enabled: Boolean) {
+        if (enabled == mutableUiState.value.hapticFeedbackEnabled) {
+            return
+        }
+        logicScope.launch {
+            runCatchingCancellable {
+                settingsRepository.updateAppSettings { app -> app.copy(hapticFeedbackEnabled = enabled) }
+            }.onFailure { throwable ->
+                logger.error(throwable) { "Failed to persist haptic feedback setting" }
             }
         }
     }

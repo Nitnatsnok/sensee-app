@@ -7,7 +7,7 @@
   пунктами по категориям `UserSettingsCategory`. На широких экранах меню и
   экран категории показаны рядом (двухпанельный режим), на узких — по очереди.
   Реализованные экраны категорий: `App` (`ProfileAppSettingsScreen`) для
-  выбора темы приложения, `Learning` для выбора тем для примеров и `Ai`
+  выбора темы приложения и тактильной отдачи, `Learning` для выбора тем для примеров и `Ai`
   (`ProfileAiSettingsScreen`) для AI/TTS-провайдера, верификации ключа и
   постепенного раскрытия полей. Категории `Practice`/`Experimental` пока
   открывают явную заглушку planned-состояния.
@@ -47,14 +47,17 @@
   - `shared/settings/domain`: `UserSettingsRepository`,
     `UserSettingsCategory{App, Learning, Practice, Ai, Experimental}`,
     `UserSettingsScope{Device, User}`, `AiSettings` (ключи/провайдер),
-    `AppSettings.themeMode`, `LearningSettings.preferredTopicIds`, `LearningTopic`,
+    `AppSettings.themeMode`/`AppSettings.hapticFeedbackEnabled`,
+    `LearningSettings.preferredTopicIds`, `LearningTopic`,
     `TopicCatalogRepository`
   - `shared/settings/data/topic/*`: каталог тем с mock-бэкенда (`learning/topics`)
   - design-system: `SenseeTextField` со скрытым (secure) режимом для ключей,
-    `SenseeSelectField` для выбора темы,
+    `SenseeSelectField` для выбора темы, `SenseeSwitch` для тактильной отдачи,
     `SenseeCheckbox` + `SenseeModalBottomSheet` + `SenseeSheetHeader` для выбора тем
   - `shared/app-shell`: `RootComponent.themeMode` применяет `AppSettings.themeMode`
-    к корневому `AppComposeEnvironment` и `SenseeTheme`
+    к корневому `AppComposeEnvironment` и `SenseeTheme`;
+    `RootComponent.hapticFeedbackEnabled` применяет `AppSettings.hapticFeedbackEnabled`
+    к `LocalSenseeHaptics`
   - границы AI/TTS-интеграций `shared/ai/*` / `shared/tts/*` (ADR-005): список
     совместимых провайдеров и выбор модели (из API провайдера, офлайн-fallback)
   - Планируемое: экраны категорий `Practice`/`Experimental`, язык интерфейса
@@ -101,6 +104,16 @@
     Когда пользователь меняет `themeMode`
     Тогда изменение сохраняется через `UserSettingsRepository.updateAppSettings`
     И применяется к приложению
+
+  @implemented
+  Сценарий: Переключение тактильной отдачи
+    Когда пользователь открывает категорию `App`
+    Тогда показан переключатель тактильной отдачи (`SenseeSwitch`), включённый по умолчанию
+    Когда пользователь выключает переключатель
+    Тогда изменение сохраняется через `UserSettingsRepository.updateAppSettings`
+      (`AppSettings.hapticFeedbackEnabled = false`, scope `Device`)
+    И `AppComposeEnvironment` обновляет `LocalSenseeHaptics`, и тактильные импульсы
+      перестают воспроизводиться во всём приложении
 
   @planned
   Сценарий: Правка языка интерфейса

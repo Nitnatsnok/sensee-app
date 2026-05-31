@@ -10,6 +10,8 @@ internal object ProfileAppSettingsTextKeys {
     val ThemeModeSystem = TextKey("profile.appSettings.theme_mode.system")
     val ThemeModeLight = TextKey("profile.appSettings.theme_mode.light")
     val ThemeModeDark = TextKey("profile.appSettings.theme_mode.dark")
+    val SectionInteraction = TextKey("profile.appSettings.section.interaction")
+    val HapticFeedback = TextKey("profile.appSettings.haptic_feedback")
 }
 
 internal fun AppThemeMode.labelKey(): TextKey =
@@ -27,5 +29,7 @@ internal val DefaultProfileAppSettingsTextProvider =
             ProfileAppSettingsTextKeys.ThemeModeSystem to "Системная",
             ProfileAppSettingsTextKeys.ThemeModeLight to "Светлая",
             ProfileAppSettingsTextKeys.ThemeModeDark to "Тёмная",
+            ProfileAppSettingsTextKeys.SectionInteraction to "Взаимодействие",
+            ProfileAppSettingsTextKeys.HapticFeedback to "Тактильная отдача",
         ),
     )

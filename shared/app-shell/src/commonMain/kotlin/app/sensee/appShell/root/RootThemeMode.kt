@@ -12,6 +12,11 @@ internal fun UserSettingsRepository.observeThemeMode(): Flow<SenseeThemeMode> =
         .map { snapshot -> snapshot.app.themeMode.toSenseeThemeMode() }
         .distinctUntilChanged()
 
+internal fun UserSettingsRepository.observeHapticFeedbackEnabled(): Flow<Boolean> =
+    observeSettings()
+        .map { snapshot -> snapshot.app.hapticFeedbackEnabled }
+        .distinctUntilChanged()
+
 private fun AppThemeMode.toSenseeThemeMode(): SenseeThemeMode =
     when (this) {
         AppThemeMode.System -> SenseeThemeMode.System
