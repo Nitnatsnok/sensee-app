@@ -90,6 +90,9 @@ If the user explicitly asks to respond in another language, follow the user's in
 - Use the project skills in `.agents/skills` for repeatable workflows; the short catalog is `docs/agents/skills.md`.
 - Use `docs/engineering/commits.md` as the canonical commit convention when preparing commit messages or reviewing commit boundaries.
 - After changing agent-facing instructions, run `python3 scripts/agents/validate-agent-instructions.py` (`py -3 scripts/agents/validate-agent-instructions.py` on Windows).
+- Shared Codex / Claude Code environment setup and validation lives in `scripts/agents/`, with thin tool wrappers in `scripts/codex/` and `scripts/claude/`. See `docs/agents/agent-environment.md`.
+- Tool-specific adapters must not duplicate `AGENTS.md` or copy `.agents/skills` into tool-specific skill trees.
+- For UI-free agent setup and documentation tasks, do not run emulators, device checks, screenshots, recordings, or app launch scenarios.
 
 ## Module & source-set conventions
 

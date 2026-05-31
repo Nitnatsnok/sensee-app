@@ -12,6 +12,8 @@ Applies to:
 
 - `scripts/setup-git-hooks.sh` bootstraps Lefthook and tracked hooks. It is intentionally more interactive than Git hooks themselves, but supports environment variables for automation.
 - `scripts/agents/validate-agent-instructions.py` validates agent-facing instruction files. It is read-only, non-interactive, and uses only the Python standard library.
+- `scripts/agents/setup-local-env.*`, `list-tasks.*`, and `validate.*` are shared Codex / Claude Code local environment entrypoints.
+- `scripts/codex/` and `scripts/claude/` contain thin wrappers only; shared behavior belongs in `scripts/agents/`.
 
 ## Local rules
 
@@ -25,6 +27,7 @@ Applies to:
 
 - For `setup-git-hooks.sh`, use the CI smoke-test pattern in `.github/workflows/ci.yml` as the reference.
 - For new scripts, include a safe `--help` path when practical and test it.
+- For shared agent environment scripts, prefer syntax checks plus `scripts/agents/validate.* fast` before broader Gradle validation.
 - After agent-instruction validator changes:
   ```shell
   python3 scripts/agents/validate-agent-instructions.py --help
