@@ -124,6 +124,29 @@ class DatamuseLexicalAdapterTest {
     }
 
     @Test
+    fun `a score above Int MAX_VALUE deserializes without crashing the lookup`() {
+        // Datamuse's score has no documented Int ceiling. Before #9 the DTO
+        // typed it as `Int`, so a value over 2^31 would throw a
+        // SerializationException and degrade the whole lookup. With the field
+        // typed as `Long`, the value parses and the strong-suggestion path
+        // still fires correctly.
+        val engine =
+            MockEngine {
+                respond(
+                    content = """[{"word":"hello","score":2147483648}]""",
+                    status = HttpStatusCode.OK,
+                    headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+                )
+            }
+
+        val result = runBlocking { adapter(engine).lookup(query("helo")) }
+
+        assertEquals(VerifierAvailability.Available, result.availability)
+        assertEquals(LexicalExistence.NotFound, result.existence)
+        assertNotNull(result.normalized.candidates.firstOrNull())
+    }
+
+    @Test
     fun `disabled network short-circuits without contacting the service`() {
         var calls = 0
         val engine =

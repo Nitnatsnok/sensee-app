@@ -206,7 +206,15 @@ public class RoutingLexicalVerifier(
         val byIndex = checks.groupBy { it.first }
         return byIndex.entries.mapNotNull { (index, triples) ->
             val example = triples.first().second
-            val results = triples.map { it.third }
+            // Drop Unavailable results — a checker that said "I cannot run"
+            // must not contribute issues or rewrites. Degraded is allowed
+            // because the merge helpers below treat it as a partial-but-real
+            // signal; only Unavailable is the no-evidence boundary that the
+            // [LexicalVerificationReport] init invariant forbids.
+            val results =
+                triples
+                    .map { it.third }
+                    .filter { it.availability !is VerifierAvailability.Unavailable }
             val merged = results.flatMap { it.issues }
             // Pick the rewrite from the result whose issues contain the most
             // severe finding. With M > 1 checker per query this avoids the
@@ -546,11 +554,15 @@ private fun mergeSenseMapping(
     base: SenseMapping,
     senses: List<SenseInventoryResult>,
 ): SenseMapping {
-    if (senses.isEmpty()) return base
-    val mergedMatched = base.matched + senses.flatMap { it.mapping.matched }
-    val mergedUnmatched = base.unmatchedAiSenses + senses.flatMap { it.mapping.unmatchedAiSenses }
+    // Drop Unavailable contributors so the merge cannot pull mapping evidence
+    // from an adapter that explicitly opted out — the report-init invariant
+    // forbids carrying evidence on an all-Unavailable report.
+    val usable = senses.filter { it.availability !is VerifierAvailability.Unavailable }
+    if (usable.isEmpty()) return base
+    val mergedMatched = base.matched + usable.flatMap { it.mapping.matched }
+    val mergedUnmatched = base.unmatchedAiSenses + usable.flatMap { it.mapping.unmatchedAiSenses }
     val mergedExtras: List<DictionarySenseSummary> =
-        (base.extraDictionarySenses + senses.flatMap { it.mapping.extraDictionarySenses })
+        (base.extraDictionarySenses + usable.flatMap { it.mapping.extraDictionarySenses })
             // Two senses from the same source MUST keep distinct senseIds; otherwise
             // a polysemous lemma collapses to one summary.
             .distinctBy { Triple(it.ref.sourceId, it.ref.senseId, it.shortLabel) }
@@ -565,7 +577,7 @@ private fun mergeSenseMapping(
         extraDictionarySenses = mergedExtras,
         // Take the most confident contributor rather than the seed's default
         // `Low`; an empty provider mapping stays `Low` so it cannot inflate.
-        confidence = maxOf(base.confidence, senses.maxOf { it.mapping.confidence }),
+        confidence = maxOf(base.confidence, usable.maxOf { it.mapping.confidence }),
     )
 }
 
@@ -573,8 +585,15 @@ private fun mergeNormalization(
     base: NormalizationOutcome,
     lookups: List<LexicalEntryLookupResult>,
 ): NormalizationOutcome {
+    // Only Available/Degraded lookups feed normalization. An Unavailable
+    // lookup that nonetheless filled `normalized.candidates` would violate the
+    // [LexicalVerificationReport] init invariant (Unavailable ⇒ no evidence)
+    // when it is the only contributor; gating defensively here keeps the
+    // boundary safe against a misbehaving adapter without losing partial signal
+    // from a Degraded one.
+    val usableLookups = lookups.filter { it.availability !is VerifierAvailability.Unavailable }
     val newCandidates: List<NormalizationCandidate> =
-        lookups.flatMap { it.normalized.candidates }
+        usableLookups.flatMap { it.normalized.candidates }
     if (newCandidates.isEmpty() && base.canonical != null) return base
     // Choose canonical by confidence, with the canonical string as a stable
     // tie-break. The `Set<LexicalEntryLookup>` Metro provides has no guaranteed
@@ -585,7 +604,7 @@ private fun mergeNormalization(
             .thenBy { it.normalized.canonical.orEmpty() }
     val canonical =
         base.canonical
-            ?: lookups
+            ?: usableLookups
                 .filter { it.normalized.canonical != null }
                 .sortedWith(byConfidenceThenCanonical)
                 .firstOrNull()

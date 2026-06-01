@@ -86,7 +86,8 @@ public class LanguageToolExampleChecker(
             )
         }
         val offsets = segmentOffsets(sentence)
-        val issues = matches.map { it.toIssue(offsets) }
+        val plainTextLength = sentence.plainText().length
+        val issues = matches.map { it.toIssue(offsets, plainTextLength) }
         val rewrite = buildRewrite(sentence, matches)
         return ExampleCheckResult(
             availability = VerifierAvailability.Available,
@@ -96,11 +97,14 @@ public class LanguageToolExampleChecker(
         )
     }
 
-    private fun LanguageToolMatchDto.toIssue(offsets: List<IntRange>): ExampleIssue =
+    private fun LanguageToolMatchDto.toIssue(
+        offsets: List<IntRange>,
+        plainTextLength: Int,
+    ): ExampleIssue =
         ExampleIssue(
             code = rule?.id?.ifBlank { null } ?: "languagetool",
             severity = severityFor(rule?.issueType),
-            location = locateMatch(offset, length, offsets),
+            location = locateMatch(offset, length, offsets, plainTextLength),
             message = message.ifBlank { rule?.description.orEmpty() },
             sources = listOf(ref()),
         )
@@ -199,10 +203,25 @@ private fun locateMatch(
     offset: Int,
     length: Int,
     offsets: List<IntRange>,
+    plainTextLength: Int,
 ): ExampleLocation {
-    val span = offset until (offset + length)
-    // Search for a segment that contains the entire match. Crossing a
-    // boundary degrades to PlainTextSpan so the orchestrator can decide.
+    // Clamp upstream offsets to the plain-text range so a malformed LT
+    // response (negative offset, length past EOF, UTF-16-vs-code-point
+    // mismatch) cannot ship a negative or reversed `IntRange` into the
+    // domain (I5). Empty/clamped-empty spans degrade to WholeSentence rather
+    // than emit a misleading WithinSegment range; a zero-length match (LT
+    // emits these for some insertion-style rules) is treated as a caret
+    // position at `offset` and is attributed to the segment that STARTS at
+    // that caret — not the previous segment whose `last == caret - 1`.
+    val safeStart = offset.coerceIn(0, plainTextLength)
+    val safeEnd = (offset + length).coerceIn(safeStart, plainTextLength)
+    if (length == 0) {
+        return locateCaret(safeStart, offsets, plainTextLength)
+    }
+    if (safeStart == safeEnd) {
+        return ExampleLocation.WholeSentence
+    }
+    val span = safeStart until safeEnd
     val segment =
         offsets.withIndex().firstOrNull { (_, segmentRange) ->
             segmentRange.first <= span.first && segmentRange.last >= span.last
@@ -213,6 +232,30 @@ private fun locateMatch(
         val relativeEnd = span.last - segmentRange.first
         ExampleLocation.WithinSegment(segmentIndex = segment.index, range = relativeStart..relativeEnd)
     } else {
-        ExampleLocation.PlainTextSpan(range = offset..(offset + length - 1))
+        ExampleLocation.PlainTextSpan(range = safeStart..(safeEnd - 1))
+    }
+}
+
+private fun locateCaret(
+    caret: Int,
+    offsets: List<IntRange>,
+    plainTextLength: Int,
+): ExampleLocation {
+    // A caret at position `c` belongs to the segment that STARTS at `c` (so
+    // LT's "missing word" insertion attaches to the following segment). If no
+    // segment starts there, fall back to the segment that contains the caret
+    // via half-open semantics (`first <= c < first + length`). End-of-text
+    // carets degrade to WholeSentence so the orchestrator does not try to
+    // render a zero-width underline at the trailing edge of the last segment.
+    if (caret >= plainTextLength) return ExampleLocation.WholeSentence
+    offsets.withIndex().firstOrNull { (_, range) -> range.first == caret }?.let {
+        return ExampleLocation.WithinSegment(segmentIndex = it.index, range = 0..0)
+    }
+    val container = offsets.withIndex().firstOrNull { (_, range) -> caret in range.first..range.last }
+    return if (container != null) {
+        val relative = caret - container.value.first
+        ExampleLocation.WithinSegment(segmentIndex = container.index, range = relative..relative)
+    } else {
+        ExampleLocation.WholeSentence
     }
 }

@@ -19,6 +19,14 @@ class FeatureLayeringKonsistTest {
 
     @Test
     fun `composable declarations should stay in ui app-shell or feature impl layers`() {
+        // Allowlist: UI library (`shared/ui/`), composition root
+        // (`shared/app-shell/`), feature presentation impl, and the dedicated
+        // Compose-infrastructure module (`shared/core/compose/`). The latter
+        // carries cross-feature composable helpers (haptics, CompositionLocals)
+        // that any feature presentation impl can pull in — same architectural
+        // altitude as `shared/ui/`, just scoped to runtime infrastructure
+        // rather than the design system. The rule keeps biting domain/data,
+        // non-UI `shared/core/*` modules and presentation api/navigation-api.
         val violations =
             KonsistTestSupport.sharedScope
                 .functions(includeNested = true, includeLocal = false)
@@ -30,6 +38,7 @@ class FeatureLayeringKonsistTest {
                 .filterNot { path ->
                     path.startsWith("shared/app-shell/") ||
                         path.startsWith("shared/ui/") ||
+                        path.startsWith("shared/core/compose/") ||
                         KonsistTestSupport.featurePresentationImplRegex.containsMatchIn(path)
                 }.map { path ->
                     violation(

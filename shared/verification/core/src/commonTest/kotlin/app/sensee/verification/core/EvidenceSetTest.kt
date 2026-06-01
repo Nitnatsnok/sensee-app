@@ -44,6 +44,29 @@ class EvidenceSetTest {
         assertEquals(emptyList(), set.observations)
     }
 
+    @Test
+    fun `nullable T agreed null is indistinguishable from no consensus by design`() {
+        // Pins the KDoc on [EvidenceSet.consensus]: for a nullable `T` an
+        // agreed `null` (every source said "I don't know") and "no observations"
+        // both surface as `consensus == null`. Callers depend on `hasConflict`
+        // to disambiguate: `consensus == null && hasConflict == true` means
+        // sources disagree; `consensus == null && hasConflict == false`
+        // means either everyone said null OR no source ran. Many report fields
+        // are EvidenceSet<T?>; a regression here would silently merge those
+        // two states into one.
+        val allNull =
+            EvidenceSet<CefrLevel?>(
+                listOf(
+                    Observation(null, ref("free-dictionary"), Confidence.Medium),
+                    Observation(null, ref("datamuse"), Confidence.Low),
+                ),
+            )
+
+        assertNull(allNull.consensus)
+        assertFalse(allNull.hasConflict, "agreed-null must NOT flag as conflict")
+        assertEquals(2, allNull.observations.size, "the all-null agreement is still attributed evidence")
+    }
+
     private fun ref(sourceId: String): LexicalSourceRef =
         LexicalSourceRef(sourceId = sourceId, fetchedAtEpochMillis = 0L)
 }

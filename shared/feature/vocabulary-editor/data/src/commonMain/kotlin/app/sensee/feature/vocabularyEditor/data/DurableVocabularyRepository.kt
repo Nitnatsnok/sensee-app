@@ -6,6 +6,8 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.database.Lexical_entry
+import app.sensee.core.observability.diagnostics.AppDiagnostics
+import app.sensee.core.observability.logging.AppLogger
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.vocabularyEditor.domain.VocabularyRepository
 import app.sensee.lexicon.domain.EntryId
@@ -49,8 +51,10 @@ public class DurableVocabularyRepository(
     private val dispatchers: AppDispatchers,
     private val json: Json,
     private val clock: Clock,
+    appDiagnostics: AppDiagnostics,
 ) : VocabularyRepository {
     private val mutationMutex = Mutex()
+    private val logger: AppLogger = appDiagnostics.logger.tag("DurableVocabularyRepository")
     private var sequence = 0
 
     override suspend fun createDraft(term: String): LexicalEntry =
@@ -135,7 +139,12 @@ public class DurableVocabularyRepository(
                 val updated =
                     current.copy(
                         status = EntryStatus.Confirmed,
-                        senses = current.senses + senses,
+                        // First-confirm goes through the same content-key dedup
+                        // primitive as the merge/edit paths (B1). Otherwise two
+                        // AI candidates that collapse to the same content key
+                        // would both persist on the first confirm and only get
+                        // deduped on a later re-capture — forking SRS state.
+                        senses = mergeSenses(current.senses, senses),
                     )
                 upsert(updated)
                 updated
@@ -222,16 +231,35 @@ public class DurableVocabularyRepository(
             )
     }
 
-    private fun Lexical_entry.toDomain(): LexicalEntry =
-        LexicalEntry(
+    private fun Lexical_entry.toDomain(): LexicalEntry {
+        // Both fallbacks below recover *visible* behavior (the row keeps loading)
+        // but represent a data-integrity event the developer must see — silent
+        // demotion of a Confirmed entry to an empty Draft would otherwise look
+        // like the user lost their work. We log via the project's diagnostics
+        // channel and surface the entry id so a follow-up read can correlate.
+        val resolvedStatus =
+            EntryStatus.entries.firstOrNull { it.name == status } ?: run {
+                logger.warn {
+                    "Unknown EntryStatus '$status' for entry $id; treating as Draft. " +
+                        "Confirmed senses (if any) will not be re-promoted on read."
+                }
+                EntryStatus.Draft
+            }
+        val resolvedSenses =
+            try {
+                json.decodeFromString<List<SenseDto>>(senses_json).map { it.toDomain() }
+            } catch (failure: SerializationException) {
+                logger.warn(failure) {
+                    "Malformed senses_json for entry $id; dropping senses. " +
+                        "A re-confirm or re-capture replaces the row in place."
+                }
+                emptyList()
+            }
+        return LexicalEntry(
             id = EntryId(id),
             term = term,
-            status = EntryStatus.entries.firstOrNull { it.name == status } ?: EntryStatus.Draft,
-            senses =
-                try {
-                    json.decodeFromString<List<SenseDto>>(senses_json).map { it.toDomain() }
-                } catch (_: SerializationException) {
-                    emptyList()
-                },
+            status = resolvedStatus,
+            senses = resolvedSenses,
         )
+    }
 }

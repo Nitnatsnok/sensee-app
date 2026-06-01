@@ -41,6 +41,8 @@
 |UserSettingsScope|Область хранения пользовательских настроек: `Device` сейчас и `User` для будущей синхронизации после авторизации
 |Anti-corruption mapping|Преобразование внешнего DTO в доменную модель на границе интеграции, чтобы модель провайдера не протекала в feature-домен
 |Versioned contract|Контракт запроса/ответа с явной версией DTO; версия нужна для несовместимых изменений формата, а не для каждой новой опции
+|EvidenceSet|Контейнер per-source наблюдений одного факта в верификации (`LexicalVerificationReport`): несколько провайдеров могут ответить на один и тот же вопрос, `consensus` отдаёт согласованное значение либо `null`, `hasConflict` сигнализирует о расхождении. Для nullable `T` согласованный `null` неотличим от «нет консенсуса» — пара с `hasConflict` снимает неоднозначность
+|LicensePolicy|License-метаданные источника верификации, два несжимаемых флага: `usableAsLlmContext` (можно ли передавать фрагмент в LLM-prompt как evidence) и `storeContentAllowed` (можно ли класть ответ в персистентный L2-кэш). Дефолт — самый строгий (`false`/`false`), opt-in per-adapter; fail-closed для незарегистрированных источников
 |PlatformEnvironment|Абстракция платформенного окружения, передаваемая в shared app shell при запуске приложения
 |Persistence Module|`shared/database` с SQLDelight schema и platform-specific driver factories
 |SRS Libraries|Набор модулей `shared/srs/*`, содержащих модели, engine и FSRS-реализацию

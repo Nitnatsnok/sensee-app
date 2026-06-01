@@ -152,7 +152,7 @@ public class DatamuseLexicalAdapter(
 
     public companion object {
         public const val DEFAULT_BASE_URL: String = "https://api.datamuse.com/words"
-        public const val STRONG_SUGGESTION_SCORE: Int = 50
+        public const val STRONG_SUGGESTION_SCORE: Long = 50L
         public const val MAX_RESULTS: Int = 5
         private val SUPPORTED_LANGUAGE_TAGS: Set<String> = setOf("en", "en-us", "en-gb")
     }

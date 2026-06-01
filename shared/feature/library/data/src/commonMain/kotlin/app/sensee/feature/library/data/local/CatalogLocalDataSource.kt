@@ -28,6 +28,7 @@ import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
 import app.sensee.feature.library.domain.LemmaDerivative
 import app.sensee.feature.library.domain.LemmaId
+import app.sensee.feature.library.domain.derivativesOfSenses
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.enrichment.toSense
@@ -310,6 +311,13 @@ private fun encodeSense(
 // ONCE at sync; the result is persisted as a SenseDto, so
 // reads never re-map. Returns null only when the item has no usable translation
 // (the mapper drops it), so the card degrades to its lean columns.
+//
+// Extension fields (e.g. `cefr` via CefrEnrichmentExtension) are intentionally
+// NOT threaded here: they ride on EnrichmentSuggestion.extensions, but Sense and
+// SenseDto have no slot for them and nothing reads cefr off a persisted Sense.
+// They stay a transient producer-side concern (curated/LLM), so the catalog path
+// maps without itemExtensions — lossless w.r.t. what is persisted. Pinned by
+// EnrichedDeckFixtureTest; revisit if cefr ever becomes part of Sense.
 private fun EnrichmentItemV1.toConfirmedSenseOrNull(fallbackTerm: String): Sense? =
     EnrichmentResponseMapper
         .map(EnrichmentResponseV1(items = listOf(this)))
@@ -334,20 +342,15 @@ private fun Practice_card.senseOrNull(
 }
 
 // The lemma page's word family: derivatives every related card's rich sense
-// declared, deduped by lemma (mirrors CapturedCatalogDerivation).
+// declared, deduped by lemma. Shared helper (I7) — the captured-derivation
+// path uses the same primitive so the lemma page is byte-identical regardless
+// of whether the senses come from confirmed user entries or from a service
+// deck row.
 private fun derivativesOf(
     cardRows: List<Practice_card>,
     json: Json,
     logger: AppLogger,
-): List<LemmaDerivative> {
-    val seen = mutableSetOf<String>()
-    return cardRows
-        .flatMap { it.senseOrNull(json, logger)?.wordFamily.orEmpty() }
-        .mapNotNull { member ->
-            val text = member.lemma.trim()
-            if (text.isEmpty() || !seen.add(text.lowercase())) null else LemmaDerivative(text, member.unitType)
-        }
-}
+): List<LemmaDerivative> = derivativesOfSenses(cardRows.asSequence().mapNotNull { it.senseOrNull(json, logger) })
 
 private fun Practice_card.toCard(
     json: Json,

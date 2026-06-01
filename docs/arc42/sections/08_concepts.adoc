@@ -79,6 +79,13 @@ Companion reference::
 * Один lexical entry может иметь несколько senses; один sense может иметь несколько contextual applications и grammar cues.
 * Карточки, practice и review являются производными представлениями подтверждённого материала, а не первичной моделью содержания.
 
+== Lexical Verification Seam
+
+* Лексическая верификация — отдельная граница `shared/verification/{core,sensee-curated,free-dictionary,datamuse,languagetool,database-schema,integration}` по тому же seam-конвенциу, что `shared/ai` и `shared/tts`. `core` — провайдер-агностичный контракт без вендорских SDK и feature-домена; sibling-модули — реализации (один адаптер на внешний API; sensee-curated отдаётся бэкендом по HTTP, в этой сборке — мок-бэкендом); `integration` собирает `RoutingLexicalVerifier` (параллельный fan-out, per-provider timeout) и `PersistedCachingLexicalVerifier` (привязанная в DI реализация `LexicalVerifier`).
+* Доступность — first-class: `Available`/`Degraded`/`Unavailable` — штатные исходы. Verifier не бросает исключение через границу (структурная отмена пробрасывается, всё остальное оборачивается в `runCatchingCancellable`). Findings/evidence не появляются на отчёте, у которого `availability is Unavailable` — инвариант `LexicalVerificationReport.init` плюс защитные гейты в merge-хелперах не дают тому случиться даже при misbehaving-адаптере.
+* Capture использует verifier дважды: первый раз ДО AI (`SuggestVocabularySensesUseCase` собирает evidence для prompt-канала), второй раз ПОСЛЕ AI (`VerifyVocabularySuggestionsUseCase` навешивает per-candidate `SenseVerificationSnapshot`). Persisted material снимок не несёт; объяснимость живёт на уровне candidate-слоя (ADR-001).
+* License-aware агрегация — две неотменяемых границы фильтрации: `LicensePolicy.usableAsLlmContext` гейтит, что из evidence уходит в LLM-prompt; `LicensePolicy.storeContentAllowed` гейтит, какие отчёты ложатся в персистентный L2-кэш. Незарегистрированный contributing-источник трактуется как non-persistable (fail-closed). Подробности — ADR-007 (граница) и ADR-009 (двухуровневый кэш).
+
 == Candidate versus Confirmed Data
 
 * AI-enrichment не должен сразу становиться каноническим содержанием.

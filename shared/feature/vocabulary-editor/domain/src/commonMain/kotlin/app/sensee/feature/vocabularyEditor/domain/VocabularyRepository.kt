@@ -31,11 +31,17 @@ public interface VocabularyRepository : LexiconRepository {
      * Adds the user-selected senses and moves the entry to
      * [EntryStatus.Confirmed]. The selection IS the confirmation (ADR-001):
      * there is no separate confirm stage. An empty list is a no-op.
+     *
+     * Abstract on purpose: a "no-op default" would let an implementer compile
+     * a non-functional repository and crash at the first capture. Every
+     * implementation declares the persistence path explicitly; `confirmMeanings`
+     * is a transitional alias the still-`Meaning`-typed presentation layer can
+     * keep using until it migrates to `Sense` (ADR-001 rename).
      */
     public suspend fun confirmSenses(
         id: EntryId,
         senses: List<Sense>,
-    ): LexicalEntry = error("VocabularyRepository must implement confirmSenses or confirmMeanings")
+    ): LexicalEntry
 
     public suspend fun confirmMeanings(
         id: EntryId,

@@ -170,6 +170,163 @@ class LanguageToolExampleCheckerTest {
         }
 
     @Test
+    fun `a negative offset is clamped and never produces a reversed IntRange`() =
+        runTest {
+            // I5: malformed LT response with a negative offset would otherwise
+            // create a span `-2 until 1` and later subscript downstream code
+            // out of bounds. Adapter must clamp into the plain-text range; a
+            // collapsed span degrades to WholeSentence rather than an
+            // out-of-bounds WithinSegment.
+            val engine =
+                MockEngine {
+                    respond(
+                        content =
+                            """
+                            {"matches":[{"message":"x","offset":-2,"length":3,
+                            "replacements":[],"rule":{"id":"X","issueType":"style"}}]}
+                            """.trimIndent(),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+                    )
+                }
+            val checker = checker(engine)
+
+            val result =
+                checker.check(
+                    ExampleCheckRequest(
+                        SentenceHint(listOf(SentenceHint.Segment.Text("She comes."))),
+                        "en",
+                    ),
+                )
+
+            val location = result.issues.single().location
+            assertTrue(
+                location is ExampleLocation.WithinSegment || location is ExampleLocation.WholeSentence,
+                "negative offset must not surface as a raw out-of-bounds range; got $location",
+            )
+            if (location is ExampleLocation.WithinSegment) {
+                assertTrue(location.range.first >= 0)
+                assertTrue(location.range.last >= location.range.first)
+            }
+        }
+
+    @Test
+    fun `an offset beyond the text length collapses to WholeSentence`() =
+        runTest {
+            val engine =
+                MockEngine {
+                    respond(
+                        content =
+                            """
+                            {"matches":[{"message":"x","offset":500,"length":3,
+                            "replacements":[],"rule":{"id":"X","issueType":"style"}}]}
+                            """.trimIndent(),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+                    )
+                }
+            val checker = checker(engine)
+
+            val result =
+                checker.check(
+                    ExampleCheckRequest(
+                        SentenceHint(listOf(SentenceHint.Segment.Text("She comes."))),
+                        "en",
+                    ),
+                )
+
+            assertEquals(ExampleLocation.WholeSentence, result.issues.single().location)
+        }
+
+    @Test
+    fun `a length running past the end is clamped to the text boundary`() =
+        runTest {
+            val engine =
+                MockEngine {
+                    respond(
+                        content =
+                            """
+                            {"matches":[{"message":"x","offset":4,"length":99,
+                            "replacements":[],"rule":{"id":"X","issueType":"style"}}]}
+                            """.trimIndent(),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+                    )
+                }
+            val checker = checker(engine)
+
+            val result =
+                checker.check(
+                    ExampleCheckRequest(
+                        SentenceHint(listOf(SentenceHint.Segment.Text("She comes."))),
+                        "en",
+                    ),
+                )
+
+            val location = result.issues.single().location
+            // Full plain text is 10 chars: "She comes." — single segment, so
+            // the safeEnd=10, span=4 until 10 → segment-relative range 4..9.
+            // The strong assertion is "range never reaches into out-of-bounds
+            // territory"; the exact range may differ if the adapter ever
+            // changes the WithinSegment vs PlainTextSpan policy.
+            assertTrue(
+                location is ExampleLocation.WithinSegment || location is ExampleLocation.PlainTextSpan,
+                "clamped match must land somewhere; got $location",
+            )
+            val absoluteRange =
+                when (location) {
+                    is ExampleLocation.WithinSegment -> location.range
+                    is ExampleLocation.PlainTextSpan -> location.range
+                    is ExampleLocation.Segment, is ExampleLocation.WholeSentence ->
+                        error("clamped match must not collapse to whole-sentence here")
+                }
+            assertTrue(absoluteRange.first >= 0)
+            assertTrue(
+                absoluteRange.last <= 9,
+                "clamped end must stay within text length 10, got ${absoluteRange.last}",
+            )
+            assertTrue(absoluteRange.last >= absoluteRange.first, "range must not be reversed")
+        }
+
+    @Test
+    fun `a zero-length insertion match attaches to the segment that starts at the caret`() =
+        runTest {
+            // The plain text is "She comes." → segments are [0..3] "She ",
+            // [4..8] "comes", [9..9] ".". A zero-length match at offset 4
+            // (caret between "She " and "comes") must land on segment 1, the
+            // one that STARTS at the caret. The pre-fix code attached it to
+            // segment 0 because its end == caret - 1.
+            val sentence =
+                SentenceHint(
+                    listOf(
+                        SentenceHint.Segment.Text("She "),
+                        SentenceHint.Segment.Target("comes"),
+                        SentenceHint.Segment.Text("."),
+                    ),
+                )
+            val engine =
+                MockEngine {
+                    respond(
+                        content =
+                            """
+                            {"matches":[{"message":"missing word","offset":4,"length":0,
+                            "replacements":[],"rule":{"id":"INS","issueType":"grammar"}}]}
+                            """.trimIndent(),
+                        status = HttpStatusCode.OK,
+                        headers = headersOf("Content-Type", ContentType.Application.Json.toString()),
+                    )
+                }
+            val checker = checker(engine)
+
+            val result = checker.check(ExampleCheckRequest(sentence, "en"))
+
+            val location = result.issues.single().location
+            assertTrue(location is ExampleLocation.WithinSegment)
+            assertEquals(1, location.segmentIndex)
+            assertEquals(0..0, location.range)
+        }
+
+    @Test
     fun `a partial-replacement set drops the auto-rewrite entirely`() =
         runTest {
             val engine =

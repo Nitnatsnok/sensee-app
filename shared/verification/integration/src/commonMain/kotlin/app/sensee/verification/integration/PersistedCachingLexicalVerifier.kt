@@ -57,9 +57,19 @@ public class PersistedCachingLexicalVerifier(
 ) : LexicalVerifier {
     private val logger = appDiagnostics.logger.tag("PersistedVerifierCache")
     private val mutex = Mutex()
+
+    // Serializes L2 writes (upsert + amortised prune) so concurrent writers
+    // do not over-evict against a shared pre-delete row count.
+    private val writeMutex = Mutex()
     private val memory = linkedMapOf<CacheKey, CacheEntry>()
     private var startupCleanupDone = false
     private var writesSinceLastPrune = 0
+
+    // Test-only overrides for the L2 capacity policy. Production code uses the
+    // companion constants; tests downscale them so the prune path is reachable
+    // in milliseconds rather than thousands of writes.
+    internal var maxDiskEntries: Int = MAX_DISK_ENTRIES
+    internal var pruneInterval: Int = PRUNE_INTERVAL
     private val sourceCatalogById: Map<String, LexicalSource> = delegate.sourceCatalog.associateBy { it.id }
     private val sourceCatalogSignature: String = CacheKey.sourceCatalogSignature(delegate.sourceCatalog)
 
@@ -225,19 +235,28 @@ public class PersistedCachingLexicalVerifier(
         val queries = queriesOrNull() ?: return
         runCatchingCancellable {
             val payload = json.encodeToString(LexicalVerificationReport.serializer(), entry.report)
-            queries.upsert(
-                cache_key = key.persistedKey(),
-                key_fingerprint = key.fingerprint(),
-                report_json = payload,
-                written_at_epoch_ms = now,
-                expires_at_epoch_ms = entry.expiresAtEpochMillis,
-                last_accessed_at_epoch_ms = now,
-            )
-            logger.debug {
-                "Verification cache write: layer=L2; ttlMs=${entry.expiresAtEpochMillis - now}; " +
-                    VerificationLogSummaries.report(entry.report)
+            // Serialize the upsert+prune pair under [writeMutex] so two
+            // concurrent writers crossing the [PRUNE_INTERVAL] boundary cannot
+            // each compute `excess = count - MAX_DISK_ENTRIES` against the same
+            // pre-delete count and double-evict (cache thrash, ADR-0009). A
+            // SQLDelight transaction would not help here — the over-eviction
+            // race is between two separate writes' eviction decisions, not
+            // about an atomic statement group.
+            writeMutex.withLock {
+                queries.upsert(
+                    cache_key = key.persistedKey(),
+                    key_fingerprint = key.fingerprint(),
+                    report_json = payload,
+                    written_at_epoch_ms = now,
+                    expires_at_epoch_ms = entry.expiresAtEpochMillis,
+                    last_accessed_at_epoch_ms = now,
+                )
+                logger.debug {
+                    "Verification cache write: layer=L2; ttlMs=${entry.expiresAtEpochMillis - now}; " +
+                        VerificationLogSummaries.report(entry.report)
+                }
+                pruneIfOverCapLocked(queries)
             }
-            pruneIfOverCap(queries)
         }.onFailure { throwable ->
             when (throwable) {
                 is SerializationException ->
@@ -247,23 +266,17 @@ public class PersistedCachingLexicalVerifier(
         }
     }
 
-    private suspend fun pruneIfOverCap(queries: LexicalVerificationCacheEntityQueries) {
-        // Count + select + delete once per [PRUNE_INTERVAL] writes; the cap may
-        // overshoot by a few entries between prunes.
-        val shouldPrune =
-            mutex.withLock {
-                writesSinceLastPrune++
-                if (writesSinceLastPrune < PRUNE_INTERVAL) {
-                    false
-                } else {
-                    writesSinceLastPrune = 0
-                    true
-                }
-            }
-        if (!shouldPrune) return
+    // Caller MUST hold [writeMutex]: the count/select/delete sequence must run
+    // exclusive of any other writer's prune decision, otherwise two writers
+    // crossing PRUNE_INTERVAL each compute excess against the same pre-delete
+    // count and delete `2 * excess` rows.
+    private suspend fun pruneIfOverCapLocked(queries: LexicalVerificationCacheEntityQueries) {
+        writesSinceLastPrune++
+        if (writesSinceLastPrune < pruneInterval) return
+        writesSinceLastPrune = 0
         val count = queries.countEntries().awaitAsOneOrNull() ?: return
-        if (count <= MAX_DISK_ENTRIES) return
-        val excess = (count - MAX_DISK_ENTRIES).toInt()
+        if (count <= maxDiskEntries) return
+        val excess = (count - maxDiskEntries).toInt()
         val keysToDrop = queries.selectOldestKeys(excess.toLong()).awaitAsList()
         keysToDrop.forEach { key -> queries.deleteByKey(key) }
     }
@@ -453,10 +466,10 @@ public class PersistedCachingLexicalVerifier(
 
         // Minimum interval between disk touch-updates; coalesces hot-key writes
         // while keeping LRU resolution adequate.
-        private const val TOUCH_THROTTLE_MILLIS: Long = 60L * 1000L
+        internal const val TOUCH_THROTTLE_MILLIS: Long = 60L * 1000L
 
         // Prune is amortised over this many writes.
-        private const val PRUNE_INTERVAL: Int = 64
+        internal const val PRUNE_INTERVAL: Int = 64
     }
 }
 

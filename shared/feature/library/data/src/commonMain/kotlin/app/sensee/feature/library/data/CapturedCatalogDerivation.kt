@@ -10,6 +10,7 @@ import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
 import app.sensee.feature.library.domain.LemmaDerivative
 import app.sensee.feature.library.domain.LemmaId
+import app.sensee.feature.library.domain.derivativesOfSenses
 import app.sensee.grammar.domain.GrammarCategory
 import app.sensee.grammar.domain.GrammarForm
 import app.sensee.grammar.domain.GrammarTag
@@ -160,20 +161,18 @@ internal object CapturedCatalogDerivation {
     // The lemma page's word family: derivatives every confirmed sense in this
     // family declared, deduped by lemma. Surfaces the lemma→derivative link
     // without merging the derivatives' own captured entries into this family.
+    // Delegates the flatten/dedup loop to the shared helper so the captured
+    // and catalog read paths produce a byte-identical list (I7).
     private fun derivativesFor(
         entries: List<LexicalEntry>,
         lemmaId: LemmaId,
-    ): List<LemmaDerivative> {
-        val seen = mutableSetOf<String>()
-        return entries
-            .filter { it.status == EntryStatus.Confirmed }
-            .flatMap { entry -> entry.senses.filter { lemmaIdFor(entry, it) == lemmaId } }
-            .flatMap { it.wordFamily }
-            .mapNotNull { member ->
-                val text = member.lemma.trim()
-                if (text.isEmpty() || !seen.add(text.lowercase())) null else LemmaDerivative(text, member.unitType)
-            }
-    }
+    ): List<LemmaDerivative> =
+        derivativesOfSenses(
+            entries
+                .asSequence()
+                .filter { it.status == EntryStatus.Confirmed }
+                .flatMap { entry -> entry.senses.asSequence().filter { lemmaIdFor(entry, it) == lemmaId } },
+        )
 
     private fun irregularFormCards(
         lemmaKey: String,

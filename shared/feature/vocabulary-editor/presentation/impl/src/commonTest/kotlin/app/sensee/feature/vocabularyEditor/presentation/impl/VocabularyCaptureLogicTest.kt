@@ -72,14 +72,17 @@ class VocabularyCaptureLogicTest {
             deletedIds.add(id)
         }
 
-        override suspend fun confirmMeanings(
+        // confirmSenses is the abstract contract; confirmMeanings is a
+        // transitional alias that delegates to it. The fake overrides
+        // confirmSenses so both call sites go through one recorded path.
+        override suspend fun confirmSenses(
             id: EntryId,
-            meanings: List<Meaning>,
+            senses: List<Meaning>,
         ): LexicalEntry {
             confirmCount++
             confirmGate?.await()
-            lastConfirmed = id to meanings
-            return LexicalEntry(id, "come across", EntryStatus.Confirmed, meanings)
+            lastConfirmed = id to senses
+            return LexicalEntry(id, "come across", EntryStatus.Confirmed, senses)
         }
     }
 

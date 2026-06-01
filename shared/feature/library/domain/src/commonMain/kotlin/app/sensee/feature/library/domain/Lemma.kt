@@ -1,6 +1,7 @@
 package app.sensee.feature.library.domain
 
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.lexicon.domain.Sense
 
 /**
  * A lemma groups cards that share a base lexical form.
@@ -24,6 +25,23 @@ public data class LemmaDerivative(
     val text: String,
     val unitType: GrammarUnitType? = null,
 )
+
+/**
+ * Flattens `wordFamily` across [senses] into a deduplicated [LemmaDerivative]
+ * list. Trim + case-fold for dedup, drop blanks. Single source of truth (I7):
+ * both the captured-derivation path (`CapturedCatalogDerivation`) and the
+ * service-catalog read path (`CatalogLocalDataSource`) call this, so the
+ * lemma-page word family stays identical no matter which side produces it.
+ */
+public fun derivativesOfSenses(senses: Sequence<Sense>): List<LemmaDerivative> {
+    val seen = mutableSetOf<String>()
+    return senses
+        .flatMap { it.wordFamily.asSequence() }
+        .mapNotNull { member ->
+            val text = member.lemma.trim()
+            if (text.isEmpty() || !seen.add(text.lowercase())) null else LemmaDerivative(text, member.unitType)
+        }.toList()
+}
 
 /**
  * A lightweight projection of a [Card] used for navigation lists where the full SRS payload is not

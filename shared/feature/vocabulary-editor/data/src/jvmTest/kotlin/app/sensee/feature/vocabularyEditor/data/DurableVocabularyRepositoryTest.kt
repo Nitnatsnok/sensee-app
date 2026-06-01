@@ -2,12 +2,18 @@ package app.sensee.feature.vocabularyEditor.data
 
 import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import app.sensee.core.observability.analytics.NoOpAnalyticsTracker
+import app.sensee.core.observability.crash.NoOpCrashReporter
+import app.sensee.core.observability.diagnostics.AppDiagnostics
+import app.sensee.core.observability.logging.AppLogger
 import app.sensee.core.testKit.immediateAppDispatchers
+import app.sensee.core.testKit.noOpAppDiagnostics
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.vocabularyEditor.domain.EntryStatus
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.SurfaceForm
+import app.sensee.lexicon.domain.EntryId
 import app.sensee.lexicon.domain.Sense
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -28,6 +34,48 @@ class DurableVocabularyRepositoryTest {
         private val db: SenseeDatabase,
     ) : SenseeDatabaseProvider {
         override suspend fun database(): SenseeDatabase = db
+    }
+
+    // Captures every `warn` call's lazily-built message so the tests can pin
+    // that defensive fallbacks (unknown status / malformed JSON) actually log
+    // instead of vanishing silently. Non-warn overrides are intentionally
+    // empty — this fake only records the warn channel under test.
+    @Suppress("EmptyFunctionBlock")
+    private class RecordingDiagnostics : AppDiagnostics {
+        val warnings: MutableList<String> = mutableListOf()
+        override val logger: AppLogger =
+            object : AppLogger {
+                override fun tag(tag: String): AppLogger = this
+
+                override fun verbose(
+                    throwable: Throwable?,
+                    message: () -> String,
+                ) {}
+
+                override fun debug(
+                    throwable: Throwable?,
+                    message: () -> String,
+                ) {}
+
+                override fun info(
+                    throwable: Throwable?,
+                    message: () -> String,
+                ) {}
+
+                override fun warn(
+                    throwable: Throwable?,
+                    message: () -> String,
+                ) {
+                    warnings += message()
+                }
+
+                override fun error(
+                    throwable: Throwable?,
+                    message: () -> String,
+                ) {}
+            }
+        override val crashReporter = NoOpCrashReporter
+        override val analyticsTracker = NoOpAnalyticsTracker
     }
 
     @Test
@@ -197,6 +245,117 @@ class DurableVocabularyRepositoryTest {
             assertEquals(merged, repository.getEntry(first.id))
         }
 
+    @Test
+    fun `first confirm of two senses with the same content key persists one merged sense`() =
+        runTest {
+            // Same identity-bearing fields → same deriveSenseContentKey. Without
+            // a dedup in the first-confirm path (B1) the row would persist BOTH
+            // senses, forking SRS state and only collapsing on a later re-capture.
+            val repository = repository()
+            val draft = repository.createDraft("come across")
+            val baseSense =
+                Sense(
+                    translation = "наткнуться",
+                    surfaceForm = SurfaceForm.parse("come across"),
+                    unitType = GrammarUnitType.PhrasalVerb,
+                )
+            val confirmed =
+                repository.confirmSenses(
+                    draft.id,
+                    listOf(
+                        baseSense,
+                        // Same content key — only explanation differs (excluded
+                        // from deriveSenseContentKey). Must NOT duplicate.
+                        baseSense.copy(explanation = "AI worded it twice on first pass"),
+                    ),
+                )
+
+            assertEquals(EntryStatus.Confirmed, confirmed.status)
+            assertEquals(1, confirmed.senses.size)
+            assertEquals(baseSense, confirmed.senses.single())
+            assertEquals(confirmed, repository.getEntry(draft.id))
+        }
+
+    @Test
+    fun `a row with an unknown status logs a warning and degrades to Draft on read`() =
+        runTest {
+            // Write a row with a bogus status directly via SQLDelight, then read
+            // through the repository. The fallback is intentional (no migrations)
+            // but the diagnostic surface must register the event — otherwise a
+            // lost Confirmed row looks like the user lost their work silently.
+            val driver =
+                JdbcSqliteDriver(
+                    JdbcSqliteDriver.IN_MEMORY,
+                    Properties(),
+                    SenseeDatabase.Schema.synchronous(),
+                )
+            val db = SenseeDatabase(driver)
+            db.lexicalEntryEntityQueries.upsertEntry(
+                id = "row-bogus",
+                term = "come across",
+                status = "AwaitingTriage", // not a member of EntryStatus
+                senses_json = "[]",
+                updated_at_epoch_ms = 0L,
+            )
+            val recording = RecordingDiagnostics()
+            val repository =
+                DurableVocabularyRepository(
+                    databaseProvider = FakeDbProvider(db),
+                    dispatchers = immediateAppDispatchers(),
+                    json = Json,
+                    clock = FixedClock,
+                    appDiagnostics = recording,
+                )
+
+            val loaded = repository.getEntry(EntryId("row-bogus"))
+
+            assertEquals(EntryStatus.Draft, loaded?.status)
+            assertEquals(emptyList(), loaded?.senses)
+            assertEquals(
+                1,
+                recording.warnings.count { it.contains("Unknown EntryStatus 'AwaitingTriage'") },
+                "unknown status must surface through diagnostics, not vanish silently",
+            )
+        }
+
+    @Test
+    fun `a row with malformed senses_json logs a warning and yields empty senses on read`() =
+        runTest {
+            val driver =
+                JdbcSqliteDriver(
+                    JdbcSqliteDriver.IN_MEMORY,
+                    Properties(),
+                    SenseeDatabase.Schema.synchronous(),
+                )
+            val db = SenseeDatabase(driver)
+            db.lexicalEntryEntityQueries.upsertEntry(
+                id = "row-broken",
+                term = "come across",
+                status = "Confirmed",
+                senses_json = "{not-an-array",
+                updated_at_epoch_ms = 0L,
+            )
+            val recording = RecordingDiagnostics()
+            val repository =
+                DurableVocabularyRepository(
+                    databaseProvider = FakeDbProvider(db),
+                    dispatchers = immediateAppDispatchers(),
+                    json = Json,
+                    clock = FixedClock,
+                    appDiagnostics = recording,
+                )
+
+            val loaded = repository.getEntry(EntryId("row-broken"))
+
+            assertEquals(EntryStatus.Confirmed, loaded?.status)
+            assertEquals(emptyList(), loaded?.senses)
+            assertEquals(
+                1,
+                recording.warnings.count { it.contains("Malformed senses_json") },
+                "malformed JSON must surface through diagnostics so the loss is debuggable",
+            )
+        }
+
     private fun repository(): DurableVocabularyRepository {
         val driver =
             JdbcSqliteDriver(
@@ -209,6 +368,7 @@ class DurableVocabularyRepositoryTest {
             dispatchers = immediateAppDispatchers(),
             json = Json,
             clock = FixedClock,
+            appDiagnostics = noOpAppDiagnostics(),
         )
     }
 }

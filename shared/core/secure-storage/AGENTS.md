@@ -16,8 +16,12 @@ async IO.
   - iOS — Keychain `SecItem*`, `kSecClassGenericPassword`,
     `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.
   - Desktop JVM — `java-keyring` (Windows Credential Vault / macOS Keychain /
-    Linux libsecret). Linux without libsecret degrades to a documented
-    plaintext-file fallback.
+    Linux libsecret). When no OS keyring backend is available — typically a
+    Linux box without libsecret — `DesktopSecureStorage` falls back to a
+    process-local in-memory store (`InMemoryKeyringBackend`). The user
+    re-enters their key each launch, but AI/TTS still work in that session.
+    Plaintext-file persistence was rejected as worse than asking the user to
+    set up libsecret.
   - JS / Wasm — a shared `webMain` actual backed by `window.localStorage`.
     The browser security model makes this best-effort: same-origin JS can read
     every value. Documented at the boundary; the demo build is not intended for

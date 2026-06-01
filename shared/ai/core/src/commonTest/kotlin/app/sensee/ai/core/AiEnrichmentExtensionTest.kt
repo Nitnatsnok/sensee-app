@@ -3,10 +3,12 @@ package app.sensee.ai.core
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AiEnrichmentExtensionTest {
@@ -17,6 +19,41 @@ class AiEnrichmentExtensionTest {
 
         assertTrue(CefrEnrichmentExtension.KEY in props.keys)
         assertEquals("string", cefr.getValue("type").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `the closed item schema admits every registered extension key alongside additionalProperties false`() {
+        // I6: built-in item schema sets additionalProperties=false. The closed
+        // schema must still admit registered extension keys (e.g. cefr): an
+        // extension lives in `properties`, so it is not blocked by the
+        // additionalProperties gate. The pair "closed AND extension-aware"
+        // is the contract that lets the LLM seam ship structured outputs
+        // without dropping live extension fields like `cefr`.
+        val item =
+            EnrichmentSchema
+                .buildJsonSchema(EnrichmentTaxonomy.EMPTY, extensions = setOf(CefrEnrichmentExtension))
+                .jsonObject
+                .getValue("properties")
+                .jsonObject
+                .getValue("items")
+                .jsonObject
+                .getValue("items")
+                .jsonObject
+
+        // Closed object: extras are blocked.
+        assertFalse(item.getValue("additionalProperties").jsonPrimitive.boolean)
+        // But the registered extension key IS in the explicit property list,
+        // so an item carrying `cefr` validates against the closed schema.
+        val props = item.getValue("properties").jsonObject
+        assertTrue(CefrEnrichmentExtension.KEY in props.keys)
+        val cefrType =
+            props
+                .getValue(CefrEnrichmentExtension.KEY)
+                .jsonObject
+                .getValue("type")
+                .jsonPrimitive
+                .content
+        assertEquals("string", cefrType)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package app.sensee.verification.integration
 
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
@@ -23,11 +24,14 @@ import app.sensee.verification.core.NormalizationOutcome
 import app.sensee.verification.core.SenseHint
 import app.sensee.verification.core.VerificationPolicy
 import app.sensee.verification.core.VerifierAvailability
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -166,6 +170,136 @@ class PersistedCachingLexicalVerifierTest {
         }
 
     @Test
+    fun `a query with examplesToValidate bypasses both layers because findings are sentence-specific`() =
+        runTest {
+            // ADR-009 invariant: example findings depend on the concrete
+            // sentences, so a lemma-keyed cache would return stale findings
+            // for new sentences. Two identical-by-lemma queries that each
+            // carry examplesToValidate must each hit the delegate.
+            val sharedDb = freshDatabase()
+            val sharedProvider = StaticDatabaseProvider(sharedDb)
+            val counter = CountingLookup()
+            val verifier = persisted(counter, sharedProvider)
+
+            val baseQuery = query("come")
+            val withExample =
+                baseQuery.copy(
+                    examplesToValidate =
+                        listOf(
+                            app.sensee.verification.core.ExampleHint(
+                                sentence =
+                                    app.sensee.verification.core.SentenceHint(
+                                        listOf(
+                                            app.sensee.verification.core.SentenceHint.Segment.Text(
+                                                "She comes across.",
+                                            ),
+                                        ),
+                                    ),
+                            ),
+                        ),
+                )
+
+            verifier.verify(withExample)
+            verifier.verify(withExample)
+
+            assertEquals(2, counter.calls, "example-validating queries must skip the cache entirely")
+        }
+
+    @Test
+    fun `a source ttl of zero disables cache writes entirely`() =
+        runTest {
+            // computeTtlMillis returns 0 when any source advertises a zero TTL;
+            // verify() then short-circuits writeToMemory/writeToDisk. Without
+            // the bypass, an entry with TTL 0 would land in L1 but never
+            // expire correctly under the LRU model (expires_at_epoch_ms == now).
+            val sharedDb = freshDatabase()
+            val sharedProvider = StaticDatabaseProvider(sharedDb)
+            val counter = CountingLookup()
+            val verifier = persisted(counter, sharedProvider, sourceTtlOverride = 0L)
+
+            verifier.verify(query("come"))
+            verifier.verify(query("come"))
+
+            // No cache write → every call goes to the delegate.
+            assertEquals(2, counter.calls, "ttl==0 must skip both L1 and L2 writes")
+        }
+
+    @Test
+    fun `policy maxCacheAgeMillis caps the source TTL when shorter`() =
+        runTest {
+            // computeTtlMillis = min(per-source TTL, policy.maxCacheAgeMillis,
+            // DEFAULT). When the policy TTL is shorter than the source's, the
+            // policy wins. We exercise it by setting a long source TTL and a
+            // very short policy TTL, then advancing the clock past the policy
+            // TTL but before the source one — the L2 read must treat the row
+            // as expired.
+            val sharedDb = freshDatabase()
+            val sharedProvider = StaticDatabaseProvider(sharedDb)
+            val counter = CountingLookup()
+            val clock = AdvanceableClock(0L)
+            val firstSession =
+                persisted(counter, sharedProvider, clock = clock, sourceTtlOverride = 10_000L)
+            firstSession.verify(query("come").copy(policy = VerificationPolicy(maxCacheAgeMillis = 1_000L)))
+
+            clock.advance(2_000L)
+            val secondSession =
+                persisted(counter, sharedProvider, clock = clock, sourceTtlOverride = 10_000L)
+            secondSession.verify(query("come").copy(policy = VerificationPolicy(maxCacheAgeMillis = 1_000L)))
+
+            assertEquals(
+                2,
+                counter.calls,
+                "the shorter policy TTL (1s) must win over the source TTL (10s)",
+            )
+        }
+
+    @Test
+    fun `concurrent writes past the disk cap do not over-evict beyond the configured limit`() =
+        runTest {
+            // Pre-fills cache to one row below the cap, then fires two concurrent
+            // verifies that both cross the [pruneInterval] threshold. Before the
+            // writeMutex fix, both writers computed `excess = count - cap`
+            // against the same pre-delete row count and each deleted that many
+            // oldest rows — leaving the cache below cap by 2 * excess. With
+            // serialized prune the second writer sees the post-delete count and
+            // only trims its own overshoot.
+            val sharedDb = freshDatabase()
+            val sharedProvider = StaticDatabaseProvider(sharedDb)
+            val counter = CountingLookup()
+            val verifier =
+                persisted(counter, sharedProvider).apply {
+                    maxDiskEntries = 8
+                    pruneInterval = 2
+                }
+
+            // Fill to capacity with serial verifies (one each — only the last
+            // few should cross the prune interval).
+            repeat(8) { index -> verifier.verify(query("term-$index")) }
+            val countBefore = sharedDb.cacheRowCount()
+            assertEquals(8, countBefore.toInt())
+
+            // Two new keys force two prunes. Run them in parallel via async so
+            // both writers can race the prune sequence. The fix serializes them
+            // under writeMutex; without the fix the second writer's prune would
+            // see the same pre-delete count and double-evict.
+            coroutineScope {
+                val a = async { verifier.verify(query("hot-a")) }
+                val b = async { verifier.verify(query("hot-b")) }
+                a.await()
+                b.await()
+            }
+
+            val countAfter = sharedDb.cacheRowCount().toInt()
+            // Eviction may overshoot the cap by at most one in-flight write
+            // because the count is sampled before the just-written row's row
+            // count fully settles, but it must NOT drop below `cap - 1`.
+            assertTrue(
+                countAfter in (8 - 1)..8,
+                "expected cache around the cap (7..8), got $countAfter",
+            )
+        }
+
+    @Test
     fun `a source version change invalidates persisted verification cache`() =
         runTest {
             val sharedDb = freshDatabase()
@@ -254,6 +388,15 @@ class PersistedCachingLexicalVerifierTest {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         SenseeDatabase.Schema.create(driver).await()
         return SenseeDatabase(driver)
+    }
+
+    private suspend fun SenseeDatabase.cacheRowCount(): Long {
+        // Tiny helper so the prune-cap test reads the row count without going
+        // through the SqlDriver cursor protocol (which forces a List).
+        var count = 0L
+        val rows = lexicalVerificationCacheEntityQueries.countEntries().awaitAsOneOrNull()
+        if (rows != null) count = rows
+        return count
     }
 
     private suspend fun SqlDriver.cacheRows(): List<CacheRow> =

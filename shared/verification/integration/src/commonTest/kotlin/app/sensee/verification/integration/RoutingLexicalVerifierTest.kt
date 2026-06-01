@@ -38,9 +38,14 @@ import app.sensee.verification.core.SuggestedAction
 import app.sensee.verification.core.UnitResolutionResult
 import app.sensee.verification.core.VerifierAvailability
 import app.sensee.verification.languagetool.LanguageToolSource
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -320,6 +325,135 @@ class RoutingLexicalVerifierTest {
         }
 
     @Test
+    fun `verify propagates CancellationException instead of swallowing it into a degraded result`() =
+        runTest {
+            // The seam's "never throw across" rule has a single exception:
+            // structured cancellation MUST unwind cleanly. runCatchingCancellable
+            // wraps every adapter call to enforce this, and the test pins the
+            // contract end-to-end. Without it, a host scope that cancels mid-
+            // verify (user navigates away, parent component disposes) would
+            // observe a fake degraded report instead of cancellation, leaking
+            // the cancelled work into UI state.
+            val hangingLookup =
+                object : LexicalEntryLookup {
+                    override suspend fun lookup(query: LexicalVerificationQuery): LexicalEntryLookupResult {
+                        awaitCancellation()
+                    }
+                }
+            val verifier =
+                RoutingLexicalVerifier(
+                    contributors =
+                        VerificationContributors(
+                            entryLookups = setOf(hangingLookup),
+                            frequencyProviders = emptySet(),
+                            cefrProviders = emptySet(),
+                            senseInventoryProviders = emptySet(),
+                            exampleQualityCheckers = emptySet(),
+                            familyProviders = emptySet(),
+                        ),
+                    sourceCatalog = setOf(stubSource),
+                    appDiagnostics = diagnostics(),
+                )
+
+            assertFailsWith<CancellationException> {
+                coroutineScope {
+                    val job = async { verifier.verify(query("come")) }
+                    job.cancel()
+                    job.await()
+                }
+            }
+        }
+
+    @Test
+    fun `a hung provider degrades via timeoutPerProviderMillis instead of stalling the report`() =
+        runTest {
+            val hangingLookup =
+                object : LexicalEntryLookup {
+                    override suspend fun lookup(query: LexicalVerificationQuery): LexicalEntryLookupResult =
+                        awaitCancellation()
+                }
+            val verifier =
+                RoutingLexicalVerifier(
+                    contributors =
+                        VerificationContributors(
+                            entryLookups = setOf(hangingLookup),
+                            frequencyProviders = emptySet(),
+                            cefrProviders = emptySet(),
+                            senseInventoryProviders = emptySet(),
+                            exampleQualityCheckers = emptySet(),
+                            familyProviders = emptySet(),
+                        ),
+                    sourceCatalog = setOf(stubSource),
+                    appDiagnostics = diagnostics(),
+                )
+            val baseQuery = query("come")
+            val tinyTimeout =
+                baseQuery.copy(policy = baseQuery.policy.copy(timeoutPerProviderMillis = 25L))
+
+            val report = verifier.verify(tinyTimeout)
+
+            // The hung leg degrades; with no other contributor the merged
+            // availability is Degraded("no source returned Available").
+            assertTrue(report.availability is VerifierAvailability.Degraded)
+        }
+
+    @Test
+    fun `an Unavailable lookup that nonetheless carries normalization candidates is gated out`() =
+        runTest {
+            // I4: the report-init invariant forbids carrying evidence on an
+            // all-Unavailable report. A misbehaving lookup that returns
+            // Unavailable BUT populates normalized.candidates would otherwise
+            // reach the merge helper and trip the require(!carriesEvidence)
+            // check across the seam. The merge helper must gate Unavailable
+            // contributors instead.
+            val verifier =
+                RoutingLexicalVerifier(
+                    contributors =
+                        VerificationContributors(
+                            entryLookups = setOf(unavailableButNoisyLookup),
+                            frequencyProviders = emptySet(),
+                            cefrProviders = emptySet(),
+                            senseInventoryProviders = emptySet(),
+                            exampleQualityCheckers = emptySet(),
+                            familyProviders = emptySet(),
+                        ),
+                    sourceCatalog = setOf(stubSource),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val report = verifier.verify(query("plumbus"))
+
+            assertTrue(report.availability is VerifierAvailability.Unavailable)
+            assertTrue(report.findings.isEmpty())
+            assertTrue(report.normalized.candidates.isEmpty())
+        }
+
+    @Test
+    fun `an Unavailable example checker that returns issues does not break the seam invariant`() =
+        runTest {
+            // Symmetric guard for collectExampleFindings.
+            val verifier =
+                RoutingLexicalVerifier(
+                    contributors =
+                        VerificationContributors(
+                            entryLookups = emptySet(),
+                            frequencyProviders = emptySet(),
+                            cefrProviders = emptySet(),
+                            senseInventoryProviders = emptySet(),
+                            exampleQualityCheckers = setOf(unavailableButNoisyExampleChecker),
+                            familyProviders = emptySet(),
+                        ),
+                    sourceCatalog = setOf(LanguageToolSource.descriptor),
+                    appDiagnostics = diagnostics(),
+                )
+
+            val report = verifier.verify(queryWithExample("come"))
+
+            assertTrue(report.availability is VerifierAvailability.Unavailable)
+            assertTrue(report.exampleFindings.isEmpty())
+        }
+
+    @Test
     fun `normalization candidates surface as headword findings`() =
         runTest {
             val verifier =
@@ -504,6 +638,61 @@ class RoutingLexicalVerifierTest {
                     units = emptyList(),
                     truncated = false,
                     sources = listOf(LexicalSourceRef(sourceId = "stub", fetchedAtEpochMillis = 0L)),
+                )
+        }
+
+    // Misbehaving lookup: claims Unavailable yet still ships a normalization
+    // candidate. Used by the I4 invariant test (the merge helper must drop it).
+    private val unavailableButNoisyLookup: LexicalEntryLookup =
+        object : LexicalEntryLookup {
+            override suspend fun lookup(query: LexicalVerificationQuery): LexicalEntryLookupResult {
+                val ref = LexicalSourceRef(sourceId = "stub", entryId = query.text, fetchedAtEpochMillis = 0L)
+                return LexicalEntryLookupResult(
+                    availability = VerifierAvailability.Unavailable("offline"),
+                    existence = LexicalExistence.Unknown,
+                    normalized =
+                        NormalizationOutcome(
+                            canonical = "should-not-surface",
+                            candidates =
+                                listOf(
+                                    NormalizationCandidate(
+                                        text = "should-not-surface",
+                                        kind = NormalizationKind.SpellFix,
+                                        source = ref,
+                                        confidence = Confidence.High,
+                                    ),
+                                ),
+                        ),
+                    entryType = null,
+                    partsOfSpeech = emptyList(),
+                    confidence = Confidence.Low,
+                    sources = listOf(ref),
+                )
+            }
+        }
+
+    // Misbehaving example checker: Unavailable yet still flags an issue.
+    // Used by the I4 invariant test for collectExampleFindings.
+    private val unavailableButNoisyExampleChecker: ExampleQualityChecker =
+        object : ExampleQualityChecker {
+            override suspend fun check(request: ExampleCheckRequest): ExampleCheckResult =
+                ExampleCheckResult(
+                    availability = VerifierAvailability.Unavailable("offline"),
+                    issues =
+                        listOf(
+                            app.sensee.verification.core.ExampleIssue(
+                                code = "X",
+                                severity = FindingSeverity.Warning,
+                                location = app.sensee.verification.core.ExampleLocation.WholeSentence,
+                                message = "should-not-surface",
+                                sources =
+                                    listOf(
+                                        LexicalSourceRef(sourceId = LanguageToolSource.ID, fetchedAtEpochMillis = 0L),
+                                    ),
+                            ),
+                        ),
+                    rewrite = null,
+                    sources = emptyList(),
                 )
         }
 
