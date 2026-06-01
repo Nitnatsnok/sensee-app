@@ -24,7 +24,7 @@ Applies to:
 
 ## Local verification
 
-- Validate skill frontmatter, folder/name consistency, `description` presence, structural eval JSON, stale references, commit links, and thin `CLAUDE.md` shims:
+- Validate skill frontmatter, folder/name consistency, `description` presence, structural eval JSON, stale references, commit links, thin `CLAUDE.md` shims, and `AGENTS.md`/`CLAUDE.md` sibling pairing:
   ```shell
   python3 scripts/agents/validate-agent-instructions.py
   ```

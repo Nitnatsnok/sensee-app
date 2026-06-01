@@ -341,6 +341,24 @@ def validate_claude_shims() -> list[Finding]:
     return findings
 
 
+def validate_agents_claude_pairing() -> list[Finding]:
+    findings: list[Finding] = []
+    agents_files = iter_named_repo_files({"AGENTS.md"})
+    claude_files = iter_named_repo_files({"CLAUDE.md"})
+    agents_dirs = {path.parent for path in agents_files}
+    claude_dirs = {path.parent for path in claude_files}
+
+    for path in agents_files:
+        if path.parent not in claude_dirs:
+            findings.append(Finding(path, "AGENTS.md is missing its sibling CLAUDE.md shim"))
+
+    for path in claude_files:
+        if path.parent not in agents_dirs:
+            findings.append(Finding(path, "CLAUDE.md is missing its sibling AGENTS.md"))
+
+    return findings
+
+
 def run_validation() -> ValidationReport:
     skill_dirs = project_skill_dirs()
     findings: list[Finding] = []
@@ -351,6 +369,7 @@ def run_validation() -> ValidationReport:
     findings.extend(stale_findings)
     findings.extend(validate_commit_links())
     findings.extend(validate_claude_shims())
+    findings.extend(validate_agents_claude_pairing())
     return ValidationReport(
         findings=findings,
         checked_skill_count=len(skill_dirs),

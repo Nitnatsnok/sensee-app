@@ -53,7 +53,7 @@ The validator checks:
 - skill folder/name consistency;
 - stale references in agent-facing files;
 - commit convention links to `docs/engineering/commits.md`;
-- thin `CLAUDE.md` shims;
+- thin `CLAUDE.md` shims and `AGENTS.md`/`CLAUDE.md` sibling pairing;
 - structural eval JSON under `.agents/skills/*/evals/*.json`.
 
 It does not perform semantic review of skill quality and does not judge whether eval prompts are good. Semantic review still belongs to manual review and the relevant project skills.

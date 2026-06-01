@@ -10,7 +10,7 @@ Claude Code reads `CLAUDE.md`, not `AGENTS.md`. The repository root and nested i
 @AGENTS.md
 ```
 
-This imports the matching `AGENTS.md` and keeps one source of rules. The repository validator enforces this thin shim.
+In Claude-compatible environments that support file references, this imports the matching `AGENTS.md` and keeps one source of rules without copied content. It is the supported shim pattern for those environments, not a guarantee for every possible agent runtime. The repository validator enforces that each `CLAUDE.md` stays this thin `@AGENTS.md` shim and has a sibling `AGENTS.md`.
 
 Claude-specific operational notes belong in this document, not in copied instruction blocks.
 
