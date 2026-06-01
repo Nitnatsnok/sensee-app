@@ -499,12 +499,15 @@ jobs:
                     | tail -1)" "$RUNTIME")
           xcrun simctl boot "$DEVICE"
           xcrun simctl install "$DEVICE" "$APP"
-          xcrun simctl launch "$DEVICE" app.sensee.Sensee
+          # Read the bundle id from the built app so a change in
+          # Config.xcconfig does not silently desync the smoke launch.
+          BUNDLE_ID=$(plutil -extract CFBundleIdentifier raw "$APP/Info.plist")
+          xcrun simctl launch "$DEVICE" "$BUNDLE_ID"
           # The app never registers with launchd if it crashed on startup;
           # poll for registration, bounded so a hung launch fails fast.
           launched=0
           for _ in $(seq 1 30); do
-            if xcrun simctl spawn "$DEVICE" launchctl list | grep -q app.sensee.Sensee; then
+            if xcrun simctl spawn "$DEVICE" launchctl list | grep -q "$BUNDLE_ID"; then
               launched=1
               break
             fi
