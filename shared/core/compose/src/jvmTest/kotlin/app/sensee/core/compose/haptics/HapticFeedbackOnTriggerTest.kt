@@ -1,6 +1,7 @@
 package app.sensee.core.compose.haptics
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -42,7 +43,7 @@ class HapticFeedbackOnTriggerTest {
             val recorder = RecordingHapticFeedback()
             val haptics = SenseeHaptics(recorder, enabled = true)
             var trigger by mutableStateOf<String?>(null)
-            var tick by mutableStateOf(0)
+            var tick by mutableIntStateOf(0)
             setContent {
                 // Read `tick` so bumping it recomposes this scope without changing `trigger`.
                 tick.let { HapticFeedbackOnTrigger(trigger = trigger, haptics = haptics) }
