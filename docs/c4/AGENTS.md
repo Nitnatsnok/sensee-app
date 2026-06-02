@@ -16,6 +16,15 @@ This directory contains the canonical LikeC4 architecture model and views for th
 - `specification.c4` - custom element kinds and tags.
 - `likec4.config.json` - LikeC4 workspace config.
 
+## MCP server
+
+A LikeC4 MCP server is configured as `likec4` for Codex in
+`.codex/config.toml` and for Claude-style MCP clients in `.mcp.json`. It is
+launched with `npx -y @likec4/mcp` and `LIKEC4_WORKSPACE=docs/c4`. It exposes
+this model and its views to MCP-capable agents so they can read and query the
+architecture without exporting diagrams. It needs `npx` (Node) on `PATH`, in
+line with the ambient `npx likec4 ...` workflow below.
+
 ## Local rules
 
 - LikeC4 element descriptions and architecture view titles should keep the repository's existing documentation language, which is Russian for product/architecture text.

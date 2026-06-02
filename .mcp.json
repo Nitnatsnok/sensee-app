@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "uv",
+      "args": ["run", "--with", "graphifyy", "python", "-m", "graphify.serve", "graphify-out/graph.json"]
+    },
+    "likec4": {
+      "command": "npx",
+      "args": ["-y", "@likec4/mcp"],
+      "env": {
+        "LIKEC4_WORKSPACE": "docs/c4"
+      }
+    }
+  }
+}

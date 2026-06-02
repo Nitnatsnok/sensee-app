@@ -2,6 +2,12 @@ pre-commit:
   commands:
     repository-guards:
       run: ./.githooks/pre-commit
+    graphify:
+      # Rebuild the committed knowledge graph from the staged changes and stage
+      # it, so the graph in this commit matches the code. AST-only, incremental,
+      # never blocks. The graph is tracked, so checkout/merge need no hook — it
+      # travels with the branch. Opt out with GRAPHIFY_SKIP=1.
+      run: ./.githooks/graphify-rebuild
 
 pre-push:
   commands:

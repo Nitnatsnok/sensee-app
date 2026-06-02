@@ -151,8 +151,16 @@ fi
 
 unset_local_hooks_path_if_needed
 
-chmod +x .githooks/pre-commit .githooks/pre-push
+chmod +x .githooks/pre-commit .githooks/pre-push .githooks/graphify-rebuild
 "$lefthook_cmd" install
+
+# graphify union merge driver for the tracked knowledge graph (see
+# .gitattributes). Keeps graphify-out/graph.json from getting conflict markers
+# when branches merge. Local config only; skipped when graphify is absent.
+if command -v graphify >/dev/null 2>&1; then
+    git config merge.graphify.name "graphify union merge for graph.json"
+    git config merge.graphify.driver "graphify merge-driver %O %A %B"
+fi
 
 printf 'setup-git-hooks: git dir is %s\n' "$git_dir"
 printf 'setup-git-hooks: lefthook has been installed into .git/hooks.\n'

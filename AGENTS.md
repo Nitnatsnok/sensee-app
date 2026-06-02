@@ -88,9 +88,10 @@ If the user explicitly asks to respond in another language, follow the user's in
 - If the worktree already has unrelated changes, leave them alone. Work with relevant user changes instead of reverting them.
 - For tasks that only prepare agent-facing infrastructure, do not modify production code.
 - Use the project skills in `.agents/skills` for repeatable workflows; the short catalog is `docs/agents/skills.md`.
+- A graphify knowledge graph of the code is committed at `graphify-out/graph.json`, so it travels with the branch (checkout restores the matching graph). Query it before broad architecture questions via the `graphify` MCP server or `graphify query/path/explain`. A `pre-commit` hook rebuilds and stages it; scanning excludes `.json` fixtures/config via `.graphifyignore`. See `docs/agents/graphify.md`.
 - Use `docs/engineering/commits.md` as the canonical commit convention when preparing commit messages or reviewing commit boundaries.
 - After changing agent-facing instructions, run `python3 scripts/agents/validate-agent-instructions.py` (`py -3 scripts/agents/validate-agent-instructions.py` on Windows).
-- Shared Codex / Claude Code environment setup and validation lives in `scripts/agents/`, with thin tool wrappers in `scripts/codex/` and `scripts/claude/`. See `docs/agents/agent-environment.md`.
+- Shared Codex / Claude Code environment setup and validation lives in `scripts/agents/` as cross-platform Python scripts invoked via `python3`. See `docs/agents/agent-environment.md`.
 - Tool-specific adapters must not duplicate `AGENTS.md` or copy `.agents/skills` into tool-specific skill trees.
 - For UI-free agent setup and documentation tasks, do not run emulators, device checks, screenshots, recordings, or app launch scenarios.
 

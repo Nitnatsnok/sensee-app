@@ -19,3 +19,9 @@ gradlew text eol=lf
 *.webp  binary
 *.ico   binary
 *.db    binary
+
+# graphify knowledge graph: union-merge so parallel branches never leave
+# conflict markers in the generated graph. The merge driver is configured
+# locally by scripts/setup-git-hooks.sh (merge.graphify.driver). `-text` skips
+# EOL normalization; `-diff` keeps git from rendering a ~10 MB textual diff.
+graphify-out/graph.json merge=graphify -text -diff

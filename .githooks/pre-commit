@@ -49,6 +49,20 @@ while IFS= read -r file_path; do
     normalized_path=$(printf '%s' "$file_path" | tr '\\' '/')
 
     case "$normalized_path" in
+        graphify-out/graph.json|graphify-out/GRAPH_REPORT.md)
+            # Generated knowledge-graph artifacts, intentionally committed so
+            # they travel with the branch. graph.json is large (~10 MB) and not
+            # newline-terminated by design, so both artifacts are exempt from
+            # the size, whitespace, and final-newline guards below.
+            continue
+            ;;
+        graphify-out/*)
+            print_error "pre-commit: staged file '$normalized_path' is volatile graphify output; only graphify-out/graph.json and graphify-out/GRAPH_REPORT.md may be committed."
+            continue
+            ;;
+    esac
+
+    case "$normalized_path" in
         .idea/*|*/.idea/*|.gradle/*|*/.gradle/*|.kotlin/*|*/.kotlin/*|kotlin-js-store/*)
             print_error "pre-commit: staged file '$normalized_path' is generated or machine-local and must not be committed."
             continue
@@ -120,4 +134,3 @@ if [ "$had_errors" -ne 0 ]; then
 fi
 
 printf 'pre-commit: repository guards passed.\n'
-

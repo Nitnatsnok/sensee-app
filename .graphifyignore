@@ -1,0 +1,19 @@
+# JSON counts as a "code" extension in graphify, but every .json here is
+# fixture/config data (mockFixtures, asset catalogs, tool config), not
+# architecture — indexing it produces 500-edge "lemmas" god nodes.
+*.json
+
+# Markup/config are indexed by graphify as "document" nodes. This graph is
+# scoped to code architecture, so exclude docs and config markup (AGENTS.md,
+# SKILL.md, ADRs, CI yaml, detekt config, index.html, …).
+*.md
+*.txt
+*.yml
+*.yaml
+*.html
+
+# Build and tooling output not covered by graphify's built-in skips
+# (build/, .idea/, node_modules/, graphify-out/ are already skipped).
+.gradle/
+.kotlin/
+kotlin-js-store/

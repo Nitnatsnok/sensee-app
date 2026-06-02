@@ -5,6 +5,28 @@ high-level on purpose; the mechanics live here. Agent/contributor conventions ar
 [`AGENTS.md`](AGENTS.md) (and nested `AGENTS.md` files, which take precedence in their
 subtree).
 
+## Prerequisites
+
+A standard Kotlin Multiplatform setup is assumed and not repeated here: JDK 21, the
+Android SDK (`ANDROID_HOME`) for Android, Xcode on macOS for iOS, and Git. The Gradle
+wrapper is bundled.
+
+Beyond that, this repository needs a few extra tools:
+
+- **`python3`** (on `PATH`) — runs the agent environment scripts (`scripts/agents/*.py`),
+  the Claude Code `SessionStart` hook, and the agent-instruction validator.
+- **lefthook** — runs the tracked git hooks; bootstrapped by
+  [`scripts/setup-git-hooks.sh`](scripts/setup-git-hooks.sh), which can install it for you.
+- **gitleaks** — the secret scan run by the `pre-push` hook.
+
+Per feature, only if you use that tool:
+
+- **Node.js / `npx`** — LikeC4 (`npx likec4 validate/start docs/c4`) and the LikeC4 MCP
+  server (`.mcp.json`).
+- **`uv`** — runs the graphify knowledge graph (`uv tool install graphifyy`; tested with
+  graphify `0.8.x`). Drives the pre-commit graph rebuild and the graphify MCP server; both
+  skip gracefully when graphify is absent.
+
 ## Running per platform
 
 Use the Gradle wrapper from the repository root.
@@ -80,6 +102,11 @@ Tracked hook scripts live under [`.githooks`](.githooks) and are wired through
 
 - `pre-commit` blocks generated output, local/secret-bearing files, merge-conflict
   markers, trailing whitespace, missing final newlines, and unusually large staged files.
+  The tracked graphify artifacts (`graphify-out/graph.json` and
+  `graphify-out/GRAPH_REPORT.md`) are exempt because they are committed generated
+  output; the same hook incrementally rebuilds them from staged changed paths and
+  stages them via `.githooks/graphify-rebuild`. Partial staging of a changed path
+  uses a temporary staged-index checkout so unstaged edits do not enter the graph.
 - `pre-push` runs `ktlintCheck`, `detekt`, `konsistCheck`; when Gradle build logic
   changes it also runs `./gradlew -p gradle-plugins :plugin:check`.
 
