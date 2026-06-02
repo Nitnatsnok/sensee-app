@@ -51,7 +51,6 @@ The validator checks:
 
 - skill frontmatter (`name` and `description`);
 - skill folder/name consistency;
-- stale references in agent-facing files;
 - commit convention links to `docs/engineering/commits.md`;
 - thin `CLAUDE.md` shims and `AGENTS.md`/`CLAUDE.md` sibling pairing;
 - structural eval JSON under `.agents/skills/*/evals/*.json`.

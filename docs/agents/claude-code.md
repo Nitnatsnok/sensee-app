@@ -16,19 +16,11 @@ Claude-specific operational notes belong in this document, not in copied instruc
 
 ## Setup
 
-Run the shared local setup through the Claude wrapper:
+Run the shared local setup (cross-platform, needs `python3` on `PATH`):
 
 ```shell
-sh scripts/claude/setup-local-env.sh
+python3 scripts/agents/setup-local-env.py
 ```
-
-On Windows:
-
-```powershell
-pwsh -File scripts/claude/setup-local-env.ps1
-```
-
-The wrapper delegates to `scripts/agents/setup-local-env.*`.
 
 ## Skills
 
@@ -36,30 +28,58 @@ Project skills live in `.agents/skills`, not `.claude/skills`. The catalog is `d
 
 Claude Code supports project skills under `.claude/skills`, but this repository intentionally avoids copying the canonical skills there. If Claude Code needs help discovering a workflow, point it to the relevant `.agents/skills/<skill-name>/SKILL.md` or the catalog.
 
+For native discovery (auto-trigger and `/skill-name` invocation), you can opt in to a local, git-ignored link from `.claude/skills` to the canonical `.agents/skills`. This links rather than copies, so the single source of truth stays in `.agents/skills`:
+
+```shell
+python3 scripts/agents/link-claude-skills.py
+```
+
+The script creates a relative symlink on Unix and a directory junction on Windows (no admin rights or Developer Mode required). `.claude/skills` is git-ignored, so the link is per-machine and never committed. Pass `--remove` to drop it.
+
 Create a new skill only when `.agents/skills` does not already cover the workflow.
 
 If future Claude-specific discovery needs adapters, use thin adapters or docs that point to `.agents/skills`; do not copy full skill bodies into `.claude/skills`.
+
+## Worktrees
+
+Claude Code can run isolated work in git worktrees (the `--worktree` flag, `isolation: worktree` subagents, and background-session isolation). Three mechanisms keep the skills link working across worktrees and fresh clones.
+
+`worktree.baseRef: "head"` (committed `.claude/settings.json`) branches new worktrees from local `HEAD` instead of `origin/<default-branch>`. This repository is local-first and `origin/main` is an empty initial commit, so `"fresh"` (the default) would produce worktrees without the codebase. This is committed because it is correct for everyone working against this empty origin, not a per-machine preference.
+
+A committed `SessionStart` hook runs `python3 scripts/agents/link-claude-skills.py` on session startup, so a fresh session in any checkout (clone or worktree) recreates `.claude/skills` pointing at that checkout's own `.agents/skills`. The script creates a relative symlink on Unix and a directory junction on Windows, so the result is always a real link, never a copy. The hook runs in the shell Claude Code uses for hooks, so `python3` must be available there. It also relies on the session starting at the repository root (the hook's working directory). This is a deliberate, documented exception to the "no committed hooks" default; it only ensures the skills link and never edits tracked files.
+
+`.worktreeinclude` (repo root) covers the one path the hook does not: an in-session `EnterWorktree`, which switches directory without a new session start. It lists git-ignored paths that Claude Code copies from the main checkout into each new worktree, using `.gitignore` syntax (only already-ignored paths are copied, so tracked files are never duplicated). Sensee lists:
+
+```text
+.claude/settings.local.json
+.claude/skills
+```
+
+On Windows the harness dereferences the `.claude/skills` junction and copies the skill files as a plain directory taken at creation time, so for a long-lived worktree on a branch with different skills, re-run `python3 scripts/agents/link-claude-skills.py` inside it to repoint at that worktree's own `.agents/skills`. The script detects a harness-copied skill tree (a directory whose entries are all skill folders, each holding `SKILL.md`, or an empty directory) and replaces that copy with the link automatically — no manual deletion needed, because the canonical skills still live in `.agents/skills`. It still refuses to overwrite a `.claude/skills` that holds anything else.
+
+`worktree.bgIsolation` stays out of the committed settings; it is a safety toggle. The default (isolation on) keeps background sessions in their own worktree. A developer who wants a background session to edit the main checkout directly sets `worktree.bgIsolation: "none"` in their own `.claude/settings.local.json`. Because `.claude/settings.local.json` overrides `.claude/settings.json`, per-machine values always win over the committed ones.
 
 ## Settings and Hooks
 
 Claude Code supports project settings in `.claude/settings.json`, local settings in `.claude/settings.local.json`, hooks, and permissions.
 
-Current project policy: Sensee commits a minimal `.claude/settings.json` safety configuration and does not commit hooks.
+Settings precedence (highest to lowest): managed policy, command-line flags, `.claude/settings.local.json`, `.claude/settings.json`, `~/.claude/settings.json`. So a per-machine `.claude/settings.local.json` value overrides the committed `.claude/settings.json`. `permissions` rules are the exception — they merge across scopes instead of overriding.
 
-The project settings file contains only:
+The committed `.claude/settings.json` is kept minimal and contains only:
 
 - `$schema` for editor validation against the official Claude Code settings schema.
 - `permissions.deny` rules that block reads of local environment files, secrets directories, nested `secrets.properties`, keystores, certificate/private-key files, and nested `local.properties`.
+- `worktree.baseRef: "head"`, required for worktrees to carry the codebase against this repository's empty `origin/main` (see Worktrees).
+- a single `SessionStart` hook that recreates the per-machine `.claude/skills` link (see Worktrees). This is the one committed hook; adding any other committed hook is a separate deliberate decision.
 
-It intentionally does not contain:
+It intentionally still does not contain:
 
 - `permissions.allow` rules;
-- hooks;
 - telemetry or environment settings;
 - copied `AGENTS.md` content;
-- skill configuration.
+- skill bodies.
 
-Use local-only settings when needed:
+Use local-only settings for per-machine preferences (for example `worktree.bgIsolation`):
 
 ```text
 .claude/settings.local.json
@@ -76,30 +96,21 @@ Hooks policy:
 
 ## Validation
 
-Common commands:
+Common commands (cross-platform):
 
 ```shell
-sh scripts/agents/validate.sh fast
-sh scripts/agents/validate.sh docs
-sh scripts/agents/list-tasks.sh
+python3 scripts/agents/validate.py fast
+python3 scripts/agents/validate.py docs
+python3 scripts/agents/list-tasks.py
 ```
 
-Windows:
-
-```powershell
-pwsh -File scripts/agents/validate.ps1 -Mode fast
-pwsh -File scripts/agents/validate.ps1 -Mode docs
-pwsh -File scripts/agents/list-tasks.ps1
-```
-
-For code changes, prefer the smallest affected Gradle task from `AGENTS.md`. Use `validate code` only when an aggregate code check is appropriate.
+For code changes, prefer the smallest affected Gradle task from `AGENTS.md`. Use `validate full` only when a full project check is appropriate.
 
 Current aggregate task decision:
 
-- `check` exists and remains the full project verification task.
-- `konsistCheck` exists and remains the architecture check.
-- `verify`, `verifyDocs`, and `verifyArchitecture` do not exist yet.
-- `scripts/agents/validate.*` checks optional tasks before running them and does not fail merely because optional docs/architecture aggregates are absent.
+- `check` exists and is the full project verification task (`validate full`).
+- `konsistCheck` exists and is the architecture check (`validate architecture`).
+- `validate.py` modes map directly to these real tasks; `verify`, `verifyDocs`, and `verifyArchitecture` do not exist and are not assumed.
 
 ## References
 

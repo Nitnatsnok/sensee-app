@@ -43,6 +43,7 @@ jobs:
       build_logic: ${{ steps.filter.outputs.build_logic || steps.dispatch.outputs.build_logic }}
       hooks: ${{ steps.filter.outputs.hooks || steps.dispatch.outputs.hooks }}
       ios: ${{ steps.filter.outputs.ios || steps.dispatch.outputs.ios }}
+      agent_instructions: ${{ steps.filter.outputs.agent_instructions || steps.dispatch.outputs.agent_instructions }}
 
     steps:
       - name: Checkout
@@ -56,6 +57,7 @@ jobs:
           echo "build_logic=${{ inputs.run_verify }}" >> "$GITHUB_OUTPUT"
           echo "hooks=${{ inputs.run_hooks }}" >> "$GITHUB_OUTPUT"
           echo "ios=${{ inputs.run_ios }}" >> "$GITHUB_OUTPUT"
+          echo "agent_instructions=${{ inputs.run_verify }}" >> "$GITHUB_OUTPUT"
 
       - name: Detect affected paths
         id: filter
@@ -102,6 +104,13 @@ jobs:
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
               - 'gradle.properties'
+              - '.github/workflows/ci.yml'
+            agent_instructions:
+              - '**/AGENTS.md'
+              - '**/CLAUDE.md'
+              - '.agents/**'
+              - 'docs/agents/**'
+              - 'scripts/agents/**'
               - '.github/workflows/ci.yml'
 
   hooks:
@@ -157,6 +166,26 @@ jobs:
             exit 1
           fi
 
+          # graphify-out is mostly volatile local output. Only the two tracked
+          # generated artifacts are allowed through the repository guard.
+          if sh ./.githooks/pre-commit graphify-out/local-cache.tmp; then
+            echo "::error::pre-commit accepted unexpected graphify-out output" >&2
+            exit 1
+          fi
+
+          # The two tracked graphify artifacts are exempt and must pass the guard
+          # (large, non-newline-terminated by design), so the exempt branch is covered.
+          sh ./.githooks/pre-commit graphify-out/graph.json graphify-out/GRAPH_REPORT.md
+
+          # Agent-instruction changes must route pre-push to the validator rather
+          # than the docs-only fast exit (it replaced the former Konsist hygiene test).
+          agent_out=$(SENSEE_GIT_HOOK_SKIP_GRADLE=1 sh ./.githooks/pre-push --files AGENTS.md)
+          printf '%s\n' "$agent_out"
+          printf '%s' "$agent_out" | grep -q 'validating agent instruction files' || {
+            echo "::error::pre-push did not validate agent instructions for an AGENTS.md change" >&2
+            exit 1
+          }
+
           # Decision path: a non-doc change must route pre-push to Gradle
           # verification (skipped here via the env flag) rather than the
           # docs-only fast exit, so the classifier itself is covered.
@@ -168,6 +197,22 @@ jobs:
           }
 
           echo "Hook tooling checks passed."
+
+  agent-instructions:
+    name: Agent instructions
+    needs: changes
+    if: needs.changes.outputs.agent_instructions == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Validate agent instruction files
+        # Pure standard-library Python; ubuntu runners ship python3, so no
+        # JDK/Gradle or setup step is needed.
+        run: python3 scripts/agents/validate-agent-instructions.py
 
   static-analysis:
     name: Static analysis

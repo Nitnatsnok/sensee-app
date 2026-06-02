@@ -11,8 +11,8 @@ Applies to:
 ## Local context
 
 Tracked hook scripts are run through Lefthook:
-- `pre-commit` blocks generated output, local files, secrets, merge markers, trailing whitespace, missing final newlines, and oversized staged files.
-- `pre-push` routes changed paths to Gradle verification and build-logic checks.
+- `pre-commit` blocks generated output, local files, secrets, merge markers, trailing whitespace, missing final newlines, and oversized staged files. Only `graphify-out/graph.json` and `graphify-out/GRAPH_REPORT.md` are exempt: they are committed generated artifacts, and `graphify-rebuild` incrementally regenerates them from staged changed paths before staging them in the same `pre-commit` run. It falls back to a temporary staged-index checkout only when the same path has both staged and unstaged edits.
+- `pre-push` routes changed paths to Gradle verification and build-logic checks, and runs `scripts/agents/validate-agent-instructions.py` when agent-instruction files change (`AGENTS.md`/`CLAUDE.md`, `.agents/`, `docs/agents/`, `scripts/agents/`), so the shim and pairing invariants are gated locally and not only in CI.
 
 ## Local rules
 

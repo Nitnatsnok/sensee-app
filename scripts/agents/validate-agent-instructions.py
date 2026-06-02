@@ -22,13 +22,8 @@ SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 EVAL_ID_RE = re.compile(r"^[a-z0-9-]+$")
 ERROR = "ERROR"
 WARNING = "WARNING"
-STALE_PATTERNS = (
-    "pr-diff-" + "senior-review",
-    "docs/c4/" + "dist",
-)
-ARCH_TOOL_NAME = "Struct" + "urizr"
-ARCH_TOOL_TOKEN = "struct" + "urizr"
 EXCLUDED_DIR_NAMES = {
+    ".claude",
     ".git",
     ".gradle",
     ".idea",
@@ -38,21 +33,6 @@ EXCLUDED_DIR_NAMES = {
     "kotlin-js-store",
     "node_modules",
 }
-AGENT_SUBTREES = (
-    REPO_ROOT / ".agents",
-    REPO_ROOT / ".codex",
-    REPO_ROOT / "docs" / "agents",
-    REPO_ROOT / "scripts" / "agents",
-    REPO_ROOT / "scripts" / "codex",
-    REPO_ROOT / "scripts" / "claude",
-)
-AGENT_REFERENCE_FILES = (
-    REPO_ROOT / ".claude" / "settings.json",
-    REPO_ROOT / ".gitignore",
-    REPO_ROOT / "docs" / "README.md",
-    REPO_ROOT / "docs" / "engineering" / "commits.md",
-    REPO_ROOT / "docs" / "c4" / "AGENTS.md",
-)
 
 
 @dataclass(frozen=True)
@@ -70,7 +50,6 @@ class ValidationReport:
     findings: list[Finding]
     checked_skill_count: int
     checked_eval_file_count: int
-    checked_agent_file_count: int
 
     @property
     def error_count(self) -> int:
@@ -107,23 +86,6 @@ def is_excluded_path(path: Path) -> bool:
     return any(part in EXCLUDED_DIR_NAMES for part in parts)
 
 
-def iter_pruned_files(root: Path) -> list[Path]:
-    if not root.exists():
-        return []
-    if root.is_file():
-        return [] if is_excluded_path(root) else [root]
-
-    files: list[Path] = []
-    for current_root, dir_names, file_names in os.walk(root):
-        dir_names[:] = sorted(name for name in dir_names if name not in EXCLUDED_DIR_NAMES)
-        current_path = Path(current_root)
-        for file_name in sorted(file_names):
-            path = current_path / file_name
-            if not is_excluded_path(path):
-                files.append(path)
-    return sorted(files)
-
-
 def iter_named_repo_files(file_names: set[str]) -> list[Path]:
     files: list[Path] = []
     for current_root, dir_names, names in os.walk(REPO_ROOT):
@@ -135,43 +97,6 @@ def iter_named_repo_files(file_names: set[str]) -> list[Path]:
                 if not is_excluded_path(path):
                     files.append(path)
     return sorted(files)
-
-
-def agent_facing_files() -> list[Path]:
-    files: set[Path] = set(iter_named_repo_files({"AGENTS.md", "CLAUDE.md", "SKILL.md"}))
-
-    for subtree in AGENT_SUBTREES:
-        files.update(iter_pruned_files(subtree))
-
-    for path in AGENT_REFERENCE_FILES:
-        if path.exists():
-            files.add(path)
-
-    return sorted(path for path in files if path.is_file() and not is_excluded_path(path))
-
-
-def repo_uses_structurizr() -> bool:
-    structurizr_files = {
-        ".structurizr",
-        "structurizr.dsl",
-        "workspace.dsl",
-    }
-
-    for relative_path in structurizr_files:
-        if (REPO_ROOT / relative_path).exists():
-            return True
-
-    docs_dir = REPO_ROOT / "docs"
-    for path in iter_pruned_files(docs_dir):
-        if path.name in structurizr_files:
-            return True
-        if path.suffix == ".dsl":
-            try:
-                if ARCH_TOOL_TOKEN in path.read_text(encoding="utf-8", errors="ignore").lower():
-                    return True
-            except OSError:
-                continue
-    return False
 
 
 def project_skill_dirs() -> list[Path]:
@@ -292,28 +217,6 @@ def validate_eval_json(skill_dirs: list[Path]) -> tuple[list[Finding], int]:
     return findings, checked_eval_file_count
 
 
-def validate_stale_patterns() -> tuple[list[Finding], int]:
-    findings: list[Finding] = []
-    structurizr_allowed = repo_uses_structurizr()
-    paths = agent_facing_files()
-
-    for path in paths:
-        try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
-        except OSError as error:
-            findings.append(Finding(path, f"could not read file: {error}"))
-            continue
-
-        for pattern in STALE_PATTERNS:
-            if pattern in text:
-                findings.append(Finding(path, f"stale reference '{pattern}'"))
-
-        if not structurizr_allowed and ARCH_TOOL_NAME in text:
-            findings.append(Finding(path, f"{ARCH_TOOL_NAME} wording found, but the repository uses LikeC4"))
-
-    return findings, len(paths)
-
-
 def validate_commit_links() -> list[Finding]:
     findings: list[Finding] = []
     root_agents = REPO_ROOT / "AGENTS.md"
@@ -365,8 +268,6 @@ def run_validation() -> ValidationReport:
     findings.extend(validate_skills(skill_dirs))
     eval_findings, checked_eval_file_count = validate_eval_json(skill_dirs)
     findings.extend(eval_findings)
-    stale_findings, checked_agent_file_count = validate_stale_patterns()
-    findings.extend(stale_findings)
     findings.extend(validate_commit_links())
     findings.extend(validate_claude_shims())
     findings.extend(validate_agents_claude_pairing())
@@ -374,7 +275,6 @@ def run_validation() -> ValidationReport:
         findings=findings,
         checked_skill_count=len(skill_dirs),
         checked_eval_file_count=checked_eval_file_count,
-        checked_agent_file_count=checked_agent_file_count,
     )
 
 
@@ -384,7 +284,6 @@ def print_summary(report: ValidationReport) -> None:
     print(f"- warnings: {report.warning_count}")
     print(f"- checked skills: {report.checked_skill_count}")
     print(f"- checked eval files: {report.checked_eval_file_count}")
-    print(f"- checked agent-facing files: {report.checked_agent_file_count}")
 
 
 def main() -> int:

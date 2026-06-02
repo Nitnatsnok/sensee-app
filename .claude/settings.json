@@ -20,5 +20,22 @@
       "Read(./local.properties)",
       "Read(./**/local.properties)"
     ]
+  },
+  "worktree": {
+    "baseRef": "head"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/agents/link-claude-skills.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

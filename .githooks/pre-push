@@ -12,6 +12,7 @@ stdin_file="$tmp_dir/stdin.txt"
 zero_sha='0000000000000000000000000000000000000000'
 requires_gradle=0
 needs_plugin_check=0
+needs_agent_validation=0
 force_gradle=0
 remote_name="${1:-}"
 
@@ -41,6 +42,26 @@ requires_build_logic_check() {
     esac
 
     return 1
+}
+
+requires_agent_validation() {
+    case "$1" in
+        *AGENTS.md|*CLAUDE.md|.agents/*|docs/agents/*|scripts/agents/*)
+            return 0
+            ;;
+    esac
+
+    return 1
+}
+
+agent_python() {
+    if command -v python3 >/dev/null 2>&1; then
+        printf 'python3'
+    elif command -v python >/dev/null 2>&1; then
+        printf 'python'
+    else
+        return 1
+    fi
 }
 
 run_gradle() {
@@ -121,7 +142,27 @@ while IFS= read -r file_path; do
     if requires_build_logic_check "$normalized_path"; then
         needs_plugin_check=1
     fi
+
+    if requires_agent_validation "$normalized_path"; then
+        needs_agent_validation=1
+    fi
 done < "$tmp_dir/changed-files-sorted.txt"
+
+# Agent-instruction files have no Gradle task, so validate them here before the
+# docs-only fast exit; otherwise the AGENTS.md/CLAUDE.md pairing and shim checks
+# would only run in CI. Standard-library only, so any python works.
+if [ "$needs_agent_validation" -eq 1 ]; then
+    agent_py=$(agent_python || true)
+    if [ -n "$agent_py" ]; then
+        printf 'pre-push: validating agent instruction files.\n'
+        if ! "$agent_py" scripts/agents/validate-agent-instructions.py; then
+            printf 'pre-push: agent-instruction validation failed; push aborted.\n' >&2
+            exit 1
+        fi
+    else
+        printf 'pre-push: WARNING: no python on PATH; skipping agent-instruction validation (CI enforces it).\n' >&2
+    fi
+fi
 
 if [ "$force_gradle" -eq 1 ]; then
     requires_gradle=1
