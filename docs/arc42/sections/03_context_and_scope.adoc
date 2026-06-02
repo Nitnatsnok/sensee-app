@@ -7,7 +7,7 @@
 
 В текущей фазе реализованный клиентский срез покрывает общий app shell, навигацию, practice-сценарий (deck + home + card detail), library catalog с adoption, profile-настройки и authoring-вертикаль capture (внесение -> verification evidence -> AI/curated-подсказки -> verification snapshots -> мультивыбор смыслов -> подтверждение с устойчивым сохранением). Группировка под леммой, captured deck projection и form-variant cards для неправильных глаголов уже реализованы в data/domain слое; дальнейшая продуктовая эволюция остаётся в UI-курировании (`EntryDetail`/`LemmaDetail`/`DeckDetail`, навигация по семье, частичное добавление и курирование колод).
 
-Контекстная схема поддерживается в `LikeC4 view` `index` в `docs/c4/`. Платформенные артефакты и deployable targets вынесены отдельно в `LikeC4 view` `deployment_targets`.
+Контекстная схема поддерживается в `LikeC4 view` `index` в `docs/c4/`. Платформенные артефакты и deployable targets вынесены отдельно в `LikeC4 deployment view` `deployment`.
 
 == Внешние участники и системы
 

@@ -60,12 +60,20 @@ Codex does not read the Claude-style `.mcp.json` file for MCP setup.
 
 The committed Codex config exposes:
 
-- `graphify` — `uv run --with graphifyy python -m graphify.serve graphify-out/graph.json`
-- `likec4` — `npx -y @likec4/mcp` with `LIKEC4_WORKSPACE=docs/c4`
+- `graphify` — `uv run --with "graphifyy[mcp]" python -m graphify.serve graphify-out/graph.json`
+- `likec4` — `npx -y @likec4/mcp` from `docs/c4`
 
 The project must be trusted for Codex to load `.codex/config.toml`. The MCP
-commands run with `cwd = ".."` because the config file lives in `.codex/` and
-the servers expect paths relative to the repository root.
+`cwd` paths are relative to the repository root: `graphify` runs with
+`cwd = "."` so `graphify-out/graph.json` is resolved from the repository root,
+while `likec4` runs with `cwd = "docs/c4"` so `@likec4/mcp` uses the LikeC4
+workspace directory as its current directory.
+
+`codex mcp add` and `codex mcp list` are user-level CLI diagnostics by default;
+they are not a reliable way to prove what an already-running Codex App thread
+has loaded from project `.codex/config.toml`. After changing project MCP
+configuration, start a new Codex thread or restart the app so the MCP tool
+namespaces are loaded again.
 
 ## Actions
 

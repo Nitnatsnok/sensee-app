@@ -2,7 +2,7 @@
   "mcpServers": {
     "graphify": {
       "command": "uv",
-      "args": ["run", "--with", "graphifyy", "python", "-m", "graphify.serve", "graphify-out/graph.json"]
+      "args": ["run", "--with", "graphifyy[mcp]", "python", "-m", "graphify.serve", "graphify-out/graph.json"]
     },
     "likec4": {
       "command": "npx",

@@ -1,18 +1,14 @@
 # Project-scoped Codex configuration. Codex loads this file only for trusted
-# projects. Relative paths are resolved from this .codex directory, so `..`
-# is the repository root.
+# projects. Project-scoped MCP cwd values are resolved from the repository root.
 
 [mcp_servers.graphify]
 command = "uv"
-args = ["run", "--with", "graphifyy", "python", "-m", "graphify.serve", "graphify-out/graph.json"]
-cwd = ".."
+args = ["run", "--with", "graphifyy[mcp]", "python", "-m", "graphify.serve", "graphify-out/graph.json"]
+cwd = "."
 startup_timeout_sec = 30
 
 [mcp_servers.likec4]
 command = "npx"
 args = ["-y", "@likec4/mcp"]
-cwd = ".."
+cwd = "docs/c4"
 startup_timeout_sec = 30
-
-[mcp_servers.likec4.env]
-LIKEC4_WORKSPACE = "docs/c4"

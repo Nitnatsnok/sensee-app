@@ -1,6 +1,8 @@
 specification {
+  // --- Element kinds (logical model) ---
+
   element actor {
-    notation 'Actor'
+    notation 'Пользователь'
     style {
       shape person
       color green
@@ -8,23 +10,37 @@ specification {
   }
 
   element client_app {
-    notation 'Client App'
+    notation 'Клиентское приложение'
     style {
       color primary
       border solid
     }
   }
 
-  element layer {
-    notation 'Client Layer'
+  element container {
+    notation 'Контейнер (группа модулей)'
     style {
-      shape component
-      color secondary
+      color blue
     }
   }
 
-  element local_storage {
-    notation 'Local Storage'
+  element component {
+    notation 'Компонент (модуль)'
+    style {
+      shape component
+      color sky
+    }
+  }
+
+  element capability {
+    notation 'Продуктовая возможность'
+    style {
+      color indigo
+    }
+  }
+
+  element store {
+    notation 'Локальное хранилище'
     style {
       shape cylinder
       color amber
@@ -32,11 +48,41 @@ specification {
   }
 
   element external_system {
-    notation 'External System'
+    notation 'Внешняя система'
     style {
       color muted
     }
   }
+
+  // --- Deployment node kinds (deployment model) ---
+
+  deploymentNode platform {
+    notation 'Платформенный артефакт'
+    style {
+      color slate
+    }
+  }
+
+  // --- Relationship kinds ---
+  // depends   — статическая зависимость/wiring (compile-time, DI)
+  // flows     — поток данных/управления во время выполнения
+  // navigates — пользовательская навигация между разделами
+
+  relationship depends {
+    line solid
+  }
+
+  relationship flows {
+    color sky
+    line dashed
+  }
+
+  relationship navigates {
+    color slate
+    line dotted
+  }
+
+  // --- Tags (lifecycle state) ---
 
   tag prepared {
     color #F59E0B
@@ -44,13 +90,5 @@ specification {
 
   tag future {
     color #64748B
-  }
-
-  tag shared {
-    color #6366F1
-  }
-
-  tag deployable {
-    color #2563EB
   }
 }

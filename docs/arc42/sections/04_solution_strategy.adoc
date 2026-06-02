@@ -19,7 +19,7 @@ SD-5. Fixture-backed integration before live backend::
 Текущие сценарии проходят через нормальные клиентские границы: repository contracts, `shared/core/network`, `shared/core/mock-backend`, SQLDelight, `shared/srs/*`, `shared/ai/*`, `shared/tts/*` и `shared/settings/*`. При этом live backend, production sync и серверная AI-оркестрация остаются планируемыми интеграциями.
 
 SD-6. Diagram sources live in LikeC4::
-Поддерживаемые архитектурные схемы ведутся в `docs/c4/`, а текст arc42 синхронизируется с ними и с кодом репозитория. Канонический набор view сейчас состоит из `index`, `capability_map`, `shared_modules`, `current_learning_slice`, `reviewer_system_context`, `reviewer_container_overview`, `reviewer_component_slices`, `database_aggregation`, `prepared_modules`, `deployment_targets`, `startup_flow`, `deck_interaction_flow`, `vocabulary_capture_flow`, `card_derivation_flow`, `planned_library_curation_flow` и `primary_navigation_shell`.
+Поддерживаемые архитектурные схемы ведутся в `docs/c4/`, а текст arc42 синхронизируется с ними и с кодом репозитория. Модель использует настоящую вложенность C4 (System → Container → Component). Канонический набор view курируется в `docs/README.md` и в самой модели (`read-project-summary` через `likec4` MCP), поэтому здесь не дублируется.
 
 SD-7. Root navigation is config-driven and target-oriented::
 App shell использует базовую primary navigation model с target-экранами `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Переходы описываются сериализуемыми `ScreenConfig`, распространяются по цепочке хост-компонентов и могут быть переиспользованы для будущих deeplink'ов.

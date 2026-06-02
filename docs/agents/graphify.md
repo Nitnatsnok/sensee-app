@@ -56,14 +56,16 @@ graphify path "RoutingLexicalVerifier" "CachingLexicalVerifier"        # shortes
 graphify explain "runCatchingCancellable"                              # one node + neighbors
 ```
 
-Agents can also reach the graph live through the **`graphify` MCP server**,
-exposing `query_graph`, `get_node`, `get_neighbors`, `get_community`,
-`god_nodes`, `graph_stats`, and `shortest_path`. Codex uses the committed
-`.codex/config.toml`; Claude-style MCP clients use the committed `.mcp.json`.
-Both launch the server with
-`uv run --with graphifyy python -m graphify.serve graphify-out/graph.json`, a
-portable command (no machine-specific interpreter path), so they need `uv` on
-`PATH`.
+Agents can also reach the graph live through the **`graphify` MCP server**
+(graph-query tools such as `query_graph`, `god_nodes`, and `shortest_path`; the
+authoritative list is whatever the server reports via `tools/list` / `/mcp`).
+Codex uses the committed `.codex/config.toml`; Claude-style MCP clients use the
+committed `.mcp.json`. Both launch the server with
+`uv run --with 'graphifyy[mcp]' python -m graphify.serve graphify-out/graph.json`,
+a portable command (no machine-specific interpreter path), so they need `uv` on
+`PATH`. The `[mcp]` extra is required: it pulls the `mcp` SDK that
+`graphify.serve` imports to start the stdio server — without it the server fails
+to start and no tools register.
 
 ## Rebuilding
 
@@ -89,7 +91,7 @@ portable command (no machine-specific interpreter path), so they need `uv` on
   incremental result. Run it to recover from a known drift, not routinely before
   a commit.
 
-Requires graphify on `PATH` (`uv tool install graphifyy`), version `0.8.x` (the
+Requires graphify on `PATH` (`uv tool install "graphifyy[mcp]"`), version `0.8.x` (the
 hook imports graphify's internal incremental `_rebuild_code` entry point, which
 can change between releases — pin a compatible version before upgrading). The
 hook skips silently when graphify is absent.

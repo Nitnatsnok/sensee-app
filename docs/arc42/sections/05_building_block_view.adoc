@@ -8,7 +8,7 @@
 
 Этот раздел сознательно описывает прежде всего реализованные строительные блоки текущего клиентского среза. Планируемый authoring-first сценарий и связанные продуктовые решения зафиксированы отдельно в `09_architecture_decisions.adoc` и ADR-коллекции.
 
-Для структурного разбора используются `LikeC4 view` `capability_map`, `shared_modules`, `current_learning_slice`, `database_aggregation`, `prepared_modules` и `primary_navigation_shell` в `docs/c4/`. Основной подход идёт от модулей, возможностей и потоков поведения: для одного KMP-клиента без отдельных сервисов времени выполнения это полезнее, чем искусственная декомпозиция. Дополнительно поддерживаются C4-проекции для внешнего ревью: `reviewer_system_context`, `reviewer_container_overview` и `reviewer_component_slices`; они помогают ревью, но не заменяют основную модель.
+Для структурного разбора используются `LikeC4 view` `containers`, `capability_map`, `feature_practice`/`feature_vocabulary`/`feature_library`, `integration_seams`, `database_aggregation` и `primary_navigation_shell` в `docs/c4/`. Модель выражает уровни C4 вложенностью (System → Container → Component): `index` даёт контекст, `containers` — контейнерный уровень, `feature_*` — компонентный разбор разделов. Для одного KMP-клиента без отдельных сервисов времени выполнения такая декомпозиция полезнее искусственной.
 
 Продуктовые capability::
 +

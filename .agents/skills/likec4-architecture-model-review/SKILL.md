@@ -19,26 +19,26 @@ Review/support. Recommend model/view changes or validation; edit LikeC4 sources 
 ## Workflow
 
 1. Read `docs/c4/AGENTS.md`, `docs/README.md`, and the affected `.c4` files.
-2. Compare the model and views with actual modules in `settings.gradle.kts` and relevant `build.gradle.kts` files.
-3. Check whether arc42/ADR text references the same views and architecture state.
-4. Recommend model/view changes or explicitly say no model update is needed.
+2. Query the model with the `likec4` MCP when connected (`read-project-summary`, `read-element`, `find-relationship-paths`, `query-by-tags`) instead of re-deriving structure by hand; it is read-only.
+3. Compare the model and views with actual modules in `settings.gradle.kts` and relevant `build.gradle.kts` files.
+4. Check whether arc42/ADR text references the same views and architecture state.
+5. Recommend model/view changes or explicitly say no model update is needed.
 
 ## Check
 
-- LikeC4 is treated as the architecture model source, not a generated-image format.
-- Elements represent real ownership and boundaries in the repository.
-- Relationships are meaningful and named when needed.
-- Views are purposeful projections, not one overloaded diagram.
-- Views split by perspective, feature area, bounded context, runtime concern, deployment target, persistence boundary, or use case when crowded.
-- View names are stable and useful for URLs/exports.
-- Planned architecture is explicitly marked with existing tags such as `#future`.
-- Markdown docs do not duplicate structural relationships already captured in LikeC4 unless there is a clear reason.
-- ADRs explain decisions; LikeC4 shows resulting structure/relationships.
-- Generated artifacts follow repository convention and are not committed by default.
+- LikeC4 is the architecture model source, not a generated-image format.
+- Elements represent real ownership and boundaries; kinds carry meaning (`container` = module group, `component` = module, `store` = local storage, `capability` = cross-cutting product capability, `external_system` = outside the client).
+- Structure uses C4 nesting (system → container → component), not one flat tier; platform targets live in the `deployment {}` model, not as logical elements.
+- Relationships use the right kind: `depends` (static/DI), `flows` (runtime data), `navigates` (user navigation) — not one untyped edge space.
+- Views are purposeful projections, not one overloaded diagram; prefer scoped `view ... of <container>` and keep element views to roughly ≤15 nodes. Remember `implicitViews: true` also generates per-element views.
+- View ids are stable (URLs/exports/arc42 prose). A rename updates the canonical list in `docs/README.md` and arc42 references in the same change.
+- Planned architecture is tagged `#prepared` (code exists, not wired) or `#future` (not implemented). Keep auditable planned state at element level: `query-by-tags` returns elements only, not relationship tags.
+- Markdown docs do not duplicate the model — the canonical view list lives in `docs/README.md`, not re-enumerated across arc42.
+- ADRs explain decisions; LikeC4 shows resulting structure. Generated artifacts are not committed by default.
 
 ## Verification
 
-Use repository-defined commands:
+Read/query the model with the `likec4` MCP (read-only). Validate, preview, and build with the repository CLI:
 
 ```shell
 npx likec4 validate docs/c4

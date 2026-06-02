@@ -162,4 +162,4 @@ Companion reference::
 
 * Клиент не должен притворяться production-ready продуктом, если текущий сценарий пока работает на фикстурах.
 * Документация, LikeC4 и код должны одинаково различать реализованное, подготовленное и планируемое.
-* В `LikeC4` это различение сейчас выражается явно через отдельные `view`: `current_learning_slice`, `prepared_modules` (planned external integrations), `deployment_targets` и C4-проекции для внешнего ревью `reviewer_*`.
+* В `LikeC4` это различение выражается тегами `#prepared`/`#future` на элементах и связях, а структура показана через вложенные `containers`, `feature_*` и `deployment`.
