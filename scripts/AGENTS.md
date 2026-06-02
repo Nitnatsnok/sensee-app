@@ -12,12 +12,12 @@ Applies to:
 
 - `scripts/setup-git-hooks.sh` bootstraps Lefthook and tracked hooks. It is intentionally more interactive than Git hooks themselves, but supports environment variables for automation.
 - `scripts/agents/validate-agent-instructions.py` validates a bounded set of agent-facing instruction and config files. It is read-only, non-interactive, and uses only the Python standard library.
-- `scripts/agents/setup-local-env.*`, `list-tasks.*`, and `validate.*` are shared Codex / Claude Code local environment entrypoints.
-- `scripts/codex/` and `scripts/claude/` contain thin wrappers only; shared behavior belongs in `scripts/agents/`.
+- `scripts/agents/setup-local-env.py`, `list-tasks.py`, and `validate.py` are the shared Codex / Claude Code local environment entrypoints. They are cross-platform Python, invoked as `python3 scripts/agents/<name>.py`, and tools (the Claude Code `SessionStart` hook and Codex actions) call them directly with no per-tool wrapper layer.
+- `scripts/agents/link-claude-skills.py` creates the per-machine, git-ignored `.claude/skills` link to the canonical `.agents/skills`.
 
 ## Local rules
 
-- Keep scripts POSIX `sh` compatible unless a script declares another runtime explicitly.
+- Shared agent environment scripts in `scripts/agents/` are cross-platform Python (standard library only) and run under `python3` on every platform. Keep other shell scripts, such as `scripts/setup-git-hooks.sh`, POSIX `sh` compatible unless a script declares another runtime explicitly.
 - Prefer non-interactive automation paths with documented environment variables.
 - Make destructive behavior opt-in and obvious.
 - Keep dependencies discoverable and fail with clear messages when required tools are missing.
@@ -27,7 +27,7 @@ Applies to:
 
 - For `setup-git-hooks.sh`, use the CI smoke-test pattern in `.github/workflows/ci.yml` as the reference.
 - For new scripts, include a safe `--help` path when practical and test it.
-- For shared agent environment scripts, prefer syntax checks plus `scripts/agents/validate.* fast` before broader Gradle validation.
+- For shared agent environment scripts, prefer syntax checks plus `python3 scripts/agents/validate.py fast` before broader Gradle validation.
 - After agent-instruction validator changes:
   ```shell
   python3 scripts/agents/validate-agent-instructions.py --help

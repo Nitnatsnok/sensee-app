@@ -14,23 +14,19 @@ Tool-specific files should point back to these shared sources instead of copying
 
 ## Script Layout
 
-Shared scripts live in `scripts/agents/`:
+Shared scripts live in `scripts/agents/` as cross-platform Python, invoked as `python3 scripts/agents/<name>.py` on every platform:
 
-- `setup-local-env.sh` / `setup-local-env.ps1` prepare a lightweight local agent worktree.
-- `list-tasks.sh` / `list-tasks.ps1` list available Gradle tasks with `tasks --all`.
-- `validate.sh` / `validate.ps1` provide common validation entrypoints.
+- `setup-local-env.py` prepares a lightweight local agent worktree.
+- `list-tasks.py` lists available Gradle tasks with `tasks --all`.
+- `validate.py` provides common validation entrypoints.
 - `validate-agent-instructions.py` validates agent-facing instruction files and skills.
+- `link-claude-skills.py` creates a local, git-ignored link from `.claude/skills` to the canonical `.agents/skills` so Claude Code can discover the skills natively without copying them.
 
-Thin adapters live in:
-
-- `scripts/codex/`
-- `scripts/claude/`
-
-The adapters only call the shared setup scripts.
+Tools (the Claude Code `SessionStart` hook and the Codex actions) call these scripts directly with `python3`; there is no separate per-tool wrapper layer. `python3` must be available on `PATH`.
 
 ## Setup Behavior
 
-`scripts/agents/setup-local-env.*` is intentionally lightweight:
+`scripts/agents/setup-local-env.py` is intentionally lightweight:
 
 - prints the current project directory;
 - prints Java and Gradle wrapper versions;
@@ -42,37 +38,36 @@ It does not run full `check`, emulators, desktop/web app launches, screenshot ca
 
 ## Validation Modes
 
-Use `scripts/agents/validate.*` with one of these modes:
+Use `python3 scripts/agents/validate.py` with one of these modes:
 
 - `fast` runs Gradle `help` and the agent-instruction validator.
-- `code` runs the best available aggregate code validation task: `verify`, then `check`.
-- `docs` runs the agent-instruction validator and `verifyDocs` if such a Gradle task exists.
-- `architecture` runs `verifyArchitecture`, then `konsistCheck`, if available.
+- `full` runs the full root Gradle `check`.
+- `docs` runs the agent-instruction validator.
+- `architecture` runs the Gradle `konsistCheck` task.
 
-The scripts inspect Gradle tasks before running optional aggregate tasks. Missing optional tasks are reported instead of treated as repository failures.
+A lightweight CI job (`Agent instructions` in `.github/workflows/ci.yml`) runs `validate-agent-instructions.py` on changes to instruction files, so the `CLAUDE.md` shim and `AGENTS.md`/`CLAUDE.md` pairing invariants are enforced automatically. This replaces the former Konsist hygiene test, which duplicated the same checks.
 
 For module-local code changes, prefer the smallest affected Gradle task from `AGENTS.md` over a broad aggregate script mode.
 
-If Python is not discoverable as `python3`, `python`, or `py -3`, set `PYTHON` to the interpreter that should run `scripts/agents/validate-agent-instructions.py`.
+The shared scripts run under `python3`. `validate.py` additionally honors a `PYTHON` environment variable as an override for the interpreter it uses to run `scripts/agents/validate-agent-instructions.py`.
 
 ## Config Policy
 
 - Codex Local Environment config is committed at `.codex/environments/environment.toml`.
 - The committed Codex automatic setup currently uses the generated single `[setup].script` shape. Official Codex docs describe platform-specific setup scripts, but this repository has no confirmed TOML shape for platform-specific automatic setup, so Unix setup remains an explicit manual action until Codex App generates or documents that shape.
 - Future app-generated `.codex` changes must be reviewed before committing.
-- Claude Code project config is committed at `.claude/settings.json` and is limited to safety-oriented `permissions.deny` rules for local env files, secrets, keystores, certificates, private keys, and `local.properties`.
-- Do not create committed Claude hooks by default; hooks require a separate deliberate decision and documentation.
+- Claude Code project config is committed at `.claude/settings.json`. It holds safety-oriented `permissions.deny` rules (local env files, secrets, keystores, certificates, private keys, `local.properties`) plus the minimum worktree wiring needed for agents to work in this repository: `worktree.baseRef: "head"` and one `SessionStart` hook that recreates the `.claude/skills` link. Everything else stays out.
+- Worktree safety and per-machine preferences stay in `.claude/settings.local.json` (which overrides the committed file): `worktree.bgIsolation` lives there, never committed, so the default isolation guard holds repo-wide. `.worktreeinclude` (git-ignored paths to seed into new worktrees) and the `scripts/agents/link-claude-skills.py` helper are committed, shared repo infrastructure. See `docs/agents/claude-code.md` for current values and rationale.
+- The committed `SessionStart` hook is the single deliberately approved committed hook (it only maintains the skills link). Any further committed hook is a separate deliberate decision and must be documented here.
 - Keep Claude-specific repository behavior in `docs/agents/claude-code.md` and the thin `CLAUDE.md` shim.
 - Keep Codex-specific setup notes in `docs/agents/codex-local-environment.md`.
-- Do not copy `.agents/skills` into `.claude/skills` or another tool-specific tree.
+- Do not copy `.agents/skills` into `.claude/skills` or another tool-specific tree. A local, git-ignored link created by `scripts/agents/link-claude-skills.py` is allowed because it points at the canonical tree instead of duplicating it.
 
 Local-only preferences may live in ignored files such as `CLAUDE.local.md` or `.claude/settings.local.json`.
 
 ## Aggregate Task Decision
 
-The repository currently has root `check` and `konsistCheck` tasks. It does not have `verify`, `verifyDocs`, or `verifyArchitecture`.
-
-`scripts/agents/validate.*` therefore uses available tasks and reports missing optional aggregates. New aggregate Gradle tasks are future deliberate build-logic work, not part of this docs/scripts-only environment layer.
+The repository has root `check` and `konsistCheck` tasks, which `validate.py` maps to its `full` and `architecture` modes. Adding new aggregate Gradle tasks (for example `verify` / `verifyDocs` / `verifyArchitecture`) is future deliberate build-logic work, not part of this docs/scripts-only environment layer.
 
 ## References
 

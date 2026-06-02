@@ -3,130 +3,34 @@ version = 1
 name = "sensee-agent-env"
 
 [setup]
-script = "pwsh -File scripts/codex/setup-local-env.ps1"
+script = "python3 scripts/agents/setup-local-env.py"
 
 [[actions]]
 name = "Setup Local Env"
 icon = "tool"
-command = "sh scripts/codex/setup-local-env.sh"
-platform = "darwin"
-
-[[actions]]
-name = "Setup Local Env"
-icon = "tool"
-command = "pwsh -File scripts/codex/setup-local-env.ps1"
-platform = "win32"
-
-[[actions]]
-name = "Setup Local Env"
-icon = "tool"
-command = "sh scripts/codex/setup-local-env.sh"
-platform = "linux"
+command = "python3 scripts/agents/setup-local-env.py"
 
 [[actions]]
 name = "Gradle Tasks"
 icon = "tool"
-command = "sh scripts/agents/list-tasks.sh"
-platform = "darwin"
-
-[[actions]]
-name = "Gradle Tasks"
-icon = "tool"
-command = "pwsh -File scripts/agents/list-tasks.ps1"
-platform = "win32"
-
-[[actions]]
-name = "Gradle Tasks"
-icon = "tool"
-command = "sh scripts/agents/list-tasks.sh"
-platform = "linux"
+command = "python3 scripts/agents/list-tasks.py"
 
 [[actions]]
 name = "Validate Fast"
 icon = "tool"
-command = "sh scripts/agents/validate.sh fast"
-platform = "darwin"
-
-[[actions]]
-name = "Validate Fast"
-icon = "tool"
-command = "pwsh -File scripts/agents/validate.ps1 -Mode fast"
-platform = "win32"
-
-[[actions]]
-name = "Validate Fast"
-icon = "tool"
-command = "sh scripts/agents/validate.sh fast"
-platform = "linux"
-
-[[actions]]
-name = "Validate Code"
-icon = "tool"
-command = "sh scripts/agents/validate.sh code"
-platform = "darwin"
-
-[[actions]]
-name = "Validate Code"
-icon = "tool"
-command = "pwsh -File scripts/agents/validate.ps1 -Mode code"
-platform = "win32"
-
-[[actions]]
-name = "Validate Code"
-icon = "tool"
-command = "sh scripts/agents/validate.sh code"
-platform = "linux"
+command = "python3 scripts/agents/validate.py fast"
 
 [[actions]]
 name = "Validate Docs"
 icon = "tool"
-command = "sh scripts/agents/validate.sh docs"
-platform = "darwin"
-
-[[actions]]
-name = "Validate Docs"
-icon = "tool"
-command = "pwsh -File scripts/agents/validate.ps1 -Mode docs"
-platform = "win32"
-
-[[actions]]
-name = "Validate Docs"
-icon = "tool"
-command = "sh scripts/agents/validate.sh docs"
-platform = "linux"
+command = "python3 scripts/agents/validate.py docs"
 
 [[actions]]
 name = "Validate Architecture"
 icon = "tool"
-command = "sh scripts/agents/validate.sh architecture"
-platform = "darwin"
-
-[[actions]]
-name = "Validate Architecture"
-icon = "tool"
-command = "pwsh -File scripts/agents/validate.ps1 -Mode architecture"
-platform = "win32"
-
-[[actions]]
-name = "Validate Architecture"
-icon = "tool"
-command = "sh scripts/agents/validate.sh architecture"
-platform = "linux"
+command = "python3 scripts/agents/validate.py architecture"
 
 [[actions]]
 name = "Gradle Check"
 icon = "tool"
-command = "./gradlew --no-daemon check"
-platform = "darwin"
-
-[[actions]]
-name = "Gradle Check"
-icon = "tool"
-command = ".\\gradlew.bat --no-daemon check"
-platform = "win32"
-
-[[actions]]
-name = "Gradle Check"
-icon = "tool"
-command = "./gradlew --no-daemon check"
-platform = "linux"
+command = "python3 scripts/agents/validate.py full"
