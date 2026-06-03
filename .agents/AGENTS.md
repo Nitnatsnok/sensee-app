@@ -28,10 +28,6 @@ Applies to:
   ```shell
   python3 scripts/agents/validate-agent-instructions.py
   ```
-  On Windows:
-  ```shell
-  py -3 scripts/agents/validate-agent-instructions.py
-  ```
 - The validator does not perform semantic review of skill quality or judge whether eval prompts are good; use manual review and the relevant skills for that.
 - If a skill changes commit, docs, LikeC4, or AGENTS behavior, update `docs/agents/skills.md` and root `AGENTS.md` when needed.
 

@@ -33,11 +33,6 @@ Applies to:
   python3 scripts/agents/validate-agent-instructions.py --help
   python3 scripts/agents/validate-agent-instructions.py
   ```
-  On Windows:
-  ```shell
-  py -3 scripts/agents/validate-agent-instructions.py --help
-  py -3 scripts/agents/validate-agent-instructions.py
-  ```
 
 ## Do not
 

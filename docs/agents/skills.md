@@ -41,12 +41,6 @@ After changing agent-facing instructions or skills, run the read-only validator:
 python3 scripts/agents/validate-agent-instructions.py
 ```
 
-On Windows:
-
-```shell
-py -3 scripts/agents/validate-agent-instructions.py
-```
-
 The validator checks:
 
 - skill frontmatter (`name` and `description`);
