@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 /**
  * The fixture is the closed set of "client-known" ids; backend additions
- * beyond it surface as `Unknown(id)` at runtime. Canon: `docs/pos-and-forms.adoc`.
+ * beyond it surface as `Unknown(id)` at runtime. Canon: `docs/domain/pos-and-forms.adoc`.
  */
 class GrammarTaxonomyFixtureTest {
     private val json = Json { ignoreUnknownKeys = true }

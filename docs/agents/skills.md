@@ -25,6 +25,7 @@ Architecture knowledge should not move into skills. ADRs explain decisions, `doc
 | `dictionary-enrichment-schema-review` | Check vocabulary enrichment, verification, schema | active | review/support | Schema/prompt/verification risks |
 | `likec4-architecture-model-review` | Check LikeC4 model and views | active | review/support | Drift, view readability, validation |
 | `architecture-docs-sync` | Decide whether docs/ADR/LikeC4 updates are needed | active | review/support | Docs impact and concise patch suggestion |
+| `backlog-maintenance` | Add/update/remove a deferred-work item in `docs/backlog/` | active | implementation-support | Backlog item with synced index and references |
 
 ## Refinement
 

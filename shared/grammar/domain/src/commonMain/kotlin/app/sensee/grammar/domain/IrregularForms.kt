@@ -5,7 +5,7 @@ package app.sensee.grammar.domain
  * past tense and past participle (e.g. come / came / come). For a unit of
  * [GrammarUnitType.IrregularVerb] these back the related form-variant cards;
  * they are stored, not rule-derived (the [GrammarCategory.VerbIrregular]
- * obligation in `docs/pos-and-forms.adoc`).
+ * obligation in `docs/domain/pos-and-forms.adoc`).
  */
 public data class IrregularForms(
     val base: String,

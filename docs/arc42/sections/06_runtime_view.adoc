@@ -143,6 +143,6 @@ Library — владелец каталога лексического мате�
 4. Splash не имеет URL и не попадает в историю: переход на `PrimaryShell` идёт через `replaceCurrent`, а не push.
 5. Тёплая перезагрузка минует `Startup`: при том же URL StateKeeper восстанавливает root stack, активная секция и экран берутся из собственного стека `PrimaryShell`.
 
-Вложенная ссылка в `vocabulary` пока разбирается только до уровня секции (`QuickCapture`); полный разбор до `VocabularyEditorConfig.Editor(entryId)` — отложенная доработка (см. `docs/evolution-backlog.adoc`, EB-7). Пошаговое поведение — `docs/scenarios/navigation.feature`.
+Вложенная ссылка в `vocabulary` пока разбирается только до уровня секции (`QuickCapture`); полный разбор до `VocabularyEditorConfig.Editor(entryId)` — отложенная доработка (см. `docs/backlog/`, EB-7). Пошаговое поведение — `docs/scenarios/navigation.feature`.
 
 UI navigation shell показывает разделы `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Реализованное содержание есть у Practice (deck/home/card detail), Library (каталог + adoption), Vocabulary Editor (capture) и Profile (настройки + верификация ключа); `Home` пока отображает `UnimplementedScreen`.

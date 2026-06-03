@@ -61,7 +61,7 @@ public sealed interface ComponentSalience {
 
 /**
  * Syntactic role of a [UnitComponent] inside its parent unit (canon
- * `docs/pos-and-forms.adoc`). Sealed so a backend-only role resolves to
+ * `docs/domain/pos-and-forms.adoc`). Sealed so a backend-only role resolves to
  * [Unknown] (raw id) instead of being dropped or crashing exhaustive `when`s,
  * matching the rest of the grammar taxonomy (ADR-006).
  */

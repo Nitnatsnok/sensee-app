@@ -2,7 +2,7 @@ package app.sensee.grammar.domain
 
 /**
  * A structured preposition-government cue on a sense (ADR-001, canon in
- * `docs/pos-and-forms.adoc`): a group of prepositions that are
+ * `docs/domain/pos-and-forms.adoc`): a group of prepositions that are
  * **interchangeable for this same sense** (e.g. `different` → from / to /
  * than), with an optional [example] illustrating the construction when it is
  * not already shown by the sense's contextual applications.

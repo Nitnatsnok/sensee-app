@@ -2,7 +2,7 @@ package app.sensee.grammar.domain
 
 /**
  * What complement a sense takes — its valency pattern (ADR-001, canon in
- * `docs/pos-and-forms.adoc`). A distinct structured axis from grammar tags
+ * `docs/domain/pos-and-forms.adoc`). A distinct structured axis from grammar tags
  * and preposition government: e.g. `enjoy` → {Noun, Gerund}, `want` →
  * {Noun, ToInfinitive}, `make sb do` → {BareInfinitive}.
  *

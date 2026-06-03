@@ -14,7 +14,7 @@ Applies to:
 - `domain` - pure value types and provider contracts.
 - `data` - taxonomy wire DTOs, mock fixtures, source adapter, and cached projections.
 
-The broader taxonomy rationale is in ADR-006 and `docs/pos-and-forms.adoc`.
+The broader taxonomy rationale is in ADR-006 and `docs/domain/pos-and-forms.adoc`.
 
 ## Local rules
 

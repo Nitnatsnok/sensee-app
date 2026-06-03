@@ -39,7 +39,7 @@
     + feature-owned `database-schema` (`lexical_entry`) — устойчивое хранение
   - `shared/grammar/domain/*`: `GrammarUnitType`, `GrammarTag`, `SurfaceForm`
     (вынесены, нейтральный модуль). POS, категории и формы с инвариантом —
-    единый источник `docs/pos-and-forms.adoc` (принцип в ADR-001)
+    единый источник `docs/domain/pos-and-forms.adoc` (принцип в ADR-001)
   - `shared/feature/vocabulary-editor/presentation/*`:
     `VocabularyEditorConfig.QuickCapture`, `VocabularyCaptureComponent`/`Screen`,
     `SenseSelectionCard` (реализованный add-path); edit UI для `Editor(entryId)`

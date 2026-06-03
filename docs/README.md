@@ -5,10 +5,10 @@
 ## Что здесь есть
 
 - `arc42/sections/` — основной архитектурный справочник.
-- `domain-information-model.adoc` — предметный справочник по доменным сущностям и связям.
-- `pos-and-forms.adoc` — единый источник таксономии и инварианта `GrammarCategory` ↔ `GrammarForm`.
+- `domain/information-model.adoc` — предметный справочник по доменным сущностям и связям.
+- `domain/pos-and-forms.adoc` — единый источник таксономии и инварианта `GrammarCategory` ↔ `GrammarForm`.
 - `adr/` — архитектурно значимые решения в формате `Architecture Decision Record`.
-- `evolution-backlog.adoc` — живой список отложенных сквозных разрывов (политика — в нём же).
+- `backlog/` — живой backlog отложенных доработок: один файл на пункт плюс индекс с политикой ведения.
 - `c4/` — канонические исходники архитектурных схем.
 - `scenarios/` — поведенческие сценарии в формате `Gherkin` для реализованного и планируемого поведения.
 - `agents/` — agent-facing каталог skills и setup-заметки для Codex / Claude Code.
@@ -37,7 +37,7 @@
 - `arc42/sections/03_context_and_scope.adoc`
 - `arc42/sections/04_solution_strategy.adoc`
 - `arc42/sections/08_concepts.adoc`
-- `domain-information-model.adoc`
+- `domain/information-model.adoc`
 - `arc42/sections/09_architecture_decisions.adoc`
 - `adr/index.adoc`
 - `arc42/sections/10_quality_requirements.adoc`

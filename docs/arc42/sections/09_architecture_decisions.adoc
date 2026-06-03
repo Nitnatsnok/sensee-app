@@ -18,7 +18,7 @@
 |ADR-006|AI enrichment — backend-driven schema, forward-compatible domain, request/response extension points|Accepted|link:../../adr/0006-ai-enrichment-backend-driven-and-forward-compat.adoc[Открыть ADR]
 |===
 
-NOTE: Отложенные доработки фиксируются в `docs/evolution-backlog.adoc`; ADR остаются только для архитектурно значимых решений.
+NOTE: Отложенные доработки фиксируются в `docs/backlog/`; ADR остаются только для архитектурно значимых решений.
 
 == Правила ведения решений
 

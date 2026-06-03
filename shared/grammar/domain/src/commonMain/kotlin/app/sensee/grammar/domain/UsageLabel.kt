@@ -2,7 +2,7 @@ package app.sensee.grammar.domain
 
 /**
  * A structured usage-nuance label on a sense (ADR-001, canon in
- * `docs/pos-and-forms.adoc`): the *same* sense constrained in register,
+ * `docs/domain/pos-and-forms.adoc`): the *same* sense constrained in register,
  * region, domain, connotation or temporal status. A meaning-changing nuance
  * is sense segregation, not a label. Open selectional restrictions that
  * cannot be enumerated live in `usageNote`, not here.

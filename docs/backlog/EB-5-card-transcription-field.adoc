@@ -1,0 +1,14 @@
+= EB-5: Поле транскрипции в модели карты
+:status: open
+:area: practice
+
+Триггер / что разблокирует::
+`PracticeSettings.showTranscription` существует и сохраняется, но поля транскрипции
+нет ни в модели карты (`Card`), ни в `Sense`, поэтому настройка ни на что не влияет
+и в practice-карте транскрипция не отображается. Разблокирует: добавление поля
+транскрипции в лексическую модель/карту и его показ под контролем
+`showTranscription`.
+
+Связи::
+* Код: `PracticeSettings` (`showTranscription`), `Card`, `Sense` (поле отсутствует в обоих)
+* arc42: `docs/arc42/sections/08_concepts.adoc` (Product Semantic Segregation)

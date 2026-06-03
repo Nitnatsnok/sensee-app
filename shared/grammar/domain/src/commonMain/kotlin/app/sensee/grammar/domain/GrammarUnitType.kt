@@ -1,7 +1,7 @@
 package app.sensee.grammar.domain
 
 /**
- * Lexical unit type of a sense (ADR-001/EB-1, canon `docs/pos-and-forms.adoc`).
+ * Lexical unit type of a sense (ADR-001/EB-1, canon `docs/domain/pos-and-forms.adoc`).
  * Sealed so a backend-only value resolves to [Unknown] (raw id) instead of
  * being dropped or crashing exhaustive `when`s.
  */

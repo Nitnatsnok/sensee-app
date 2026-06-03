@@ -12,7 +12,9 @@ The documentation describes the Sensee KMP client: Android, iOS, Desktop JVM, JS
 ## Local context
 
 - `docs/arc42/sections/` - main architecture reference for the client.
+- `docs/domain/` - domain reference: information model and grammar taxonomy canon.
 - `docs/adr/` - architecture decision records.
+- `docs/backlog/` - deferred-work backlog: one file per item plus an index with the policy.
 - `docs/c4/` - canonical LikeC4 sources for architecture diagrams.
 - `docs/scenarios/` - Gherkin behavior scenarios.
 - `docs/engineering/` - engineering-process conventions, such as commit conventions.

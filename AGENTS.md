@@ -90,6 +90,7 @@ If the user explicitly asks to respond in another language, follow the user's in
 - Use the project skills in `.agents/skills` for repeatable workflows; the short catalog is `docs/agents/skills.md`.
 - A graphify knowledge graph of the code is committed at `graphify-out/graph.json`, so it travels with the branch (checkout restores the matching graph). Query it before broad architecture questions via the `graphify` MCP server or `graphify query/path/explain`. A `pre-commit` hook rebuilds and stages it; scanning excludes `.json` fixtures/config via `.graphifyignore`. See `docs/agents/graphify.md`.
 - Use `docs/engineering/commits.md` as the canonical commit convention when preparing commit messages or reviewing commit boundaries.
+- Track deferred cross-cutting or product work item-by-item in `docs/backlog/` (one `.adoc` per item plus an index; policy in the index). Use the `backlog-maintenance` skill to add, update, or remove items.
 - After changing agent-facing instructions, run `python3 scripts/agents/validate-agent-instructions.py`.
 - Shared Codex / Claude Code environment setup and validation lives in `scripts/agents/` as cross-platform Python scripts invoked via `python3`. See `docs/agents/agent-environment.md`.
 - Tool-specific adapters must not duplicate `AGENTS.md` or copy `.agents/skills` into tool-specific skill trees.

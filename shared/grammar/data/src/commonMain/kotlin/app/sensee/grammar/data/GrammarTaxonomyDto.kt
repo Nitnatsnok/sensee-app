@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * Wire shape of `practice/grammar/taxonomy`: the unit-type / category / form
  * tree plus the usage-axis and complement-type label dictionaries. Ids are the
- * neutral wire/storage contract (canon `docs/pos-and-forms.adoc`); the `labels`
+ * neutral wire/storage contract (canon `docs/domain/pos-and-forms.adoc`); the `labels`
  * map carries one entry per supported UI language (BCP-47 tag → long/short
  * label pair). Forward-compatible: unknown fields are ignored, new sections
  * default to empty, missing languages fall back to `null` at lookup time.

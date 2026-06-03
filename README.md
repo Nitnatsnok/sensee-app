@@ -48,7 +48,7 @@ place. A secret-scanner flagging it is an expected false positive.
   AI candidates → confirm, with tests).
 - **Decisions & trade-offs:** [`docs/adr/`](docs/adr/index.adoc) — especially ADR-004
   (FSRS scheduling) and ADR-005 (AI-enrichment boundary). Open follow-up work is in
-  [`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc).
+  [`docs/backlog/`](docs/backlog/index.adoc).
 - **Architecture:** [`docs/`](docs/) — arc42 + C4 (LikeC4 sources in
   [`docs/c4/`](docs/c4)); behavioral scenarios in [`docs/scenarios/`](docs/scenarios).
 - **Build & verification:** [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -128,11 +128,10 @@ are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Roadmap
 
-The roadmap lives in [`docs/evolution-backlog.adoc`](docs/evolution-backlog.adoc). Done:
-grammar-domain extraction, library-owned catalog, and `vocabulary-editor/domain`.
-Near-term: sampled practice sessions (EB-3) and card transcription (EB-5). Later:
-live backend/sync, external telemetry, live AI/TTS integrations, and broader feature
-coverage.
+Deferred work is tracked item-by-item in [`docs/backlog/`](docs/backlog/index.adoc) —
+open items (e.g. sampled practice sessions, card transcription) plus ideas under
+consideration. Larger planned directions — live backend/sync, external telemetry, and
+live AI/TTS integrations — are described in the arc42 docs.
 
 ## License
 

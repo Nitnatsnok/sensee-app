@@ -1,0 +1,15 @@
+= EB-7: Прямая ссылка на VocabularyEditorConfig.Editor(entryId) через web-навигацию
+:status: open
+:area: navigation
+
+Триггер / что разблокирует::
+`DefaultVocabularyEditorSectionComponent` держит позицию в `MutableStateFlow`, без
+Decompose-навигатора (стек/слот), поэтому секция не может быть `WebNavigationOwner`;
+разбор web-URL для области vocabulary доходит только до уровня секции
+(`QuickCapture`), но не до `VocabularyEditorConfig.Editor(entryId)`. Разблокирует:
+ввод стека/слота в секцию ради URL-параметра и реализацию `WebNavigationOwner`.
+
+Связи::
+* Сценарий: `docs/scenarios/navigation.feature`
+* Код: `DefaultVocabularyEditorSectionComponent` (`MutableStateFlow`), `VocabularyEditorSectionComponent` (не `WebNavigationOwner`), `PrimarySectionConfig` (`vocabulary` → `QuickCapture`)
+* arc42: `docs/arc42/sections/06_runtime_view.adoc` (web-навигация)

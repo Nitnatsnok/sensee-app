@@ -46,7 +46,7 @@ public data class GrammarLabel(
  * taxonomy (the builder lives in `shared/grammar/data`, which owns the wire
  * DTO) and then queried by UI. An unknown id or missing language returns
  * `null` so the caller can fall back or hide it, never crash. Keys mirror the
- * neutral ids (canon `docs/pos-and-forms.adoc`).
+ * neutral ids (canon `docs/domain/pos-and-forms.adoc`).
  *
  * The taxonomy carries every supported UI language at once and both short
  * styles — the same resolver serves the capture sense-card badges

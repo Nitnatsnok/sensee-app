@@ -43,3 +43,4 @@ Applies to:
 - `.agents/skills/agent-task-slicer`
 - `.agents/skills/pr-diff-review`
 - `.agents/skills/commit-preparation`
+- `.agents/skills/backlog-maintenance`

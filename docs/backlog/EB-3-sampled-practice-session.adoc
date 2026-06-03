@@ -1,0 +1,16 @@
+= EB-3: Сессия повторения по запросу или подмножеству вместо только готового Deck
+:status: open
+:area: practice
+
+Триггер / что разблокирует::
+Нужна для запуска повторения из `Home` (CTA «Повторить сегодня» по due-подмножеству)
+и из Practice по выбранным материалам `Library`. Сейчас сессия строится только из
+готового `Deck`: `DeckPracticeLogic` грузит deck целиком, а `PracticeSessionPolicy`
+определяет лишь подачу карт внутри сессии, а не её состав. Реализация переиспользует
+единственный планировщик FSRS (ADR-004), без второго источника расписания.
+
+Связи::
+* Сценарий: `docs/scenarios/home.feature`, `docs/scenarios/practice-deck.feature`
+* Код: `DeckPracticeLogic` (загрузка готового `Deck`), `PracticeSessionPolicy` (подача внутри сессии)
+* ADR: `docs/adr/0004-fsrs-is-single-scheduling-source-of-truth.adoc` (ADR-004)
+* arc42: `docs/arc42/sections/06_runtime_view.adoc` (CTA «Повторить сегодня»)

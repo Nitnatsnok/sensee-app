@@ -120,7 +120,7 @@ model {
       card_derivation = capability 'Card Derivation' {
         description 'Реализованная projection-логика `CapturedCatalogDerivation`: confirmed lexical material превращается в captured deck, группируется по `headLemma` и создаёт form-variant cards для irregular verbs. UI-навигация по family остаётся planned.'
         technology 'shared/feature/library/data'
-        link ../domain-information-model.adoc
+        link ../domain/information-model.adoc
       }
 
       library_schema = store 'Library Schema' {
@@ -157,7 +157,7 @@ model {
       vocabulary_domain = component 'Vocabulary Domain' {
         description '`SenseCandidate` и подготовленный write workflow для замены confirmed `LexicalEntry`. Write workflow существует в domain, но UI поверх него — planned.'
         technology 'shared/feature/vocabulary-editor/domain'
-        link ../domain-information-model.adoc
+        link ../domain/information-model.adoc
       }
 
       vocabulary_data = component 'Vocabulary Data' {
@@ -188,7 +188,7 @@ model {
     lexicon = container 'Lexicon' {
       description 'Нейтральная каноническая лексическая модель и её сериализация.'
       technology 'shared/lexicon'
-      link ../domain-information-model.adoc
+      link ../domain/information-model.adoc
 
       lexical_model = component 'Sense Source Model' {
         description 'Центральный `Sense` (+`ContextualApplication`/`AlignmentChunk`/`WordFamilyMember`) и нейтральный read model `LexicalEntry`/`EntryStatus`/`LexiconRepository`.'
@@ -205,7 +205,7 @@ model {
     grammar = container 'Grammar Taxonomy' {
       description 'Нейтральная грамматическая таксономия, не привязанная к конкретному AI-провайдеру.'
       technology 'shared/grammar'
-      link ../pos-and-forms.adoc
+      link ../domain/pos-and-forms.adoc
 
       grammar_taxonomy = component 'Grammar Taxonomy' {
         description 'Нейтральные `GrammarUnitType`, `GrammarTag`, `GrammarCategory/Form`, runtime labels/invariants providers и fixtures поверх `CachingGrammarTaxonomyProvider`.'
