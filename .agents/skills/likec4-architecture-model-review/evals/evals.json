@@ -10,6 +10,21 @@
       "id": "crowded-view",
       "prompt": "This LikeC4 view is getting crowded after adding persistence relationships. Review it.",
       "expected_output": "Flags readability issues, suggests splitting by persistence/capability/runtime perspective, and preserves stable view names where possible."
+    },
+    {
+      "id": "model-code-drift",
+      "prompt": "A feature's data module added implementation(projects.shared.srs.engine) and uses SrsStorage, but the LikeC4 model shows no edge from that feature to the SRS engine. Review.",
+      "expected_output": "Cross-checks build.gradle.kts/imports (and graphify) against model relationships, confirms the dependency in source, flags the missing depends edge, and recommends adding it with the right relationship kind."
+    },
+    {
+      "id": "relationship-lifecycle-audit",
+      "prompt": "Audit whether all planned (#prepared/#future) architecture in the model is reviewable, including planned navigation between sections.",
+      "expected_output": "Notes that query-by-tags returns only elements, audits relationship tags via read-view/find-relationships, and checks that planned cross-feature navigation is collected in the cross_feature_navigation view rather than scattered or modeled as fake elements."
+    },
+    {
+      "id": "view-title-consistency",
+      "prompt": "Some LikeC4 view titles use English category prefixes (Runtime/Planned) and others Russian (Структура/Компоненты), and two flows have no prefix. Review.",
+      "expected_output": "Flags the inconsistent category-prefix scheme (not a language-policy violation, since technical proper nouns may stay English) and recommends one consistent Russian prefix set used as a LikeC4 navigation group."
     }
   ]
 }

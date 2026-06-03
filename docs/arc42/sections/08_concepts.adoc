@@ -157,6 +157,8 @@ Companion reference::
 * `shared/core/mock-backend` предоставляет mock engine и fixture sets для текущего учебного среза без live backend.
 * `CatalogLocalDataSource` и `shared/feature/library/database-schema` используют SQLDelight для catalog/deck/adoption state; `PracticeSrsStorage` и `shared/feature/practice/database-schema` используют SQLDelight для SRS-состояния и review log.
 * `shared/srs/*` остаются самостоятельными библиотеками, но текущий practice data flow уже применяет их для планирования повторений.
+* `Library` материализует SRS-снимки карточек через `SrsStorage` (контракт принадлежит `Practice`) и переиспользует контракт обогащения (`ai.core` + `lexicon` enrichment) при деривации каталога, поэтому `library/data` статически зависит от `shared/srs/*` и `shared/ai/core`.
+* Practice deck может озвучивать текущую карточку через `tts` seam (`Speaker`), не владея синтезом речи; выбор провайдера и ключ остаются в `Profile`/`Settings`.
 
 == Honest Evolution
 

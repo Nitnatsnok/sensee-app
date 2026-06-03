@@ -4,7 +4,7 @@ model {
     link ../arc42/sections/03_context_and_scope.adoc
   }
 
-  // --- External systems ---
+  // External systems
 
   platform_services = external_system 'Platform Services' {
     description 'Lifecycle, resources, settings, windowing, SQL drivers и прочие platform-specific capabilities.'
@@ -25,7 +25,7 @@ model {
     link ../arc42/sections/03_context_and_scope.adoc
   }
 
-  // --- Sensee client system ---
+  // Sensee client system
 
   client = client_app 'Sensee Client Applications' {
     description 'KMP-клиент с общим app shell, реализованными practice/library/profile/capture срезами и набором shared-библиотек для дальнейшего роста продукта.'
@@ -33,7 +33,7 @@ model {
     icon tech:kotlin
     link ../README.md
 
-    // ===== Shell =====
+    // Shell
     shell = container 'App Shell' {
       description 'Общая тема, root composition, platform environments и навигационная оболочка.'
       technology 'shared/app-shell'
@@ -52,13 +52,13 @@ model {
       }
 
       splash = component 'Startup Splash' {
-        description 'Cold-start splash: держится ровно пока идёт `PreloadAppStartupUseCase` для runtime-таксономии, не по фиксированной задержке. При сбое показывает retryable state; при тёплом восстановлении персистентного root-стека минуется — deep-target возвращается без splash.'
+        description 'Cold-start splash: держится ровно пока идёт `PreloadAppStartupUseCase` для runtime-таксономии. При сбое показывает retryable state; при тёплом восстановлении персистентного root-стека минуется — deep-target возвращается без splash.'
         technology 'StartupComponent + shared/feature/startup'
         link ../arc42/sections/06_runtime_view.adoc
       }
     }
 
-    // ===== Feature: Home =====
+    // Feature: Home
     feature_home = container 'Home Feature' {
       description 'Стартовый раздел Home.'
       technology 'shared/feature/home'
@@ -71,7 +71,7 @@ model {
       }
     }
 
-    // ===== Feature: Practice =====
+    // Feature: Practice
     feature_practice = container 'Practice Feature' {
       description 'Раздел Practice — потребитель курируемых колод; владелец review-сценария.'
       technology 'shared/feature/practice'
@@ -100,7 +100,7 @@ model {
       }
     }
 
-    // ===== Feature: Library =====
+    // Feature: Library
     feature_library = container 'Library Feature' {
       description 'Раздел Library — владелец каталога. Practice — read-only потребитель курируемых колод.'
       technology 'shared/feature/library'
@@ -137,7 +137,7 @@ model {
       }
     }
 
-    // ===== Feature: Vocabulary Editor =====
+    // Feature: Vocabulary Editor
     feature_vocabulary = container 'Vocabulary Editor Feature' {
       description 'Раздел Vocabulary Editor — host реализованного add-path и подготовленного write workflow.'
       technology 'shared/feature/vocabulary-editor'
@@ -172,7 +172,7 @@ model {
       }
     }
 
-    // ===== Feature: Profile =====
+    // Feature: Profile
     feature_profile = container 'Profile Feature' {
       description 'Раздел Profile — владелец пользовательских настроек.'
       technology 'shared/feature/profile'
@@ -184,7 +184,7 @@ model {
       }
     }
 
-    // ===== Lexicon (canonical source model) =====
+    // Lexicon (canonical source model)
     lexicon = container 'Lexicon' {
       description 'Нейтральная каноническая лексическая модель и её сериализация.'
       technology 'shared/lexicon'
@@ -201,7 +201,7 @@ model {
       }
     }
 
-    // ===== Grammar taxonomy =====
+    // Grammar taxonomy
     grammar = container 'Grammar Taxonomy' {
       description 'Нейтральная грамматическая таксономия, не привязанная к конкретному AI-провайдеру.'
       technology 'shared/grammar'
@@ -213,7 +213,7 @@ model {
       }
     }
 
-    // ===== User settings =====
+    // User settings
     settings = container 'User Settings' {
       description 'Домен и хранилище пользовательских настроек.'
       technology 'shared/settings'
@@ -236,7 +236,7 @@ model {
       }
     }
 
-    // ===== AI enrichment seam =====
+    // AI enrichment seam
     ai = container 'AI Enrichment Seam' {
       description 'Provider-agnostic boundary contract, settings-backed routing и anti-corruption mapping (ADR-005).'
       technology 'shared/ai'
@@ -258,7 +258,7 @@ model {
       }
     }
 
-    // ===== TTS seam =====
+    // TTS seam
     tts = container 'TTS Seam' {
       description 'Speech contract, playback/cache и provider-specific адаптеры.'
       technology 'shared/tts'
@@ -286,7 +286,7 @@ model {
       }
     }
 
-    // ===== Lexical verification seam =====
+    // Lexical verification seam
     verification = container 'Lexical Verification Seam' {
       description 'Лексическая верификация с лицензионным барьером (ADR-007).'
       technology 'shared/verification'
@@ -314,7 +314,7 @@ model {
       }
     }
 
-    // ===== SRS engine =====
+    // SRS engine
     srs = container 'SRS Engine' {
       description 'Cross-platform SRS model, engine и FSRS implementation, используемые practice data flow для review scheduling.'
       technology 'shared/srs'
@@ -326,7 +326,7 @@ model {
       }
     }
 
-    // ===== UI libraries =====
+    // UI libraries
     ui = container 'UI Libraries' {
       description 'Переиспользуемые UI-библиотеки.'
       technology 'shared/ui'
@@ -348,7 +348,7 @@ model {
       }
     }
 
-    // ===== Core runtime & foundations =====
+    // Core runtime & foundations
     core = container 'Core Runtime' {
       description 'Navigation, compose runtime, network/transport, observability и secure storage.'
       technology 'shared/core'
@@ -386,7 +386,7 @@ model {
       }
     }
 
-    // ===== Persistence (aggregate database) =====
+    // Persistence (aggregate database)
     persistence = store 'Persistence' {
       description 'SQLDelight runtime, database provider и platform drivers. Агрегирует feature- и seam-owned schema в единый `SenseeDatabase`.'
       technology 'shared/database'
@@ -394,9 +394,9 @@ model {
       link ../arc42/sections/07_deployment_view.adoc
     }
 
-    // ===================== Relationships =====================
+    // Relationships
 
-    // --- Shell wiring ---
+    // Shell wiring
     shell.root -[depends]-> core.core_runtime 'creates root component graph'
     shell.root -[depends]-> core.observability 'wires diagnostics boundary'
     shell.root -[depends]-> persistence 'wires shared persistence'
@@ -409,17 +409,18 @@ model {
     shell.splash -[navigates]-> shell.primary_navigation 'StartupState.Loaded opens shell'
     shell.root -[navigates]-> shell.primary_navigation 'hosts primary navigation'
 
-    // --- Primary navigation to section targets ---
+    // Primary navigation to section targets
     shell.primary_navigation -[navigates]-> feature_home.home 'persistent root target'
     shell.primary_navigation -[navigates]-> feature_practice.practice_ui 'persistent root target'
     shell.primary_navigation -[navigates]-> feature_vocabulary.vocabulary_ui 'persistent root target (add-path)'
     shell.primary_navigation -[navigates]-> feature_library.library_ui 'persistent root target'
     shell.primary_navigation -[navigates]-> feature_profile.profile_ui 'persistent root target'
 
-    // --- Practice ---
+    // Practice
     feature_practice.practice_ui -[depends]-> ui.learning_deck 'renders reusable deck UI'
     feature_practice.practice_ui -[depends]-> core.core_presentation 'uses DataLoadingState'
     feature_practice.practice_ui -[depends]-> core.observability 'reports presentation failures'
+    feature_practice.practice_ui -[flows]-> tts.tts_seam 'speaks card text via Speaker'
     feature_practice.practice_ui -[flows]-> feature_library.library_catalog 'loads deck via CatalogRepository'
     feature_practice.practice_ui -[flows]-> feature_practice.practice_domain 'submits review via PracticeReviewRepository'
     feature_practice.practice_data -[depends]-> feature_practice.practice_domain 'implements review repository'
@@ -428,11 +429,14 @@ model {
     feature_practice.practice_data -[depends]-> grammar.grammar_taxonomy 'uses grammar taxonomy'
     feature_practice.practice_data -[flows]-> persistence 'stores review state' { technology 'SQLDelight' }
 
-    // --- Library ---
+    // Library
     feature_library.library_ui -[flows]-> feature_library.library_catalog 'reads own material + adoption state'
     feature_library.library_catalog -[flows]-> core.network 'loads fixture-backed catalog/decks' { technology 'Ktor client' }
     feature_library.library_catalog -[flows]-> core.mock_backend 'contributes catalog fixtures'
     feature_library.library_catalog -[flows]-> lexicon.lexical_model 'reads confirmed material via LexiconRepository'
+    feature_library.library_catalog -[depends]-> lexicon.enrichment_mapping 'maps curated enrichment to Sense'
+    feature_library.library_catalog -[depends]-> ai.ai_seam 'reuses enrichment contract (ai.core)'
+    feature_library.library_catalog -[depends]-> srs.srs_engine 'materializes SRS card state via SrsStorage'
     feature_library.library_catalog -[flows]-> persistence 'stores catalog/adoption state' { technology 'SQLDelight' }
     feature_library.library_catalog -[depends]-> feature_library.library_schema 'owns catalog tables'
     lexicon.lexical_model -[flows]-> feature_library.card_derivation 'projects confirmed material into captured cards'
@@ -441,7 +445,7 @@ model {
     feature_library.service_catalog -[flows]-> future_backend 'fetches curated sets' { #future; technology 'API' }
     feature_library.service_catalog -[flows]-> feature_library.library_catalog 'adopted fully or partially' { #future }
 
-    // --- Vocabulary capture / editing ---
+    // Vocabulary capture / editing
     feature_vocabulary.vocabulary_ui -[flows]-> verification.verification_seam 'verifies before and after AI'
     feature_vocabulary.vocabulary_ui -[flows]-> ai.ai_seam 'requests candidate enrichment'
     feature_vocabulary.vocabulary_ui -[depends]-> lexicon.enrichment_mapping 'maps AI response to Sense'
@@ -449,27 +453,28 @@ model {
     feature_vocabulary.vocabulary_ui -[depends]-> feature_vocabulary.vocabulary_domain 'uses SenseCandidate + write workflow'
     feature_vocabulary.vocabulary_capture -[flows]-> lexicon.lexical_model 'confirms lexical material'
     feature_vocabulary.vocabulary_capture -[depends]-> grammar.grammar_taxonomy 'uses neutral grammar cues'
+    feature_vocabulary.vocabulary_data -[depends]-> feature_vocabulary.vocabulary_domain 'implements VocabularyRepository'
     feature_vocabulary.vocabulary_data -[depends]-> feature_vocabulary.vocabulary_schema 'owns lexical tables'
     feature_vocabulary.vocabulary_data -[flows]-> persistence 'stores Draft + confirmed LexicalEntry/Sense' { technology 'SQLDelight' }
 
-    // --- Profile ---
+    // Profile
     feature_profile.profile_ui -[flows]-> settings.settings_domain 'edits user settings'
     feature_profile.profile_ui -[flows]-> ai.ai_seam 'verifies AI key and models'
     feature_profile.profile_ui -[flows]-> tts.tts_seam 'verifies TTS key and voices'
 
-    // --- Settings ---
+    // Settings
     settings.settings_data -[depends]-> settings.settings_domain 'implements UserSettingsRepository'
     settings.settings_data -[flows]-> persistence 'stores user settings' { technology 'SQLDelight' }
     settings.settings_data -[flows]-> core.secure_storage 'persists provider API keys'
 
-    // --- AI seam ---
+    // AI seam
     ai.ai_seam -[flows]-> ai.ai_curated 'serves curated hits first'
     ai.ai_seam -[flows]-> ai.ai_llm 'routes to configured LLM on miss'
     ai.ai_seam -[depends]-> settings.settings_domain 'reads AI settings'
     ai.ai_curated -[flows]-> core.mock_backend 'fetches curated enrichment fixtures' { technology 'Ktor client' }
     ai.ai_llm -[flows]-> provider_apis 'calls compatible model APIs' { technology 'HTTPS' }
 
-    // --- TTS seam ---
+    // TTS seam
     tts.tts_seam -[flows]-> tts.tts_providers 'routes to selected provider'
     tts.tts_seam -[depends]-> tts.tts_playback 'plays back and caches speech'
     tts.tts_seam -[depends]-> settings.settings_domain 'reads speech settings'
@@ -477,7 +482,7 @@ model {
     tts.tts_playback -[flows]-> persistence 'reads/writes audio cache' { technology 'SQLDelight' }
     tts.tts_providers -[flows]-> provider_apis 'calls speech provider APIs' { technology 'HTTPS' }
 
-    // --- Verification seam ---
+    // Verification seam
     verification.verification_seam -[flows]-> verification.verification_curated 'license-gated curated reference first'
     verification.verification_seam -[flows]-> verification.verification_network 'network adapters under query policy'
     verification.verification_seam -[depends]-> verification.verification_schema 'owns L2 cache tables'
@@ -485,10 +490,10 @@ model {
     verification.verification_curated -[flows]-> core.network 'fetches sensee-curated over HTTP' { technology 'Ktor client' }
     verification.verification_network -[flows]-> provider_apis 'calls verification provider APIs' { technology 'HTTPS' }
 
-    // --- Core foundations ---
+    // Core foundations
     core.mock_backend -[depends]-> core.network 'provides MockEngine to HttpClient' { technology 'Ktor MockEngine' }
 
-    // --- UI foundation (design system / adaptive layout used across shell and feature UIs) ---
+    // UI foundation (design system / adaptive layout used across shell and feature UIs)
     shell.root -[depends]-> ui.design_system 'builds on shared design system'
     shell.root -[depends]-> ui.adaptive 'uses adaptive layout'
     feature_home.home -[depends]-> ui.design_system 'renders with design system'
@@ -499,7 +504,7 @@ model {
     feature_profile.profile_ui -[depends]-> ui.design_system 'renders with design system'
     feature_profile.profile_ui -[depends]-> ui.adaptive 'uses adaptive layout'
 
-    // --- Persistence aggregation (shared/database collects feature/seam schema) ---
+    // Persistence aggregation (shared/database collects feature/seam schema)
     persistence -[depends]-> feature_practice.practice_schema 'aggregates feature schema'
     persistence -[depends]-> feature_library.library_schema 'aggregates feature schema'
     persistence -[depends]-> feature_vocabulary.vocabulary_schema 'aggregates feature schema'
@@ -508,7 +513,7 @@ model {
     persistence -[depends]-> verification.verification_schema 'aggregates seam schema'
     persistence -[flows]-> platform_services 'uses platform SQL drivers' { technology 'Platform APIs' }
 
-    // --- Cross-feature navigation (planned/future) ---
+    // Cross-feature navigation (planned/future)
     feature_practice.practice_ui -[navigates]-> feature_vocabulary.vocabulary_ui 'opens entry editing from a card' { #prepared }
     feature_library.library_ui -[navigates]-> feature_vocabulary.vocabulary_ui 'edits an entry from a card' { #prepared }
     feature_library.library_ui -[navigates]-> feature_practice.practice_ui 'launches practice on a curated deck'
@@ -518,7 +523,7 @@ model {
     feature_home.home -[navigates]-> feature_vocabulary.vocabulary_ui 'resumes / quick capture' { #future }
   }
 
-  // --- Actor entry ---
+  // Actor entry
   learner -[navigates]-> client.shell.primary_navigation 'launches and uses the client' { technology 'UI interaction' }
   client.core.core_runtime -[flows]-> platform_services 'uses platform runtime' { technology 'Platform APIs' }
 }

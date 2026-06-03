@@ -70,12 +70,13 @@ npx likec4 build docs/c4 -o build/likec4/docs-c4
 ## Канонические представления `LikeC4`
 
 - `index` — C4 System Context
-- `containers` — C4 Container overview
+- `containers` — C4 Container overview (продуктовые зависимости; storage/сеть/DI — в спец. view)
 - `capability_map` — продуктовые возможности
 - `feature_practice`, `feature_vocabulary`, `feature_library` — C4 Component-проекции разделов
 - `integration_seams` — AI / TTS / verification seam-ы
 - `database_aggregation` — агрегация SQLDelight-схем и secure storage
 - `primary_navigation_shell` — root/primary navigation
+- `cross_feature_navigation` — переходы между разделами (реализованные + planned)
 - `deployment` — платформенные артефакты
 - `startup_flow`
 - `deck_interaction_flow`
@@ -88,7 +89,7 @@ npx likec4 build docs/c4 -o build/likec4/docs-c4
 - `LikeC4`-исходники в `docs/c4/*.c4` — канонический источник диаграмм.
 - Текст `arc42` должен синхронизироваться с `LikeC4` и с реальным кодом.
 - Документация описывает сначала фактическое состояние клиента, а не только целевую архитектуру.
-- Планируемые направления помечаются тегами `#prepared`/`#future`, а не отдельной «всё-в-одном» схемой; `future_backend` показан приглушённым в `index` и `containers`.
+- Планируемые направления помечаются тегами `#prepared`/`#future` на элементах и связях; planned cross-feature навигация собрана в `cross_feature_navigation`, а не размазана по структурным схемам. `future_backend` показан приглушённым в системном контексте (`index`) и в `feature_library`.
 - C4-уровни (Context → Container → Component) выражены вложенностью модели: `index`, `containers` и `feature_*` дают соответствующие уровни без отдельной reviewer-проекции.
 - Список выше — кураторский набор явных view. `implicitViews: true` в `likec4.config.json` дополнительно генерирует per-element view, поэтому в `npx likec4 start` и в `likec4` MCP представлений больше.
 - Авторитетный перечень элементов, связей и view отдаёт `likec4` MCP (`read-project-summary`) или `npx likec4 ...`; в прозе `arc42` он не дублируется, а ссылается на этот файл и модель.

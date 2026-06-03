@@ -1,5 +1,5 @@
 specification {
-  // --- Element kinds (logical model) ---
+  // Element kinds (logical model)
 
   element actor {
     notation 'Пользователь'
@@ -54,7 +54,7 @@ specification {
     }
   }
 
-  // --- Deployment node kinds (deployment model) ---
+  // Deployment node kinds (deployment model)
 
   deploymentNode platform {
     notation 'Платформенный артефакт'
@@ -63,7 +63,7 @@ specification {
     }
   }
 
-  // --- Relationship kinds ---
+  // Relationship kinds
   // depends   — статическая зависимость/wiring (compile-time, DI)
   // flows     — поток данных/управления во время выполнения
   // navigates — пользовательская навигация между разделами
@@ -82,7 +82,7 @@ specification {
     line dotted
   }
 
-  // --- Tags (lifecycle state) ---
+  // Tags (lifecycle state)
 
   tag prepared {
     color #F59E0B
