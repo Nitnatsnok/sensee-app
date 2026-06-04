@@ -3,19 +3,21 @@
 Функция: Внесение слова или выражения и разделение смыслов
 
   Основной продуктовый сценарий Sensee (ADR-001). Вертикаль ввода реализована
-  и устойчиво хранится: ввод -> lexical verification evidence -> граница
-  AI-интеграции (curated-first, LLM при ключе) -> набор `SenseCandidate` ->
-  verification snapshots -> мультивыбор + ручной смысл (опционально
-  «дополнить ассистентом») -> подтверждение -> `LexicalEntry`/`Sense`
-  сохраняются в `SenseeDatabase`. Captured deck projection, grouping по
-  `headLemma` и карточки форм неправильных глаголов уже реализованы в data/domain
-  слое. Сценарии с `@implemented` соответствуют коду; `@planned` —
-  спроектированное, но ещё не реализованное UI/curation-поведение.
+  и устойчиво хранится: ввод -> verifier даёт pre-AI grounding (фильтр по
+  `usableAsLlmContext`) в prompt -> граница AI-интеграции (curated-first, LLM
+  при ключе) -> набор `Sense` -> silent post-AI фильтр качества
+  примеров (`ExampleQualityChecker`, не опустошает список) -> мультивыбор +
+  ручной смысл (опционально «дополнить ассистентом») -> подтверждение ->
+  подтверждённые `Sense` сохраняются через `SenseWriteRepository` в единую
+  таблицу `sense` (`lexicon`, ADR-008). Captured deck projection, grouping по
+  `lemma_key` и карточки форм неправильных глаголов уже реализованы в
+  data/domain слое. Сценарии с `@implemented` соответствуют коду;
+  `@planned` — спроектированное, но ещё не реализованное UI/curation-поведение.
 
   Поток не пошаговый: пользователь вводит единицу, граница AI-интеграции возвращает набор
   смыслов, пользователь выбирает, какие добавить, плюс может добавить свой
   вариант. Отдельной пошаговой формы нет: нормализация, разбор смыслов и грамматика
-  уже свойства каждого вернувшегося `SenseCandidate` (ADR-001), а не
+  уже свойства каждого вернувшегося `Sense` (ADR-001), а не
   отдельные экраны.
 
   Единая модель ответа границы AI-интеграции (ADR-005) одинакова для слова, фразы и идиомы
@@ -29,28 +31,39 @@
   - `card_derivation_flow` (реализованная projection-деривация)
 
   Источники:
-  - `shared/lexicon/domain/*`: `LexicalEntry`, `EntryStatus`, `Sense`,
-    `ContextualApplication`, `surfaceForm` и `headLemma` (реализованы)
+  - `shared/lexicon/domain/*`: `Sense`, `SenseId`, `StoredSense`,
+    `SenseStatus`/`SenseOrigin`, `WriteIntent`,
+    `SenseReadRepository`/`SenseWriteRepository`, `ContextualApplication`,
+    `surfaceForm`, `headLemma` (реализованы)
   - `shared/lexicon/enrichment/*`: общий mapper `EnrichmentSuggestion -> Sense`
     для user capture и service catalog material
-  - `shared/feature/vocabulary-editor/domain/*`: `SenseCandidate`,
-    `VocabularyRepository` и verification snapshots для write workflow
-  - `shared/feature/vocabulary-editor/data/*`: `DurableVocabularyRepository`
-    + feature-owned `database-schema` (`lexical_entry`) — устойчивое хранение
+  - `shared/feature/vocabulary-editor/domain/*`: `SuggestVocabularySensesUseCase`
+    (enrich-only) + `EnrichmentGroundingBuilder` несут две узкие роли
+    verification (pre-AI grounding, post-AI silent example-quality);
+    per-candidate snapshot-типы удалены
+  - `shared/lexicon/data/*` + `shared/lexicon/database-schema/*`:
+    `DefaultSenseRepository`/`DefaultSenseIdFactory` пишут в единую таблицу
+    `sense` — устойчивое хранение (ADR-008)
   - `shared/grammar/domain/*`: `GrammarUnitType`, `GrammarTag`, `SurfaceForm`
     (вынесены, нейтральный модуль). POS, категории и формы с инвариантом —
     единый источник `docs/domain/pos-and-forms.adoc` (принцип в ADR-001)
   - `shared/feature/vocabulary-editor/presentation/*`:
     `VocabularyEditorConfig.QuickCapture`, `VocabularyCaptureComponent`/`Screen`,
-    `SenseSelectionCard` (реализованный add-path); edit UI для `Editor(entryId)`
-    остаётся планируемым
+    `CaptureSense` (editor-state в `presentation/api`), `SenseSelectionCard`
+    (реализованный add-path); edit UI / deep-link в редактор (EB-7) остаётся
+    планируемым
   - граница лексической верификации `shared/verification/*` (ADR-007) —
-    реализована: evidence до AI и snapshots после AI
+    seam реализован, DI-bound и подключён к живому capture в двух узких ролях:
+    pre-AI grounding (verifier до AI → `EnrichmentGrounding` →
+    `EnrichmentRequest.grounding`, `GroundingModifier` в prompt) и post-AI
+    silent `ExampleQualityChecker`-фильтр примеров (отсеивает только при
+    `Error`, не опустошает список); per-candidate snapshot-оркестрация удалена.
+    Обе роли деградируют штатно при недоступности источника
   - граница AI-интеграции `shared/ai/*` (ADR-005) — реализована:
     curated enrichment без ключа для покрытых лемм, LLM по пользовательскому ключу,
     manual path при miss без ключа
-  - `shared/feature/library/data/CapturedCatalogDerivation` — деривация
-    подтверждённого материала в practice-каталог (есть; расширение до
+  - `shared/feature/library/data/SenseCatalogProjection` — проекция
+    подтверждённого Personal-материала в practice-каталог (есть; расширение до
     UI-навигации по lemma-семье — планируемое)
 
   Предыстория:
@@ -63,7 +76,7 @@
     Тогда язык не запрашивается — язык ввода определяется автоматически
     И ввод может быть на английском или на русском
     И изучаемый язык английский, поэтому смыслы возвращаются английские с русским эквивалентом
-    И клиент создаёт `LexicalEntry` со статусом `Draft`
+    И введённое слово обогащается, кандидаты держатся в памяти редактора (`CaptureSense`); в store ничего не сохраняется до подтверждения
 
   @implemented
   Сценарий: Русский ввод — подобрать английские варианты под смысл
@@ -85,7 +98,7 @@
   Сценарий: Inbox — накопить несколько единиц без немедленного разбора
     Допустим пользователь в упрощённом режиме (`QuickCapture`)
     Когда пользователь подряд вводит несколько единиц, не разбирая их
-    Тогда каждая сохраняется как отдельный `LexicalEntry` в статусе `Draft`
+    Тогда каждая сохраняется как отдельный `Sense` в статусе `Draft`
     И эти черновики доступны для разбора смыслов отдельной сессией позже
 
   @implemented
@@ -93,11 +106,10 @@
     Допустим введено слово, либо фраза, либо идиома
     Когда пользователь запускает enrichment
     Тогда AI возвращает одну и ту же структурную модель: набор смыслов
-    И каждый смысл — `SenseCandidate` со структурной `surfaceForm`, `GrammarUnitType`, базовой леммой, кратким русским переводом, пояснением и списком контекстных употреблений
+    И каждый смысл — `Sense` со структурной `surfaceForm`, `GrammarUnitType`, базовой леммой, кратким русским переводом, пояснением и списком контекстных употреблений
     И тип ввода (слово/фраза/идиома) не меняет форму ответа, только содержимое
     И смыслы не сливаются в один сгенерированный текстовый блок
-    И запись остаётся `Draft` до явного подтверждения (богатый лайфцикл статусов
-      — планируемое, EB-6)
+    И кандидаты не становятся каноном до явного подтверждения
 
   @implemented
   Сценарий: Каждый смысл несёт структурную поверхностную форму
@@ -151,8 +163,9 @@
   Сценарий: Пользователь выбирает, какие смыслы добавить
     Допустим enrichment вернул набор смыслов
     Когда пользователь отмечает один или несколько смыслов и нажимает «добавить»
-    Тогда выбранные кандидаты становятся `Sense` с `confirmed = true`
+    Тогда выбранные кандидаты сохраняются как `Sense` со статусом `Confirmed` (через `SenseWriteRepository`)
     И невыбранные не попадают в запись
+    И весь набор сохраняется одной транзакцией — если хоть один смысл не проходит гейт, не сохраняется ни один (всё или ничего)
     И выбор и есть подтверждение — отдельной стадии подтверждения нет
 
   @implemented
@@ -214,9 +227,9 @@
     И формы помечены структурно через `GrammarTag(VerbIrregular, ...)`, а не текстом
 
   @implemented
-  Сценарий: Завершение разбора переводит запись в Confirmed
+  Сценарий: Завершение разбора сохраняет смыслы как Confirmed
     Допустим пользователь добавил хотя бы один смысл
-    Тогда статус `LexicalEntry` становится `Confirmed`
+    Тогда выбранные смыслы сохраняются в store со статусом `Confirmed`
     И смыслы становятся пригодны для derivation в practice-карточки
 
   @implemented
@@ -230,8 +243,8 @@
 
   @implemented
   Сценарий: Создание связанных учебных карточек из подтверждённого материала
-    Допустим у пользователя есть `LexicalEntry` в статусе `Confirmed`
-    Когда клиент производит captured catalog cards из этой записи
+    Допустим у пользователя есть `Sense` в статусе `Confirmed`
+    Когда клиент производит captured catalog cards из этого смысла
     Тогда отдельные смыслы, контексты и связанные формы превращаются в связанные learning cards под общей леммой
     И контентные поля карточки — проекция полей смысла (headword/surfaceForm, перевод, пояснение, контексты, грамматика, лемма)
     И единственное собственное состояние карточки — review/SRS; отдельного канонического поля на стороне карточки нет

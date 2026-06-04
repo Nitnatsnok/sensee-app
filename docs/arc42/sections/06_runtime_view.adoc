@@ -21,7 +21,7 @@
 1. Навигация открывает `PracticeConfig.DeckPractice` в `PracticeSectionComponent`.
 2. `DefaultDeckPracticeComponent` создаёт `DeckPracticeLogic` с `CatalogRepository` и `PracticeReviewRepository`.
 3. `DeckPracticeLogic` запрашивает practice deck через `CatalogRepository`, принадлежащий `Library`, и публикует `DataLoadingState`.
-4. `DefaultCatalogRepository` получает каталог/колоды на фикстурах через `CatalogRemoteDataSource`, сохраняет catalog/deck/adoption state через `CatalogLocalDataSource`, а practice data layer подготавливает SRS-состояние через `PracticeSrsStorage`.
+4. `DefaultCatalogRepository` получает каталог/колоды на фикстурах через `CatalogRemoteDataSource`, сохраняет `deck`/`deck_membership` (+ флаг `subscribed` на `deck`) через `CatalogLocalDataSource` (контент смыслов — в таблице `sense` через `lexicon`), а practice data layer подготавливает SRS-состояние через `PracticeSrsStorage`.
 5. `DeckPracticeScreen` отображает верхнюю карточку, индикатор прогресса и набор управляющих действий через `shared/ui/learning-deck`.
 6. Карточка в UI сохраняет раздельные учебные смыслы: `front`, `back`/meaning, example, transcription и review state не превращаются в один текстовый payload.
 7. Пользователь может:
@@ -46,39 +46,39 @@
 
 == Основной продуктовый сценарий. Внесение слова или выражения и разделение смыслов
 
-Статус:: реализованный срез (capture, verification-first pipeline, captured deck projection, lemma grouping и irregular form cards); planned — UI-навигация по family/detail и курирование
+Статус:: реализованный срез (capture, captured deck projection, lemma grouping и irregular form cards); verification-seam реализован, DI-bound и подключён к живому capture в двух узких ролях (pre-AI grounding в prompt, silent post-AI фильтр качества примеров); planned — UI-навигация по family/detail и курирование
 
 На уровне продуктового приоритета Sensee в первую очередь строится не вокруг review, а вокруг внесения и структурирования лексического материала. Раздел `Vocabulary Editor` реализует capture-вертикаль: `DefaultVocabularyEditorSectionComponent` содержит `VocabularyCaptureComponent`/`VocabularyCaptureScreen`, а не заглушку.
 
 Реализованное поведение:
 
 * ввод короткий: одно поле, язык ввода определяется автоматически (`en`/`ru`);
-* перед AI вызывается lexical verifier: license-gated evidence (lemma, entry type, CEFR, frequency, family) попадает в `EnrichmentRequest`;
-* enrichment идёт через provider-agnostic границу AI-интеграции: сначала курированное покрытие с бэкенда, затем LLM при настроенном ключе; общий mapper `shared/lexicon/enrichment` приводит ответ к центральному `Sense`, а Vocabulary Editor оборачивает его в `SenseCandidate` для выбора;
-* после enrichment verifier прикрепляет per-candidate snapshots и findings, не переписывая AI-материал молча;
+* перед обращением к AI use-case зовёт verifier и строит pre-AI grounding: `EnrichmentGroundingBuilder.toEnrichmentGrounding()` фильтрует наблюдения по `usableAsLlmContext`, кладёт результат в `EnrichmentRequest.grounding`, а `GroundingModifier` рендерит его в prompt; это работает и для обычного capture, и для пути «дополнить ассистентом». Недоступный verifier деградирует штатно — capture идёт без grounding;
+* enrichment идёт через единый `SuggestVocabularySensesUseCase` и provider-agnostic границу AI-интеграции: сначала курированное покрытие с бэкенда, затем LLM при настроенном ключе; общий mapper `shared/lexicon/enrichment` приводит ответ к центральному `Sense`, а Vocabulary Editor оборачивает его в `CaptureSense` для выбора;
+* после маппинга enrichment → `Sense` use-case прогоняет один опциональный silent `ExampleQualityChecker`-вызов на каждый пример из `Sense.contextualApplications`: пример отбрасывается только при `Error` и список никогда не опустошается (подтверждённый смысл сохраняет ≥1 пример — инвариант модели). Недоступный или незаведённый checker оставляет примеры без изменений, UI-сигнала нет;
 * поток одностраничный: пользователь мультивыбором отмечает смыслы, которые хочет добавить, и/или добавляет свой смысл вручную;
 * опциональное действие «дополнить ассистентом» не меняет правило подтверждения: выбранный пользователем смысл становится подтверждённым;
-* `LexicalEntry`/`Sense` устойчиво сохраняются в `SenseeDatabase` (`DurableVocabularyRepository`), а read-only доступ наружу идёт через `LexiconRepository`;
-* `CapturedCatalogDerivation` проецирует confirmed material в captured deck, группирует siblings по `headLemma` и создаёт form-variant cards для неправильных глаголов.
+* подтверждённые `Sense` сохраняются через `SenseWriteRepository` (`WriteIntent`) в единственную таблицу `sense` (`lexicon`); статус — per-sense `Draft`/`Confirmed`, идентичность — стабильный `sense_id`; `library` читает наружу через `SenseReadRepository`;
+* `SenseCatalogProjection` проецирует Confirmed Personal смыслы в captured deck, группирует siblings по `lemma_key` и создаёт form-variant cards (`${sense_id}:form:…`) для неправильных глаголов.
 
 Планируемое: UI-навигация по семье леммы, полноценные detail-экраны и курирование derived cards. Решение — ADR-001; граница AI-интеграции — ADR-005; граница lexical verification — ADR-007. Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`); схемы — `docs/c4/`; доменные типы — `shared/lexicon/domain` и `shared/feature/vocabulary-editor/domain`.
 
 == Реализованный срез и планируемое курирование. Библиотека каталога
 
-Статус:: реализованный срез (`Library` Home: каталог + adoption сервисного набора); planned — курирование, `EntryDetail`/`LemmaDetail`/`DeckDetail`, частичное добавление
+Статус:: реализованный срез (`Library` Home: каталог + подписка на сервисный набор); planned — курирование, `LemmaDetail`/`DeckDetail`, claim части набора
 
-Library — владелец каталога лексического материала и колод (`CatalogRepository`/`CatalogAdoptionRepository` в `shared/feature/library/domain`, реализация — `library/data`); practice выступает read-only потребителем курируемых Library колод (ADR-001). Пошаговое поведение зафиксировано в `docs/scenarios/library.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`).
+Library — владелец каталога лексического материала и колод (`CatalogRepository`/`CatalogAdoptionRepository`/`ClaimRepository` в `shared/feature/library/domain`, реализация — `library/data`); practice выступает read-only потребителем курируемых Library колод (ADR-001). Пошаговое поведение зафиксировано в `docs/scenarios/library.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`).
 
 Реализовано (`LibraryHomeLogic`/`DefaultLibraryHomeComponent`/`LibrarySectionScreen`):
 
-1. Пользователь открывает раздел `Library`; `LibraryHomeLogic` загружает связанный (отфильтрованный до собственного материала) каталог и список сервисных наборов для adoption.
-2. Пользователь добавляет сервисный набор целиком; добавленный материал становится его собственным и виден в каталоге. Добавление набора можно отменить; производная колода захваченных слов принадлежит пользователю, но не отделяется от каталога.
+1. Пользователь открывает раздел `Library`; `LibraryHomeLogic` загружает связанный (отфильтрованный до собственного материала) каталог и список сервисных наборов для подписки.
+2. Пользователь подписывается на сервисный набор целиком: смыслы приходят как зеркало (`origin=Service`), практикуются по `sense_id` и обновляются ре-синком по `source_ref`. Подписку можно отменить (unsubscribe). Производная captured-колода Personal-смыслов принадлежит пользователю. `claim` отдельного смысла в детачнутую Personal-копию реализован репозиторием (`ClaimRepository` + `copySnapshot`), его UI — planned.
 
 Планируется:
 
-3. Drill: `EntryDetail(entryId)` показывает сегрегированные `Sense` с переводами, `ContextualApplication`, структурными grammar cues и производными карточками; `LemmaDetail(lemmaId)` даёт пивот по семье леммы.
-4. Правка своей карточки открывает прямую ссылку в `Vocabulary Editor` на экран правки соответствующей `LexicalEntry` (тот же поток уточнения, что и ввод). Та же точка входа доступна из карточки practice.
-5. Удаление карточки убирает её из каталога и всех колод, но сохраняет confirmed lexical material записи.
+3. Drill: `LemmaDetail(lemmaKey)` показывает сегрегированные `Sense` семьи леммы с переводами, `ContextualApplication`, структурными grammar cues и производными карточками (entry-агрегат растворён — пивот идёт по `lemma_key`-группе).
+4. Правка своей карточки открывает прямую ссылку в `Vocabulary Editor` на экран правки соответствующего смысла/`lemma_key`-группы (тот же поток уточнения, что и ввод; цель ссылки — EB-7). Та же точка входа доступна из карточки practice.
+5. Удаление карточки убирает её из каталога и всех колод, но сохраняет confirmed `Sense` в сторе.
 6. В `DeckDetail(deckId)` пользователь курирует колоды: одна карточка может входить в несколько колод (many-to-many); удаление из одной колоды не затрагивает другие и каталог.
 7. Частичное добавление сервисного набора; запуск practice из курируемой колоды/подмножества открывает `PracticeConfig.DeckPractice`; курирование остаётся в Library, practice его не владеет.
 
@@ -117,9 +117,9 @@ Library — владелец каталога лексического мате�
 `Home` открывается как стартовый раздел уже сейчас, но его содержание — заглушка. Планируемый `Home` ограничен тремя рабочими блоками. Пошаговое поведение — в `docs/scenarios/home.feature` (`@planned`).
 
 1. `HomeComponent` — `NavigationDispatcher`: дашборд не владеет доменом, показывает агрегаты и уводит в другие разделы через `NavigationDispatcher.open(...)`. `HomeConfig` остаётся `Home`.
-2. Блок «Повторить сегодня»: счётчик due-карточек, прогресс к `dailyGoal`, стрик — рабочий виджет текущего дня (агрегаты, без per-card SRS-метаданных; статистика как экран в `Profile` пока не реализована).
+2. Блок «Повторить сегодня»: счётчик due-карточек (узкий контракт `DuePracticeRepository` уже реализован; Home транзитивно не видит `library`), прогресс к `dailyGoal`, стрик — рабочий виджет текущего дня (агрегаты, без per-card SRS-метаданных; статистика как экран в `Profile` пока не реализована).
 3. CTA «Повторить сегодня» уводит сразу в practice по due-подмножеству; это опирается на сессию практики по выборке — планируемое расширение контракта practice (сейчас practice запускает только готовый `Deck`).
-4. Блок «Незавершённый capture»: записи в статусе `Draft` (не подтверждённые), CTA уводит в `Vocabulary Editor` на уточнение; при отсутствии незавершённых блок скрыт. Расширенный жизненный цикл статусов и автоматическая уборка брошенных черновиков — планируемое (EB-6).
+4. Блок «Незавершённый capture»: записи в статусе `Draft` (не подтверждённые), CTA уводит в `Vocabulary Editor` на уточнение; при отсутствии незавершённых блок скрыт. Автоматическая уборка брошенных черновиков по таймстемпу — планируемое (EB-6); промежуточные статусы не планируются (модель остаётся `Draft`/`Confirmed`).
 5. «Быстрый ввод» открывает `VocabularyEditorConfig.QuickCapture` (authoring-first, ADR-001).
 
 == Реализованный сценарий 4. Распространение навигации чистыми конфигурациями
@@ -143,6 +143,6 @@ Library — владелец каталога лексического мате�
 4. Splash не имеет URL и не попадает в историю: переход на `PrimaryShell` идёт через `replaceCurrent`, а не push.
 5. Тёплая перезагрузка минует `Startup`: при том же URL StateKeeper восстанавливает root stack, активная секция и экран берутся из собственного стека `PrimaryShell`.
 
-Вложенная ссылка в `vocabulary` пока разбирается только до уровня секции (`QuickCapture`); полный разбор до `VocabularyEditorConfig.Editor(entryId)` — отложенная доработка (см. `docs/backlog/`, EB-7). Пошаговое поведение — `docs/scenarios/navigation.feature`.
+Вложенная ссылка в `vocabulary` пока разбирается только до уровня секции (`QuickCapture`); полный разбор до целевого экрана редактора — отложенная доработка (см. `docs/backlog/`, EB-7: после растворения entry цель ссылки — `lemma_key`-группа слова). Пошаговое поведение — `docs/scenarios/navigation.feature`.
 
-UI navigation shell показывает разделы `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Реализованное содержание есть у Practice (deck/home/card detail), Library (каталог + adoption), Vocabulary Editor (capture) и Profile (настройки + верификация ключа); `Home` пока отображает `UnimplementedScreen`.
+UI navigation shell показывает разделы `Home`, `Practice`, `Library`, `Vocabulary Editor` и `Profile`. Реализованное содержание есть у Practice (deck/home/card detail), Library (каталог + подписка), Vocabulary Editor (capture) и Profile (настройки + верификация ключа); `Home` пока отображает `UnimplementedScreen`.

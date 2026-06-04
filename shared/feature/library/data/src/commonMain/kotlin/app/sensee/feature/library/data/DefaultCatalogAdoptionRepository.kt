@@ -14,12 +14,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Adoption marks a synced Service deck as owned ([CatalogLocalDataSource.markDeckAdopted]):
- * the content is already in the local catalog tables, so this is a provenance flip,
- * not a copy. Shared cards stay a single [app.sensee.core.database.Practice_card] row
- * (the deck<->card join keeps the membership), so adopting two decks that share a card
- * never duplicates it. The derived captured deck has no DB row and is always Personal,
- * so it is neither adoptable nor un-adoptable.
+ * Subscribing mirrors a Service deck into the user's practiced material: ingest
+ * the deck's senses (origin = Service, keyed by source_ref) and flip the deck's
+ * `subscribed` flag. It is not a copy — a re-sync overwrites mirrored content and
+ * SRS state on the shared sense_id stays intact. The derived captured deck has no
+ * deck row and is always owned, so it is neither subscribable nor unsubscribable.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -32,21 +31,21 @@ public class DefaultCatalogAdoptionRepository(
     private val localDataSource: CatalogLocalDataSource,
 ) : CatalogAdoptionRepository {
     override suspend fun adopt(deckId: DeckId) {
-        require(deckId != CapturedCatalogDerivation.DECK_ID) {
-            "The captured deck is already owned and cannot be adopted"
+        require(deckId != SenseCatalogProjection.CAPTURED_DECK_ID) {
+            "The captured deck is already owned and cannot be subscribed"
         }
         base.loadDeck(deckId)
-        localDataSource.markDeckAdopted(deckId.value)
+        localDataSource.setDeckSubscribed(deckId.value, subscribed = true)
     }
 
     override suspend fun unAdopt(deckId: DeckId) {
-        require(deckId != CapturedCatalogDerivation.DECK_ID) {
-            "The captured deck is derived from capture and cannot be un-adopted"
+        require(deckId != SenseCatalogProjection.CAPTURED_DECK_ID) {
+            "The captured deck is derived from capture and cannot be unsubscribed"
         }
-        localDataSource.clearDeckAdopted(deckId.value)
+        localDataSource.setDeckSubscribed(deckId.value, subscribed = false)
     }
 
-    override fun observeAdoptedDecks(): Flow<List<Deck>> = localDataSource.observeOwnedDecks()
+    override fun observeAdoptedDecks(): Flow<List<Deck>> = localDataSource.observeSubscribedDecks()
 
     override fun observeSuggestedDecks(): Flow<List<Deck>> =
         base.observeAllDecks().map { decks -> decks.filter { it.origin == CatalogOrigin.Service } }

@@ -10,7 +10,7 @@
 Клиент уже использует `SQLDelight`, а доменные данные начинают принадлежать отдельным feature. Нужно расширять локальное хранилище без превращения `shared/database` в модуль, где вручную сосредотачивается вся предметная SQL-схема.
 
 Решение::
-Feature-owned schema остаётся в feature-модулях (`shared/feature/practice/database-schema`, `shared/feature/library/database-schema`, `shared/feature/vocabulary-editor/database-schema`, `shared/settings/database-schema`, `shared/tts/database-schema`), а `shared/database` агрегирует их в общий `SenseeDatabase`, предоставляет `SenseeDatabaseProvider` и platform-specific `DriverFactory`. SQLDelight требует, чтобы агрегирующий модуль владел хотя бы одной `.sq`, поэтому в `shared/database` остаётся пустой `SenseeDatabaseMarker.sq` (плюс dev-fingerprint таблица; dev-reset механизм описан в `shared/database/AGENTS.md`).
+Feature- и seam-owned schema остаётся в своих модулях (`shared/feature/practice/database-schema`, `shared/feature/library/database-schema`, `shared/lexicon/database-schema`, `shared/settings/database-schema`, `shared/tts/database-schema`, `shared/verification/database-schema`), а `shared/database` агрегирует их в общий `SenseeDatabase`, предоставляет `SenseeDatabaseProvider` и platform-specific `DriverFactory`. SQLDelight требует, чтобы агрегирующий модуль владел хотя бы одной `.sq`, поэтому в `shared/database` остаётся пустой `SenseeDatabaseMarker.sq` (плюс dev-fingerprint таблица; dev-reset механизм описан в `shared/database/AGENTS.md`).
 
 Альтернативы::
 * Хранить всю SQLDelight schema только в `shared/database`. Отклонено: централизованная SQL-схема размывает ownership — изменение таблицы одной feature требует трогать общий модуль, рост схемы превращает `shared/database` в неявную точку связности всех feature.
@@ -19,8 +19,15 @@ Feature-owned schema остаётся в feature-модулях (`shared/feature
 Последствия (реализованные)::
 * Ownership таблиц и schema evolution остаются ближе к feature responsibility: каждая `.sq` живёт в своём `database-schema` модуле.
 * Platform drivers и runtime database wiring централизованы в одном модуле (`shared/database`): один `DriverFactory`/`SenseeDatabaseProvider` на все feature.
-* Все feature-owned `.sq` компилируются в один namespace `app.sensee.core.database` единого `SenseeDatabase`. Изоляция ownership — **конвенциональная, не принудительная**: дисциплина имён таблиц/колонок (префиксы `practice_`/`lexical_`/`user_`/`tts_`) удерживает отсутствие коллизий, но компилятор её не гарантирует. Это сознательно принятая цена выбранной агрегации, а не недосмотр.
+* Все feature- и seam-owned `.sq` компилируются в один namespace `app.sensee.core.database` единого `SenseeDatabase`. Изоляция ownership — **конвенциональная, не принудительная**: дисциплина имён таблиц/колонок (модульные префиксы `practice_`/`user_`/`tts_` и domain-owned имена `sense`/`deck`/`deck_membership`) удерживает отсутствие коллизий, но компилятор её не гарантирует. Это сознательно принятая цена выбранной агрегации, а не недосмотр.
+* `shared/lexicon` владеет канонической `sense`-схемой как domain-seam по тому же паттерну, что `verification/database-schema`: `shared/lexicon/database-schema` держит `.sq`, `shared/lexicon/data` — impl, агрегация в `SenseeDatabase` — одной зависимостью. Konsist по слоям (`LexiconLayeringKonsistTest`): `lexicon/domain` чистый (без persistence/SRS/feature), `lexicon/data → shared/database` разрешён, feature/SRS — нет. Service-identity защищена `CHECK(origin != 'Service' OR source_ref IS NOT NULL)` и partial unique index по `source_ref`.
+* `shared/feature/library/database-schema` держит deck-схему (`deck`/`deck_membership` + флаг `subscribed`); `deck_membership` ссылается на `sense_id` без копии контента смысла и без cross-module FK (read-сторона отфильтровывает висячие ссылки). Контент смысла принадлежит только `lexicon`.
+* Кросс-владельческие атомарные операции идут через нейтральный `DatabaseTransactionRunner` (`shared/database`, поверх `SenseeDatabase.transactionWithResult`): `claim` композирует lexicon `upsert(ForceMint)` + SRS `copySnapshot` в одной транзакции, не открывая вложенных (claimed-смысл всплывает через captured-деку, явный deck membership в ядре не пишется — это editing-UX EB-9). `sense_embedding` — отдельная таблица, навесное (после ядра).
 
 Последствия (ожидаемые)::
 * Новая feature подключает свой `database-schema` в агрегирующий модуль одной зависимостью; app shell и навигация не переписываются (CS-3).
 * При росте числа feature-схем дисциплина префиксов должна поддерживаться ревью/конвенцией (потенциальный кандидат на konsist-проверку имён таблиц, если набор схем существенно вырастет).
+
+Связанные ADR::
+* link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] (extended by) — `lexicon` как владелец канонической `sense`-схемы, deck-схема в `library`, `claim`-оркестратор поверх `DatabaseTransactionRunner`.
+* link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] (mirrors) — тот же паттерн seam-owned schema, агрегируемой в `SenseeDatabase`.

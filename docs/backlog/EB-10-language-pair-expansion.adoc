@@ -1,0 +1,16 @@
+= EB-10: Проработка расширения языковых пар
+:status: considering
+:area: lexicon
+
+Триггер / что разблокирует::
+Сейчас язык изучения/родной фиксированы (`en`/`ru` по умолчанию в `EnrichmentRequest`),
+и язык-пара не является атрибутом `Sense`. Мультиязычность потребует: поля языковой пары
+на `Sense`, promoted-колонки в таблице `sense` (под фильтр/выборку), пересмотра
+`content_key` (одинаковый смысл в разных парах — разные сущности) и фильтра в
+`SearchPort`/`SenseQuery`. До принятия в план нужно проработать модель: одна пара на
+смысл vs набор переводов; влияние на дедуп и embedding (модель эмбеддинга кросс-язычная
+или per-pair). Преждевременно вводить до продуктового решения о поддержке пар.
+
+Связи::
+* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§4 promoted-колонки, §10)
+* Код: `EnrichmentRequest.studyLanguageTag`/`nativeLanguageTag`, `deriveSenseContentKey`, `SenseQuery`

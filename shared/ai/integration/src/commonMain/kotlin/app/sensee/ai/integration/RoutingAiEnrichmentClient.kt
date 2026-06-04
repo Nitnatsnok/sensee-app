@@ -1,10 +1,10 @@
 package app.sensee.ai.integration
 
-import app.sensee.ai.core.AiEnrichmentClient
-import app.sensee.ai.core.EnrichmentAvailability
-import app.sensee.ai.core.EnrichmentRequest
-import app.sensee.ai.core.EnrichmentResult
-import app.sensee.ai.core.SenseCoverage
+import app.sensee.ai.core.contract.AiEnrichmentClient
+import app.sensee.ai.core.contract.EnrichmentAvailability
+import app.sensee.ai.core.contract.EnrichmentResult
+import app.sensee.ai.core.request.EnrichmentRequest
+import app.sensee.ai.core.request.SenseCoverage
 import app.sensee.ai.curatedEnrichment.CuratedAiEnrichmentClient
 import app.sensee.ai.llm.client.LlmAiEnrichmentClient
 import app.sensee.core.coroutines.runCatchingCancellable

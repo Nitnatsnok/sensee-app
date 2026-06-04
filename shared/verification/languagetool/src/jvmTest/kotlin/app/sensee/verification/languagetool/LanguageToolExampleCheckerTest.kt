@@ -1,11 +1,11 @@
 package app.sensee.verification.languagetool
 
-import app.sensee.verification.core.ExampleCheckRequest
-import app.sensee.verification.core.ExampleLocation
-import app.sensee.verification.core.FindingSeverity
-import app.sensee.verification.core.SentenceHint
-import app.sensee.verification.core.VerificationPolicy
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.ExampleCheckRequest
+import app.sensee.verification.core.contract.ExampleLocation
+import app.sensee.verification.core.contract.FindingSeverity
+import app.sensee.verification.core.contract.SentenceHint
+import app.sensee.verification.core.contract.VerificationPolicy
+import app.sensee.verification.core.contract.VerifierAvailability
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

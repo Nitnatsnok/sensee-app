@@ -22,9 +22,8 @@ class DeckGrammarTagsFixtureTest {
         deckFixtures.forEach { (path, fixture) ->
             val deck = json.decodeFromString<DeckDto>(fixture)
             deck.cards.forEach { card ->
-                // Grammar tags now live on the card's enrichment item — the card is
-                // a projection of its Sense, with no flat duplicate (Phase 3).
-                val grammarTags = card.enrichment.grammarTags
+                // Grammar tags live on the card's canonical SenseDto.
+                val grammarTags = card.sense.grammarTags
                 assertEquals(
                     true,
                     grammarTags.isNotEmpty(),

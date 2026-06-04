@@ -75,16 +75,19 @@ Companion reference::
 == Lexical Authoring Model
 
 * Источником учебного материала должен быть не набор карточек, а lexical material, внесённый пользователем.
-* Базовая цепочка доменных понятий выглядит так: `Lexical Entry` -> `Sense` -> `Contextual Application` / `Grammar Cue` -> `Derived Learning Card`.
-* Один lexical entry может иметь несколько senses; один sense может иметь несколько contextual applications и grammar cues.
+* Базовая цепочка доменных понятий выглядит так: слово/лемма (`lemma_key`-группа) -> `Sense` -> `Contextual Application` / `Grammar Cue` -> `Derived Learning Card`.
+* Одна лемма группирует несколько `Sense` (не отдельный durable-агрегат, а derived-группа по `lemma_key`); один `Sense` может иметь несколько contextual applications и grammar cues.
 * Карточки, practice и review являются производными представлениями подтверждённого материала, а не первичной моделью содержания.
 
 == Lexical Verification Seam
 
 * Лексическая верификация — отдельная граница `shared/verification/{core,sensee-curated,free-dictionary,datamuse,languagetool,database-schema,integration}` по тому же seam-конвенциу, что `shared/ai` и `shared/tts`. `core` — провайдер-агностичный контракт без вендорских SDK и feature-домена; sibling-модули — реализации (один адаптер на внешний API; sensee-curated отдаётся бэкендом по HTTP, в этой сборке — мок-бэкендом); `integration` собирает `RoutingLexicalVerifier` (параллельный fan-out, per-provider timeout) и `PersistedCachingLexicalVerifier` (привязанная в DI реализация `LexicalVerifier`).
 * Доступность — first-class: `Available`/`Degraded`/`Unavailable` — штатные исходы. Verifier не бросает исключение через границу (структурная отмена пробрасывается, всё остальное оборачивается в `runCatchingCancellable`). Findings/evidence не появляются на отчёте, у которого `availability is Unavailable` — инвариант `LexicalVerificationReport.init` плюс защитные гейты в merge-хелперах не дают тому случиться даже при misbehaving-адаптере.
-* Capture использует verifier дважды: первый раз ДО AI (`SuggestVocabularySensesUseCase` собирает evidence для prompt-канала), второй раз ПОСЛЕ AI (`VerifyVocabularySuggestionsUseCase` навешивает per-candidate `SenseVerificationSnapshot`). Persisted material снимок не несёт; объяснимость живёт на уровне candidate-слоя (ADR-001).
-* License-aware агрегация — две неотменяемых границы фильтрации: `LicensePolicy.usableAsLlmContext` гейтит, что из evidence уходит в LLM-prompt; `LicensePolicy.storeContentAllowed` гейтит, какие отчёты ложатся в персистентный L2-кэш. Незарегистрированный contributing-источник трактуется как non-persistable (fail-closed). Подробности — ADR-007 (граница) и ADR-009 (двухуровневый кэш).
+* Capture-потребление verifier'а подключено к живому флоу в двух узких ролях, обе через единый `SuggestVocabularySensesUseCase` (внедрён в `VocabularyCaptureLogic`):
+** *pre-AI grounding* — перед обращением к провайдеру use-case зовёт verifier и через `EnrichmentGroundingBuilder.toEnrichmentGrounding()` собирает `EnrichmentGrounding` (фильтр по `usableAsLlmContext`), кладёт его в `EnrichmentRequest.grounding`, а `GroundingModifier` рендерит блок в prompt. Работает и для обычного capture, и для пути «дополнить ассистентом»; недоступный verifier деградирует штатно (grounding нет, capture продолжается);
+** *post-AI example-quality* — после маппинга enrichment → `Sense` use-case прогоняет один опциональный silent `ExampleQualityChecker`-вызов на каждый пример из `Sense.contextualApplications`: пример отбрасывается только при `Error` и список *никогда* не опустошается (≥1 пример — инвариант модели). UI-сигнала нет; недоступный или незаведённый checker оставляет примеры без изменений.
+* Persisted material снимок не несёт; объяснимость спроектирована на уровне candidate-слоя (ADR-001). Per-candidate snapshot-оркестрация (`VerifyVocabularySuggestionsUseCase`/`SenseVerificationSnapshot`) была удалена — verifier потребляется только в двух ролях выше.
+* License-aware агрегация — две неотменяемых границы фильтрации: `LicensePolicy.usableAsLlmContext` гейтит, что из grounding уходит в LLM-prompt; `LicensePolicy.storeContentAllowed` гейтит, какие отчёты ложатся в персистентный L2-кэш. Незарегистрированный contributing-источник трактуется как non-persistable (fail-closed). Подробности — ADR-007 (граница) и ADR-009 (двухуровневый кэш).
 
 == Candidate versus Confirmed Data
 
@@ -96,10 +99,10 @@ Companion reference::
 == Catalog Ownership and Service Sets
 
 * Каталог записей и колоды принадлежат `Library`; `Practice` только читает курируемые колоды.
-* Карточка может принадлежать нескольким колодам (many-to-many); удаление карточки из одной колоды не затрагивает другие и каталог, а удаление карточки сохраняет confirmed lexical material записи.
+* Карточка может принадлежать нескольким колодам (many-to-many через `deck_membership` по `sense_id`); удаление карточки из одной колоды не затрагивает другие и каталог, а удаление карточки сохраняет confirmed `Sense` в сторе.
 * Различаются собственный материал пользователя и сервисные наборы (service sets), приходящие через backend-compatible boundary.
-* Добавление сервисного набора целиком реализовано: `CatalogAdoptionRepository` (`library/domain`, реализация `DefaultCatalogAdoptionRepository`) помечает колоду через `practice_deck.adopted_at`; помеченная колода читается как `CatalogOrigin.Personal` и становится собственным материалом. Частичное (по карточкам) добавление — планируется (контракт оставляет место под перегрузку `adopt(deckId, cards)`).
-* Practice видит только собственный материал: связанный `CapturedCatalogRepository.observeOwnedMaterial()` отдаёт поток из добавленных наборов + производной колоды захваченных слов, но никогда сами сервисные наборы; сервисный каталог приходит из `CatalogMockFixtures` и виден только в `Library`. Синхронизация сервисного кэша вынесена в явный `CatalogRepository.refreshFromRemote()` и не спрятана в побочном эффекте чтения.
+* Подписка на сервисный набор целиком реализована: `CatalogAdoptionRepository.adopt(deckId)` (`library/domain`, реализация `DefaultCatalogAdoptionRepository`) переключает флаг `deck.subscribed`; подписанная колода читается как `CatalogOrigin.Personal` (собственный материал) и переживает ре-синк, тогда как её смыслы остаются `SenseOrigin.Service`-зеркалом (обновляются по `source_ref`). `claim` отдельного смысла в детачнутую Personal-копию (`ClaimRepository` + `copySnapshot`) реализован; claim-UI части набора — планируется.
+* Practice видит только собственный материал: `CatalogRepository.observeOwnedMaterial()` отдаёт поток подписанных дек (`subscribed`) + производной captured-колоды Personal-смыслов, но никогда неподписанные сервисные наборы; сервисный каталог приходит из `CatalogMockFixtures` и виден только в `Library`. Синхронизация сервисного кэша вынесена в явный `CatalogRepository.refreshFromRemote()` и не спрятана в побочном эффекте чтения.
 
 == Settings Scope
 
@@ -155,9 +158,9 @@ Companion reference::
 * `PracticeReviewRepository` является границей для отправки review result и обновления SRS-состояния.
 * `CatalogRemoteDataSource` получает catalog/deck данные на фикстурах через общий `HttpClient`, предоставленный `shared/core/network`.
 * `shared/core/mock-backend` предоставляет mock engine и fixture sets для текущего учебного среза без live backend.
-* `CatalogLocalDataSource` и `shared/feature/library/database-schema` используют SQLDelight для catalog/deck/adoption state; `PracticeSrsStorage` и `shared/feature/practice/database-schema` используют SQLDelight для SRS-состояния и review log.
+* `CatalogLocalDataSource` и `shared/feature/library/database-schema` используют SQLDelight для `deck`/`deck_membership` с флагом `subscribed` на `deck` (контент смыслов — таблица `sense`, владелец `lexicon`); `PracticeSrsStorage` и `shared/feature/practice/database-schema` используют SQLDelight для SRS-состояния и review log.
 * `shared/srs/*` остаются самостоятельными библиотеками, но текущий practice data flow уже применяет их для планирования повторений.
-* `Library` материализует SRS-снимки карточек через `SrsStorage` (контракт принадлежит `Practice`) и переиспользует контракт обогащения (`ai.core` + `lexicon` enrichment) при деривации каталога, поэтому `library/data` статически зависит от `shared/srs/*` и `shared/ai/core`.
+* `Library` материализует SRS-снимки карточек через `SrsStorage` (контракт принадлежит `Practice`), читает/пишет смыслы через `SenseReadRepository`/`SenseWriteRepository` (`lexicon`), мапит сервисный `SenseDto` в `Sense` через общий `lexicon/serialization` (`SenseDto.toDomain()`) при ingest сервисного каталога и оркестрирует `claim` поверх `DatabaseTransactionRunner`; поэтому `library/data` статически зависит от `shared/srs/*`, `shared/lexicon/*` и `shared/database`.
 * Practice deck может озвучивать текущую карточку через `tts` seam (`Speaker`), не владея синтезом речи; выбор провайдера и ключ остаются в `Profile`/`Settings`.
 
 == Honest Evolution

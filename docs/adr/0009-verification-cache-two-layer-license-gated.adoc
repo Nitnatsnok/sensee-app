@@ -13,17 +13,15 @@
 Кэш — двухуровневый, оба слоя инкапсулированы в `PersistedCachingLexicalVerifier` (привязанная в DI реализация `LexicalVerifier`):
 
 . **L1 — LRU в памяти**. `LinkedHashMap<CacheKey, CacheEntry>` под `Mutex`, мягкий предел `MAX_MEMORY_ENTRIES = 256`. Обращение к записи перемещает её в хвост LRU. Несёт содержимое источников со строгой лицензией — данные никогда не попадают на диск.
-. **L2 — SQLDelight `lexical_verification_cache`**. Колонки `cache_key`, `key_fingerprint`, `report_json`, `written_at_epoch_ms`, `expires_at_epoch_ms`, `last_accessed_at_epoch_ms`. `cache_key` хранит только версионированный digest (`v4:...`), а `key_fingerprint` защищает от коллизии digest и старых строк несовместимого формата без раскрытия исходного текста query/sense hints. Индексы по `last_accessed` (LRU-вытеснение) и `expires` (чистка просроченного). Предел `MAX_DISK_ENTRIES = 4096`. Запись JSON через общий `Json` из `core.network` (одна конфигурация по всему графу — иначе дрейф `ignoreUnknownKeys` / `encodeDefaults` ломает round-trip между приложениями кэша и сервисами).
+. **L2 — SQLDelight `lexical_verification_cache`**. Колонки `cache_key`, `key_fingerprint`, `report_json`, `written_at_epoch_ms`, `expires_at_epoch_ms`, `last_accessed_at_epoch_ms`. `cache_key` хранит только версионированный digest (`v5:...`), а `key_fingerprint` защищает от коллизии digest и старых строк несовместимого формата без раскрытия исходного текста query. Индексы по `last_accessed` (LRU-вытеснение) и `expires` (чистка просроченного). Предел `MAX_DISK_ENTRIES = 4096`. Запись JSON через общий `Json` из `core.network` (одна конфигурация по всему графу — иначе дрейф `ignoreUnknownKeys` / `encodeDefaults` ломает round-trip между приложениями кэша и сервисами).
 
-`CacheKey` строится из нормализованного термина, языков, ожидаемых подсказок (`expectedEntryType`, `expectedPartOfSpeech`, `senseHints`), несущих полей `VerificationPolicy` (`timeoutPerProviderMillis`, `maxCacheAgeMillis`, `includeFamily`, `familySiblingCap`, `allowNetwork`) и digest текущего каталога источников (`source id`, `versionTag`, persist/LLM flags, TTL). Это дробит кэш по полям, которые могут изменить результат, срок годности отчёта или лицензионную пригодность старой строки. В L2 пишется только стабильный digest ключа (`v4:<hash>`) и отдельный `key_fingerprint`, поэтому `senseHints` не сохраняют пользовательский/AI-текст в plaintext primary key.
+`CacheKey` строится из нормализованного термина, языков, ожидаемых подсказок (`expectedEntryType`, `expectedPartOfSpeech`), несущих полей `VerificationPolicy` (`timeoutPerProviderMillis`, `maxCacheAgeMillis`, `includeFamily`, `familySiblingCap`, `allowNetwork`) и digest текущего каталога источников (`source id`, `versionTag`, persist/LLM flags, TTL). Это дробит кэш по полям, которые могут изменить результат, срок годности отчёта или лицензионную пригодность старой строки. В L2 пишется только стабильный digest ключа (`v5:<hash>`) и отдельный `key_fingerprint`, поэтому исходный текст query не сохраняется в plaintext primary key.
 
 Лицензионный барьер (несущее правило): **запись на L2 происходит только для `Available` отчёта с непустым `report.sources`, где каждый источник разрешает `storeContentAllowed`**. Любой строгий источник в составе отчёта оставляет запись только в L1. Это позволяет в будущем подключить коммерческий словарь без правок кэш-кода — флаг адаптера определит политику.
 
 TTL: `min(per-source maxCacheTtlMillis, policy.maxCacheAgeMillis, DEFAULT_TTL_MILLIS = 24 ч)`. TTL применяется к обоим уровням; ленивая чистка просроченных строк на старте (`runStartupCleanupOnce` дёргает `deleteExpired` один раз за инстанс — bounded background work).
 
 Ограничение записи: `touchAccess` на L2 дёргается не чаще раза в минуту на ключ (`TOUCH_THROTTLE_MILLIS`). Горячий ключ иначе вызывал бы `UPDATE` на каждый запрос.
-
-Обход кэша: запросы с `examplesToValidate.isNotEmpty()` не используют кэш. `report.exampleFindings` зависит от конкретных предложений; кэш по лемме иначе возвращал бы устаревшие findings для новой пачки примеров.
 
 Альтернативы::
 
@@ -39,7 +37,7 @@ TTL: `min(per-source maxCacheTtlMillis, policy.maxCacheAgeMillis, DEFAULT_TTL_MI
 * `Json` инжектится единственным экземпляром из `core.network.JsonProviders` — один конфиг на HTTP-клиенты и кэш.
 * Eviction в L1 — `while (size > cap)` (не один-за-раз), prune в L2 — мульти-row delete через `selectOldestKeys` + per-key `deleteByKey`.
 * `SourceCatalogCompletenessTest` (`integration/commonTest`) проверяет: каждый `*Source.ID` адаптер-модуля присутствует в `provideKnownLexicalSources`. Гард против тихого выпадения evidence из `report.sources` при добавлении нового адаптера.
-* `PersistedCachingLexicalVerifierTest` (`integration/jvmTest`, SQLite в памяти через `JdbcSqliteDriver.IN_MEMORY`) пинит: hit после холодного рестарта, повторный запрос после истечения TTL, отказ от L2 для источника со строгой лицензией, разделение ключей по `policy`/подсказкам запроса/source catalog, отсутствие plaintext `senseHints` в persisted key и отказ от L2 для отчётов без source metadata.
+* `PersistedCachingLexicalVerifierTest` (`integration/jvmTest`, SQLite в памяти через `JdbcSqliteDriver.IN_MEMORY`) пинит: hit после холодного рестарта, повторный запрос после истечения TTL, отказ от L2 для источника со строгой лицензией, разделение ключей по `policy`/подсказкам запроса/source catalog и отказ от L2 для отчётов без source metadata.
 
 Последствия (ожидаемые)::
 

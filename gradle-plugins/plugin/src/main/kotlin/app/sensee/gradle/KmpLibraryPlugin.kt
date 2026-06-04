@@ -47,11 +47,6 @@ private fun Project.configureKmpLibraryDefaults() {
 
     fun enabled(target: String) = requested == null || target.lowercase() in requested
     kotlinMultiplatform {
-        // Shared library modules expose a deliberate public surface across module
-        // boundaries: every public declaration must have an explicit visibility
-        // modifier and return type. KGP applies this to production compilations
-        // only (test source sets are intentionally exempt). ABI dump validation
-        // is a separate opt-in (public-api plugin).
         explicitApi()
 
         jvmToolchain(JavaVersion.VERSION_21.majorVersion.toInt())

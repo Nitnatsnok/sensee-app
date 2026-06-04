@@ -18,7 +18,7 @@
 Сейчас в коде есть:
 
 - общий `shared/app-shell`, запускаемый на Android, iOS, Desktop JVM, JS и Wasm;
-- реализованные разделы: `Practice` (колода, домашний экран, детали карточки), `Library` (каталог и добавление наборов), `Profile` (AI/TTS/App/Learning-настройки) и `Vocabulary Editor` (ввод → verification evidence → AI/curated-подсказки → выбор смыслов → verification snapshots → сохранение);
+- реализованные разделы: `Practice` (колода, домашний экран, детали карточки), `Library` (каталог и добавление наборов), `Profile` (AI/TTS/App/Learning-настройки) и `Vocabulary Editor` (ввод → AI/curated-подсказки → выбор смыслов → сохранение); граница лексической верификации реализована, DI-bound и подключена к живому capture в двух узких ролях: pre-AI grounding в prompt и silent post-AI фильтр качества примеров;
 - стартовая навигация и `Home`, который пока показывает `UnimplementedScreen`;
 - переиспользуемый `shared/ui/learning-deck` с переворотом, свайпом, клавиатурным управлением и отменой действия;
 - отдельные модули `shared/srs/*`, `shared/database`, `shared/core/network`, `shared/core/mock-backend`, `shared/core/observability`, `shared/ai/*` и `shared/grammar/domain`, участвующие в текущих срезах.

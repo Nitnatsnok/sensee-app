@@ -16,8 +16,8 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
-import app.sensee.ai.core.AiKeyCheck
-import app.sensee.ai.core.AiModelCatalog
+import app.sensee.ai.core.contract.AiKeyCheck
+import app.sensee.ai.core.contract.AiModelCatalog
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.presentation.text.MapTextProvider
 import app.sensee.core.presentation.text.TextProvider

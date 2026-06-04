@@ -7,12 +7,12 @@ import app.sensee.core.database.LexicalVerificationCacheEntityQueries
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.observability.logging.AppLogger
 import app.sensee.database.SenseeDatabaseProvider
-import app.sensee.verification.core.LexicalSource
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.LexicalVerificationReport
-import app.sensee.verification.core.LexicalVerifier
-import app.sensee.verification.core.LicensePolicy
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.LexicalSource
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.LexicalVerificationReport
+import app.sensee.verification.core.contract.LexicalVerifier
+import app.sensee.verification.core.contract.LicensePolicy
+import app.sensee.verification.core.contract.VerifierAvailability
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -38,9 +38,6 @@ import kotlin.time.Clock
  * TTL is the minimum of every source's [LicensePolicy.maxCacheTtlMillis], the
  * policy-level [VerificationPolicy.maxCacheAgeMillis], and a default. The
  * same TTL gates both layers; an expired L2 entry is deleted lazily on read.
- *
- * Example-validating queries bypass both layers because
- * `report.exampleFindings` is sentence-specific.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -75,10 +72,6 @@ public class PersistedCachingLexicalVerifier(
 
     override suspend fun verify(query: LexicalVerificationQuery): LexicalVerificationReport {
         val querySummary = VerificationLogSummaries.query(query)
-        if (query.examplesToValidate.isNotEmpty()) {
-            logger.debug { "Verification cache bypassed: reason=example-validation; $querySummary" }
-            return delegate.verify(query)
-        }
         val key = CacheKey.from(query, sourceCatalogSignature)
         val now = clock.now().toEpochMilliseconds()
         runStartupCleanupOnce(now)
@@ -308,7 +301,7 @@ public class PersistedCachingLexicalVerifier(
         val policy: PolicyKey,
         val sourceCatalogSignature: String,
     ) {
-        fun persistedKey(): String = "v4:${digest64Hex("key:${serializedParts()}")}"
+        fun persistedKey(): String = "v5:${digest64Hex("key:${serializedParts()}")}"
 
         fun fingerprint(): String = digest64Hex("fingerprint:${serializedParts()}")
 
@@ -319,7 +312,6 @@ public class PersistedCachingLexicalVerifier(
                 appendPart("nativeLanguageTag", expected.nativeLanguageTag.orEmpty())
                 appendPart("expectedEntryType", expected.entryType.orEmpty())
                 appendPart("expectedPartOfSpeech", expected.partOfSpeech.orEmpty())
-                appendPart("senseHints", expected.senseHints.joinToString(SUB_SEP.toString()) { it.serialized() })
                 appendPart("timeoutPerProviderMillis", policy.timeoutPerProviderMillis.toString())
                 appendPart("maxCacheAgeMillis", policy.maxCacheAgeMillis?.toString().orEmpty())
                 appendPart("includeFamily", policy.includeFamily.toString())
@@ -347,16 +339,6 @@ public class PersistedCachingLexicalVerifier(
                             nativeLanguageTag = query.nativeLanguageTag?.lowercase(),
                             entryType = query.expectedEntryType?.id?.lowercase(),
                             partOfSpeech = query.expectedPartOfSpeech?.id?.lowercase(),
-                            senseHints =
-                                query.senseHints.map { hint ->
-                                    SenseHintKey(
-                                        id = hint.id,
-                                        definition = hint.definition,
-                                        translation = hint.translation,
-                                        partOfSpeech = hint.pos?.id?.lowercase(),
-                                        example = hint.example,
-                                    )
-                                },
                         ),
                     policy =
                         PolicyKey(
@@ -420,7 +402,6 @@ public class PersistedCachingLexicalVerifier(
         val nativeLanguageTag: String?,
         val entryType: String?,
         val partOfSpeech: String?,
-        val senseHints: List<SenseHintKey>,
     )
 
     private data class PolicyKey(
@@ -430,29 +411,6 @@ public class PersistedCachingLexicalVerifier(
         val familySiblingCap: Int,
         val allowNetwork: Boolean,
     )
-
-    private data class SenseHintKey(
-        val id: String,
-        val definition: String?,
-        val translation: String?,
-        val partOfSpeech: String?,
-        val example: String?,
-    ) {
-        fun serialized(): String =
-            buildList {
-                add(id)
-                add(definition.orEmpty())
-                add(translation.orEmpty())
-                add(partOfSpeech.orEmpty())
-                add(example.orEmpty())
-            }.joinToString(KEY_FIELD_SEP.toString()) { value ->
-                "${value.length}:$value"
-            }
-
-        private companion object {
-            const val KEY_FIELD_SEP: Char = '\u001D'
-        }
-    }
 
     private data class CacheEntry(
         val report: LexicalVerificationReport,

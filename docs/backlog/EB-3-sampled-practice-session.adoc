@@ -8,8 +8,12 @@
 готового `Deck`: `DeckPracticeLogic` грузит deck целиком, а `PracticeSessionPolicy`
 определяет лишь подачу карт внутри сессии, а не её состав. Реализация переиспользует
 единственный планировщик FSRS (ADR-004), без второго источника расписания.
+В целевой модели сессия = **список `sense_id`** (due / подмножество деки / несколько дек
+вперемешку / ручной набор), ничего не персистит (опц. дескриптор для resume), кросс-origin ок;
+SRS — **на `sense_id`** (общий на наборы и сессии), так что состав сессии развязан с прогрессом.
 
 Связи::
+* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§4 «Сессия практики (эфемерная)»)
 * Сценарий: `docs/scenarios/home.feature`, `docs/scenarios/practice-deck.feature`
 * Код: `DeckPracticeLogic` (загрузка готового `Deck`), `PracticeSessionPolicy` (подача внутри сессии)
 * ADR: `docs/adr/0004-fsrs-is-single-scheduling-source-of-truth.adoc` (ADR-004)

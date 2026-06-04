@@ -5,39 +5,33 @@ import app.sensee.core.observability.crash.NoOpCrashReporter
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.observability.diagnostics.DefaultAppDiagnostics
 import app.sensee.core.observability.logging.DefaultAppLoggerFactory
-import app.sensee.verification.core.AttributionPolicy
-import app.sensee.verification.core.Confidence
-import app.sensee.verification.core.ExampleCheckRequest
-import app.sensee.verification.core.ExampleCheckResult
-import app.sensee.verification.core.ExampleHint
-import app.sensee.verification.core.ExampleQualityChecker
-import app.sensee.verification.core.FamilyResult
-import app.sensee.verification.core.FindingSeverity
-import app.sensee.verification.core.FindingTarget
-import app.sensee.verification.core.LemmaId
-import app.sensee.verification.core.LexicalEntryLookup
-import app.sensee.verification.core.LexicalEntryLookupResult
-import app.sensee.verification.core.LexicalEntryTypeHint
-import app.sensee.verification.core.LexicalExistence
-import app.sensee.verification.core.LexicalFamilyProvider
-import app.sensee.verification.core.LexicalSource
-import app.sensee.verification.core.LexicalSourceRef
-import app.sensee.verification.core.LexicalUnitId
-import app.sensee.verification.core.LexicalUnitInfo
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.LicensePolicy
-import app.sensee.verification.core.NormalizationCandidate
-import app.sensee.verification.core.NormalizationKind
-import app.sensee.verification.core.NormalizationOutcome
-import app.sensee.verification.core.PartOfSpeechHint
-import app.sensee.verification.core.SenseInventoryProvider
-import app.sensee.verification.core.SenseInventoryResult
-import app.sensee.verification.core.SenseMapping
-import app.sensee.verification.core.SentenceHint
-import app.sensee.verification.core.SuggestedAction
-import app.sensee.verification.core.UnitResolutionResult
-import app.sensee.verification.core.VerifierAvailability
-import app.sensee.verification.languagetool.LanguageToolSource
+import app.sensee.verification.core.contract.AttributionPolicy
+import app.sensee.verification.core.contract.Confidence
+import app.sensee.verification.core.contract.FamilyResult
+import app.sensee.verification.core.contract.FindingSeverity
+import app.sensee.verification.core.contract.FindingTarget
+import app.sensee.verification.core.contract.LexicalEntryLookup
+import app.sensee.verification.core.contract.LexicalEntryLookupResult
+import app.sensee.verification.core.contract.LexicalEntryTypeHint
+import app.sensee.verification.core.contract.LexicalExistence
+import app.sensee.verification.core.contract.LexicalFamilyProvider
+import app.sensee.verification.core.contract.LexicalSource
+import app.sensee.verification.core.contract.LexicalSourceRef
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.LicensePolicy
+import app.sensee.verification.core.contract.NormalizationCandidate
+import app.sensee.verification.core.contract.NormalizationKind
+import app.sensee.verification.core.contract.NormalizationOutcome
+import app.sensee.verification.core.contract.PartOfSpeechHint
+import app.sensee.verification.core.contract.SenseInventoryProvider
+import app.sensee.verification.core.contract.SenseInventoryResult
+import app.sensee.verification.core.contract.SuggestedAction
+import app.sensee.verification.core.contract.UnitResolutionResult
+import app.sensee.verification.core.contract.VerifierAvailability
+import app.sensee.verification.core.grounding.SenseMapping
+import app.sensee.verification.core.hierarchy.LemmaId
+import app.sensee.verification.core.hierarchy.LexicalUnitId
+import app.sensee.verification.core.hierarchy.LexicalUnitInfo
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
@@ -68,7 +62,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -105,7 +98,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -132,7 +124,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = setOf(stubFamilyProvider),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -160,7 +151,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -185,7 +175,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = emptySet(),
@@ -195,53 +184,6 @@ class RoutingLexicalVerifierTest {
             val report = verifier.verify(query("plumbus"))
 
             assertTrue(report.availability is VerifierAvailability.Unavailable)
-        }
-
-    @Test
-    fun `a degraded example checker degrades the report`() =
-        runTest {
-            val verifier =
-                RoutingLexicalVerifier(
-                    contributors =
-                        VerificationContributors(
-                            entryLookups = emptySet(),
-                            frequencyProviders = emptySet(),
-                            cefrProviders = emptySet(),
-                            senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = setOf(degradedExampleChecker),
-                            familyProviders = emptySet(),
-                        ),
-                    sourceCatalog = setOf(LanguageToolSource.descriptor),
-                    appDiagnostics = diagnostics(),
-                )
-
-            val report = verifier.verify(queryWithExample("come"))
-
-            assertTrue(report.availability is VerifierAvailability.Degraded)
-        }
-
-    @Test
-    fun `an available example checker contributes availability and source metadata without findings`() =
-        runTest {
-            val verifier =
-                RoutingLexicalVerifier(
-                    contributors =
-                        VerificationContributors(
-                            entryLookups = emptySet(),
-                            frequencyProviders = emptySet(),
-                            cefrProviders = emptySet(),
-                            senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = setOf(availableExampleChecker),
-                            familyProviders = emptySet(),
-                        ),
-                    sourceCatalog = setOf(LanguageToolSource.descriptor),
-                    appDiagnostics = diagnostics(),
-                )
-
-            val report = verifier.verify(queryWithExample("come"))
-
-            assertEquals(VerifierAvailability.Available, report.availability)
-            assertTrue(report.sources.any { it.id == LanguageToolSource.ID })
         }
 
     @Test
@@ -255,7 +197,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     // Catalog deliberately omits the "ghost" source the adapter emits.
@@ -284,7 +225,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = setOf(mediumConfidenceSenseProvider),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -308,7 +248,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             // Lower-confidence provider is listed first; without a
                             // confidence-ranked merge it would win by Set order.
                             familyProviders = setOf(lowConfidenceFamily, highConfidenceFamily),
@@ -348,7 +287,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -380,7 +318,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -414,7 +351,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -429,31 +365,6 @@ class RoutingLexicalVerifierTest {
         }
 
     @Test
-    fun `an Unavailable example checker that returns issues does not break the seam invariant`() =
-        runTest {
-            // Symmetric guard for collectExampleFindings.
-            val verifier =
-                RoutingLexicalVerifier(
-                    contributors =
-                        VerificationContributors(
-                            entryLookups = emptySet(),
-                            frequencyProviders = emptySet(),
-                            cefrProviders = emptySet(),
-                            senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = setOf(unavailableButNoisyExampleChecker),
-                            familyProviders = emptySet(),
-                        ),
-                    sourceCatalog = setOf(LanguageToolSource.descriptor),
-                    appDiagnostics = diagnostics(),
-                )
-
-            val report = verifier.verify(queryWithExample("come"))
-
-            assertTrue(report.availability is VerifierAvailability.Unavailable)
-            assertTrue(report.exampleFindings.isEmpty())
-        }
-
-    @Test
     fun `normalization candidates surface as headword findings`() =
         runTest {
             val verifier =
@@ -464,7 +375,6 @@ class RoutingLexicalVerifierTest {
                             frequencyProviders = emptySet(),
                             cefrProviders = emptySet(),
                             senseInventoryProviders = emptySet(),
-                            exampleQualityCheckers = emptySet(),
                             familyProviders = emptySet(),
                         ),
                     sourceCatalog = setOf(stubSource),
@@ -483,16 +393,6 @@ class RoutingLexicalVerifierTest {
 
     private fun query(text: String): LexicalVerificationQuery =
         LexicalVerificationQuery(text = text, studyLanguageTag = "en")
-
-    private fun queryWithExample(text: String): LexicalVerificationQuery =
-        query(text).copy(
-            examplesToValidate =
-                listOf(
-                    ExampleHint(
-                        sentence = SentenceHint(listOf(SentenceHint.Segment.Text("They come across well."))),
-                    ),
-                ),
-        )
 
     private val stubSource: LexicalSource =
         LexicalSource.Adapter(
@@ -583,31 +483,6 @@ class RoutingLexicalVerifierTest {
             }
         }
 
-    private val degradedExampleChecker: ExampleQualityChecker =
-        object : ExampleQualityChecker {
-            override suspend fun check(request: ExampleCheckRequest): ExampleCheckResult =
-                ExampleCheckResult(
-                    availability = VerifierAvailability.Degraded("network failure"),
-                    issues = emptyList(),
-                    rewrite = null,
-                    sources = emptyList(),
-                )
-        }
-
-    private val availableExampleChecker: ExampleQualityChecker =
-        object : ExampleQualityChecker {
-            override suspend fun check(request: ExampleCheckRequest): ExampleCheckResult =
-                ExampleCheckResult(
-                    availability = VerifierAvailability.Available,
-                    issues = emptyList(),
-                    rewrite = null,
-                    sources =
-                        listOf(
-                            LexicalSourceRef(sourceId = LanguageToolSource.ID, fetchedAtEpochMillis = 0L),
-                        ),
-                )
-        }
-
     private val stubFamilyProvider: LexicalFamilyProvider =
         object : LexicalFamilyProvider {
             override suspend fun resolveUnit(query: LexicalVerificationQuery): UnitResolutionResult {
@@ -669,31 +544,6 @@ class RoutingLexicalVerifierTest {
                     sources = listOf(ref),
                 )
             }
-        }
-
-    // Misbehaving example checker: Unavailable yet still flags an issue.
-    // Used by the I4 invariant test for collectExampleFindings.
-    private val unavailableButNoisyExampleChecker: ExampleQualityChecker =
-        object : ExampleQualityChecker {
-            override suspend fun check(request: ExampleCheckRequest): ExampleCheckResult =
-                ExampleCheckResult(
-                    availability = VerifierAvailability.Unavailable("offline"),
-                    issues =
-                        listOf(
-                            app.sensee.verification.core.ExampleIssue(
-                                code = "X",
-                                severity = FindingSeverity.Warning,
-                                location = app.sensee.verification.core.ExampleLocation.WholeSentence,
-                                message = "should-not-surface",
-                                sources =
-                                    listOf(
-                                        LexicalSourceRef(sourceId = LanguageToolSource.ID, fetchedAtEpochMillis = 0L),
-                                    ),
-                            ),
-                        ),
-                    rewrite = null,
-                    sources = emptyList(),
-                )
         }
 
     private val uncatalogedLookup: LexicalEntryLookup =

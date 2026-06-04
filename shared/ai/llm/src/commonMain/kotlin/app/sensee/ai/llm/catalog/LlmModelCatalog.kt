@@ -1,7 +1,7 @@
 package app.sensee.ai.llm.catalog
 
-import app.sensee.ai.core.AiKeyCheck
-import app.sensee.ai.core.AiModelCatalog
+import app.sensee.ai.core.contract.AiKeyCheck
+import app.sensee.ai.core.contract.AiModelCatalog
 import app.sensee.core.coroutines.runCatchingCancellable
 import io.ktor.client.plugins.ResponseException
 

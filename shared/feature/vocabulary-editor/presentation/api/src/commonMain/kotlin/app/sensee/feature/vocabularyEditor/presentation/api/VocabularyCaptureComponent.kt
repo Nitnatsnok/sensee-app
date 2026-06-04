@@ -3,11 +3,10 @@ package app.sensee.feature.vocabularyEditor.presentation.api
 import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
 import app.sensee.core.presentation.DataLoadingState
-import app.sensee.feature.vocabularyEditor.domain.Meaning
-import app.sensee.feature.vocabularyEditor.domain.MeaningCandidate
-import app.sensee.feature.vocabularyEditor.domain.MeaningCandidateId
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.lexicon.domain.Sense
+import app.sensee.lexicon.domain.deriveSenseContentKey
 import kotlinx.coroutines.flow.StateFlow
 
 public interface VocabularyCaptureComponent : AppComponent {
@@ -22,19 +21,21 @@ public interface VocabularyCaptureComponent : AppComponent {
 
 /**
  * Quick-capture state. The flow is not a stage wizard (ADR-001): enrich returns
- * a set of senses, the user multi-selects which to add ([selectedCandidates])
- * and may add their own ([manualSenses]); confirming the selection IS the
- * confirmation. [loadingState] tracks the enrichment request lifecycle (an
- * actual failure is [DataLoadingState.Error]); [statusNote] is distinct — a
- * first-class, *successful* seam degradation (ADR-005: Unavailable / Degraded)
- * where the user still adds a meaning manually.
+ * a set of senses, the user multi-selects which to add and may add their own
+ * ([manualSenses]); confirming the selection IS the confirmation. [loadingState]
+ * tracks the enrichment request lifecycle (an actual failure is
+ * [DataLoadingState.Error]); [statusNote] is distinct — a first-class,
+ * *successful* seam degradation (ADR-005: Unavailable / Degraded) where the user
+ * still adds a meaning manually.
+ *
+ * AI suggestions and hand-authored senses are the same [CaptureSense] type;
+ * selection is keyed by [CaptureSense.contentKey].
  */
 public data class VocabularyCaptureUiState(
     val term: String = "",
     val loadingState: DataLoadingState = DataLoadingState.Idle,
-    val candidates: List<MeaningCandidate> = emptyList(),
-    val selectedCandidates: Set<MeaningCandidateId> = emptySet(),
-    val manualSenses: List<ManualSense> = emptyList(),
+    val candidates: List<CaptureSense> = emptyList(),
+    val manualSenses: List<CaptureSense> = emptyList(),
     val statusNote: CaptureStatusNote? = null,
     val confirmedTerm: String? = null,
     val grammarLabels: GrammarLabels = GrammarLabels.EMPTY,
@@ -52,7 +53,47 @@ public data class VocabularyCaptureUiState(
     val nativeLanguageTag: String = "ru",
 ) {
     public val canConfirm: Boolean
-        get() = selectedCandidates.isNotEmpty() || manualSenses.isNotEmpty()
+        get() = candidates.any { it.selected } || manualSenses.isNotEmpty()
+}
+
+/**
+ * One in-progress sense in a capture session — a single type for both
+ * AI-proposed and hand-authored senses (ADR-001: a candidate is just an unsaved
+ * [Sense] the user may confirm; the selection IS the confirmation). Identity for
+ * selection is the [contentKey], so a re-enrich that returns the same sense
+ * keeps its selection instead of shifting with list position.
+ *
+ * For a [CaptureSenseSource.Manual] sense, [assistantSuggestions] are optional
+ * AI completions; picking one (its [selected]) confirms it instead of the thin
+ * manual sense. A manual sense with no picked suggestion is confirmed as-is.
+ */
+public data class CaptureSense(
+    val sense: Sense,
+    val source: CaptureSenseSource,
+    val status: CaptureSenseStatus = CaptureSenseStatus.Ready,
+    val selected: Boolean = false,
+    val assistantSuggestions: List<CaptureSense> = emptyList(),
+) {
+    public val contentKey: String get() = deriveSenseContentKey(sense)
+}
+
+public enum class CaptureSenseSource {
+    /** Proposed by the AI seam. */
+    Ai,
+
+    /** Hand-authored by the user. */
+    Manual,
+}
+
+public enum class CaptureSenseStatus {
+    /** A settled sense: an AI candidate, or a manual sense not being completed. */
+    Ready,
+
+    /** A "complete with assistant" re-enrich is in flight (manual only). */
+    Completing,
+
+    /** The assistant could not complete a manual sense; the thin draft stands. */
+    CompleteFailed,
 }
 
 /**
@@ -70,45 +111,14 @@ public sealed interface CaptureStatusNote {
     ) : CaptureStatusNote
 }
 
-/**
- * A sense the user authored by hand. It is intentionally minimal — a
- * [translation][Meaning.translation] plus optional surface form / part of
- * speech — and is valid on its own: it reaches `Confirmed` with no AI at all
- * (the `vocabulary-capture.feature` degradation guarantee). It can *optionally*
- * be completed by the assistant ([status] / [suggestions]): a re-enrich with
- * the user's text as a hint surfaces enriched candidates the user confirms via
- * the same select model (ADR-001 — AI is a candidate, selection is the
- * confirmation). If the user selects an enriched suggestion, that one is
- * confirmed instead of the thin [meaning]; otherwise the thin [meaning] stands.
- */
-public data class ManualSense(
-    val meaning: Meaning,
-    val status: ManualSenseStatus = ManualSenseStatus.Draft,
-    val suggestions: List<MeaningCandidate> = emptyList(),
-    val selectedSuggestions: Set<MeaningCandidateId> = emptySet(),
-)
-
-public enum class ManualSenseStatus {
-    /** Just added; thin, not (yet) completed by the assistant. */
-    Draft,
-
-    /** A "complete with assistant" re-enrich is in flight. */
-    Completing,
-
-    /** The assistant returned [ManualSense.suggestions]. */
-    Completed,
-
-    /** The assistant could not complete it; the thin draft still stands. */
-    CompleteFailed,
-}
-
 public sealed interface VocabularyCaptureAction {
     public data class Suggest(
         val term: String,
     ) : VocabularyCaptureAction
 
+    /** Toggle selection of the AI candidate identified by [contentKey]. */
     public data class ToggleCandidate(
-        val id: MeaningCandidateId,
+        val contentKey: String,
     ) : VocabularyCaptureAction
 
     /**
@@ -130,7 +140,7 @@ public sealed interface VocabularyCaptureAction {
     /** Pick/unpick an assistant suggestion for a completed manual sense. */
     public data class ToggleManualSuggestion(
         val manualIndex: Int,
-        val suggestionId: MeaningCandidateId,
+        val suggestionContentKey: String,
     ) : VocabularyCaptureAction
 
     public data object ConfirmSelected : VocabularyCaptureAction

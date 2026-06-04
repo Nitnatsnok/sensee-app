@@ -15,8 +15,11 @@
 |ID|Доработка|Область
 | link:EB-3-sampled-practice-session.adoc[EB-3] | Сессия повторения по запросу или подмножеству вместо только готового `Deck` | practice
 | link:EB-5-card-transcription-field.adoc[EB-5] | Поле транскрипции в модели карты | practice
-| link:EB-6-extended-entry-status-lifecycle.adoc[EB-6] | Расширенный жизненный цикл `EntryStatus` и уборка брошенных `Draft` | vocabulary
+| link:EB-6-abandoned-draft-cleanup.adoc[EB-6] | Уборка брошенных `Draft` по таймстемпу | vocabulary
 | link:EB-7-vocabulary-editor-deep-link.adoc[EB-7] | Прямая ссылка на `VocabularyEditorConfig.Editor(entryId)` через web-навигацию | navigation
+| link:EB-9-personal-deck-editing-ux.adoc[EB-9] | Экраны создания/правки пользовательских наборов в Library (вкл. `claim` частей сервисного набора) | library
+| link:EB-11-section-scoped-enrichment.adoc[EB-11] | Посекционное обогащение `Sense` по требованию (`EnrichmentScope.Section`) | vocabulary
+| link:EB-12-edit-adopted-service-sense.adoc[EB-12] | Правка подписанного/Service-смысла = `claim` (завладеть) + правка: детач-копия, клон SRS | library
 |===
 
 == Обдумываемое
@@ -27,6 +30,7 @@
 |===
 |ID|Идея|Область
 | link:EB-8-extended-capture-wizard.adoc[EB-8] | Пошаговый ввод (wizard) поверх одностраничного захвата | vocabulary
+| link:EB-10-language-pair-expansion.adoc[EB-10] | Проработка расширения языковых пар (поле на `Sense`, влияние на `content_key`/поиск) | lexicon
 |===
 
 == Как вести backlog

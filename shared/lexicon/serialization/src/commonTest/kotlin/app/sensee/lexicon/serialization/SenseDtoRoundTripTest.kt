@@ -16,11 +16,13 @@ import app.sensee.grammar.domain.UsageAxis
 import app.sensee.grammar.domain.UsageLabel
 import app.sensee.grammar.domain.UsageValue
 import app.sensee.lexicon.domain.AlignmentChunk
+import app.sensee.lexicon.domain.CefrLevel
 import app.sensee.lexicon.domain.ContextualApplication
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.WordFamilyMember
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class SenseDtoRoundTripTest {
     @Test
@@ -126,6 +128,21 @@ class SenseDtoRoundTripTest {
 
         assertEquals(GrammarCategory.Unknown("novel_axis"), tag.category)
         assertEquals(GrammarForm.Unknown("novel_form"), tag.form)
+    }
+
+    @Test
+    fun `cefr survives a round trip as its wire name`() {
+        val dto = Sense(translation = "x", cefr = CefrLevel.B2).toDto()
+
+        assertEquals("B2", dto.cefr)
+        assertEquals(CefrLevel.B2, dto.toDomain().cefr)
+    }
+
+    @Test
+    fun `an unknown cefr value read from storage surfaces as null not crash`() {
+        val restored = SenseDto(translation = "x", cefr = "Z9").toDomain()
+
+        assertNull(restored.cefr)
     }
 
     @Test

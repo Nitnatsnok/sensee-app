@@ -107,24 +107,24 @@ model {
       link ../arc42/sections/06_runtime_view.adoc
 
       library_ui = component 'Library Section' {
-        description 'LibrarySectionComponent. Реализовано: Home (отфильтрованный каталог собственного материала + adoption сервисного набора целиком, обратимо). Планируется: курирование колод (many-to-many), `EntryDetail`/`LemmaDetail`/`DeckDetail`, правка/удаление, частичное добавление.'
+        description 'LibrarySectionComponent. Реализовано: Home (отфильтрованный каталог собственного материала + подписка на сервисный набор целиком, обратимо). Планируется: курирование колод (many-to-many), `LemmaDetail`/`DeckDetail`, правка/удаление, claim части набора.'
         technology 'shared/feature/library/presentation/{api,impl}'
       }
 
       library_catalog = component 'Library Catalog' {
-        description 'CatalogRepository, CatalogAdoptionRepository, captured-material derivation и fixture-backed service-set loading.'
+        description 'CatalogRepository, CatalogAdoptionRepository, ClaimRepository, SenseCatalogProjection и fixture-backed service-set loading.'
         technology 'shared/feature/library/{domain,data}'
         link ../arc42/sections/08_concepts.adoc
       }
 
       card_derivation = capability 'Card Derivation' {
-        description 'Реализованная projection-логика `CapturedCatalogDerivation`: confirmed lexical material превращается в captured deck, группируется по `headLemma` и создаёт form-variant cards для irregular verbs. UI-навигация по family остаётся planned.'
+        description 'Реализованная projection-логика `SenseCatalogProjection`: Confirmed Personal смыслы проецируются в captured deck, группируются по `lemma_key` и порождают form-variant cards (id `sense_id:form:slot`) для irregular verbs. UI-навигация по family остаётся planned.'
         technology 'shared/feature/library/data'
         link ../domain/information-model.adoc
       }
 
       library_schema = store 'Library Schema' {
-        description 'Feature-owned SQLDelight schema для catalog/deck/adoption state.'
+        description 'Feature-owned SQLDelight schema для `deck`/`deck_membership` (флаг `subscribed` на `deck`; membership по `sense_id`, без контента смысла).'
         technology 'shared/feature/library/database-schema'
         icon tech:sqlite
       }
@@ -144,31 +144,20 @@ model {
       link ../arc42/sections/06_runtime_view.adoc
 
       vocabulary_ui = component 'Vocabulary Editor Section' {
-        description 'VocabularyEditorSectionComponent с реализованным add-path: `QuickCapture` создаёт запись через AI enrichment. UI edit-surface и deep-link в `Editor(entryId)` остаются planned.'
+        description 'VocabularyEditorSectionComponent с реализованным add-path: `QuickCapture` создаёт смыслы через AI enrichment и пишет их через `SenseWriteRepository`. UI edit-surface и deep-link в редактор (EB-7) остаются planned.'
         technology 'shared/feature/vocabulary-editor/presentation/{api,impl}'
       }
 
       vocabulary_capture = capability 'Vocabulary Capture' {
-        description 'Реализованный primary product capability (ADR-001): ввод → verification evidence → AI/curated enrichment → verification snapshots → набор `SenseCandidate` → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Поток одностраничный, выбор и есть подтверждение.'
+        description 'Реализованный primary product capability (ADR-001): ввод → verifier даёт pre-AI grounding в prompt → AI/curated enrichment → набор `Sense` → silent post-AI фильтр качества примеров (не опустошает список) → мультивыбор + ручной смысл (опц. «дополнить ассистентом») → подтверждение. Поток одностраничный, выбор и есть подтверждение. Verification подключён к живому capture в двух узких ролях; обе деградируют штатно.'
         technology 'vocabulary authoring flow'
         link ../arc42/sections/06_runtime_view.adoc
       }
 
       vocabulary_domain = component 'Vocabulary Domain' {
-        description '`SenseCandidate` и подготовленный write workflow для замены confirmed `LexicalEntry`. Write workflow существует в domain, но UI поверх него — planned.'
+        description '`SuggestVocabularySensesUseCase` (enrich-only) и две роли verification (pre-AI grounding / post-AI example-quality); editor-state `CaptureSense` живёт в `presentation/api`. Запись подтверждённых смыслов идёт через `SenseWriteRepository` (`lexicon`).'
         technology 'shared/feature/vocabulary-editor/domain'
         link ../domain/information-model.adoc
-      }
-
-      vocabulary_data = component 'Vocabulary Data' {
-        description '`DurableVocabularyRepository`: durable persist `LexicalEntry`/`Sense`.'
-        technology 'shared/feature/vocabulary-editor/data'
-      }
-
-      vocabulary_schema = store 'Vocabulary Schema' {
-        description 'Feature-owned SQLDelight schema для durable `LexicalEntry`/`Sense` state (`Sense` сериализуется общим `SenseDto` в `senses_json`).'
-        technology 'shared/feature/vocabulary-editor/database-schema'
-        icon tech:sqlite
       }
     }
 
@@ -184,20 +173,31 @@ model {
       }
     }
 
-    // Lexicon (canonical source model)
+    // Lexicon (canonical sense store)
     lexicon = container 'Lexicon' {
-      description 'Нейтральная каноническая лексическая модель и её сериализация.'
+      description 'Нейтральная каноническая лексическая модель, её единственный durable-store и сериализация.'
       technology 'shared/lexicon'
       link ../domain/information-model.adoc
 
       lexical_model = component 'Sense Source Model' {
-        description 'Центральный `Sense` (+`ContextualApplication`/`AlignmentChunk`/`WordFamilyMember`) и нейтральный read model `LexicalEntry`/`EntryStatus`/`LexiconRepository`.'
+        description 'Центральный `Sense` (+`ContextualApplication`/`AlignmentChunk`/`WordFamilyMember`), read model `StoredSense`, `SenseId`, `WriteIntent`, раздельные `SenseReadRepository`/`SenseWriteRepository`/`SearchPort`/`LexicalGraphReader` (+`SenseQuery`/`LexicalEdge`) и `CefrLevel`.'
         technology 'shared/lexicon/domain'
       }
 
       enrichment_mapping = component 'Enrichment Mapping' {
         description 'Общий mapper enrichment→`Sense` и общий `SenseDto` (`Sense` ⇄ JSON).'
         technology 'shared/lexicon/{enrichment,serialization}'
+      }
+
+      lexical_data = component 'Sense Store' {
+        description 'Единственный durable-store `Sense`: `DefaultSenseRepository` (read/write/search контракты) + `DefaultLexicalGraphReader` (derive-on-read граф), `DefaultSenseIdFactory` (Personal `Uuid` / Service `svc-`+FNV-1a), origin-scoped `resolveOrMint`, id-preserving правка.'
+        technology 'shared/lexicon/data'
+      }
+
+      lexical_schema = store 'Sense Schema' {
+        description 'Seam-owned SQLDelight schema канонической таблицы `sense` (CHECK/partial unique index по `source_ref`).'
+        technology 'shared/lexicon/database-schema'
+        icon tech:sqlite
       }
     }
 
@@ -243,7 +243,7 @@ model {
       link ../adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc
 
       ai_seam = component 'AI Enrichment Boundary' {
-        description 'Граница `core` + композиция `integration`: маршрутизация curated→LLM, anti-corruption mapping для `SenseCandidate`.'
+        description 'Граница `core` + композиция `integration`: маршрутизация curated→LLM, anti-corruption mapping в `Sense`.'
         technology 'shared/ai/{core,integration}'
       }
 
@@ -293,7 +293,7 @@ model {
       link ../adr/0007-lexical-verification-seam-with-license-aware-aggregator.adoc
 
       verification_seam = component 'Verification Boundary' {
-        description 'License-aware aggregator: граница `core` + композиция `integration`, L1 cache, evidence до AI и per-candidate snapshots после AI.'
+        description 'License-aware aggregator: граница `core` + композиция `integration`, двухуровневый кэш (L1 + L2, ADR-009). Подключён к живому capture в двух узких ролях: pre-AI grounding в prompt (фильтр по `usableAsLlmContext`) и post-AI silent example-quality (не опустошает список примеров).'
         technology 'shared/verification/{core,integration}'
       }
 
@@ -433,29 +433,30 @@ model {
     feature_library.library_ui -[flows]-> feature_library.library_catalog 'reads own material + adoption state'
     feature_library.library_catalog -[flows]-> core.network 'loads fixture-backed catalog/decks' { technology 'Ktor client' }
     feature_library.library_catalog -[flows]-> core.mock_backend 'contributes catalog fixtures'
-    feature_library.library_catalog -[flows]-> lexicon.lexical_model 'reads confirmed material via LexiconRepository'
-    feature_library.library_catalog -[depends]-> lexicon.enrichment_mapping 'maps curated enrichment to Sense'
-    feature_library.library_catalog -[depends]-> ai.ai_seam 'reuses enrichment contract (ai.core)'
+    feature_library.library_catalog -[flows]-> lexicon.lexical_model 'reads/writes senses via Sense*Repository'
+    feature_library.library_catalog -[depends]-> lexicon.enrichment_mapping 'maps the service SenseDto wire to Sense'
     feature_library.library_catalog -[depends]-> srs.srs_engine 'materializes SRS card state via SrsStorage'
-    feature_library.library_catalog -[flows]-> persistence 'stores catalog/adoption state' { technology 'SQLDelight' }
-    feature_library.library_catalog -[depends]-> feature_library.library_schema 'owns catalog tables'
-    lexicon.lexical_model -[flows]-> feature_library.card_derivation 'projects confirmed material into captured cards'
+    feature_library.library_catalog -[flows]-> persistence 'stores deck/membership state' { technology 'SQLDelight' }
+    feature_library.library_catalog -[depends]-> feature_library.library_schema 'owns deck tables'
+    lexicon.lexical_model -[flows]-> feature_library.card_derivation 'projects confirmed senses into captured cards'
     feature_library.card_derivation -[flows]-> feature_library.library_catalog 'captured deck enters catalog projection'
     feature_library.library_ui -[navigates]-> feature_library.service_catalog 'browses service sets' { #future }
     feature_library.service_catalog -[flows]-> future_backend 'fetches curated sets' { #future; technology 'API' }
     feature_library.service_catalog -[flows]-> feature_library.library_catalog 'adopted fully or partially' { #future }
 
     // Vocabulary capture / editing
-    feature_vocabulary.vocabulary_ui -[flows]-> verification.verification_seam 'verifies before and after AI'
+    feature_vocabulary.vocabulary_ui -[flows]-> verification.verification_seam 'grounding before AI, example-quality after AI'
     feature_vocabulary.vocabulary_ui -[flows]-> ai.ai_seam 'requests candidate enrichment'
     feature_vocabulary.vocabulary_ui -[depends]-> lexicon.enrichment_mapping 'maps AI response to Sense'
     feature_vocabulary.vocabulary_ui -[flows]-> feature_vocabulary.vocabulary_capture 'selection = confirmation'
-    feature_vocabulary.vocabulary_ui -[depends]-> feature_vocabulary.vocabulary_domain 'uses SenseCandidate + write workflow'
-    feature_vocabulary.vocabulary_capture -[flows]-> lexicon.lexical_model 'confirms lexical material'
+    feature_vocabulary.vocabulary_ui -[depends]-> feature_vocabulary.vocabulary_domain 'uses SuggestVocabularySensesUseCase'
+    feature_vocabulary.vocabulary_capture -[flows]-> lexicon.lexical_data 'persists confirmed senses via SenseWriteRepository'
     feature_vocabulary.vocabulary_capture -[depends]-> grammar.grammar_taxonomy 'uses neutral grammar cues'
-    feature_vocabulary.vocabulary_data -[depends]-> feature_vocabulary.vocabulary_domain 'implements VocabularyRepository'
-    feature_vocabulary.vocabulary_data -[depends]-> feature_vocabulary.vocabulary_schema 'owns lexical tables'
-    feature_vocabulary.vocabulary_data -[flows]-> persistence 'stores Draft + confirmed LexicalEntry/Sense' { technology 'SQLDelight' }
+
+    // Lexicon (canonical sense store)
+    lexicon.lexical_data -[depends]-> lexicon.lexical_model 'implements Sense read/write repositories'
+    lexicon.lexical_data -[depends]-> lexicon.lexical_schema 'owns sense table'
+    lexicon.lexical_data -[flows]-> persistence 'stores senses' { technology 'SQLDelight' }
 
     // Profile
     feature_profile.profile_ui -[flows]-> settings.settings_domain 'edits user settings'
@@ -507,7 +508,7 @@ model {
     // Persistence aggregation (shared/database collects feature/seam schema)
     persistence -[depends]-> feature_practice.practice_schema 'aggregates feature schema'
     persistence -[depends]-> feature_library.library_schema 'aggregates feature schema'
-    persistence -[depends]-> feature_vocabulary.vocabulary_schema 'aggregates feature schema'
+    persistence -[depends]-> lexicon.lexical_schema 'aggregates seam schema'
     persistence -[depends]-> settings.settings_schema 'aggregates settings schema'
     persistence -[depends]-> tts.tts_schema 'aggregates seam schema'
     persistence -[depends]-> verification.verification_schema 'aggregates seam schema'
@@ -521,6 +522,7 @@ model {
     feature_practice.practice_ui -[flows]-> settings.settings_domain 'reads practice-scoped settings (subset)' { #prepared }
     feature_home.home -[navigates]-> feature_practice.practice_ui 'opens a due session' { #future }
     feature_home.home -[navigates]-> feature_vocabulary.vocabulary_ui 'resumes / quick capture' { #future }
+    feature_home.home -[depends]-> feature_practice.practice_domain 'reads due-count via DuePracticeRepository (no library dep)' { #future }
   }
 
   // Actor entry

@@ -6,276 +6,297 @@
     {
       "id": "card-come-up",
       "lemma_id": "lemma-come",
-      "translation": "возникать, неожиданно появиться",
-      "surface_form": "come up",
-      "unit_type": "phrasal_verb",
-      "base_lemma": "come",
-      "head_lemma": "come",
-      "components": [
-        { "text": "come", "role": "head", "salience": "primary" },
-        { "text": "up", "role": "particle", "salience": "secondary" }
-      ],
-      "explanation": "О проблеме, теме или событии — неожиданно появиться и потребовать внимания.",
-      "examples": [
-        {
-          "sentence": "Something has [[come up]] at work, so I'll be late tonight.",
-          "translation": "На работе кое-что возникло, поэтому вечером я задержусь.",
-          "alignment": [
-            { "source": "Something", "target": "кое-что" },
-            { "source": "has come up", "target": "возникло" },
-            { "source": "at work", "target": "на работе" }
-          ]
-        }
-      ],
-      "synonyms": ["arise", "emerge"],
-      "collocations": ["a problem came up", "come up in conversation"],
-      "grammar_tags": [
-        { "category": "verb", "form": "infinitive" },
-        { "category": "transitivity", "form": "intransitive" },
-        { "category": "separability", "form": "inseparable" }
-      ]
+      "sense": {
+        "translation": "возникать, неожиданно появиться",
+        "surfaceForm": "come up",
+        "unitType": "phrasal_verb",
+        "baseLemma": "come",
+        "headLemma": "come",
+        "components": [
+          { "text": "come", "role": "head", "salience": "primary" },
+          { "text": "up", "role": "particle", "salience": "secondary" }
+        ],
+        "explanation": "О проблеме, теме или событии — неожиданно появиться и потребовать внимания.",
+        "contextualApplications": [
+          {
+            "sentence": "Something has [[come up]] at work, so I'll be late tonight.",
+            "translation": "На работе кое-что возникло, поэтому вечером я задержусь.",
+            "alignment": [
+              { "source": "Something", "target": "кое-что" },
+              { "source": "has come up", "target": "возникло" },
+              { "source": "at work", "target": "на работе" }
+            ]
+          }
+        ],
+        "synonyms": ["arise", "emerge"],
+        "collocations": ["a problem came up", "come up in conversation"],
+        "grammarTags": [
+          { "category": "verb", "form": "infinitive" },
+          { "category": "transitivity", "form": "intransitive" },
+          { "category": "separability", "form": "inseparable" }
+        ]
+      }
     },
     {
       "id": "card-come-across",
       "lemma_id": "lemma-come",
-      "translation": "случайно встретить, наткнуться",
-      "surface_form": "come across <somebody/something>",
-      "unit_type": "phrasal_verb",
-      "base_lemma": "come",
-      "head_lemma": "come",
-      "components": [
-        { "text": "come", "role": "head", "salience": "primary" },
-        { "text": "across", "role": "particle", "salience": "secondary" }
-      ],
-      "explanation": "Случайно обнаружить вещь или встретить человека, не ища специально.",
-      "examples": [
-        {
-          "sentence": "I often [[come across]] old letters from my grandmother.",
-          "translation": "Я часто натыкаюсь на старые письма от бабушки.",
-          "alignment": [
-            { "source": "I often", "target": "Я часто" },
-            { "source": "come across", "target": "натыкаюсь на" },
-            { "source": "old letters", "target": "старые письма" },
-            { "source": "from my grandmother", "target": "от бабушки" }
-          ]
-        }
-      ],
-      "synonyms": ["encounter", "stumble upon", "run into"],
-      "collocations": ["come across a problem", "come across information"],
-      "complementation": ["noun"],
-      "grammar_tags": [
-        { "category": "verb", "form": "infinitive" },
-        { "category": "transitivity", "form": "transitive" },
-        { "category": "separability", "form": "inseparable" }
-      ]
+      "sense": {
+        "translation": "случайно встретить, наткнуться",
+        "surfaceForm": "come across <somebody/something>",
+        "unitType": "phrasal_verb",
+        "baseLemma": "come",
+        "headLemma": "come",
+        "components": [
+          { "text": "come", "role": "head", "salience": "primary" },
+          { "text": "across", "role": "particle", "salience": "secondary" }
+        ],
+        "explanation": "Случайно обнаружить вещь или встретить человека, не ища специально.",
+        "contextualApplications": [
+          {
+            "sentence": "I often [[come across]] old letters from my grandmother.",
+            "translation": "Я часто натыкаюсь на старые письма от бабушки.",
+            "alignment": [
+              { "source": "I often", "target": "Я часто" },
+              { "source": "come across", "target": "натыкаюсь на" },
+              { "source": "old letters", "target": "старые письма" },
+              { "source": "from my grandmother", "target": "от бабушки" }
+            ]
+          }
+        ],
+        "synonyms": ["encounter", "stumble upon", "run into"],
+        "collocations": ["come across a problem", "come across information"],
+        "complementation": ["noun"],
+        "grammarTags": [
+          { "category": "verb", "form": "infinitive" },
+          { "category": "transitivity", "form": "transitive" },
+          { "category": "separability", "form": "inseparable" }
+        ]
+      }
     },
     {
       "id": "card-resilient",
       "lemma_id": "lemma-resilient",
-      "translation": "устойчивый, способный быстро восстановиться",
-      "surface_form": "resilient",
-      "unit_type": "adjective",
-      "base_lemma": "resilient",
-      "head_lemma": "resilient",
-      "explanation": "Способен продолжать работу при сбоях и быстро восстанавливаться после них.",
-      "examples": [
-        {
-          "sentence": "A [[resilient]] system keeps working even when some parts fail.",
-          "translation": "Устойчивая система продолжает работать, даже когда отказывают отдельные части.",
-          "alignment": [
-            { "source": "A resilient system", "target": "Устойчивая система" },
-            { "source": "keeps working", "target": "продолжает работать" },
-            { "source": "even when some parts fail", "target": "даже когда отказывают отдельные части" }
-          ]
-        }
-      ],
-      "synonyms": ["robust", "fault-tolerant"],
-      "collocations": ["resilient system", "resilient design"],
-      "grammar_tags": [
-        { "category": "degree", "form": "positive" }
-      ]
+      "sense": {
+        "translation": "устойчивый, способный быстро восстановиться",
+        "surfaceForm": "resilient",
+        "unitType": "adjective",
+        "baseLemma": "resilient",
+        "headLemma": "resilient",
+        "explanation": "Способен продолжать работу при сбоях и быстро восстанавливаться после них.",
+        "contextualApplications": [
+          {
+            "sentence": "A [[resilient]] system keeps working even when some parts fail.",
+            "translation": "Устойчивая система продолжает работать, даже когда отказывают отдельные части.",
+            "alignment": [
+              { "source": "A resilient system", "target": "Устойчивая система" },
+              { "source": "keeps working", "target": "продолжает работать" },
+              { "source": "even when some parts fail", "target": "даже когда отказывают отдельные части" }
+            ]
+          }
+        ],
+        "synonyms": ["robust", "fault-tolerant"],
+        "collocations": ["resilient system", "resilient design"],
+        "grammarTags": [
+          { "category": "degree", "form": "positive" }
+        ],
+        "cefr": "B2"
+      }
     },
     {
       "id": "card-eventually",
       "lemma_id": "lemma-eventually",
-      "translation": "в конечном итоге",
-      "surface_form": "eventually",
-      "unit_type": "adverb",
-      "base_lemma": "eventually",
-      "head_lemma": "eventually",
-      "explanation": "Спустя некоторое время, но обязательно — не «возможно».",
-      "examples": [
-        {
-          "sentence": "The cache will [[eventually]] become consistent.",
-          "translation": "Кэш в конечном итоге станет согласованным.",
-          "alignment": [
-            { "source": "The cache", "target": "Кэш" },
-            { "source": "will eventually become consistent", "target": "в конечном итоге станет согласованным" }
-          ]
-        }
-      ],
-      "synonyms": ["ultimately", "in the end"],
-      "collocations": ["eventually consistent"],
-      "grammar_tags": [
-        { "category": "degree", "form": "positive" }
-      ]
+      "sense": {
+        "translation": "в конечном итоге",
+        "surfaceForm": "eventually",
+        "unitType": "adverb",
+        "baseLemma": "eventually",
+        "headLemma": "eventually",
+        "explanation": "Спустя некоторое время, но обязательно — не «возможно».",
+        "contextualApplications": [
+          {
+            "sentence": "The cache will [[eventually]] become consistent.",
+            "translation": "Кэш в конечном итоге станет согласованным.",
+            "alignment": [
+              { "source": "The cache", "target": "Кэш" },
+              { "source": "will eventually become consistent", "target": "в конечном итоге станет согласованным" }
+            ]
+          }
+        ],
+        "synonyms": ["ultimately", "in the end"],
+        "collocations": ["eventually consistent"],
+        "grammarTags": [
+          { "category": "degree", "form": "positive" }
+        ]
+      }
     },
     {
       "id": "card-reliable",
       "lemma_id": "lemma-reliable",
-      "translation": "надёжный",
-      "surface_form": "reliable",
-      "unit_type": "adjective",
-      "base_lemma": "reliable",
-      "head_lemma": "reliable",
-      "explanation": "Такой, на который можно положиться: стабильно делает то, что нужно.",
-      "examples": [
-        {
-          "sentence": "She is a [[reliable]] teammate.",
-          "translation": "Она надёжный товарищ по команде.",
-          "alignment": [
-            { "source": "She is", "target": "Она" },
-            { "source": "a reliable teammate", "target": "надёжный товарищ по команде" }
-          ]
-        }
-      ],
-      "synonyms": ["dependable", "trustworthy"],
-      "collocations": ["a reliable teammate", "a reliable source"],
-      "grammar_tags": [
-        { "category": "degree", "form": "positive" }
-      ]
+      "sense": {
+        "translation": "надёжный",
+        "surfaceForm": "reliable",
+        "unitType": "adjective",
+        "baseLemma": "reliable",
+        "headLemma": "reliable",
+        "explanation": "Такой, на который можно положиться: стабильно делает то, что нужно.",
+        "contextualApplications": [
+          {
+            "sentence": "She is a [[reliable]] teammate.",
+            "translation": "Она надёжный товарищ по команде.",
+            "alignment": [
+              { "source": "She is", "target": "Она" },
+              { "source": "a reliable teammate", "target": "надёжный товарищ по команде" }
+            ]
+          }
+        ],
+        "synonyms": ["dependable", "trustworthy"],
+        "collocations": ["a reliable teammate", "a reliable source"],
+        "grammarTags": [
+          { "category": "degree", "form": "positive" }
+        ]
+      }
     },
     {
       "id": "card-schedule",
       "lemma_id": "lemma-schedule",
-      "translation": "расписание, график",
-      "surface_form": "schedule",
-      "unit_type": "noun",
-      "base_lemma": "schedule",
-      "head_lemma": "schedule",
-      "explanation": "План дел, распределённых во времени.",
-      "examples": [
-        {
-          "sentence": "The release is back on [[schedule]].",
-          "translation": "Релиз снова идёт по графику.",
-          "alignment": [
-            { "source": "The release", "target": "Релиз" },
-            { "source": "is back on schedule", "target": "снова идёт по графику" }
-          ]
-        }
-      ],
-      "synonyms": ["timetable", "plan"],
-      "collocations": ["on schedule", "behind schedule"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "расписание, график",
+        "surfaceForm": "schedule",
+        "unitType": "noun",
+        "baseLemma": "schedule",
+        "headLemma": "schedule",
+        "explanation": "План дел, распределённых во времени.",
+        "contextualApplications": [
+          {
+            "sentence": "The release is back on [[schedule]].",
+            "translation": "Релиз снова идёт по графику.",
+            "alignment": [
+              { "source": "The release", "target": "Релиз" },
+              { "source": "is back on schedule", "target": "снова идёт по графику" }
+            ]
+          }
+        ],
+        "synonyms": ["timetable", "plan"],
+        "collocations": ["on schedule", "behind schedule"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     },
     {
       "id": "card-meeting",
       "lemma_id": "lemma-meeting",
-      "translation": "встреча, совещание",
-      "surface_form": "meeting",
-      "unit_type": "noun",
-      "base_lemma": "meeting",
-      "head_lemma": "meeting",
-      "explanation": "Запланированный сбор людей для обсуждения.",
-      "examples": [
-        {
-          "sentence": "Let's move the [[meeting]] to the afternoon.",
-          "translation": "Давай перенесём встречу на вторую половину дня.",
-          "alignment": [
-            { "source": "Let's move the meeting", "target": "Давай перенесём встречу" },
-            { "source": "to the afternoon", "target": "на вторую половину дня" }
-          ]
-        }
-      ],
-      "synonyms": ["gathering"],
-      "collocations": ["schedule a meeting", "a team meeting"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "встреча, совещание",
+        "surfaceForm": "meeting",
+        "unitType": "noun",
+        "baseLemma": "meeting",
+        "headLemma": "meeting",
+        "explanation": "Запланированный сбор людей для обсуждения.",
+        "contextualApplications": [
+          {
+            "sentence": "Let's move the [[meeting]] to the afternoon.",
+            "translation": "Давай перенесём встречу на вторую половину дня.",
+            "alignment": [
+              { "source": "Let's move the meeting", "target": "Давай перенесём встречу" },
+              { "source": "to the afternoon", "target": "на вторую половину дня" }
+            ]
+          }
+        ],
+        "synonyms": ["gathering"],
+        "collocations": ["schedule a meeting", "a team meeting"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     },
     {
       "id": "card-deadline",
       "lemma_id": "lemma-deadline",
-      "translation": "крайний срок",
-      "surface_form": "deadline",
-      "unit_type": "noun",
-      "base_lemma": "deadline",
-      "head_lemma": "deadline",
-      "explanation": "Момент, к которому работа должна быть закончена.",
-      "examples": [
-        {
-          "sentence": "We have a tight [[deadline]] on Friday.",
-          "translation": "У нас жёсткий крайний срок в пятницу.",
-          "alignment": [
-            { "source": "We have", "target": "У нас" },
-            { "source": "a tight deadline", "target": "жёсткий крайний срок" },
-            { "source": "on Friday", "target": "в пятницу" }
-          ]
-        }
-      ],
-      "synonyms": ["due date", "cutoff"],
-      "collocations": ["meet a deadline", "a tight deadline"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "крайний срок",
+        "surfaceForm": "deadline",
+        "unitType": "noun",
+        "baseLemma": "deadline",
+        "headLemma": "deadline",
+        "explanation": "Момент, к которому работа должна быть закончена.",
+        "contextualApplications": [
+          {
+            "sentence": "We have a tight [[deadline]] on Friday.",
+            "translation": "У нас жёсткий крайний срок в пятницу.",
+            "alignment": [
+              { "source": "We have", "target": "У нас" },
+              { "source": "a tight deadline", "target": "жёсткий крайний срок" },
+              { "source": "on Friday", "target": "в пятницу" }
+            ]
+          }
+        ],
+        "synonyms": ["due date", "cutoff"],
+        "collocations": ["meet a deadline", "a tight deadline"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     },
     {
       "id": "card-priority",
       "lemma_id": "lemma-priority",
-      "translation": "приоритет",
-      "surface_form": "priority",
-      "unit_type": "noun",
-      "base_lemma": "priority",
-      "head_lemma": "priority",
-      "explanation": "То, что по важности делают раньше остального.",
-      "examples": [
-        {
-          "sentence": "Security is our top [[priority]] this quarter.",
-          "translation": "Безопасность — наш главный приоритет в этом квартале.",
-          "alignment": [
-            { "source": "Security", "target": "Безопасность" },
-            { "source": "is our top priority", "target": "наш главный приоритет" },
-            { "source": "this quarter", "target": "в этом квартале" }
-          ]
-        }
-      ],
-      "synonyms": ["precedence"],
-      "collocations": ["top priority", "set priorities"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "приоритет",
+        "surfaceForm": "priority",
+        "unitType": "noun",
+        "baseLemma": "priority",
+        "headLemma": "priority",
+        "explanation": "То, что по важности делают раньше остального.",
+        "contextualApplications": [
+          {
+            "sentence": "Security is our top [[priority]] this quarter.",
+            "translation": "Безопасность — наш главный приоритет в этом квартале.",
+            "alignment": [
+              { "source": "Security", "target": "Безопасность" },
+              { "source": "is our top priority", "target": "наш главный приоритет" },
+              { "source": "this quarter", "target": "в этом квартале" }
+            ]
+          }
+        ],
+        "synonyms": ["precedence"],
+        "collocations": ["top priority", "set priorities"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     },
     {
       "id": "card-feedback",
       "lemma_id": "lemma-feedback",
-      "translation": "обратная связь",
-      "surface_form": "feedback",
-      "unit_type": "noun",
-      "base_lemma": "feedback",
-      "head_lemma": "feedback",
-      "explanation": "Отклик о работе, который помогает её улучшить.",
-      "examples": [
-        {
-          "sentence": "Thanks for the quick [[feedback]] on the draft.",
-          "translation": "Спасибо за быструю обратную связь по черновику.",
-          "alignment": [
-            { "source": "Thanks for", "target": "Спасибо за" },
-            { "source": "the quick feedback", "target": "быструю обратную связь" },
-            { "source": "on the draft", "target": "по черновику" }
-          ]
-        }
-      ],
-      "synonyms": ["response", "input"],
-      "collocations": ["give feedback", "quick feedback"],
-      "grammar_tags": [
-        { "category": "countability", "form": "uncountable" }
-      ]
+      "sense": {
+        "translation": "обратная связь",
+        "surfaceForm": "feedback",
+        "unitType": "noun",
+        "baseLemma": "feedback",
+        "headLemma": "feedback",
+        "explanation": "Отклик о работе, который помогает её улучшить.",
+        "contextualApplications": [
+          {
+            "sentence": "Thanks for the quick [[feedback]] on the draft.",
+            "translation": "Спасибо за быструю обратную связь по черновику.",
+            "alignment": [
+              { "source": "Thanks for", "target": "Спасибо за" },
+              { "source": "the quick feedback", "target": "быструю обратную связь" },
+              { "source": "on the draft", "target": "по черновику" }
+            ]
+          }
+        ],
+        "synonyms": ["response", "input"],
+        "collocations": ["give feedback", "quick feedback"],
+        "grammarTags": [
+          { "category": "countability", "form": "uncountable" }
+        ]
+      }
     }
   ]
 }

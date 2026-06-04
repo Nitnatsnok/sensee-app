@@ -1,8 +1,8 @@
 package app.sensee.verification.senseeCurated
 
-import app.sensee.verification.core.LemmaId
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.VerifierAvailability
+import app.sensee.verification.core.hierarchy.LemmaId
 import app.sensee.verification.senseeCurated.remote.SenseeCuratedMockFixtures
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine

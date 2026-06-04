@@ -21,8 +21,13 @@ FSRS (`FsrsScheduler`) — единственный источник распи�
 * App-wide изменение spaced-repetition семантики: `Good` на новой карте больше не планируется на дни после одного ответа — `New` идёт через learning-steps (FSRS-with-learning-steps / Anki-поведение). Это сознательно принятая цена, не побочный эффект.
 * Сознательное отклонение от штатного поведения FSRS-обвязки должно отслеживаться при обновлении алгоритма (риск регресса при upstream-изменениях).
 * Планирование имеет единственную точку входа в learning-step: `New` и `Learning` идут одним путём `scheduleLearningCard`; параллельного per-state планирования (`scheduleNewCard`/`scheduledNewCardData`/`scheduledLearningCardData`/`hardLearningInterval`) в модели нет.
-* Presentation никогда не владеет расписанием: `DeckPracticeLogic.submitReview` инспектирует уже посчитанный `reviewedCard.srs`, только проецирует очередь.
+* Presentation никогда не владеет расписанием: `DeckPracticeLogic` инспектирует уже посчитанный `ReviewOutcome.srs` (practice-owned результат `submitReview`), только проецирует очередь.
+* `practice/domain` — лист над `srs.core`: `PracticeReviewRepository.submitReview` возвращает practice-owned `ReviewOutcome` (`SrsCardSnapshot`), а не `library.domain.Card`; callerы, которым нужен `Card`, ре-проецируют через `library`. Ребро `practice/domain → library/domain` снято и закреплено `PracticeDomainLeafKonsistTest`.
+* Due-count для Home — узкий `DuePracticeRepository` (`countDue(now)`/`observeDueCount(now)`) поверх SRS по `sense_id`; impl в `practice/data` над `SrsCardStore`/`SrsStorage`. `home/presentation:impl` зависит только на этот contract и транзитивно не видит `library` (konsist-ассерт).
 
 Последствия (ожидаемые)::
 * Поведение алгоритма проверяемо изолированно (`shared/srs/*` + `FsrsSchedulerTest`), не смешиваясь с Compose UI.
-* Любой новый тип сессии (due-сессия Home, подмножество Library) переиспользует тот же единственный планировщик без дублирования логики.
+* Любой новый тип сессии (due-сессия Home, подмножество Library) переиспользует тот же единственный планировщик без дублирования логики поверх SRS по `sense_id`.
+
+Связанные ADR::
+* link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] (consumes) — SRS ключуется по стабильному `sense_id` (формы `${sense_id}:form:${formId}`); `copySnapshot` клонирует FSRS-снимок для `claim`.

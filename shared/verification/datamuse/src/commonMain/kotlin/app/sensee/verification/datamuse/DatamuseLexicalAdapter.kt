@@ -1,16 +1,16 @@
 package app.sensee.verification.datamuse
 
 import app.sensee.core.coroutines.runCatchingCancellable
-import app.sensee.verification.core.Confidence
-import app.sensee.verification.core.LexicalEntryLookup
-import app.sensee.verification.core.LexicalEntryLookupResult
-import app.sensee.verification.core.LexicalExistence
-import app.sensee.verification.core.LexicalSourceRef
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.NormalizationCandidate
-import app.sensee.verification.core.NormalizationKind
-import app.sensee.verification.core.NormalizationOutcome
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.Confidence
+import app.sensee.verification.core.contract.LexicalEntryLookup
+import app.sensee.verification.core.contract.LexicalEntryLookupResult
+import app.sensee.verification.core.contract.LexicalExistence
+import app.sensee.verification.core.contract.LexicalSourceRef
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.NormalizationCandidate
+import app.sensee.verification.core.contract.NormalizationKind
+import app.sensee.verification.core.contract.NormalizationOutcome
+import app.sensee.verification.core.contract.VerifierAvailability
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

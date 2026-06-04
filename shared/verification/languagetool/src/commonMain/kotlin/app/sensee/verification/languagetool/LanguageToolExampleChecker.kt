@@ -1,16 +1,16 @@
 package app.sensee.verification.languagetool
 
 import app.sensee.core.coroutines.runCatchingCancellable
-import app.sensee.verification.core.ExampleCheckRequest
-import app.sensee.verification.core.ExampleCheckResult
-import app.sensee.verification.core.ExampleIssue
-import app.sensee.verification.core.ExampleLocation
-import app.sensee.verification.core.ExampleQualityChecker
-import app.sensee.verification.core.FindingSeverity
-import app.sensee.verification.core.LexicalSourceRef
-import app.sensee.verification.core.SentenceHint
-import app.sensee.verification.core.SuggestedAction
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.ExampleCheckRequest
+import app.sensee.verification.core.contract.ExampleCheckResult
+import app.sensee.verification.core.contract.ExampleIssue
+import app.sensee.verification.core.contract.ExampleLocation
+import app.sensee.verification.core.contract.ExampleQualityChecker
+import app.sensee.verification.core.contract.FindingSeverity
+import app.sensee.verification.core.contract.LexicalSourceRef
+import app.sensee.verification.core.contract.SentenceHint
+import app.sensee.verification.core.contract.SuggestedAction
+import app.sensee.verification.core.contract.VerifierAvailability
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm

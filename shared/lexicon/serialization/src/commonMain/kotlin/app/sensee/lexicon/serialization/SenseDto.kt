@@ -16,6 +16,7 @@ import app.sensee.grammar.domain.UsageAxis
 import app.sensee.grammar.domain.UsageLabel
 import app.sensee.grammar.domain.UsageValue
 import app.sensee.lexicon.domain.AlignmentChunk
+import app.sensee.lexicon.domain.CefrLevel
 import app.sensee.lexicon.domain.ContextualApplication
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.WordFamilyMember
@@ -25,7 +26,9 @@ import kotlinx.serialization.Serializable
  * The persisted shape of a [Sense]. Domain types (SurfaceForm, StudiedSentence,
  * sealed grammar interfaces) are not serializable, so this DTO mirrors them as
  * ids/markers and the mappers re-resolve through the same neutral `parse`/`fromId`
- * the AI boundary uses — no second source of truth. On read the mapper is
+ * the AI boundary uses — no second source of truth. This is an intentional
+ * boundary mirror of [Sense] on the persist side: the duplication is deliberate,
+ * do not collapse it into the domain type. On read the mapper is
  * **pass-through** (an id outside the sealed set surfaces as `Unknown(id)`, never
  * dropped): the values were written through the strict AI-boundary mapper, so we
  * trust them; pass-through also keeps stored data forward-compatible across
@@ -55,6 +58,11 @@ public data class SenseDto(
     val antonyms: List<String> = emptyList(),
     val collocations: List<String> = emptyList(),
     val wordFamily: List<WordFamilyMemberDto> = emptyList(),
+    /**
+     * CEFR level as a wire string (forward-compatible: an unrecognised value
+     * resolves to `null` on read via [CefrLevel.fromId], never a parse failure).
+     */
+    val cefr: String? = null,
 )
 
 @Serializable
@@ -77,6 +85,7 @@ public data class ContextualApplicationDto(
     val alignment: List<AlignmentChunkDto> = emptyList(),
 )
 
+/** Persist rep of an alignment chunk; one of the four intentional boundary mirrors (see [SenseDto]). */
 @Serializable
 public data class AlignmentChunkDto(
     val source: String,
@@ -137,6 +146,7 @@ public fun Sense.toDto(): SenseDto =
         antonyms = antonyms,
         collocations = collocations,
         wordFamily = wordFamily.map { WordFamilyMemberDto(it.lemma, it.unitType?.id) },
+        cefr = cefr?.name,
     )
 
 public fun SenseDto.toDomain(): Sense =
@@ -177,4 +187,5 @@ public fun SenseDto.toDomain(): Sense =
         antonyms = antonyms,
         collocations = collocations,
         wordFamily = wordFamily.map { WordFamilyMember(it.lemma, it.unitType?.let(GrammarUnitType::fromId)) },
+        cefr = CefrLevel.fromId(cefr),
     )

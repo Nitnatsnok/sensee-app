@@ -1,9 +1,9 @@
 package app.sensee.ai.curatedEnrichment
 
-import app.sensee.ai.core.AiEnrichmentExtension
-import app.sensee.ai.core.CefrEnrichmentExtension
-import app.sensee.ai.core.EnrichmentAvailability
-import app.sensee.ai.core.EnrichmentRequest
+import app.sensee.ai.core.contract.AiEnrichmentExtension
+import app.sensee.ai.core.contract.EnrichmentAvailability
+import app.sensee.ai.core.model.CefrEnrichmentExtension
+import app.sensee.ai.core.request.EnrichmentRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

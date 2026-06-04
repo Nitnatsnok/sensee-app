@@ -52,7 +52,7 @@ kotlin {
                 implementation(projects.shared.feature.practice.data)
                 implementation(projects.shared.feature.practice.presentation.impl)
                 implementation(projects.shared.srs.fsrsEngine)
-                implementation(projects.shared.feature.vocabularyEditor.data)
+                implementation(projects.shared.lexicon.data)
                 implementation(projects.shared.feature.vocabularyEditor.presentation.api)
                 implementation(projects.shared.feature.vocabularyEditor.presentation.navigationApi)
                 implementation(projects.shared.feature.vocabularyEditor.presentation.impl)

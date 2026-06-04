@@ -1,10 +1,10 @@
 package app.sensee.verification.datamuse
 
-import app.sensee.verification.core.LexicalExistence
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.NormalizationKind
-import app.sensee.verification.core.VerificationPolicy
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.LexicalExistence
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.NormalizationKind
+import app.sensee.verification.core.contract.VerificationPolicy
+import app.sensee.verification.core.contract.VerifierAvailability
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

@@ -26,6 +26,9 @@ import app.sensee.grammar.domain.UsageLabel
  * catalog groups cards by [headLemma] so all `come*` units share one lemma page
  * (ADR-001). [components] is the structural breakdown of a multi-word unit;
  * empty means single-word or unresolved.
+ *
+ * [cefr] is a learner-level attribute of the sense; it never participates in
+ * sense identity (`deriveSenseContentKey`).
  */
 public data class Sense(
     val translation: String,
@@ -46,6 +49,7 @@ public data class Sense(
     val antonyms: List<String> = emptyList(),
     val collocations: List<String> = emptyList(),
     val wordFamily: List<WordFamilyMember> = emptyList(),
+    val cefr: CefrLevel? = null,
 )
 
 /**
@@ -66,7 +70,9 @@ public data class ContextualApplication(
  * A neutral (source, target) chunk pair within a [ContextualApplication]:
  * a study-language span and its native-language counterpart, aligned as one
  * unit. Kept thin so the AI boundary mapper translates into it without leaking
- * the AI-core class into the lexical domain (ADR-005).
+ * the AI-core class into the lexical domain (ADR-005). Intentional boundary
+ * mirror of the ai-core neutral / wire / persist `AlignmentChunk` reps — the
+ * duplication keeps the lexical domain dependency-free, not a missing dedup.
  */
 public data class AlignmentChunk(
     val source: String,

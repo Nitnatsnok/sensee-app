@@ -15,6 +15,4 @@ public class CatalogRemoteDataSource(
     public suspend fun listDecks(): DeckListDto = httpClient.get("practice/decks").body()
 
     public suspend fun getDeck(deckId: String): DeckDto = httpClient.get("practice/decks/$deckId").body()
-
-    public suspend fun getLemma(lemmaId: String): LemmaDto = httpClient.get("practice/lemmas/$lemmaId").body()
 }

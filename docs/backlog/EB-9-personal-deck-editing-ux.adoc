@@ -1,0 +1,20 @@
+= EB-9: Экраны редактирования пользовательских наборов
+:status: open
+:area: library
+
+Триггер / что разблокирует::
+Модель наборов (`deck` + `deck_membership` поверх канонических `sense_id`, CRUD в
+`DeckRepository` для Personal-наборов, Service — read-only) закладывается в ядре
+(см. `docs/engineering/sense-pipeline-consolidation-plan.md`, Фаза 5). Сам
+пользовательский UX — экраны создания/переименования/наполнения/переупорядочивания/
+удаления Personal-наборов в Library — это фича сверх ядра и поставляется отдельно.
+Членство по стабильному `sense_id`: правка смысла набор не ломает; смысл может быть в
+нескольких наборах. Редактирование набора ≠ редактирование смысла (разные пути). Добавление
+частей сервисного набора в Personal-набор — через `claim` (завладеть → Personal-копия, детач),
+не через подписку. Членство Personal-набора — только Personal-`sense_id`; порядок карт — колонка
+`position` в `deck_membership`.
+
+Связи::
+* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§4 «Наборы», Фаза 5)
+* Код: `deck`/`deck_membership`, `DeckRepository` (subscribe/claim/CRUD)
+* Сценарий: `docs/scenarios/library.feature`

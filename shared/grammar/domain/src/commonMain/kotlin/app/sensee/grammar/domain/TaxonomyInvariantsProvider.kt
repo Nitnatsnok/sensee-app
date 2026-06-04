@@ -3,8 +3,8 @@ package app.sensee.grammar.domain
 /**
  * App-scoped reader for the loaded [TaxonomyInvariants]. Mirrors
  * [GrammarLabelsProvider] except that "not loaded" is `null`, not an empty
- * value — `SenseCandidateMapper` flips its strict / pass-through mode on
- * exactly that signal (ADR-006).
+ * value — the AI-boundary enrichment mapper (`EnrichmentSuggestion.toSense`)
+ * flips its strict / pass-through mode on exactly that signal (ADR-006).
  *
  * - [invariants] — canonical suspending fetch. Cached on success; a failed
  *   load returns `null` and is **not** cached, so a later call retries.

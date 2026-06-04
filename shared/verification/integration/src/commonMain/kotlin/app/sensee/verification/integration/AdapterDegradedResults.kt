@@ -1,15 +1,14 @@
 package app.sensee.verification.integration
 
-import app.sensee.verification.core.CefrResult
-import app.sensee.verification.core.Confidence
-import app.sensee.verification.core.ExampleCheckResult
-import app.sensee.verification.core.FrequencyResult
-import app.sensee.verification.core.LexicalEntryLookupResult
-import app.sensee.verification.core.LexicalExistence
-import app.sensee.verification.core.NormalizationOutcome
-import app.sensee.verification.core.SenseInventoryResult
-import app.sensee.verification.core.SenseMapping
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.CefrResult
+import app.sensee.verification.core.contract.Confidence
+import app.sensee.verification.core.contract.FrequencyResult
+import app.sensee.verification.core.contract.LexicalEntryLookupResult
+import app.sensee.verification.core.contract.LexicalExistence
+import app.sensee.verification.core.contract.NormalizationOutcome
+import app.sensee.verification.core.contract.SenseInventoryResult
+import app.sensee.verification.core.contract.VerifierAvailability
+import app.sensee.verification.core.grounding.SenseMapping
 
 /**
  * Per-sub-contract `Degraded` factory results used by [RoutingLexicalVerifier]
@@ -44,14 +43,6 @@ internal fun degradedCefr(reason: String): CefrResult =
         availability = VerifierAvailability.Degraded(reason),
         level = null,
         confidence = Confidence.Low,
-        sources = emptyList(),
-    )
-
-internal fun degradedExample(reason: String): ExampleCheckResult =
-    ExampleCheckResult(
-        availability = VerifierAvailability.Degraded(reason),
-        issues = emptyList(),
-        rewrite = null,
         sources = emptyList(),
     )
 

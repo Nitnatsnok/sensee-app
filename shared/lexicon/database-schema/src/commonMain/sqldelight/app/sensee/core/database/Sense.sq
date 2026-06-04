@@ -1,0 +1,78 @@
+-- The single canonical sense store (ADR-001/002). One row per sense; the
+-- SenseDto blob is the truth, every other column is a derived index recomputed
+-- on upsert. sense_id is stable identity (Personal UUID / Service namespaced
+-- source_ref) and the SRS anchor — it survives any content edit.
+CREATE TABLE sense (
+    sense_id TEXT NOT NULL PRIMARY KEY,
+    status TEXT NOT NULL,
+    sense_json TEXT NOT NULL,
+    lemma_key TEXT NOT NULL,
+    content_key TEXT NOT NULL,
+    origin TEXT NOT NULL,
+    source_ref TEXT,
+    cefr TEXT,
+    unit_type TEXT,
+    updated_at_epoch_ms INTEGER NOT NULL,
+    -- A Service sense is always keyed by its catalog source; a Personal sense
+    -- never carries one.
+    CHECK (origin != 'Service' OR source_ref IS NOT NULL)
+);
+
+CREATE INDEX sense_lemma_key ON sense(lemma_key);
+
+CREATE INDEX sense_status ON sense(status);
+
+CREATE INDEX sense_content_key ON sense(content_key);
+
+-- Service identity is one row per source_ref. Partial uniqueness must be an
+-- index (SQLite has no partial table constraint); a NULL source_ref (Personal)
+-- is exempt, and several NULLs are allowed in a unique index anyway.
+CREATE UNIQUE INDEX sense_service_source_ref ON sense(source_ref) WHERE origin = 'Service';
+
+selectAll:
+SELECT *
+FROM sense
+ORDER BY updated_at_epoch_ms ASC;
+
+selectById:
+SELECT *
+FROM sense
+WHERE sense_id = ?;
+
+selectByStatus:
+SELECT *
+FROM sense
+WHERE status = ?
+ORDER BY updated_at_epoch_ms ASC;
+
+selectByLemmaKey:
+SELECT *
+FROM sense
+WHERE lemma_key = ?
+ORDER BY updated_at_epoch_ms ASC;
+
+-- ResolveOrMint among Personal: candidates for an exact content_key, newest
+-- first so the caller reuses the max-updated row (deterministic tie-break when
+-- content_key is not unique).
+selectByContentKeyPersonal:
+SELECT *
+FROM sense
+WHERE content_key = ? AND origin = 'Personal'
+ORDER BY updated_at_epoch_ms DESC;
+
+-- ResolveOrMint among Service: one row per source_ref (guarded by the partial
+-- unique index above).
+selectBySourceRef:
+SELECT *
+FROM sense
+WHERE source_ref = ? AND origin = 'Service';
+
+upsert:
+INSERT OR REPLACE INTO sense(
+    sense_id, status, sense_json, lemma_key, content_key, origin, source_ref, cefr, unit_type, updated_at_epoch_ms
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM sense
+WHERE sense_id = ?;

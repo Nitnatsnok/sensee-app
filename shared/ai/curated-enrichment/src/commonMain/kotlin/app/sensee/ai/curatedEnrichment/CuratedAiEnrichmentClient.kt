@@ -1,14 +1,14 @@
 package app.sensee.ai.curatedEnrichment
 
-import app.sensee.ai.core.AiEnrichmentClient
-import app.sensee.ai.core.AiEnrichmentExtension
-import app.sensee.ai.core.EnrichmentAvailability
-import app.sensee.ai.core.EnrichmentItemV1
-import app.sensee.ai.core.EnrichmentRequest
-import app.sensee.ai.core.EnrichmentResponseMapper
-import app.sensee.ai.core.EnrichmentResponseV1
-import app.sensee.ai.core.EnrichmentResult
-import app.sensee.ai.core.extractItemExtensions
+import app.sensee.ai.core.contract.AiEnrichmentClient
+import app.sensee.ai.core.contract.AiEnrichmentExtension
+import app.sensee.ai.core.contract.EnrichmentAvailability
+import app.sensee.ai.core.contract.EnrichmentResult
+import app.sensee.ai.core.contract.extractItemExtensions
+import app.sensee.ai.core.request.EnrichmentRequest
+import app.sensee.ai.core.wire.EnrichmentItemV1
+import app.sensee.ai.core.wire.EnrichmentResponseMapper
+import app.sensee.ai.core.wire.EnrichmentResponseV1
 import app.sensee.core.coroutines.runCatchingCancellable
 import dev.zacsweers.metro.Inject
 import io.ktor.client.HttpClient

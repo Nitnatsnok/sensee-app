@@ -53,11 +53,11 @@ views 'Sensee Client' {
     include client.feature_vocabulary.vocabulary_ui
     include client.feature_vocabulary.vocabulary_capture
     include client.feature_vocabulary.vocabulary_domain
-    include client.feature_vocabulary.vocabulary_data
     include client.feature_library.card_derivation
     include client.feature_library.library_catalog
     include client.feature_library.service_catalog
     include client.lexicon.lexical_model
+    include client.lexicon.lexical_data
     include client.ai.ai_seam
     include client.ai.ai_llm
     include client.verification.verification_seam
@@ -90,11 +90,12 @@ views 'Sensee Client' {
 
   view feature_vocabulary of client.feature_vocabulary {
     title 'Компоненты / Vocabulary Editor'
-    description 'Vocabulary Editor feature: add-path и подготовленный write workflow, связи с verification, AI, lexicon и persistence.'
+    description 'Vocabulary Editor feature: add-path и подготовленный write workflow, связи с AI, lexicon и persistence; verification подключён к живому capture в двух узких ролях — pre-AI grounding в prompt и post-AI silent фильтр качества примеров.'
     include *
     include client.verification.verification_seam
     include client.ai.ai_seam
     include client.lexicon.lexical_model
+    include client.lexicon.lexical_data
     include client.lexicon.enrichment_mapping
     include client.grammar.grammar_taxonomy
     include client.persistence
@@ -156,14 +157,14 @@ views 'Sensee Client' {
     // writers: data modules / seams that store into the single database
     include client.feature_practice.practice_data
     include client.feature_library.library_catalog
-    include client.feature_vocabulary.vocabulary_data
+    include client.lexicon.lexical_data
     include client.settings.settings_data
     include client.tts.tts_playback
     include client.verification.verification_seam
     // feature/seam-owned schemas aggregated by shared/database
     include client.feature_practice.practice_schema
     include client.feature_library.library_schema
-    include client.feature_vocabulary.vocabulary_schema
+    include client.lexicon.lexical_schema
     include client.settings.settings_schema
     include client.tts.tts_schema
     include client.verification.verification_schema
@@ -172,7 +173,7 @@ views 'Sensee Client' {
     // keep a clean "writers -> DB -> schemas" flow: drop data->own-schema edges (they live in the feature views) so persistence stays the single hub
     exclude client.feature_practice.practice_data -> client.feature_practice.practice_schema
     exclude client.feature_library.library_catalog -> client.feature_library.library_schema
-    exclude client.feature_vocabulary.vocabulary_data -> client.feature_vocabulary.vocabulary_schema
+    exclude client.lexicon.lexical_data -> client.lexicon.lexical_schema
     exclude client.tts.tts_playback -> client.tts.tts_schema
     exclude client.verification.verification_seam -> client.verification.verification_schema
     autoLayout LeftRight 230 150
@@ -251,7 +252,7 @@ views 'Sensee Client' {
     client.feature_practice.practice_ui -> client.feature_library.library_catalog 'запрашивает deck через CatalogRepository'
     client.feature_library.library_catalog -> client.core.network 'загружает fixture-backed каталог/колоды через HttpClient'
     client.core.mock_backend -> client.core.network 'обслуживает запрос через Ktor MockEngine'
-    client.feature_library.library_catalog -> client.persistence 'сохраняет catalog/deck/adoption state локально'
+    client.feature_library.library_catalog -> client.persistence 'сохраняет deck/membership state локально (флаг subscribed)'
     client.feature_library.library_catalog -> client.feature_practice.practice_ui 'возвращает разделённые карточки и состояние загрузки'
     client.feature_practice.practice_ui -> client.ui.learning_deck 'передаёт карточки и локальный LearningDeckState'
     client.feature_practice.practice_ui -> client.tts.tts_seam 'по запросу озвучивает карточку через Speaker'
@@ -264,34 +265,35 @@ views 'Sensee Client' {
 
   dynamic view vocabulary_capture_flow {
     title 'Поведение / Захват слова'
-    description 'Реализованный основной продуктовый сценарий: ввод → verification evidence → curated/LLM enrichment → verification snapshots → набор SenseCandidate → мультивыбор + ручной смысл → подтверждение → durable persist → captured catalog projection.'
+    description 'Реализованный основной продуктовый сценарий: ввод → pre-AI grounding в prompt → curated/LLM enrichment → набор Sense → post-AI silent фильтр качества примеров → мультивыбор + ручной смысл → подтверждение → durable persist → captured catalog projection. Verification подключён к живому capture в двух узких ролях.'
 
     learner -> client.shell.primary_navigation 'нажимает кнопку Vocabulary Editor (add-path)'
     client.shell.primary_navigation -> client.feature_vocabulary.vocabulary_ui 'открывает QuickCapture'
-    learner -> client.feature_vocabulary.vocabulary_ui 'вводит слово/фразу; создаётся Draft'
-    client.feature_vocabulary.vocabulary_ui -> client.verification.verification_seam 'до AI получает evidence: lemma, entry type, CEFR, frequency, family'
-    client.feature_vocabulary.vocabulary_ui -> client.ai.ai_seam 'запрашивает enrichment через AI-границу'
+    learner -> client.feature_vocabulary.vocabulary_ui 'вводит слово/фразу (кандидаты держатся в памяти, в store ничего не пишется)'
+    client.feature_vocabulary.vocabulary_ui -> client.verification.verification_seam 'pre-AI: зовёт verifier, строит EnrichmentGrounding (фильтр usableAsLlmContext) для prompt'
+    client.feature_vocabulary.vocabulary_ui -> client.ai.ai_seam 'запрашивает enrichment через AI-границу с grounding в EnrichmentRequest'
     client.ai.ai_seam -> client.ai.ai_curated 'сначала проверяет curated enrichment (backend HTTP); hit short-circuits LLM'
     client.ai.ai_seam -> client.ai.ai_llm 'при miss и настроенном ключе маршрутизирует в LLM adapter'
     client.ai.ai_llm -> provider_apis 'вызывает provider API'
-    client.feature_vocabulary.vocabulary_ui -> client.lexicon.enrichment_mapping 'общий mapper приводит ответ к Sense, editor оборачивает в SenseCandidate'
-    client.feature_vocabulary.vocabulary_ui -> client.verification.verification_seam 'после AI прикрепляет per-candidate verification snapshots'
+    client.feature_vocabulary.vocabulary_ui -> client.lexicon.enrichment_mapping 'общий mapper приводит ответ к Sense, editor оборачивает в CaptureSense'
+    client.feature_vocabulary.vocabulary_ui -> client.verification.verification_seam 'post-AI: silent ExampleQualityChecker отсеивает слабые примеры (≥1 пример остаётся)'
     learner -> client.feature_vocabulary.vocabulary_ui 'мультивыбор смыслов и/или ручной смысл (опц. «дополнить ассистентом»)'
-    client.feature_vocabulary.vocabulary_ui -> client.feature_vocabulary.vocabulary_capture 'выбор и есть подтверждение → EntryStatus.Confirmed'
-    client.feature_vocabulary.vocabulary_data -> client.persistence 'сохраняет Draft и confirmed LexicalEntry/Sense durable'
-    client.lexicon.lexical_model -> client.feature_library.card_derivation 'проецирует confirmed material в captured deck, lemma grouping и form cards'
+    client.feature_vocabulary.vocabulary_ui -> client.feature_vocabulary.vocabulary_capture 'выбор и есть подтверждение → SenseStatus.Confirmed'
+    client.feature_vocabulary.vocabulary_capture -> client.lexicon.lexical_data 'сохраняет подтверждённые Sense (SenseWriteRepository)'
+    client.lexicon.lexical_data -> client.persistence 'durable в таблицу sense'
+    client.lexicon.lexical_model -> client.feature_library.card_derivation 'проецирует Confirmed Personal смыслы в captured deck (SenseCatalogProjection): группировка по lemma_key и form cards'
   }
 
   dynamic view card_derivation_flow {
     title 'Поведение / Деривация карточек'
-    description 'Реализованная projection-логика: confirmed lexical material превращается в captured deck, sibling grouping по headLemma и form-variant cards для irregular verbs. Planned остаётся UI-навигация по family/detail.'
+    description 'Реализованная projection-логика: Confirmed Personal смыслы проецируются в captured deck, sibling grouping по lemma_key и form-variant cards (id sense_id:form:slot) для irregular verbs. Planned остаётся UI-навигация по family/detail.'
 
     learner -> client.feature_vocabulary.vocabulary_ui 'подтверждает lexical material'
     client.feature_vocabulary.vocabulary_ui -> client.feature_vocabulary.vocabulary_capture 'завершает authoring flow'
-    client.feature_vocabulary.vocabulary_capture -> client.lexicon.lexical_model 'формирует confirmed lexical source model'
+    client.feature_vocabulary.vocabulary_capture -> client.lexicon.lexical_data 'сохраняет confirmed Sense (SenseWriteRepository)'
     client.lexicon.lexical_model -> client.feature_library.card_derivation 'запускает derivation of learning cards'
     client.feature_library.card_derivation -> client.feature_library.library_catalog 'captured deck попадает в catalog projection'
-    client.feature_library.library_catalog -> client.persistence 'сохраняет derived cards и canonical source state'
+    client.feature_library.library_catalog -> client.persistence 'сохраняет deck/membership state (контент Sense — в таблице sense)'
   }
 
   dynamic view planned_library_curation_flow {
@@ -299,13 +301,13 @@ views 'Sensee Client' {
     description 'Планируемое поведение Library как владельца каталога: браузер записей/карточек, правка/удаление своей карточки, курирование колод, сервисные наборы и запуск practice.'
 
     learner -> client.feature_library.library_ui 'открывает Library, смотрит записи/карточки со статусами'
-    client.feature_library.library_ui -> client.lexicon.lexical_model 'читает собственный каталог записей и колод'
+    client.feature_library.library_ui -> client.lexicon.lexical_model 'читает собственный каталог смыслов и колод'
     learner -> client.feature_library.library_ui 'правит или удаляет свою карточку'
-    client.feature_library.library_ui -> client.feature_vocabulary.vocabulary_ui 'deep-link на edit-path соответствующей LexicalEntry'
+    client.feature_library.library_ui -> client.feature_vocabulary.vocabulary_ui 'deep-link на edit-path соответствующей lemma_key-группы (EB-7)'
     learner -> client.feature_library.library_ui 'открывает сервисные наборы'
     client.feature_library.library_ui -> client.feature_library.service_catalog 'запрашивает список сервисных наборов'
     client.feature_library.service_catalog -> future_backend 'загружает curated sets'
-    client.feature_library.service_catalog -> client.feature_library.library_catalog 'добавляет набор целиком или частично в собственный каталог'
+    client.feature_library.service_catalog -> client.feature_library.library_catalog 'подписка целиком или claim части в собственный каталог'
     learner -> client.feature_library.library_ui 'запускает practice по курируемой колоде'
     client.feature_library.library_ui -> client.feature_practice.practice_ui 'открывает PracticeConfig.DeckPractice (read-only consumer)'
   }

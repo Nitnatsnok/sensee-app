@@ -27,8 +27,8 @@ public data class Card(
     val explanation: String,
     // Full rich sense the card was built from (service deck or capture). The
     // lean fields above stay the flashcard essentials; [sense] carries the
-    // ideal-enrichment detail (examples, synonyms, word family, …) for the
-    // card/lemma detail view.
+    // rich detail (examples, synonyms, word family, …) for the card/lemma
+    // detail view.
     val sense: Sense? = null,
     val srs: SrsCardSnapshot,
 )

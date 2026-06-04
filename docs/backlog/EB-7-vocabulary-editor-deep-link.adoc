@@ -1,4 +1,4 @@
-= EB-7: Прямая ссылка на VocabularyEditorConfig.Editor(entryId) через web-навигацию
+= EB-7: Прямая ссылка на редактор слова через web-навигацию
 :status: open
 :area: navigation
 
@@ -6,10 +6,14 @@
 `DefaultVocabularyEditorSectionComponent` держит позицию в `MutableStateFlow`, без
 Decompose-навигатора (стек/слот), поэтому секция не может быть `WebNavigationOwner`;
 разбор web-URL для области vocabulary доходит только до уровня секции
-(`QuickCapture`), но не до `VocabularyEditorConfig.Editor(entryId)`. Разблокирует:
+(`QuickCapture`), но не до `VocabularyEditorConfig.Editor`. Разблокирует:
 ввод стека/слота в секцию ради URL-параметра и реализацию `WebNavigationOwner`.
+
+После растворения entry-агрегата (ADR-008) цель ссылки — `lemma_key`-группа слова
+(открыть все смыслы леммы), а не один смысл; не-подключённый `VocabularyEditorConfig.Editor`
+ещё несёт leftover-параметр `entryId`, который при реализации deep-link приводится к `lemma_key`.
 
 Связи::
 * Сценарий: `docs/scenarios/navigation.feature`
-* Код: `DefaultVocabularyEditorSectionComponent` (`MutableStateFlow`), `VocabularyEditorSectionComponent` (не `WebNavigationOwner`), `PrimarySectionConfig` (`vocabulary` → `QuickCapture`)
+* Код: `DefaultVocabularyEditorSectionComponent` (`MutableStateFlow`), `VocabularyEditorSectionComponent` (не `WebNavigationOwner`), `VocabularyEditorConfig.Editor` (`entryId` → reconcile к `lemma_key`), `PrimarySectionConfig` (`vocabulary` → `QuickCapture`)
 * arc42: `docs/arc42/sections/06_runtime_view.adoc` (web-навигация)

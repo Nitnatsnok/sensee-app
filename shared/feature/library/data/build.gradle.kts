@@ -12,9 +12,10 @@ mockFixtures {
         """
         Library's catalog (mock backend). Three themed decks of ten cards each;
         four cards live in two decks to exercise true many-to-many — a shared
-        card is one practice-card row referenced by several decks. The shared
-        card JSON is duplicated across the deck fixtures and a `commonTest`
-        pins their byte-identity by id (see `SharedCatalogCardsTest`).
+        card maps to one canonical sense (same source_ref) referenced by several
+        decks' membership. The shared card JSON is duplicated across the deck
+        fixtures and `ServiceDeckSenseFixtureTest` pins that it maps into the same
+        Sense across the decks that reference it.
         """.trimIndent(),
     )
 }
@@ -28,8 +29,7 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(libs.sqldelight.extensions.coroutines)
                 implementation(libs.metro.runtime)
-                implementation(projects.shared.ai.core)
-                implementation(projects.shared.lexicon.enrichment)
+                implementation(projects.shared.lexicon.domain)
                 implementation(projects.shared.lexicon.serialization)
                 implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.mockBackend)
@@ -49,9 +49,8 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlinx.serialization.json)
-                implementation(projects.shared.ai.core)
-                implementation(projects.shared.lexicon.enrichment)
                 implementation(projects.shared.lexicon.domain)
+                implementation(projects.shared.lexicon.serialization)
             }
         }
 
@@ -60,6 +59,7 @@ kotlin {
                 implementation(libs.ktor.client.mock)
                 implementation(libs.sqldelight.driver.sqlite)
                 implementation(projects.shared.core.testKit)
+                implementation(projects.shared.lexicon.data)
                 implementation(projects.shared.srs.testKit)
             }
         }

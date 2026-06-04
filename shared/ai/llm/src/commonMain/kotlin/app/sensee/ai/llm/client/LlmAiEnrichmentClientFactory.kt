@@ -1,8 +1,8 @@
 package app.sensee.ai.llm.client
 
-import app.sensee.ai.core.AiEnrichmentExtension
-import app.sensee.ai.core.EnrichmentRequestModifier
-import app.sensee.ai.core.UserEnrichmentPreferencesProvider
+import app.sensee.ai.core.contract.AiEnrichmentExtension
+import app.sensee.ai.core.request.EnrichmentRequestModifier
+import app.sensee.ai.core.request.UserEnrichmentPreferencesProvider
 import app.sensee.ai.llm.api.LlmEnrichmentApi
 import app.sensee.ai.llm.config.AiCredentialsProvider
 import app.sensee.ai.llm.config.LlmConfigProvider

@@ -1,12 +1,12 @@
 package app.sensee.ai.integration
 
-import app.sensee.ai.core.AiEnrichmentExtension
-import app.sensee.ai.core.AiModelCatalog
-import app.sensee.ai.core.DefaultAiEnrichmentExtensions
-import app.sensee.ai.core.DefaultEnrichmentRequestModifiers
-import app.sensee.ai.core.EnrichmentRequestModifier
-import app.sensee.ai.core.UserEnrichmentPreferences
-import app.sensee.ai.core.UserEnrichmentPreferencesProvider
+import app.sensee.ai.core.contract.AiEnrichmentExtension
+import app.sensee.ai.core.contract.AiModelCatalog
+import app.sensee.ai.core.model.DefaultAiEnrichmentExtensions
+import app.sensee.ai.core.request.DefaultEnrichmentRequestModifiers
+import app.sensee.ai.core.request.EnrichmentRequestModifier
+import app.sensee.ai.core.request.UserEnrichmentPreferences
+import app.sensee.ai.core.request.UserEnrichmentPreferencesProvider
 import app.sensee.ai.llm.api.LlmHttpClientFactory
 import app.sensee.ai.llm.catalog.LlmModelCatalogFactory
 import app.sensee.ai.llm.client.LlmAiEnrichmentClient

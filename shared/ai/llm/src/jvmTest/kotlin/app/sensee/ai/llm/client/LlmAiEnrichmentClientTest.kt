@@ -1,14 +1,14 @@
 package app.sensee.ai.llm.client
 
-import app.sensee.ai.core.AiEnrichmentExtension
-import app.sensee.ai.core.DefaultEnrichmentRequestModifiers
-import app.sensee.ai.core.EnrichmentAvailability
-import app.sensee.ai.core.EnrichmentRequest
-import app.sensee.ai.core.EnrichmentResponseV1
-import app.sensee.ai.core.EnrichmentSchema
-import app.sensee.ai.core.SenseCoverage
-import app.sensee.ai.core.UserEnrichmentPreferences
-import app.sensee.ai.core.UserEnrichmentPreferencesProvider
+import app.sensee.ai.core.contract.AiEnrichmentExtension
+import app.sensee.ai.core.contract.EnrichmentAvailability
+import app.sensee.ai.core.request.DefaultEnrichmentRequestModifiers
+import app.sensee.ai.core.request.EnrichmentRequest
+import app.sensee.ai.core.request.EnrichmentSchema
+import app.sensee.ai.core.request.SenseCoverage
+import app.sensee.ai.core.request.UserEnrichmentPreferences
+import app.sensee.ai.core.request.UserEnrichmentPreferencesProvider
+import app.sensee.ai.core.wire.EnrichmentResponseV1
 import app.sensee.ai.llm.api.LlmHttpClientFactory
 import app.sensee.ai.llm.config.LlmConfig
 import app.sensee.grammar.domain.TaxonomyInvariants

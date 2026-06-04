@@ -1,165 +1,77 @@
-CREATE TABLE practice_lemma (
-    id TEXT NOT NULL PRIMARY KEY,
-    text TEXT NOT NULL
-);
-
-CREATE TABLE practice_card (
-    id TEXT NOT NULL PRIMARY KEY,
-    lemma_id TEXT NOT NULL,
-    headword TEXT NOT NULL,
-    translation TEXT NOT NULL,
-    context_sentence TEXT NOT NULL,
-    unit_type TEXT NOT NULL,
-    grammar_tags_json TEXT NOT NULL DEFAULT '[]',
-    sense_summary TEXT NOT NULL,
-    explanation TEXT NOT NULL DEFAULT '',
-    -- The confirmed Sense (SenseDto JSON) the card projects, mapped once from the
-    -- ideal enrichment at sync. Same persisted shape as a captured sense, so a
-    -- Service deck and a user-captured card store the same thing. '{}' when
-    -- absent; the lean columns above stay authoritative for list queries.
-    sense_json TEXT NOT NULL DEFAULT '{}',
-    created_at_epoch_ms INTEGER NOT NULL,
-    updated_at_epoch_ms INTEGER NOT NULL,
-    FOREIGN KEY (lemma_id) REFERENCES practice_lemma(id)
-);
-
-CREATE INDEX practice_card_lemma_id ON practice_card(lemma_id);
-
-CREATE TABLE practice_deck (
+-- Library owns deck structure only; sense content lives in the canonical `sense`
+-- store (lexicon). A membership row references a `sense_id` (no cross-module FK),
+-- so a Service deck mirrors senses by id and the captured deck is derived from
+-- Personal Confirmed senses — neither duplicates the sense blob here.
+CREATE TABLE deck (
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
-    -- NULL = passive synced Service-catalog cache; non-NULL = user adopted this
-    -- deck, so it is owned (Personal) material the user practices.
-    adopted_at_epoch_ms INTEGER,
-    -- Advertised card count from the catalog source. Authoritative for display:
-    -- a Service deck has no local card links until it is adopted, so a join
-    -- COUNT would read 0 in the suggestions list.
+    -- 0 = passive synced Service-catalog cache; 1 = the user subscribed, so the
+    -- deck's senses are mirrored into the material they practice (successor of
+    -- the old adopted_at flag).
+    subscribed INTEGER NOT NULL DEFAULT 0,
+    -- Advertised card count from the catalog source. Authoritative for display: a
+    -- Service deck has no local membership until subscribed, so a join COUNT would
+    -- read 0 in the suggestions list.
     card_count INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE practice_deck_card (
+CREATE TABLE deck_membership (
     deck_id TEXT NOT NULL,
-    card_id TEXT NOT NULL,
+    sense_id TEXT NOT NULL,
     position INTEGER NOT NULL,
-    PRIMARY KEY (deck_id, card_id),
-    FOREIGN KEY (deck_id) REFERENCES practice_deck(id),
-    FOREIGN KEY (card_id) REFERENCES practice_card(id)
+    PRIMARY KEY (deck_id, sense_id),
+    FOREIGN KEY (deck_id) REFERENCES deck(id)
 );
 
-CREATE INDEX practice_deck_card_deck_id ON practice_deck_card(deck_id);
-CREATE INDEX practice_deck_card_card_id ON practice_deck_card(card_id);
+CREATE INDEX deck_membership_deck_id ON deck_membership(deck_id);
+
+CREATE INDEX deck_membership_sense_id ON deck_membership(sense_id);
 
 selectAllDecks:
-SELECT
-    d.id,
-    d.title,
-    d.description,
-    d.adopted_at_epoch_ms,
-    d.card_count
-FROM practice_deck d
-ORDER BY d.title ASC;
+SELECT id, title, description, subscribed, card_count
+FROM deck
+ORDER BY title ASC;
 
-selectOwnedDecks:
-SELECT
-    d.id,
-    d.title,
-    d.description,
-    d.adopted_at_epoch_ms,
-    d.card_count
-FROM practice_deck d
-WHERE d.adopted_at_epoch_ms IS NOT NULL
-ORDER BY d.title ASC;
+selectSubscribedDecks:
+SELECT id, title, description, subscribed, card_count
+FROM deck
+WHERE subscribed != 0
+ORDER BY title ASC;
 
 selectDeckById:
-SELECT
-    d.id,
-    d.title,
-    d.description,
-    d.adopted_at_epoch_ms,
-    d.card_count
-FROM practice_deck d
-WHERE d.id = ?;
-
-selectCardsByDeck:
-SELECT c.*
-FROM practice_card c
-INNER JOIN practice_deck_card dc ON dc.card_id = c.id
-WHERE dc.deck_id = ?
-ORDER BY dc.position ASC;
-
-selectCardById:
-SELECT *
-FROM practice_card
+SELECT id, title, description, subscribed, card_count
+FROM deck
 WHERE id = ?;
 
-selectCardsByLemma:
-SELECT *
-FROM practice_card
-WHERE lemma_id = ?
-ORDER BY LENGTH(headword) ASC, headword ASC;
-
-selectLemmaById:
-SELECT *
-FROM practice_lemma
-WHERE id = ?;
-
-upsertLemma:
-INSERT OR REPLACE INTO practice_lemma(id, text)
-VALUES (?, ?);
-
--- Used when a card insert needs the FK row to exist but the caller does not
--- own the real lemma text yet (the deck sync path). A later upsertLemma with
--- the real text overrides the placeholder; if the real row already exists
--- this IGNOREs and keeps it intact.
-insertLemmaIfAbsent:
-INSERT OR IGNORE INTO practice_lemma(id, text)
-VALUES (?, ?);
+selectMembershipByDeck:
+SELECT sense_id, position
+FROM deck_membership
+WHERE deck_id = ?
+ORDER BY position ASC;
 
 -- Two-statement upsert (sqlite_3_18 has no ON CONFLICT DO UPDATE): INSERT OR
--- IGNORE leaves an existing row (and its adopted_at_epoch_ms) untouched, then
--- the metadata UPDATE refreshes title/description only. INSERT OR REPLACE would
--- delete+reinsert the row and wipe adopted_at_epoch_ms on every Service re-sync.
+-- IGNORE leaves an existing row (and its subscribed flag) untouched, then the
+-- metadata UPDATE refreshes title/description/count only. INSERT OR REPLACE would
+-- delete+reinsert the row and wipe `subscribed` on every Service re-sync.
 insertDeckIfAbsent:
-INSERT OR IGNORE INTO practice_deck(id, title, description, card_count)
+INSERT OR IGNORE INTO deck(id, title, description, card_count)
 VALUES (?, ?, ?, ?);
 
 updateDeckMeta:
-UPDATE practice_deck
+UPDATE deck
 SET title = ?, description = ?, card_count = ?
 WHERE id = ?;
 
-markDeckAdopted:
-UPDATE practice_deck
-SET adopted_at_epoch_ms = ?
+setDeckSubscribed:
+UPDATE deck
+SET subscribed = ?
 WHERE id = ?;
 
-clearDeckAdopted:
-UPDATE practice_deck
-SET adopted_at_epoch_ms = NULL
-WHERE id = ?;
-
-upsertCard:
-INSERT OR REPLACE INTO practice_card(
-    id,
-    lemma_id,
-    headword,
-    translation,
-    context_sentence,
-    unit_type,
-    grammar_tags_json,
-    sense_summary,
-    explanation,
-    sense_json,
-    created_at_epoch_ms,
-    updated_at_epoch_ms
-)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-
-clearDeckCards:
-DELETE FROM practice_deck_card
+clearDeckMembership:
+DELETE FROM deck_membership
 WHERE deck_id = ?;
 
-insertDeckCard:
-INSERT OR REPLACE INTO practice_deck_card(deck_id, card_id, position)
+insertDeckMembership:
+INSERT OR REPLACE INTO deck_membership(deck_id, sense_id, position)
 VALUES (?, ?, ?);

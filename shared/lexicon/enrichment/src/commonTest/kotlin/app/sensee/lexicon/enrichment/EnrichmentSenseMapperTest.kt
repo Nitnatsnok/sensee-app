@@ -1,10 +1,11 @@
 package app.sensee.lexicon.enrichment
 
-import app.sensee.ai.core.EnrichmentExample
-import app.sensee.ai.core.EnrichmentSuggestion
-import app.sensee.ai.core.GrammarTagHint
-import app.sensee.ai.core.IrregularFormsHint
-import app.sensee.ai.core.UnitComponentHint
+import app.sensee.ai.core.model.CefrEnrichmentExtension
+import app.sensee.ai.core.model.EnrichmentExample
+import app.sensee.ai.core.model.EnrichmentSuggestion
+import app.sensee.ai.core.model.GrammarTagHint
+import app.sensee.ai.core.model.IrregularFormsHint
+import app.sensee.ai.core.model.UnitComponentHint
 import app.sensee.grammar.domain.ComponentRole
 import app.sensee.grammar.domain.ComponentSalience
 import app.sensee.grammar.domain.GrammarCategory
@@ -13,8 +14,11 @@ import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.IrregularForms
 import app.sensee.grammar.domain.TaxonomyInvariants
+import app.sensee.lexicon.domain.CefrLevel
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class EnrichmentSenseMapperTest {
     private val testInvariants =
@@ -83,5 +87,27 @@ class EnrichmentSenseMapperTest {
 
         assertEquals(GrammarUnitType.IrregularVerb, sense.unitType)
         assertEquals(IrregularForms("come", "came", "come"), sense.irregularForms)
+    }
+
+    @Test
+    fun `a cefr extension maps onto the sense cefr level`() {
+        val sense =
+            EnrichmentSuggestion(
+                translation = "приходить",
+                surfaceForm = "come",
+                unitType = "verb",
+                extensions = mapOf(CefrEnrichmentExtension.KEY to JsonPrimitive("B2")),
+            ).toSense(fallbackTerm = "come", invariants = testInvariants)
+
+        assertEquals(CefrLevel.B2, sense.cefr)
+    }
+
+    @Test
+    fun `an absent cefr extension leaves the sense cefr null`() {
+        val sense =
+            EnrichmentSuggestion(translation = "приходить", surfaceForm = "come", unitType = "verb")
+                .toSense(fallbackTerm = "come", invariants = testInvariants)
+
+        assertNull(sense.cefr)
     }
 }

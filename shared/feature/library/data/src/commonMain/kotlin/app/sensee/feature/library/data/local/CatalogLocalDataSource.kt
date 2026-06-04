@@ -4,39 +4,32 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.sensee.ai.core.EnrichmentItemV1
-import app.sensee.ai.core.EnrichmentResponseMapper
-import app.sensee.ai.core.EnrichmentResponseV1
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.database.CatalogEntityQueries
-import app.sensee.core.database.Practice_card
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.observability.logging.AppLogger
-import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
-import app.sensee.feature.library.data.remote.CardSummaryDto
+import app.sensee.feature.library.data.SenseCatalogProjection
 import app.sensee.feature.library.data.remote.DeckDto
 import app.sensee.feature.library.data.remote.DeckSummaryDto
-import app.sensee.feature.library.data.remote.LemmaDto
 import app.sensee.feature.library.domain.Card
 import app.sensee.feature.library.domain.CardId
-import app.sensee.feature.library.domain.CardSummary
 import app.sensee.feature.library.domain.CatalogOrigin
 import app.sensee.feature.library.domain.Deck
 import app.sensee.feature.library.domain.DeckId
 import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
-import app.sensee.feature.library.domain.LemmaDerivative
 import app.sensee.feature.library.domain.LemmaId
-import app.sensee.feature.library.domain.derivativesOfSenses
-import app.sensee.grammar.domain.GrammarUnitType
-import app.sensee.lexicon.domain.Sense
-import app.sensee.lexicon.enrichment.toSense
-import app.sensee.lexicon.serialization.SenseDto
+import app.sensee.lexicon.domain.SenseId
+import app.sensee.lexicon.domain.SenseOrigin
+import app.sensee.lexicon.domain.SenseReadRepository
+import app.sensee.lexicon.domain.SenseStatus
+import app.sensee.lexicon.domain.SenseWriteRepository
+import app.sensee.lexicon.domain.StoredSense
+import app.sensee.lexicon.domain.WriteIntent
+import app.sensee.lexicon.domain.isConfirmable
 import app.sensee.lexicon.serialization.toDomain
-import app.sensee.lexicon.serialization.toDto
 import app.sensee.srs.core.id.SrsCardId
-import app.sensee.srs.core.model.SrsCardSnapshot
 import app.sensee.srs.engine.factory.SrsCardFactory
 import app.sensee.srs.engine.storage.SrsStorage
 import app.sensee.srs.fsrs.FsrsParameters
@@ -44,27 +37,26 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
-import kotlin.time.Clock
 
 /**
- * Catalog-side local store. Reads card content from the SQLDelight catalog tables; the per-card
- * SRS snapshot is fetched through the [SrsStorage] interface (owned by Practice) so the catalog
- * layer never reaches into the SRS table directly — keeping the dependency on the SRS contract,
- * not the practice data implementation.
+ * Catalog-side local store. Deck structure (deck / deck_membership) is owned here;
+ * sense content comes from the canonical [SenseReadRepository] and service ingest
+ * writes through [SenseWriteRepository] (origin = Service, keyed by the catalog
+ * card id as source_ref). The per-card SRS snapshot is fetched through the
+ * [SrsStorage] contract (owned by Practice), keyed by the stable sense_id.
  */
 @SingleIn(AppScope::class)
 @Inject
 public class CatalogLocalDataSource(
     private val databaseProvider: SenseeDatabaseProvider,
+    private val senseReadRepository: SenseReadRepository,
+    private val senseWriteRepository: SenseWriteRepository,
     private val srsStorage: SrsStorage<FsrsParameters>,
     private val dispatchers: AppDispatchers,
-    private val json: Json,
-    private val clock: Clock,
     appDiagnostics: AppDiagnostics,
 ) {
     private val logger: AppLogger = appDiagnostics.logger.tag("CatalogLocalDataSource")
@@ -72,20 +64,52 @@ public class CatalogLocalDataSource(
     public suspend fun upsertDeckSummaries(decks: List<DeckSummaryDto>) {
         val database = databaseProvider.database()
         decks.forEach { deck ->
-            database.catalogEntityQueries.upsertDeckMeta(
-                deck.id,
-                deck.title,
-                deck.description,
-                deck.cardCount.toLong(),
-            )
+            database.catalogEntityQueries.upsertDeckMeta(deck.id, deck.title, deck.description, deck.cardCount.toLong())
         }
     }
 
-    public suspend fun upsertDeckWithCards(deck: DeckDto) {
+    public suspend fun setDeckSubscribed(
+        deckId: String,
+        subscribed: Boolean,
+    ) {
+        databaseProvider.database().catalogEntityQueries.setDeckSubscribed(
+            subscribed = if (subscribed) 1L else 0L,
+            id = deckId,
+        )
+    }
+
+    /**
+     * Ingest a Service deck: map each card's `SenseDto` into a Sense, upsert it
+     * (origin = Service, source_ref = card id), and rebuild the deck membership
+     * by sense_id. A card whose sense fails the example/translation invariant is
+     * dropped with a diagnostic rather than entering the deck as a broken card.
+     */
+    public suspend fun ingestDeck(deck: DeckDto) {
+        val memberships = mutableListOf<Pair<String, Int>>()
+        deck.cards.forEach { card ->
+            val sense = card.sense.toDomain()
+            if (!sense.isConfirmable()) {
+                logger.warn {
+                    "Service card ${card.id} dropped: no confirmable sense (needs a translation and an example)"
+                }
+                return@forEach
+            }
+            val stored =
+                senseWriteRepository.upsert(
+                    sense = sense,
+                    status = SenseStatus.Confirmed,
+                    origin = SenseOrigin.Service,
+                    sourceRef = card.id,
+                    intent = WriteIntent.ResolveOrMint,
+                )
+            srsStorage.saveCardIfAbsent(SrsCardFactory.newCard(SrsCardId(stored.id.value)))
+            // Position off the kept list, not the source index: a dropped card
+            // must not leave a gap in the deck's membership positions.
+            memberships += stored.id.value to memberships.size
+        }
         val database = databaseProvider.database()
-        val now = clock.now().toEpochMilliseconds()
-        // clearDeckCards + re-insert must be atomic: a partial failure leaves the
-        // deck row surviving but empty, and loadDeck returns that empty state.
+        // Membership rebuild is atomic: a partial failure leaves the prior
+        // membership rather than a half-written deck.
         database.transaction {
             database.catalogEntityQueries.upsertDeckMeta(
                 deck.id,
@@ -93,25 +117,15 @@ public class CatalogLocalDataSource(
                 deck.description,
                 deck.cards.size.toLong(),
             )
-            deck.cards.forEach { card ->
-                database.upsertCardInternal(card, now, json, srsStorage)
-            }
-            database.catalogEntityQueries.clearDeckCards(deck.id)
-            deck.cards.forEachIndexed { index, card ->
-                database.catalogEntityQueries.insertDeckCard(
+            database.catalogEntityQueries.clearDeckMembership(deck.id)
+            memberships.forEach { (senseId, position) ->
+                database.catalogEntityQueries.insertDeckMembership(
                     deck_id = deck.id,
-                    card_id = card.id,
-                    position = index.toLong(),
+                    sense_id = senseId,
+                    position = position.toLong(),
                 )
             }
         }
-    }
-
-    public suspend fun upsertLemma(lemma: LemmaDto) {
-        databaseProvider.database().catalogEntityQueries.upsertLemma(
-            id = lemma.id,
-            text = lemma.text,
-        )
     }
 
     public suspend fun selectDecks(): List<Deck> =
@@ -120,19 +134,7 @@ public class CatalogLocalDataSource(
             .catalogEntityQueries
             .selectAllDecks()
             .awaitAsList()
-            .map { row ->
-                deck(row.id, row.title, row.description, row.adopted_at_epoch_ms, row.card_count)
-            }
-
-    public suspend fun selectOwnedDecks(): List<Deck> =
-        databaseProvider
-            .database()
-            .catalogEntityQueries
-            .selectOwnedDecks()
-            .awaitAsList()
-            .map { row ->
-                deck(row.id, row.title, row.description, row.adopted_at_epoch_ms, row.card_count)
-            }
+            .map { deck(it.id, it.title, it.description, it.subscribed, it.card_count) }
 
     public fun observeAllDecks(): Flow<List<Deck>> =
         flow {
@@ -142,108 +144,78 @@ public class CatalogLocalDataSource(
                     .selectAllDecks()
                     .asFlow()
                     .mapToList(dispatchers.io)
-                    .map { rows ->
-                        rows.map { row ->
-                            deck(row.id, row.title, row.description, row.adopted_at_epoch_ms, row.card_count)
-                        }
-                    },
+                    .map { rows -> rows.map { deck(it.id, it.title, it.description, it.subscribed, it.card_count) } },
             )
         }
 
-    public fun observeOwnedDecks(): Flow<List<Deck>> =
+    public fun observeSubscribedDecks(): Flow<List<Deck>> =
         flow {
             val database = databaseProvider.database()
             emitAll(
                 database.catalogEntityQueries
-                    .selectOwnedDecks()
+                    .selectSubscribedDecks()
                     .asFlow()
                     .mapToList(dispatchers.io)
-                    .map { rows ->
-                        rows.map { row ->
-                            deck(row.id, row.title, row.description, row.adopted_at_epoch_ms, row.card_count)
-                        }
-                    },
+                    .map { rows -> rows.map { deck(it.id, it.title, it.description, it.subscribed, it.card_count) } },
             )
         }
 
-    public suspend fun markDeckAdopted(deckId: String) {
-        databaseProvider.database().catalogEntityQueries.markDeckAdopted(
-            adopted_at_epoch_ms = clock.now().toEpochMilliseconds(),
-            id = deckId,
-        )
-    }
-
-    public suspend fun clearDeckAdopted(deckId: String) {
-        databaseProvider.database().catalogEntityQueries.clearDeckAdopted(id = deckId)
-    }
+    /** Subscribed decks plus the derived captured deck (Personal Confirmed senses). */
+    public fun observeOwnedMaterial(): Flow<List<Deck>> =
+        combine(observeSubscribedDecks(), senseReadRepository.observe()) { subscribed, all ->
+            val captured = SenseCatalogProjection.capturedDeck(all.personalConfirmed())
+            if (captured == null) subscribed else subscribed + captured.deck
+        }
 
     public suspend fun selectDeckWithCards(deckId: String): DeckWithCards? {
         val database = databaseProvider.database()
-        val deckRow =
+        val deckRow = database.catalogEntityQueries.selectDeckById(deckId).awaitAsOneOrNull() ?: return null
+        val stored =
             database.catalogEntityQueries
-                .selectDeckById(deckId)
-                .awaitAsOneOrNull()
-                ?: return null
-        val entities =
-            database.catalogEntityQueries
-                .selectCardsByDeck(deckId)
+                .selectMembershipByDeck(deckId)
                 .awaitAsList()
-        val snapshots = srsStorage.getCards(entities.map { SrsCardId(it.id) })
-        val cards =
-            entities.map { entity ->
-                val cardId = SrsCardId(entity.id)
-                entity.toCard(json, snapshots[cardId] ?: SrsCardFactory.newCard(cardId), logger)
-            }
+                .mapNotNull { senseReadRepository.getById(SenseId(it.sense_id)) }
         return DeckWithCards(
-            deck =
-                deck(
-                    deckRow.id,
-                    deckRow.title,
-                    deckRow.description,
-                    deckRow.adopted_at_epoch_ms,
-                    deckRow.card_count,
-                ),
-            cards = cards,
+            deck = deck(deckRow.id, deckRow.title, deckRow.description, deckRow.subscribed, deckRow.card_count),
+            cards = SenseCatalogProjection.cardsFrom(stored).map { materialize(it) },
         )
+    }
+
+    public suspend fun capturedDeck(): DeckWithCards? {
+        val deck =
+            SenseCatalogProjection.capturedDeck(
+                senseReadRepository.listByStatus(SenseStatus.Confirmed).personalConfirmed(),
+            )
+        return deck?.copy(cards = deck.cards.map { materialize(it) })
     }
 
     public suspend fun selectCard(cardId: String): Card? {
-        val database = databaseProvider.database()
-        val entity =
-            database.catalogEntityQueries
-                .selectCardById(cardId)
-                .awaitAsOneOrNull()
-                ?: return null
-        return entity.toCard(json, srsSnapshot(srsStorage, cardId), logger)
+        val stored = senseReadRepository.getById(SenseCatalogProjection.senseIdOf(CardId(cardId))) ?: return null
+        val card = SenseCatalogProjection.cardsFor(stored).firstOrNull { it.id.value == cardId } ?: return null
+        return materialize(card)
     }
 
     public suspend fun selectLemma(lemmaId: String): Lemma? {
-        val database = databaseProvider.database()
-        val row =
-            database.catalogEntityQueries
-                .selectLemmaById(lemmaId)
-                .awaitAsOneOrNull()
-                ?: return null
-        val cardRows =
-            database.catalogEntityQueries
-                .selectCardsByLemma(lemmaId)
-                .awaitAsList()
-        return Lemma(
-            id = LemmaId(row.id),
-            text = row.text,
-            relatedCards = cardRows.map { it.toCardSummary() },
-            derivatives = derivativesOf(cardRows, json, logger),
-        )
+        val key = SenseCatalogProjection.lemmaKeyOf(LemmaId(lemmaId))
+        val stored = senseReadRepository.listByLemmaKey(key).filter { it.status == SenseStatus.Confirmed }
+        return SenseCatalogProjection.lemma(stored, LemmaId(lemmaId))
+    }
+
+    // Captured cards are re-derived each read (ADR-001 projection), but their
+    // review state is durable: materialize the first SRS row before Practice can
+    // submit a review, then overlay stored progress on later reads.
+    private suspend fun materialize(card: Card): Card {
+        val cardId = SrsCardId(card.id.value)
+        val stored = srsStorage.getCard(cardId)
+        return if (stored != null) card.copy(srs = stored) else card.copy(srs = srsStorage.saveCardIfAbsent(card.srs))
     }
 }
 
-private suspend fun srsSnapshot(
-    srsStorage: SrsStorage<FsrsParameters>,
-    cardId: String,
-): SrsCardSnapshot = srsStorage.getCard(SrsCardId(cardId)) ?: SrsCardFactory.newCard(SrsCardId(cardId))
+private fun List<StoredSense>.personalConfirmed(): List<StoredSense> =
+    filter { it.status == SenseStatus.Confirmed && it.origin == SenseOrigin.Personal }
 
-// Insert-if-absent then refresh metadata, so a Service re-sync never clears
-// a deck's adopted_at_epoch_ms (see CatalogEntity.sq).
+// Insert-if-absent then refresh metadata, so a Service re-sync never clears a
+// deck's `subscribed` flag (see CatalogEntity.sq).
 private suspend fun CatalogEntityQueries.upsertDeckMeta(
     id: String,
     title: String,
@@ -254,130 +226,13 @@ private suspend fun CatalogEntityQueries.upsertDeckMeta(
     updateDeckMeta(title = title, description = description, card_count = cardCount, id = id)
 }
 
-private suspend fun SenseeDatabase.upsertCardInternal(
-    card: app.sensee.feature.library.data.remote.CardDto,
-    nowEpochMs: Long,
-    json: Json,
-    srsStorage: SrsStorage<FsrsParameters>,
-) {
-    // Card has an FK to practice_lemma(id); make sure the row exists. The real
-    // text comes through the separate loadLemma path; here we only seed an
-    // id-derived placeholder, and IF-ABSENT so we never overwrite a real one.
-    catalogEntityQueries.insertLemmaIfAbsent(
-        id = card.lemmaId,
-        text = card.lemmaId.removePrefix("lemma-"),
-    )
-    // The lean columns are a projection of the card's Sense, not a second
-    // source of truth: map the ideal enrichment into a Sense once here (the same
-    // boundary mappers the read path and capture use), persist the Sense as
-    // sense_json, and derive the flashcard essentials from it (mirrors
-    // CapturedCatalogDerivation). sense_json is the stored source of truth.
-    val fallbackTerm =
-        card.enrichment.surfaceForm?.takeIf { it.isNotBlank() }
-            ?: card.lemmaId.removePrefix("lemma-")
-    val sense = card.enrichment.toConfirmedSenseOrNull(fallbackTerm)
-    val unitType = sense?.unitType ?: GrammarUnitType.Phrase
-    val contextSentence =
-        sense
-            ?.contextualApplications
-            ?.firstOrNull()
-            ?.sentence
-            ?.marked()
-            .orEmpty()
-    catalogEntityQueries.upsertCard(
-        id = card.id,
-        lemma_id = card.lemmaId,
-        headword = sense?.surfaceForm?.display() ?: fallbackTerm,
-        translation = sense?.translation ?: card.enrichment.translation.orEmpty(),
-        context_sentence = contextSentence,
-        unit_type = unitType.id,
-        grammar_tags_json = encodeGrammarTags(json, sense?.grammarTags?.map { it.toDto() }.orEmpty()),
-        sense_summary = sense?.explanation ?: sense?.translation ?: card.enrichment.translation.orEmpty(),
-        explanation = sense?.explanation.orEmpty(),
-        sense_json = encodeSense(json, sense),
-        created_at_epoch_ms = nowEpochMs,
-        updated_at_epoch_ms = nowEpochMs,
-    )
-    srsStorage.saveCardIfAbsent(SrsCardFactory.newCard(SrsCardId(card.id)))
-}
-
-private fun encodeSense(
-    json: Json,
-    sense: Sense?,
-): String = sense?.let { json.encodeToString(SenseDto.serializer(), it.toDto()) } ?: "{}"
-
-// Maps an ideal-enrichment item into a confirmed Sense through the same boundary
-// mappers capture uses: enrichment wire -> neutral suggestion -> Sense. Done
-// ONCE at sync; the result is persisted as a SenseDto, so
-// reads never re-map. Returns null only when the item has no usable translation
-// (the mapper drops it), so the card degrades to its lean columns.
-//
-// Extension fields (e.g. `cefr` via CefrEnrichmentExtension) are intentionally
-// NOT threaded here: they ride on EnrichmentSuggestion.extensions, but Sense and
-// SenseDto have no slot for them and nothing reads cefr off a persisted Sense.
-// They stay a transient producer-side concern (curated/LLM), so the catalog path
-// maps without itemExtensions — lossless w.r.t. what is persisted. Pinned by
-// EnrichedDeckFixtureTest; revisit if cefr ever becomes part of Sense.
-private fun EnrichmentItemV1.toConfirmedSenseOrNull(fallbackTerm: String): Sense? =
-    EnrichmentResponseMapper
-        .map(EnrichmentResponseV1(items = listOf(this)))
-        .suggestions
-        .firstOrNull()
-        ?.toSense(fallbackTerm = fallbackTerm)
-
-// Reads the persisted Sense — the same SenseDto shape the capture path stores.
-// A blank/'{}' payload (a legacy lean row) or a malformed one yields null, so
-// the lean columns still work.
-private fun Practice_card.senseOrNull(
-    json: Json,
-    logger: AppLogger,
-): Sense? {
-    if (sense_json.isBlank() || sense_json == "{}") return null
-    return try {
-        json.decodeFromString(SenseDto.serializer(), sense_json).toDomain()
-    } catch (failure: SerializationException) {
-        logger.warn(failure) { "Malformed sense_json for card $id; no rich sense" }
-        null
-    }
-}
-
-// The lemma page's word family: derivatives every related card's rich sense
-// declared, deduped by lemma. Shared helper (I7) — the captured-derivation
-// path uses the same primitive so the lemma page is byte-identical regardless
-// of whether the senses come from confirmed user entries or from a service
-// deck row.
-private fun derivativesOf(
-    cardRows: List<Practice_card>,
-    json: Json,
-    logger: AppLogger,
-): List<LemmaDerivative> = derivativesOfSenses(cardRows.asSequence().mapNotNull { it.senseOrNull(json, logger) })
-
-private fun Practice_card.toCard(
-    json: Json,
-    srs: SrsCardSnapshot,
-    logger: AppLogger,
-): Card =
-    Card(
-        id = CardId(id),
-        lemmaId = LemmaId(lemma_id),
-        headword = headword,
-        translation = translation,
-        contextSentence = context_sentence,
-        unitType = parseUnitType(unit_type),
-        grammarTags = parseGrammarTags(json, grammar_tags_json, id, logger),
-        senseSummary = sense_summary,
-        explanation = explanation,
-        sense = senseOrNull(json, logger),
-        srs = srs,
-    )
-
-// Adoption is provenance, not a copy: an adopted deck is the user's own
-// (Personal) material; an un-adopted row is a passive Service-catalog cache.
+// Subscribed material is the user's own (Personal) to practice; an unsubscribed
+// row is a passive Service-catalog suggestion.
 private fun deck(
     id: String,
     title: String,
     description: String,
-    adoptedAt: Long?,
+    subscribed: Long,
     cardCount: Long,
 ): Deck =
     Deck(
@@ -385,32 +240,5 @@ private fun deck(
         title = title,
         description = description,
         cardCount = cardCount.toInt(),
-        origin = if (adoptedAt != null) CatalogOrigin.Personal else CatalogOrigin.Service,
+        origin = if (subscribed != 0L) CatalogOrigin.Personal else CatalogOrigin.Service,
     )
-
-private fun Practice_card.toCardSummary(): CardSummary =
-    CardSummary(
-        id = CardId(id),
-        headword = headword,
-        unitType = parseUnitType(unit_type),
-        translation = translation,
-        senseSummary = sense_summary,
-    )
-
-private fun CardSummaryDto.toCardSummary(): CardSummary =
-    CardSummary(
-        id = CardId(id),
-        headword = headword,
-        unitType = parseUnitType(unitType),
-        translation = translation,
-        senseSummary = senseSummary,
-    )
-
-internal fun LemmaDto.toLemma(): Lemma =
-    Lemma(
-        id = LemmaId(id),
-        text = text,
-        relatedCards = relatedCards.map(CardSummaryDto::toCardSummary),
-    )
-
-private fun parseUnitType(raw: String): GrammarUnitType = GrammarUnitType.fromId(raw)

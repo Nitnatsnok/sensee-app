@@ -33,7 +33,7 @@ class DevSchemaResetTest {
                 "stale view should be dropped",
             )
             assertTrue(
-                "practice_card" in tables,
+                "sense" in tables,
                 "current schema table missing after reset",
             )
             assertEquals(1, recordedMessages.size, "exactly one reset should be logged")
@@ -46,7 +46,7 @@ class DevSchemaResetTest {
 
             reconcileDevSchema(driver, SenseeDatabase.Schema, recordingLogger)
             driver.execSync(
-                "INSERT INTO practice_lemma (id, text) VALUES ('l1', 'hello')",
+                "INSERT INTO deck (id, title, description, card_count) VALUES ('d1', 'hello', 'desc', 0)",
             )
 
             // Second launch, schema unchanged: must be a no-op, not a wipe.
@@ -54,7 +54,7 @@ class DevSchemaResetTest {
 
             assertEquals(
                 1L,
-                driver.countLemmas(),
+                driver.countDecks(),
                 "data was wiped despite an unchanged schema",
             )
             assertEquals(
@@ -122,10 +122,10 @@ private suspend fun SqlDriver.listObjects(type: String): List<String> =
 
 private suspend fun SqlDriver.listTables(): List<String> = listObjects("table")
 
-private suspend fun SqlDriver.countLemmas(): Long =
+private suspend fun SqlDriver.countDecks(): Long =
     executeQuery(
         identifier = null,
-        sql = "SELECT COUNT(*) FROM practice_lemma",
+        sql = "SELECT COUNT(*) FROM deck",
         mapper = { cursor ->
             cursor.next()
             QueryResult.Value(cursor.getLong(0) ?: 0L)

@@ -1,8 +1,8 @@
 package app.sensee.verification.integration
 
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.LexicalVerificationReport
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.LexicalVerificationReport
+import app.sensee.verification.core.contract.VerifierAvailability
 
 internal object VerificationLogSummaries {
     fun query(query: LexicalVerificationQuery): String {
@@ -11,8 +11,8 @@ internal object VerificationLogSummaries {
         val partOfSpeech = query.expectedPartOfSpeech?.id ?: "none"
         val maxCacheAge = query.policy.maxCacheAgeMillis ?: "default"
         return "query(studyLanguage=${query.studyLanguageTag}, nativeLanguage=$nativeLanguage, " +
-            "expectedEntryType=$entryType, expectedPartOfSpeech=$partOfSpeech, senseHints=${query.senseHints.size}, " +
-            "examples=${query.examplesToValidate.size}, allowNetwork=${query.policy.allowNetwork}, " +
+            "expectedEntryType=$entryType, expectedPartOfSpeech=$partOfSpeech, " +
+            "allowNetwork=${query.policy.allowNetwork}, " +
             "includeFamily=${query.policy.includeFamily}, familySiblingCap=${query.policy.familySiblingCap}, " +
             "timeoutMs=${query.policy.timeoutPerProviderMillis}, maxCacheAgeMs=$maxCacheAge)"
     }
@@ -24,10 +24,8 @@ internal object VerificationLogSummaries {
             "partsOfSpeech=${report.partsOfSpeech.observations.size}, " +
             "frequency=${report.frequency.observations.size}, cefr=${report.cefr.observations.size}, " +
             "pronunciation=${report.pronunciation.observations.size}, " +
-            "senseMatches=${report.senseMapping.matched.size}, " +
-            "senseUnmatched=${report.senseMapping.unmatchedAiSenses.size}, " +
             "senseExtras=${report.senseMapping.extraDictionarySenses.size}, " +
-            "family=${report.family != null}, exampleFindings=${report.exampleFindings.size}, " +
+            "family=${report.family != null}, " +
             "findings=${report.findings.size})"
 
     fun contributions(contributions: AdapterContributions): String =
@@ -35,7 +33,6 @@ internal object VerificationLogSummaries {
             "frequencies=${contributions.frequencies.map { it.availability }.availabilityCounts()}, " +
             "cefr=${contributions.cefrs.map { it.availability }.availabilityCounts()}, " +
             "senses=${contributions.senses.map { it.availability }.availabilityCounts()}, " +
-            "examples=${contributions.exampleChecks.map { it.third.availability }.availabilityCounts()}, " +
             "families=${contributions.familyResolutions.map { it.availability }.availabilityCounts()})"
 
     fun l2SkipReason(report: LexicalVerificationReport): String =

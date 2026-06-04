@@ -1,0 +1,15 @@
+= EB-11: Посекционное обогащение по требованию
+:status: open
+:area: vocabulary
+
+Триггер / что разблокирует::
+Ручной режим даёт обогащение **всего смысла** целиком (`completeManualSense`). Когда UI
+конструктора реально предложит дополнять отдельные секции `Sense` (например, только
+примеры или только грамматические теги) по требованию, понадобится `EnrichmentScope`
+(`WholeSense | Section(field)`) в `EnrichmentRequest`/use-case. Вводить только под этот
+UI — заранее не закладываем, чтобы не плодить неиспользуемый контракт.
+
+Связи::
+* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§2 ручной ввод, Фаза 1)
+* Код: `EnrichmentRequest`, `SuggestVocabularySensesUseCase` (`completeManualSense`)
+* Сценарий: `docs/scenarios/vocabulary-capture.feature`

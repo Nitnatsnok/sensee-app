@@ -1,0 +1,22 @@
+= EB-6: Уборка брошенных Draft по таймстемпу
+:status: open
+:area: vocabulary
+
+Триггер / что разблокирует::
+Брошенные `Draft` не убираются автоматически (cleanup-политики нет; в `sense`-схеме есть
+лишь generated query `deleteById`), поэтому, когда появится draft-очередь (навесное), они
+со временем будут копиться в очереди «незавершённое» в `Library`. Нужна политика очистки по
+времени: `status = Draft` + давний `updated_at_epoch_ms` → кандидат на удаление (TTL
+либо явный триггер). До реального накопления черновиков вводить преждевременно.
+
+Расширение `SenseStatus` промежуточными статусами (`InRefinement`/`HasCandidates`) в
+этот пункт больше не входит и не планируется: бинарь `Draft`/`Confirmed` + стабильный
+`sense_id` + `updated_at` закрывают draft-очередь, resume и SRS-гейт; промежуточные
+статусы зашили бы транзиентное состояние редактора в durable-схему без поведенческой
+отдачи. Новый статус заводить только под конкретную нужду (например, разный TTL очистки
+для AI-брошенных vs ручных черновиков).
+
+Связи::
+* Код: `SenseStatus` (`Draft`/`Confirmed`), таблица `sense` (generated `deleteById`, колонка `updated_at_epoch_ms`), `SenseWriteRepository`
+* Сценарий: `docs/scenarios/library.feature`, `docs/scenarios/home.feature`
+* arc42: `docs/arc42/sections/12_glossary.adoc` (Sense Status), `docs/arc42/sections/06_runtime_view.adoc`

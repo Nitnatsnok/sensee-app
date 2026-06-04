@@ -3,44 +3,39 @@ package app.sensee.verification.integration
 import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.observability.logging.AppLogger
-import app.sensee.verification.core.AttributionPolicy
-import app.sensee.verification.core.CefrLevel
-import app.sensee.verification.core.CefrLevelProvider
-import app.sensee.verification.core.CefrResult
-import app.sensee.verification.core.Confidence
-import app.sensee.verification.core.DictionarySenseSummary
-import app.sensee.verification.core.EvidenceSet
-import app.sensee.verification.core.ExampleCheckRequest
-import app.sensee.verification.core.ExampleCheckResult
-import app.sensee.verification.core.ExampleFinding
-import app.sensee.verification.core.ExampleHint
-import app.sensee.verification.core.ExampleQualityChecker
-import app.sensee.verification.core.FamilyContext
-import app.sensee.verification.core.FamilyResult
-import app.sensee.verification.core.FrequencyProvider
-import app.sensee.verification.core.FrequencyResult
-import app.sensee.verification.core.FrequencyScore
-import app.sensee.verification.core.LexicalEntryLookup
-import app.sensee.verification.core.LexicalEntryLookupResult
-import app.sensee.verification.core.LexicalEntryTypeHint
-import app.sensee.verification.core.LexicalExistence
-import app.sensee.verification.core.LexicalFamilyProvider
-import app.sensee.verification.core.LexicalSource
-import app.sensee.verification.core.LexicalUnitInfo
-import app.sensee.verification.core.LexicalUnitSummary
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.LexicalVerificationReport
-import app.sensee.verification.core.LexicalVerifier
-import app.sensee.verification.core.LicensePolicy
-import app.sensee.verification.core.NormalizationCandidate
-import app.sensee.verification.core.NormalizationOutcome
-import app.sensee.verification.core.Observation
-import app.sensee.verification.core.PartOfSpeechHint
-import app.sensee.verification.core.PronunciationInfo
-import app.sensee.verification.core.SenseInventoryProvider
-import app.sensee.verification.core.SenseInventoryResult
-import app.sensee.verification.core.SenseMapping
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.AttributionPolicy
+import app.sensee.verification.core.contract.CefrLevelProvider
+import app.sensee.verification.core.contract.CefrResult
+import app.sensee.verification.core.contract.Confidence
+import app.sensee.verification.core.contract.EvidenceSet
+import app.sensee.verification.core.contract.FamilyResult
+import app.sensee.verification.core.contract.FrequencyProvider
+import app.sensee.verification.core.contract.FrequencyResult
+import app.sensee.verification.core.contract.LexicalEntryLookup
+import app.sensee.verification.core.contract.LexicalEntryLookupResult
+import app.sensee.verification.core.contract.LexicalEntryTypeHint
+import app.sensee.verification.core.contract.LexicalExistence
+import app.sensee.verification.core.contract.LexicalFamilyProvider
+import app.sensee.verification.core.contract.LexicalSource
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.LexicalVerificationReport
+import app.sensee.verification.core.contract.LexicalVerifier
+import app.sensee.verification.core.contract.LicensePolicy
+import app.sensee.verification.core.contract.NormalizationCandidate
+import app.sensee.verification.core.contract.NormalizationOutcome
+import app.sensee.verification.core.contract.Observation
+import app.sensee.verification.core.contract.PartOfSpeechHint
+import app.sensee.verification.core.contract.SenseInventoryProvider
+import app.sensee.verification.core.contract.SenseInventoryResult
+import app.sensee.verification.core.contract.VerifierAvailability
+import app.sensee.verification.core.grounding.CefrLevel
+import app.sensee.verification.core.grounding.DictionarySenseSummary
+import app.sensee.verification.core.grounding.FrequencyScore
+import app.sensee.verification.core.grounding.PronunciationInfo
+import app.sensee.verification.core.grounding.SenseMapping
+import app.sensee.verification.core.hierarchy.FamilyContext
+import app.sensee.verification.core.hierarchy.LexicalUnitInfo
+import app.sensee.verification.core.hierarchy.LexicalUnitSummary
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -59,11 +54,12 @@ import kotlinx.coroutines.withTimeoutOrNull
  * so disagreement surfaces as `EvidenceSet.hasConflict`, never silently
  * last-writer-wins.
  *
- * Example-quality checkers run per [LexicalVerificationQuery.examplesToValidate];
- * findings join `report.exampleFindings`. A failing adapter on any leg
- * degrades only its own contribution and never propagates an exception. The
- * per-provider timeout in [VerificationPolicy.timeoutPerProviderMillis]
- * stops a hung adapter from blocking the entire report.
+ * Post-AI example quality is NOT part of this fan-out: it runs as a direct,
+ * single-checker call in `SuggestVocabularySensesUseCase` (ADR-007). A failing
+ * adapter on any leg degrades only its own contribution and never propagates an
+ * exception. The per-provider timeout in
+ * [VerificationPolicy.timeoutPerProviderMillis] stops a hung adapter from
+ * blocking the entire report.
  *
  * Not directly bound to [LexicalVerifier] — [PersistedCachingLexicalVerifier]
  * decorates this one and is the bound implementation.
@@ -85,7 +81,7 @@ public class RoutingLexicalVerifier(
                     "contributors(lookups=${contributors.entryLookups.size}, " +
                     "frequencies=${contributors.frequencyProviders.size}, cefr=${contributors.cefrProviders.size}, " +
                     "senses=${contributors.senseInventoryProviders.size}, " +
-                    "examples=${contributors.exampleQualityCheckers.size}, families=${contributors.familyProviders.size})"
+                    "families=${contributors.familyProviders.size})"
             }
             val lookupDeferreds =
                 contributors.entryLookups.map { lookup -> async { runLookup(lookup, query) } }
@@ -101,7 +97,6 @@ public class RoutingLexicalVerifier(
                 contributors.senseInventoryProviders.map { provider ->
                     async { runSenseInventory(provider, query, logger) }
                 }
-            val exampleDeferreds = launchExampleCheckers(query)
             val familyDeferreds = launchFamilyResolution(query)
             val baseReport = LexicalVerificationReport.unavailable("no verification contributors returned evidence")
             val contributions =
@@ -110,7 +105,6 @@ public class RoutingLexicalVerifier(
                     frequencies = frequencyDeferreds.awaitAll(),
                     cefrs = cefrDeferreds.awaitAll(),
                     senses = senseDeferreds.awaitAll(),
-                    exampleChecks = exampleDeferreds.awaitAll(),
                     familyResolutions = familyDeferreds.awaitAll(),
                 )
             val report = mergeReports(baseReport, contributions)
@@ -176,66 +170,6 @@ public class RoutingLexicalVerifier(
         }.getOrElse { throwable ->
             logger.warn(throwable) { "Family provider raised; report carries no family from it" }
             degradedFamily("adapter raised: ${throwable.message ?: throwable::class.simpleName}")
-        }
-    }
-
-    private fun CoroutineScope.launchExampleCheckers(
-        query: LexicalVerificationQuery,
-    ): List<Deferred<Triple<Int, ExampleHint, ExampleCheckResult>>> {
-        val timeoutMillis = query.policy.timeoutPerProviderMillis
-        return query.examplesToValidate.flatMapIndexed { index, example ->
-            contributors.exampleQualityCheckers.map { checker ->
-                async {
-                    val request =
-                        ExampleCheckRequest(
-                            sentence = example.sentence,
-                            studyLanguageTag = query.studyLanguageTag,
-                            senseHintId = example.senseHintId,
-                            policy = query.policy,
-                        )
-                    Triple(index, example, runExampleChecker(checker, request, timeoutMillis))
-                }
-            }
-        }
-    }
-
-    private fun collectExampleFindings(
-        checks: List<Triple<Int, ExampleHint, ExampleCheckResult>>,
-    ): List<ExampleFinding> {
-        if (checks.isEmpty()) return emptyList()
-        val byIndex = checks.groupBy { it.first }
-        return byIndex.entries.mapNotNull { (index, triples) ->
-            val example = triples.first().second
-            // Drop Unavailable results — a checker that said "I cannot run"
-            // must not contribute issues or rewrites. Degraded is allowed
-            // because the merge helpers below treat it as a partial-but-real
-            // signal; only Unavailable is the no-evidence boundary that the
-            // [LexicalVerificationReport] init invariant forbids.
-            val results =
-                triples
-                    .map { it.third }
-                    .filter { it.availability !is VerifierAvailability.Unavailable }
-            val merged = results.flatMap { it.issues }
-            // Pick the rewrite from the result whose issues contain the most
-            // severe finding. With M > 1 checker per query this avoids the
-            // arbitrary "first awaitAll winner" tie-break; with M = 1 it's
-            // equivalent to taking the single available rewrite.
-            val rewrite =
-                results
-                    .filter { it.rewrite != null }
-                    .maxByOrNull { result ->
-                        result.issues.maxOfOrNull { it.severity.ordinal } ?: -1
-                    }?.rewrite
-            if (merged.isEmpty() && rewrite == null) {
-                null
-            } else {
-                ExampleFinding(
-                    senseHintId = example.senseHintId,
-                    exampleIndex = index,
-                    issues = merged,
-                    rewrite = rewrite,
-                )
-            }
         }
     }
 
@@ -305,27 +239,6 @@ public class RoutingLexicalVerifier(
         }
     }
 
-    private suspend fun runExampleChecker(
-        checker: ExampleQualityChecker,
-        request: ExampleCheckRequest,
-        timeoutMillis: Long,
-    ): ExampleCheckResult =
-        runCatchingCancellable {
-            val result = withTimeoutOrNull(timeoutMillis) { checker.check(request) }
-            if (result == null) {
-                logger.warn {
-                    "Example-quality adapter timed out: " +
-                        "provider=${VerificationLogSummaries.providerName(checker)}, timeoutMs=$timeoutMillis"
-                }
-                degradedExample("provider timed out after ${timeoutMillis}ms")
-            } else {
-                result
-            }
-        }.getOrElse { throwable ->
-            logger.warn(throwable) { "Example-quality adapter raised; report carries no findings from it" }
-            degradedExample("adapter raised: ${throwable.message ?: throwable::class.simpleName}")
-        }
-
     private fun mergeReports(
         base: LexicalVerificationReport,
         c: AdapterContributions,
@@ -339,7 +252,6 @@ public class RoutingLexicalVerifier(
                         c.frequencies.map { it.availability } +
                         c.cefrs.map { it.availability } +
                         c.senses.map { it.availability } +
-                        c.exampleChecks.map { it.third.availability } +
                         c.familyResolutions.map { it.availability },
             )
         val mergedExistence = base.existence.append(c.lookups.mapNotNull { it.toExistenceObservation() })
@@ -366,7 +278,6 @@ public class RoutingLexicalVerifier(
             pronunciation = mergedPronunciation,
             normalized = mergedNormalization,
             family = mergedFamily,
-            exampleFindings = base.exampleFindings + collectExampleFindings(c.exampleChecks),
             findings = base.findings + normalizationFindings(mergedNormalization),
             sources = mergedSources,
         )
@@ -381,18 +292,13 @@ public class RoutingLexicalVerifier(
             c.familyResolutions.flatMap { resolution ->
                 resolution.unit?.sources.orEmpty() + resolution.family?.sources.orEmpty()
             }
-        val exampleRefs =
-            c.exampleChecks.flatMap { (_, _, result) ->
-                result.sources + result.issues.flatMap { it.sources }
-            }
         val contributedIds =
             (
                 c.lookups.flatMap { it.sources } +
                     c.frequencies.flatMap { it.sources } +
                     c.cefrs.flatMap { it.sources } +
                     c.senses.flatMap { it.sources } +
-                    familyRefs +
-                    exampleRefs
+                    familyRefs
             ).map { it.sourceId }.distinct()
         contributedIds.forEach { id ->
             if (id !in knownById) {
@@ -432,7 +338,6 @@ internal data class AdapterContributions(
     val frequencies: List<FrequencyResult>,
     val cefrs: List<CefrResult>,
     val senses: List<SenseInventoryResult>,
-    val exampleChecks: List<Triple<Int, ExampleHint, ExampleCheckResult>>,
     val familyResolutions: List<FamilyResolution>,
 ) {
     fun isEmpty(): Boolean =
@@ -440,7 +345,6 @@ internal data class AdapterContributions(
             frequencies.isEmpty() &&
             cefrs.isEmpty() &&
             senses.isEmpty() &&
-            exampleChecks.isEmpty() &&
             familyResolutions.isEmpty()
 }
 
@@ -559,21 +463,12 @@ private fun mergeSenseMapping(
     // forbids carrying evidence on an all-Unavailable report.
     val usable = senses.filter { it.availability !is VerifierAvailability.Unavailable }
     if (usable.isEmpty()) return base
-    val mergedMatched = base.matched + usable.flatMap { it.mapping.matched }
-    val mergedUnmatched = base.unmatchedAiSenses + usable.flatMap { it.mapping.unmatchedAiSenses }
     val mergedExtras: List<DictionarySenseSummary> =
         (base.extraDictionarySenses + usable.flatMap { it.mapping.extraDictionarySenses })
             // Two senses from the same source MUST keep distinct senseIds; otherwise
             // a polysemous lemma collapses to one summary.
             .distinctBy { Triple(it.ref.sourceId, it.ref.senseId, it.shortLabel) }
     return SenseMapping(
-        // The same aiSenseHintId can validly match different dictionary senses from the
-        // same source (e.g. two close glosses from one source) — preserve via senseId.
-        matched =
-            mergedMatched.distinctBy {
-                Triple(it.aiSenseHintId, it.dictionarySenseRef.sourceId, it.dictionarySenseRef.senseId)
-            },
-        unmatchedAiSenses = mergedUnmatched.distinct(),
         extraDictionarySenses = mergedExtras,
         // Take the most confident contributor rather than the seed's default
         // `Low`; an empty provider mapping stays `Low` so it cannot inflate.

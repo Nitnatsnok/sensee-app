@@ -15,7 +15,7 @@ Applies to:
 ## Local rules
 
 - Keep `core` provider-agnostic and feature-agnostic: no AI vendor SDKs and no feature domain types.
-- Keep AI output as candidates. The seam never produces canonical content; consumers map suggestions into their own candidate model and require explicit user confirmation.
+- Keep AI output as candidates. The seam never produces canonical content: a suggestion maps to an unsaved `Sense` in the editor (a candidate is just a `Sense` the user has not confirmed yet), and confirmation is the user saving the selected sense. The seam neither persists nor auto-promotes.
 - Treat availability as first-class. `Unavailable` and `Degraded` are normal results; do not throw malformed provider responses across the seam.
 - Keep the wire DTO versioned. Schema changes need deliberate mapping updates and `commonTest` coverage.
 - Keep routing in `integration`: curated enrichment wins for covered default-language requests; LLM fills the tail when a key/settings path enables it.

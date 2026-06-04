@@ -1,8 +1,8 @@
 package app.sensee.verification.senseeCurated
 
-import app.sensee.verification.core.AttributionPolicy
-import app.sensee.verification.core.LexicalSource
-import app.sensee.verification.core.LicensePolicy
+import app.sensee.verification.core.contract.AttributionPolicy
+import app.sensee.verification.core.contract.LexicalSource
+import app.sensee.verification.core.contract.LicensePolicy
 
 /**
  * Source attribution for Sensee-curated lexical reference data (frequency,

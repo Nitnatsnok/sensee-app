@@ -14,6 +14,7 @@ import app.sensee.feature.library.domain.LemmaId
 import app.sensee.feature.practice.domain.CardReview
 import app.sensee.feature.practice.domain.PracticeReviewRepository
 import app.sensee.feature.practice.domain.PracticeSessionPolicy
+import app.sensee.feature.practice.domain.ReviewOutcome
 import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeRatingAction
 import app.sensee.grammar.domain.GrammarLabels
@@ -209,10 +210,10 @@ class DeckPracticeLogicTest {
 
         override suspend fun loadLemma(lemmaId: LemmaId): Lemma = Lemma(lemmaId, lemmaId.value, emptyList())
 
-        override suspend fun submitReview(review: CardReview): Card {
+        override suspend fun submitReview(review: CardReview): ReviewOutcome {
             submitCount++
             gate?.await()
-            return deck.cards.first { it.id == review.cardId }.copy(srs = nextSrs)
+            return ReviewOutcome(srs = nextSrs)
         }
     }
 

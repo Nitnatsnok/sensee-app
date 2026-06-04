@@ -1,30 +1,30 @@
 package app.sensee.verification.senseeCurated
 
-import app.sensee.verification.core.CefrLevel
-import app.sensee.verification.core.CefrLevelProvider
-import app.sensee.verification.core.CefrResult
-import app.sensee.verification.core.Confidence
-import app.sensee.verification.core.DictionarySenseSummary
-import app.sensee.verification.core.FamilyResult
-import app.sensee.verification.core.FrequencyBand
-import app.sensee.verification.core.FrequencyProvider
-import app.sensee.verification.core.FrequencyResult
-import app.sensee.verification.core.FrequencyScore
-import app.sensee.verification.core.LemmaId
-import app.sensee.verification.core.LexicalEntryTypeHint
-import app.sensee.verification.core.LexicalFamilyProvider
-import app.sensee.verification.core.LexicalLemma
-import app.sensee.verification.core.LexicalSourceRef
-import app.sensee.verification.core.LexicalUnitId
-import app.sensee.verification.core.LexicalUnitInfo
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.PartOfSpeechHint
-import app.sensee.verification.core.SenseInventoryProvider
-import app.sensee.verification.core.SenseInventoryResult
-import app.sensee.verification.core.SenseMapping
-import app.sensee.verification.core.UnitComponentFact
-import app.sensee.verification.core.UnitResolutionResult
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.CefrLevelProvider
+import app.sensee.verification.core.contract.CefrResult
+import app.sensee.verification.core.contract.Confidence
+import app.sensee.verification.core.contract.FamilyResult
+import app.sensee.verification.core.contract.FrequencyProvider
+import app.sensee.verification.core.contract.FrequencyResult
+import app.sensee.verification.core.contract.LexicalEntryTypeHint
+import app.sensee.verification.core.contract.LexicalFamilyProvider
+import app.sensee.verification.core.contract.LexicalSourceRef
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.PartOfSpeechHint
+import app.sensee.verification.core.contract.SenseInventoryProvider
+import app.sensee.verification.core.contract.SenseInventoryResult
+import app.sensee.verification.core.contract.UnitResolutionResult
+import app.sensee.verification.core.contract.VerifierAvailability
+import app.sensee.verification.core.grounding.CefrLevel
+import app.sensee.verification.core.grounding.DictionarySenseSummary
+import app.sensee.verification.core.grounding.FrequencyBand
+import app.sensee.verification.core.grounding.FrequencyScore
+import app.sensee.verification.core.grounding.SenseMapping
+import app.sensee.verification.core.hierarchy.LemmaId
+import app.sensee.verification.core.hierarchy.LexicalLemma
+import app.sensee.verification.core.hierarchy.LexicalUnitId
+import app.sensee.verification.core.hierarchy.LexicalUnitInfo
+import app.sensee.verification.core.hierarchy.UnitComponentFact
 import dev.zacsweers.metro.Inject
 
 // ---------------------------------------------------------------------------
@@ -175,8 +175,6 @@ public class SenseeSenseInventoryProvider(
             availability = VerifierAvailability.Available,
             mapping =
                 SenseMapping(
-                    matched = emptyList(),
-                    unmatchedAiSenses = emptyList(),
                     extraDictionarySenses = extras,
                     confidence = Confidence.Medium,
                 ),

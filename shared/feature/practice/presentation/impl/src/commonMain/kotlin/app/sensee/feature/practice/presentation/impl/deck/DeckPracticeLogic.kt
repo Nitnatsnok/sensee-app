@@ -6,7 +6,6 @@ import app.sensee.core.decompose.logic.BaseLogic
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.library.domain.Card
-import app.sensee.feature.library.domain.CardId
 import app.sensee.feature.library.domain.CatalogRepository
 import app.sensee.feature.library.domain.DeckId
 import app.sensee.feature.practice.domain.CardReview
@@ -19,7 +18,9 @@ import app.sensee.feature.practice.presentation.api.DeckPracticeUiState
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarLabelsLoadResult
 import app.sensee.grammar.domain.GrammarLabelsProvider
+import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.core.model.ReviewRating
+import app.sensee.srs.core.model.SrsCardSnapshot
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -148,17 +149,18 @@ public class DeckPracticeLogic(
                 runCatchingCancellable {
                     reviewRepository.submitReview(
                         CardReview(
-                            cardId = CardId(cardId),
+                            cardId = SrsCardId(cardId),
                             rating = rating.toReviewRating(),
                         ),
                     )
-                }.onSuccess { reviewedCard ->
-                    val shownCount = (presentationCounts[reviewedCard.id.value] ?: 0) + 1
-                    presentationCounts[reviewedCard.id.value] = shownCount
-                    val reinject = PracticeSessionPolicy.shouldReinject(reviewedCard.srs, shownCount)
+                }.onSuccess { outcome ->
+                    val shownCount = (presentationCounts[cardId] ?: 0) + 1
+                    presentationCounts[cardId] = shownCount
+                    val reinject = PracticeSessionPolicy.shouldReinject(outcome.srs, shownCount)
                     mutableUiState.update { state ->
                         state.withReviewedCard(
-                            reviewedCard = reviewedCard,
+                            cardId = cardId,
+                            srs = outcome.srs,
                             shownCount = shownCount,
                             reinject = reinject,
                         )
@@ -175,11 +177,13 @@ public class DeckPracticeLogic(
     }
 
     private fun DeckPracticeUiState.withReviewedCard(
-        reviewedCard: Card,
+        cardId: String,
+        srs: SrsCardSnapshot,
         shownCount: Int,
         reinject: Boolean,
     ): DeckPracticeUiState {
-        val reviewedIndex = cards.indexOfFirst { it.id == reviewedCard.id.value }
+        val reviewedIndex = cards.indexOfFirst { it.id == cardId }
+        val reviewedCard = cards.getOrNull(reviewedIndex)
         val queueAfterRemoval =
             if (reviewedIndex >= 0) {
                 cards.removeAt(reviewedIndex)
@@ -187,8 +191,8 @@ public class DeckPracticeLogic(
                 cards
             }
         val nextQueue =
-            if (reinject) {
-                queueAfterRemoval.reinjectCard(reviewedCard, shownCount)
+            if (reinject && reviewedCard != null) {
+                queueAfterRemoval.reinjectCard(reviewedCard, srs, shownCount)
             } else {
                 queueAfterRemoval
             }
@@ -203,19 +207,33 @@ public class DeckPracticeLogic(
     }
 
     private fun PersistentList<DeckPracticeCardUiState>.reinjectCard(
-        reviewedCard: Card,
+        reviewedCard: DeckPracticeCardUiState,
+        srs: SrsCardSnapshot,
         shownCount: Int,
     ): PersistentList<DeckPracticeCardUiState> {
         val returningToEmptyDeck = isEmpty()
-        val insertAt = PracticeSessionPolicy.reinjectionGap(reviewedCard.srs).coerceAtMost(size)
+        val insertAt = PracticeSessionPolicy.reinjectionGap(srs).coerceAtMost(size)
         return add(
             insertAt,
-            reviewedCard.toPresentation(
+            reviewedCard.reshow(
                 presentationIndex = shownCount,
                 animateEntrance = returningToEmptyDeck,
             ),
         )
     }
+
+    // Re-show the card already in the session queue at a new presentation index:
+    // only the key, the alternating front and the entrance animation change — the
+    // display content does not, so there is no need to re-read the Card.
+    private fun DeckPracticeCardUiState.reshow(
+        presentationIndex: Int,
+        animateEntrance: Boolean,
+    ): DeckPracticeCardUiState =
+        copy(
+            presentationKey = "$id#$presentationIndex",
+            practiceFront = PracticeSessionPolicy.frontFor(id, presentationIndex),
+            animateEntrance = animateEntrance,
+        )
 
     private fun reportReviewFailure(
         throwable: Throwable,

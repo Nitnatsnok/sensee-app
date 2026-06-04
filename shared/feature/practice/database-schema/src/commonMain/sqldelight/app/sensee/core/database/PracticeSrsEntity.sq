@@ -76,6 +76,13 @@ WHERE state != 'Suspended'
 ORDER BY due_at_epoch_ms ASC
 LIMIT ?;
 
+countDue:
+SELECT COUNT(*)
+FROM practice_srs_card
+WHERE state != 'Suspended'
+  AND due_at_epoch_ms IS NOT NULL
+  AND due_at_epoch_ms <= ?;
+
 insertPracticeSrsReviewLog:
 INSERT OR REPLACE INTO practice_srs_review_log(
     id,

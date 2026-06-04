@@ -1,7 +1,7 @@
 package app.sensee.feature.profile.presentation.impl.aisettings
 
-import app.sensee.ai.core.AiKeyCheck
-import app.sensee.ai.core.AiModelCatalog
+import app.sensee.ai.core.contract.AiKeyCheck
+import app.sensee.ai.core.contract.AiModelCatalog
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics

@@ -1,6 +1,6 @@
 package app.sensee.ai.llm.catalog
 
-import app.sensee.ai.core.AiKeyCheck
+import app.sensee.ai.core.contract.AiKeyCheck
 import app.sensee.ai.llm.api.LlmHttpClientFactory
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

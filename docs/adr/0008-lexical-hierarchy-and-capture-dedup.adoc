@@ -1,48 +1,50 @@
-= ADR-008: Лексическая иерархия и дедупликация capture-материала
-:revdate: 2026-05-27
+= ADR-008: Идентичность смысла и дедуп capture-материала — стабильный `sense_id` поверх единого sense-store
+:revdate: 2026-06-05
 
 Статус:: Accepted
-Дата:: 2026-05-27
+Дата:: 2026-06-05
 Ответственные:: Konstantin Apukhtin
-Драйверы решения:: Functional Suitability (family-навигация выводится из простого добавления карточек — пользовательский сценарий из обсуждений), Reliability (повторный capture не сносит SRS-прогресс), Maintainability (QG-3: family и form-карточки выводятся из confirm-данных, без отдельной модели хранения)
+Драйверы решения:: Reliability (arc42/10: повторный capture, правка и ре-синк не сносят SRS-прогресс), Functional Suitability (QG-1: один смысл — один профиль обучения во всех наборах и сессиях), Maintainability (QG-3: идентичность и дедуп не размазаны по проекциям, нет второго source-of-truth)
 
 Контекст::
-Library уже имела модель `Lemma` + `Card`, помеченную как family-носитель, но capture не наполнял `Sense.headLemma`. В итоге `come`, `come across`, `come up` падали под разные lemma-id и family-граф не выстраивался. Дополнительно: form-карточки нерегулярных глаголов привязывались к `entry.id`, и при повторном capture-е того же глагола ID менялись — SRS-состояние сиротилось. И каждое подтверждение того же term-а создавало второй `LexicalEntry`-row, дублируя material.
+Эта запись заменяет прежнее ядро ADR-008 (производная иерархия `LexicalLemma`/`LexicalUnit` поверх `lexical_entry` + `senses_json`, дедуп через `confirmSenses`-merge, form-id `captured:lemma:<head>:form:`). Прежняя модель привязывала идентичность смысла и его SRS к контенту и позиции: SRS-ключ sense-карты был позиционным (`captured:<entryId>:<index>`), form-карты — производным от леммы, а повторное подтверждение того же term-а мёрджило senses в существующую entry и переиндексировало карты. Наблюдаемые дефекты: реордер или удаление смысла (сдвиг индекса), правка `headLemma`/`baseLemma` (смена lemma-ключа form-карт), term-collision merge в `updateConfirmedEntry` (delete + reindex под чужой id) и re-capture с изменённым контентом — **сиротили накопленное SRS-состояние**. Параллельно `Sense` хранился в двух durable-схемах (`lexical_entry.senses_json` во `vocabulary-editor` и `practice_card.sense_json` в `library`) с размытым ownership.
 
 Решение::
-Иерархия — три уровня без новых таблиц: `LexicalLemma` (виртуальный, derived из `Sense.headLemma`), `LexicalUnit` (тоже derived, identity = (term, GrammarUnitType)), `Card` (sense — текущее). Хранение всё в существующих `lexical_entry` + `SenseDto`-JSON (`Sense` живёт в нейтральном `shared/lexicon/domain`, `SenseDto` — в `shared/lexicon/serialization`); `Sense` несёт поля `headLemma: String?`, `components: List<UnitComponent>`. AI-suggest несёт эти же поля через `EnrichmentSuggestion`. Heuristic fallback в `CapturedCatalogDerivation` использует `headLemma` → `baseLemma` → `entry.term`, поэтому curated/LLM/manual capture группируется по семье корректно даже при частично заполненных данных.
+Идентичность смысла — **стабильный типизированный `SenseId`**, не контент и не позиция. Решение охватывает четыре связанных аспекта.
 
-Form-карточки нерегулярных глаголов:
+. *Единый sense-store.* `Sense` живёт ровно в одной durable-таблице `sense` (blob `sense_json` = истина агрегата, производные колонки пересчитываются на `upsert`), которой владеет `shared/lexicon`. Схема, агрегация в `SenseeDatabase` и konsist по слоям описаны в ADR-002. Две прежние durable-копии (`lexical_entry`, `practice_card`) сняты.
 
-* Триггер — `Sense.irregularForms != null`, POS-агностичный (раньше требовался `GrammarUnitType.IrregularVerb`).
-* Identity form-карточки — lemma-stable: `captured:lemma:<head>:form:<form-slot>`, не зависит от `entry.id` или `sense-index`. Повторный capture того же глагола использует существующие form-карточки, SRS-state не теряется.
-* Infinitive-вариант не генерируется — это сам headword, drill не даёт нового факта.
+. *`sense_id` = идентичность + якорь SRS; четыре ключа, по одной задаче.* `sense_id` (PK, value class `SenseId`) — кто это; `lemma_key` — как группируем (семья леммы, derived-проекция, не агрегат-строка); `content_key` (`surfaceForm|unitType|translation`) — дешёвая проверка точного дубля; `embedding` — мягкое «похоже» (навесное). Генерация: Personal — `kotlin.uuid.Uuid`; Service — детерминированный namespaced id из `source_ref` (`svc-` + FNV-1a hex, **без `:`** — иначе сломал бы парсинг form-key), стабильный между синками. SRS ключуется по `sense_id`: базовая карта = `sense_id`, формы = `${sense_id}:form:${formId}`, где `formId` — грамматический слот (`GrammarForm.id`), а не позиция → стабилен при правках. Form-карты — POS-агностичны (триггер — наличие `irregularForms`).
 
-Capture dedup:
+. *Один транзакционный write API.* Новые записи идут с явным `WriteIntent`: `ResolveOrMint` переиспользует существующий `sense_id` (SRS цел) и минтит только при отсутствии совпадения; `UpdateExisting(sense_id)` заменяет контент выбранной строки; `ForceMint` создаёт новую строку даже при совпавшем `content_key`. `resolveOrMint` — **origin-scoped** (user-write по `content_key` среди `origin=Personal`; Service-ingest по `source_ref`) и выполняет `resolve + upsert` в одной транзакции. Среди Personal `content_key` не уникален → при ≥2 кандидатах tie-break **`max(updated)`** (lexicon-owned сигнал, konsist-safe), только для `ResolveOrMint`. Правка существующего — **id-preserving** (тот же `sense_id`, пересчёт производных колонок, без re-resolve/merge); коллизия `content_key` с другим смыслом → информационное предупреждение, дубль разрешён (ноль потерь SRS). Service-путь защищён `CHECK(origin != 'Service' OR source_ref IS NOT NULL)` и partial unique index по `source_ref`.
 
-* `DurableVocabularyRepository.confirmSenses` при confirm-е проверяет, есть ли уже Confirmed-entry с тем же normalized term. Если есть — мёрджит новые senses в существующую entry (по `deriveSenseContentKey`), черновик удаляется. Если нет — обычный путь.
-* `deriveSenseContentKey(Sense)` хеширует identifying-поля sense (surfaceForm + unitType.id + translation), не `headLemma`/`baseLemma` и не explanation. Поэтому новая редакция объяснения или более позднее verifier-обогащение lemma-метаданными не плодит второй sense.
+. *Дедуп — профилактика, не merge.* `confirmSenses`-merge и `updateConfirmedEntry` delete+reindex **упразднены** (нет entry — нечего переиндексировать, orphan-баг исчезает). Профилактика: `ResolveOrMint` + точный `content_key` на всех путях (пакет одного confirm дедуплицируется по `content_key` до записи); черновики с пустым `translation` **никогда не схлопываются** (resolve применяется только к полному ключу). Остаточный хвост (`ForceMint` «создать новую», правка-в-коллизию, кросс-origin Personal+Service) принимается явно и всплывает в «возможные дубли» для ручной консолидации (`SearchPort`, навесное). Сервисные наборы — две операции владения: **subscribe** (зеркало, `origin=Service`, ре-синк по `source_ref` перетирает контент, SRS на `sense_id` цел) и **claim** (детачнутая Personal-копия: `ForceMint` + `copySnapshot` FSRS-снимка на новый `sense_id`, без связи с набором).
 
 Альтернативы::
 
-* Отдельная таблица `lexical_unit` с FK на лемму. Отклонено: для домена с derived-проекцией не даёт ничего сверх group-by по `headLemma`, удваивает source-of-truth и требует миграции.
-* Persisted `LexicalUnitId` per-sense. Отклонено по той же причине; identity-ключ выводится из (term, entryType) на лету.
-* Form-card identity через entry.id. Отклонено: реально наблюдалось — SRS-state сиротится.
+* Отдельная таблица `lexical_unit` / persisted `LexicalUnitId` per-sense. Прежний ADR-008 отклонял их как удвоение source-of-truth поверх `lexical_entry`. Теперь вопрос снят иначе: единый sense-store с per-sense строками + derived `lemma_key`-группировка заменяет и entry-агрегат, и производную иерархию; identity = `sense_id`, не `(term, GrammarUnitType)`.
+* Сохранить `lexical_entry` рядом с новым стором (две durable-копии). Отклонено: новый sense-store **заменяет** `lexical_entry`, source-of-truth остаётся один — возражение прежнего ADR «отдельная таблица удваивает source-of-truth» снято тем, что копия одна, а возражение «требует миграции» снято режимом dev-reset (внешних данных и продакшен-потребителей нет, ADR-002).
+* Идентичность/SRS на контенте (`content_key`) или позиции (`index`). Отклонено: реально наблюдалось сиротство SRS при реордере/правке/re-capture; `content_key` оставлен только как сигнал точного дубля для `ResolveOrMint`, в SRS-ключ не входит.
+* `confirmSenses`-merge как механизм дедупа. Отклонено: delete + reindex переиндексировал карты под чужой `sense_id` (наблюдаемый orphan-баг); профилактика на write (`ResolveOrMint` reuse) плюс остаточный хвост в «возможные дубли» сохраняет SRS и не теряет незавершённые черновики.
+* Сырой `source_ref` как Service `sense_id`. Отклонено: `:` в `source_ref` сломал бы парсинг form-key `${sense_id}:form:`, а общий PK-столбец не должен путать Personal-UUID и Service-id; namespaced `svc-` + FNV-1a hex детерминирован и colon-free.
 
-Последствия (реализованные, 2026-05-27)::
+Последствия (реализованные, 2026-06-05)::
 
-* `Sense` (с полями `headLemma`/`components`) и read-model `LexicalEntry`/`EntryStatus` живут в `shared/lexicon/domain`, `SenseCandidate.verification` — в `feature/vocabulary-editor/domain`; персистится через `SenseDto`-JSON (`shared/lexicon/serialization`), без schema-bump-а.
-* `CapturedCatalogDerivation` группирует cards по `headLemma`-derived `LemmaId`; form-карточки — POS-агностичные и lemma-stable; повторный capture не дублирует form-карточки разных senses одного глагола.
-* `confirmSenses` мёрджит при совпадении normalized term, удаляет промежуточный draft; SRS-state существующих senses сохраняется.
-* AI-suggestion обогащена `unitType`/`headLemma`/`components`; маппер пробрасывает их в candidate. `entryType` остаётся verifier-термином и на AI wire не выносится.
+* `shared/lexicon/domain`: value class `SenseId` (поле `.value`), `StoredSense` (read-model: `sense_id` + метаданные + `Sense`), `SenseStatus` (`Draft`|`Confirmed`), `SenseOrigin` (`Personal`|`Service`), `WriteIntent` (`ResolveOrMint`/`UpdateExisting`/`ForceMint`), раздельные `SenseReadRepository` + `SenseWriteRepository`, `deriveLemmaKey`/`deriveSenseContentKey`, confirm-gate `isConfirmable`/`requireConfirmable` (непустой `translation` + ≥1 `ContextualApplication`). `LexicalEntry`/`EntryStatus`/`LexiconRepository` удалены.
+* `shared/lexicon/database-schema`: таблица `sense` с `CHECK` по `source_ref`, partial unique index `sense_service_source_ref` и индексами `lemma_key`/`status`/`content_key`. `shared/lexicon/data`: `DefaultSenseRepository` (один impl обоих контрактов), `DefaultSenseIdFactory` (Personal `Uuid` / Service `svc-` + FNV-1a), origin-scoped `resolveOrMint`, tie-break `max(updated)`, blank-translation черновики не схлопываются.
+* SRS re-key: `SenseCatalogProjection` строит карту `id = sense_id` и формы `${sense_id}:form:${GrammarForm.id}`; `SrsCardStore.copySnapshot` (default-метод поверх `getCard`/`saveCard`) клонирует FSRS-снимок на новый id для `claim`.
+* `lexical_entry`/`practice_card`/`practice_lemma`, `CapturedCatalogDerivation` и `confirmSenses`-merge удалены; `VocabularyCaptureLogic` пишет через `SenseWriteRepository`, `library` читает через `SenseCatalogProjection`. `claim` — оркестратор в `library/data` (`DefaultClaimRepository`) поверх нейтрального `DatabaseTransactionRunner` (`shared/database`): `upsert(ForceMint, Personal)` + `copySnapshot` в одной транзакции.
+* Konsist-инварианты: `LexiconLayeringKonsistTest` (`lexicon/domain` без persistence/SRS/feature; `lexicon/data` без feature/SRS, `shared/database` разрешён) и `PracticeDomainLeafKonsistTest`. `claim` не входит в `SenseWriteRepository` по построению — он оркестратор в `library/data`. Тесты пинят `sense_id`-стабильность (re-capture сохраняет `sense_id` и SRS через реальный `DefaultSenseRepository`), constraints, `copySnapshot`, `claim`.
 
 Последствия (ожидаемые)::
 
-* Family-навигация в Library через `Lemma.relatedCards` работает out-of-the-box на любых confirmed senses, как только заведена `headLemma`. UI этого ещё нет — карта рендерится через существующие Library-экраны без family-разреза.
-* Если в будущем понадобится unit-level metadata (например, кэш verifier-evidence per-unit), это потребует завести `lexical_unit` table — отдельный ADR, опираемый на текущие identity-форматы (так что миграция данных тривиальна).
+* Один смысл → один `sense_id` → один SRS-профиль во всех наборах и сессиях: практика в любом месте двигает прогресс везде (разблокирует эфемерную сессию EB-3 — список `sense_id` без доработок модели).
+* Остаточные дубли (`ForceMint`, правка-в-коллизию, кросс-origin) консолидируются позже через «возможные дубли» (`SearchPort`, навесное); tie-break `max(updated)` даёт детерминизм, а не максимум сохранённого SRS.
+* Form-навигация по семье леммы (`lemma_key`) и draft-очередь — проекции единого стора; их UI остаётся planned (навесное).
+* `sense_embedding` (мягкое «похоже») — отдельная lean-таблица, навесное после ядра; `sense`-строка не несёт вектор.
 
 Связанные ADR::
 
-* link:0001-sense-first-lexical-model.adoc[ADR-001] (refines) — sense-сначала остаётся, family/form-карточки — derived проекции confirmed-материала.
-* link:0002-feature-owned-schema-with-aggregated-database.adoc[ADR-002] (mirrors) — `lexical_entry` остаётся feature-owned schema; иерархия — без новой schema-сущности.
-* link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] (consumes) — verifier использует те же identity-форматы для family-evidence.
+* link:0001-sense-first-lexical-model.adoc[ADR-001] (refines) — sense-first остаётся; идентичность смысла теперь стабильный `sense_id`, карта — проекция строки `sense` + SRS.
+* link:0002-feature-owned-schema-with-aggregated-database.adoc[ADR-002] (refines) — `lexicon` владеет канонической `sense`-схемой; deck-схема и `claim`-оркестратор поверх `DatabaseTransactionRunner` описаны там.
+* link:0004-fsrs-is-single-scheduling-source-of-truth.adoc[ADR-004] (consumes) — SRS ключуется по `sense_id`; `practice/domain` — лист над `srs.core`, due-count — узкий contract.

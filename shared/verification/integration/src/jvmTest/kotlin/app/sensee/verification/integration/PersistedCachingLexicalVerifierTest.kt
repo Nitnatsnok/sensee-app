@@ -1,8 +1,6 @@
 package app.sensee.verification.integration
 
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
-import app.cash.sqldelight.db.QueryResult
-import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.sensee.core.observability.analytics.NoOpAnalyticsTracker
 import app.sensee.core.observability.crash.NoOpCrashReporter
@@ -10,27 +8,25 @@ import app.sensee.core.observability.diagnostics.DefaultAppDiagnostics
 import app.sensee.core.observability.logging.DefaultAppLoggerFactory
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
-import app.sensee.verification.core.AttributionPolicy
-import app.sensee.verification.core.Confidence
-import app.sensee.verification.core.LexicalEntryLookup
-import app.sensee.verification.core.LexicalEntryLookupResult
-import app.sensee.verification.core.LexicalEntryTypeHint
-import app.sensee.verification.core.LexicalExistence
-import app.sensee.verification.core.LexicalSource
-import app.sensee.verification.core.LexicalSourceRef
-import app.sensee.verification.core.LexicalVerificationQuery
-import app.sensee.verification.core.LicensePolicy
-import app.sensee.verification.core.NormalizationOutcome
-import app.sensee.verification.core.SenseHint
-import app.sensee.verification.core.VerificationPolicy
-import app.sensee.verification.core.VerifierAvailability
+import app.sensee.verification.core.contract.AttributionPolicy
+import app.sensee.verification.core.contract.Confidence
+import app.sensee.verification.core.contract.LexicalEntryLookup
+import app.sensee.verification.core.contract.LexicalEntryLookupResult
+import app.sensee.verification.core.contract.LexicalEntryTypeHint
+import app.sensee.verification.core.contract.LexicalExistence
+import app.sensee.verification.core.contract.LexicalSource
+import app.sensee.verification.core.contract.LexicalSourceRef
+import app.sensee.verification.core.contract.LexicalVerificationQuery
+import app.sensee.verification.core.contract.LicensePolicy
+import app.sensee.verification.core.contract.NormalizationOutcome
+import app.sensee.verification.core.contract.VerificationPolicy
+import app.sensee.verification.core.contract.VerifierAvailability
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -111,36 +107,6 @@ class PersistedCachingLexicalVerifierTest {
         }
 
     @Test
-    fun `persisted cache key does not store sense hint prose in plaintext`() =
-        runTest {
-            val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-            SenseeDatabase.Schema.create(driver).await()
-            val sharedProvider = StaticDatabaseProvider(SenseeDatabase(driver))
-            val counter = CountingLookup()
-            val verifier = persisted(counter, sharedProvider)
-
-            verifier.verify(
-                query("come").copy(
-                    senseHints =
-                        listOf(
-                            SenseHint(
-                                id = "private-sense",
-                                definition = "private definition from user notes",
-                                translation = "private translation",
-                                example = "private example sentence",
-                            ),
-                        ),
-                ),
-            )
-
-            val row = driver.cacheRows().single()
-            assertEquals(true, row.key.startsWith("v4:"))
-            assertFalse(row.key.contains("private"), "persisted primary key must not expose raw hint text")
-            assertFalse(row.fingerprint.contains("private"), "persisted fingerprint must not expose raw hint text")
-            assertEquals(1, counter.calls)
-        }
-
-    @Test
     fun `cache key separates allow network policy`() =
         runTest {
             val sharedDb = freshDatabase()
@@ -167,42 +133,6 @@ class PersistedCachingLexicalVerifierTest {
             secondSession.verify(query("come across"))
 
             assertEquals(2, counter.calls, "source-less reports are only safe for in-memory caching")
-        }
-
-    @Test
-    fun `a query with examplesToValidate bypasses both layers because findings are sentence-specific`() =
-        runTest {
-            // ADR-009 invariant: example findings depend on the concrete
-            // sentences, so a lemma-keyed cache would return stale findings
-            // for new sentences. Two identical-by-lemma queries that each
-            // carry examplesToValidate must each hit the delegate.
-            val sharedDb = freshDatabase()
-            val sharedProvider = StaticDatabaseProvider(sharedDb)
-            val counter = CountingLookup()
-            val verifier = persisted(counter, sharedProvider)
-
-            val baseQuery = query("come")
-            val withExample =
-                baseQuery.copy(
-                    examplesToValidate =
-                        listOf(
-                            app.sensee.verification.core.ExampleHint(
-                                sentence =
-                                    app.sensee.verification.core.SentenceHint(
-                                        listOf(
-                                            app.sensee.verification.core.SentenceHint.Segment.Text(
-                                                "She comes across.",
-                                            ),
-                                        ),
-                                    ),
-                            ),
-                        ),
-                )
-
-            verifier.verify(withExample)
-            verifier.verify(withExample)
-
-            assertEquals(2, counter.calls, "example-validating queries must skip the cache entirely")
         }
 
     @Test
@@ -366,7 +296,6 @@ class PersistedCachingLexicalVerifierTest {
                         frequencyProviders = emptySet(),
                         cefrProviders = emptySet(),
                         senseInventoryProviders = emptySet(),
-                        exampleQualityCheckers = emptySet(),
                         familyProviders = emptySet(),
                     ),
                 sourceCatalog = setOf(source),
@@ -398,29 +327,6 @@ class PersistedCachingLexicalVerifierTest {
         if (rows != null) count = rows
         return count
     }
-
-    private suspend fun SqlDriver.cacheRows(): List<CacheRow> =
-        executeQuery(
-            identifier = null,
-            sql = "SELECT cache_key, key_fingerprint FROM lexical_verification_cache",
-            mapper = { cursor ->
-                val rows = mutableListOf<CacheRow>()
-                while ((cursor.next() as QueryResult.Value).value) {
-                    val key = cursor.getString(0)
-                    val fingerprint = cursor.getString(1)
-                    if (key != null && fingerprint != null) {
-                        rows += CacheRow(key, fingerprint)
-                    }
-                }
-                QueryResult.Value(rows)
-            },
-            parameters = 0,
-        ).await()
-
-    private data class CacheRow(
-        val key: String,
-        val fingerprint: String,
-    )
 
     private class StaticDatabaseProvider(
         private val db: SenseeDatabase,

@@ -6,259 +6,280 @@
     {
       "id": "card-resilient",
       "lemma_id": "lemma-resilient",
-      "translation": "устойчивый, способный быстро восстановиться",
-      "surface_form": "resilient",
-      "unit_type": "adjective",
-      "base_lemma": "resilient",
-      "head_lemma": "resilient",
-      "explanation": "Способен продолжать работу при сбоях и быстро восстанавливаться после них.",
-      "examples": [
-        {
-          "sentence": "A [[resilient]] system keeps working even when some parts fail.",
-          "translation": "Устойчивая система продолжает работать, даже когда отказывают отдельные части.",
-          "alignment": [
-            { "source": "A resilient system", "target": "Устойчивая система" },
-            { "source": "keeps working", "target": "продолжает работать" },
-            { "source": "even when some parts fail", "target": "даже когда отказывают отдельные части" }
-          ]
-        }
-      ],
-      "synonyms": ["robust", "fault-tolerant"],
-      "collocations": ["resilient system", "resilient design"],
-      "grammar_tags": [
-        { "category": "degree", "form": "positive" }
-      ]
+      "sense": {
+        "translation": "устойчивый, способный быстро восстановиться",
+        "surfaceForm": "resilient",
+        "unitType": "adjective",
+        "baseLemma": "resilient",
+        "headLemma": "resilient",
+        "explanation": "Способен продолжать работу при сбоях и быстро восстанавливаться после них.",
+        "contextualApplications": [
+          {
+            "sentence": "A [[resilient]] system keeps working even when some parts fail.",
+            "translation": "Устойчивая система продолжает работать, даже когда отказывают отдельные части.",
+            "alignment": [
+              { "source": "A resilient system", "target": "Устойчивая система" },
+              { "source": "keeps working", "target": "продолжает работать" },
+              { "source": "even when some parts fail", "target": "даже когда отказывают отдельные части" }
+            ]
+          }
+        ],
+        "synonyms": ["robust", "fault-tolerant"],
+        "collocations": ["resilient system", "resilient design"],
+        "grammarTags": [
+          { "category": "degree", "form": "positive" }
+        ],
+        "cefr": "B2"
+      }
     },
     {
       "id": "card-trade-off",
       "lemma_id": "lemma-trade-off",
-      "translation": "компромисс между вариантами",
-      "surface_form": "trade-off",
-      "unit_type": "noun",
-      "base_lemma": "trade-off",
-      "head_lemma": "trade-off",
-      "explanation": "Выбор, где выигрыш в одном оплачивается потерей в другом.",
-      "examples": [
-        {
-          "sentence": "Every architecture decision has a [[trade-off]].",
-          "translation": "У каждого архитектурного решения есть компромисс.",
-          "alignment": [
-            { "source": "Every architecture decision", "target": "У каждого архитектурного решения" },
-            { "source": "has a trade-off", "target": "есть компромисс" }
-          ]
-        }
-      ],
-      "synonyms": ["compromise", "balance"],
-      "collocations": ["make a trade-off", "a clear trade-off"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "компромисс между вариантами",
+        "surfaceForm": "trade-off",
+        "unitType": "noun",
+        "baseLemma": "trade-off",
+        "headLemma": "trade-off",
+        "explanation": "Выбор, где выигрыш в одном оплачивается потерей в другом.",
+        "contextualApplications": [
+          {
+            "sentence": "Every architecture decision has a [[trade-off]].",
+            "translation": "У каждого архитектурного решения есть компромисс.",
+            "alignment": [
+              { "source": "Every architecture decision", "target": "У каждого архитектурного решения" },
+              { "source": "has a trade-off", "target": "есть компромисс" }
+            ]
+          }
+        ],
+        "synonyms": ["compromise", "balance"],
+        "collocations": ["make a trade-off", "a clear trade-off"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     },
     {
       "id": "card-cohesion",
       "lemma_id": "lemma-cohesion",
-      "translation": "связность внутри модуля или компонента",
-      "surface_form": "cohesion",
-      "unit_type": "noun",
-      "base_lemma": "cohesion",
-      "head_lemma": "cohesion",
-      "explanation": "Насколько элементы внутри одного модуля посвящены одной общей задаче.",
-      "examples": [
-        {
-          "sentence": "High [[cohesion]] makes a module easier to understand.",
-          "translation": "Высокая связность делает модуль понятнее.",
-          "alignment": [
-            { "source": "High cohesion", "target": "Высокая связность" },
-            { "source": "makes a module easier to understand", "target": "делает модуль понятнее" }
-          ]
-        }
-      ],
-      "synonyms": ["unity"],
-      "collocations": ["high cohesion", "low cohesion"],
-      "grammar_tags": [
-        { "category": "countability", "form": "uncountable" }
-      ]
+      "sense": {
+        "translation": "связность внутри модуля или компонента",
+        "surfaceForm": "cohesion",
+        "unitType": "noun",
+        "baseLemma": "cohesion",
+        "headLemma": "cohesion",
+        "explanation": "Насколько элементы внутри одного модуля посвящены одной общей задаче.",
+        "contextualApplications": [
+          {
+            "sentence": "High [[cohesion]] makes a module easier to understand.",
+            "translation": "Высокая связность делает модуль понятнее.",
+            "alignment": [
+              { "source": "High cohesion", "target": "Высокая связность" },
+              { "source": "makes a module easier to understand", "target": "делает модуль понятнее" }
+            ]
+          }
+        ],
+        "synonyms": ["unity"],
+        "collocations": ["high cohesion", "low cohesion"],
+        "grammarTags": [
+          { "category": "countability", "form": "uncountable" }
+        ]
+      }
     },
     {
       "id": "card-boundary",
       "lemma_id": "lemma-boundary",
-      "translation": "граница ответственности",
-      "surface_form": "boundary",
-      "unit_type": "noun",
-      "base_lemma": "boundary",
-      "head_lemma": "boundary",
-      "explanation": "Линия, отделяющая одну зону ответственности системы от другой.",
-      "examples": [
-        {
-          "sentence": "A clear [[boundary]] protects the domain model.",
-          "translation": "Чёткая граница защищает доменную модель.",
-          "alignment": [
-            { "source": "A clear boundary", "target": "Чёткая граница" },
-            { "source": "protects the domain model", "target": "защищает доменную модель" }
-          ]
-        }
-      ],
-      "synonyms": ["border", "limit"],
-      "collocations": ["a clear boundary", "module boundary"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "граница ответственности",
+        "surfaceForm": "boundary",
+        "unitType": "noun",
+        "baseLemma": "boundary",
+        "headLemma": "boundary",
+        "explanation": "Линия, отделяющая одну зону ответственности системы от другой.",
+        "contextualApplications": [
+          {
+            "sentence": "A clear [[boundary]] protects the domain model.",
+            "translation": "Чёткая граница защищает доменную модель.",
+            "alignment": [
+              { "source": "A clear boundary", "target": "Чёткая граница" },
+              { "source": "protects the domain model", "target": "защищает доменную модель" }
+            ]
+          }
+        ],
+        "synonyms": ["border", "limit"],
+        "collocations": ["a clear boundary", "module boundary"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     },
     {
       "id": "card-eventually",
       "lemma_id": "lemma-eventually",
-      "translation": "в конечном итоге",
-      "surface_form": "eventually",
-      "unit_type": "adverb",
-      "base_lemma": "eventually",
-      "head_lemma": "eventually",
-      "explanation": "Спустя некоторое время, но обязательно — не «возможно».",
-      "examples": [
-        {
-          "sentence": "The cache will [[eventually]] become consistent.",
-          "translation": "Кэш в конечном итоге станет согласованным.",
-          "alignment": [
-            { "source": "The cache", "target": "Кэш" },
-            { "source": "will eventually become consistent", "target": "в конечном итоге станет согласованным" }
-          ]
-        }
-      ],
-      "synonyms": ["ultimately", "in the end"],
-      "collocations": ["eventually consistent"],
-      "grammar_tags": [
-        { "category": "degree", "form": "positive" }
-      ]
+      "sense": {
+        "translation": "в конечном итоге",
+        "surfaceForm": "eventually",
+        "unitType": "adverb",
+        "baseLemma": "eventually",
+        "headLemma": "eventually",
+        "explanation": "Спустя некоторое время, но обязательно — не «возможно».",
+        "contextualApplications": [
+          {
+            "sentence": "The cache will [[eventually]] become consistent.",
+            "translation": "Кэш в конечном итоге станет согласованным.",
+            "alignment": [
+              { "source": "The cache", "target": "Кэш" },
+              { "source": "will eventually become consistent", "target": "в конечном итоге станет согласованным" }
+            ]
+          }
+        ],
+        "synonyms": ["ultimately", "in the end"],
+        "collocations": ["eventually consistent"],
+        "grammarTags": [
+          { "category": "degree", "form": "positive" }
+        ]
+      }
     },
     {
       "id": "card-coupling",
       "lemma_id": "lemma-coupling",
-      "translation": "связанность между модулями",
-      "surface_form": "coupling",
-      "unit_type": "noun",
-      "base_lemma": "coupling",
-      "head_lemma": "coupling",
-      "explanation": "Насколько сильно один модуль зависит от другого.",
-      "examples": [
-        {
-          "sentence": "Tight [[coupling]] makes change expensive.",
-          "translation": "Сильная связанность делает изменения дорогими.",
-          "alignment": [
-            { "source": "Tight coupling", "target": "Сильная связанность" },
-            { "source": "makes change expensive", "target": "делает изменения дорогими" }
-          ]
-        }
-      ],
-      "synonyms": ["dependency"],
-      "collocations": ["tight coupling", "loose coupling"],
-      "grammar_tags": [
-        { "category": "countability", "form": "uncountable" }
-      ]
+      "sense": {
+        "translation": "связанность между модулями",
+        "surfaceForm": "coupling",
+        "unitType": "noun",
+        "baseLemma": "coupling",
+        "headLemma": "coupling",
+        "explanation": "Насколько сильно один модуль зависит от другого.",
+        "contextualApplications": [
+          {
+            "sentence": "Tight [[coupling]] makes change expensive.",
+            "translation": "Сильная связанность делает изменения дорогими.",
+            "alignment": [
+              { "source": "Tight coupling", "target": "Сильная связанность" },
+              { "source": "makes change expensive", "target": "делает изменения дорогими" }
+            ]
+          }
+        ],
+        "synonyms": ["dependency"],
+        "collocations": ["tight coupling", "loose coupling"],
+        "grammarTags": [
+          { "category": "countability", "form": "uncountable" }
+        ]
+      }
     },
     {
       "id": "card-scalable",
       "lemma_id": "lemma-scalable",
-      "translation": "масштабируемый",
-      "surface_form": "scalable",
-      "unit_type": "adjective",
-      "base_lemma": "scalable",
-      "head_lemma": "scalable",
-      "explanation": "Способен справляться с ростом нагрузки без переписывания.",
-      "examples": [
-        {
-          "sentence": "We need a [[scalable]] design before traffic grows.",
-          "translation": "Нам нужен масштабируемый дизайн до роста трафика.",
-          "alignment": [
-            { "source": "We need", "target": "Нам нужен" },
-            { "source": "a scalable design", "target": "масштабируемый дизайн" },
-            { "source": "before traffic grows", "target": "до роста трафика" }
-          ]
-        }
-      ],
-      "synonyms": ["extensible"],
-      "collocations": ["scalable design", "scalable architecture"],
-      "grammar_tags": [
-        { "category": "degree", "form": "positive" }
-      ]
+      "sense": {
+        "translation": "масштабируемый",
+        "surfaceForm": "scalable",
+        "unitType": "adjective",
+        "baseLemma": "scalable",
+        "headLemma": "scalable",
+        "explanation": "Способен справляться с ростом нагрузки без переписывания.",
+        "contextualApplications": [
+          {
+            "sentence": "We need a [[scalable]] design before traffic grows.",
+            "translation": "Нам нужен масштабируемый дизайн до роста трафика.",
+            "alignment": [
+              { "source": "We need", "target": "Нам нужен" },
+              { "source": "a scalable design", "target": "масштабируемый дизайн" },
+              { "source": "before traffic grows", "target": "до роста трафика" }
+            ]
+          }
+        ],
+        "synonyms": ["extensible"],
+        "collocations": ["scalable design", "scalable architecture"],
+        "grammarTags": [
+          { "category": "degree", "form": "positive" }
+        ]
+      }
     },
     {
       "id": "card-latency",
       "lemma_id": "lemma-latency",
-      "translation": "задержка отклика",
-      "surface_form": "latency",
-      "unit_type": "noun",
-      "base_lemma": "latency",
-      "head_lemma": "latency",
-      "explanation": "Время, которое проходит от запроса до ответа на него.",
-      "examples": [
-        {
-          "sentence": "Caching reduces read [[latency]].",
-          "translation": "Кэширование снижает задержку чтения.",
-          "alignment": [
-            { "source": "Caching", "target": "Кэширование" },
-            { "source": "reduces read latency", "target": "снижает задержку чтения" }
-          ]
-        }
-      ],
-      "synonyms": ["delay", "lag"],
-      "antonyms": ["throughput"],
-      "collocations": ["low latency", "read latency"],
-      "grammar_tags": [
-        { "category": "countability", "form": "uncountable" }
-      ]
+      "sense": {
+        "translation": "задержка отклика",
+        "surfaceForm": "latency",
+        "unitType": "noun",
+        "baseLemma": "latency",
+        "headLemma": "latency",
+        "explanation": "Время, которое проходит от запроса до ответа на него.",
+        "contextualApplications": [
+          {
+            "sentence": "Caching reduces read [[latency]].",
+            "translation": "Кэширование снижает задержку чтения.",
+            "alignment": [
+              { "source": "Caching", "target": "Кэширование" },
+              { "source": "reduces read latency", "target": "снижает задержку чтения" }
+            ]
+          }
+        ],
+        "synonyms": ["delay", "lag"],
+        "antonyms": ["throughput"],
+        "collocations": ["low latency", "read latency"],
+        "grammarTags": [
+          { "category": "countability", "form": "uncountable" }
+        ]
+      }
     },
     {
       "id": "card-throughput",
       "lemma_id": "lemma-throughput",
-      "translation": "пропускная способность",
-      "surface_form": "throughput",
-      "unit_type": "noun",
-      "base_lemma": "throughput",
-      "head_lemma": "throughput",
-      "explanation": "Объём работы, который система успевает выполнить за единицу времени.",
-      "examples": [
-        {
-          "sentence": "Batching improved [[throughput]] tenfold.",
-          "translation": "Пакетная обработка повысила пропускную способность в десять раз.",
-          "alignment": [
-            { "source": "Batching", "target": "Пакетная обработка" },
-            { "source": "improved throughput", "target": "повысила пропускную способность" },
-            { "source": "tenfold", "target": "в десять раз" }
-          ]
-        }
-      ],
-      "synonyms": ["capacity"],
-      "collocations": ["high throughput", "improve throughput"],
-      "grammar_tags": [
-        { "category": "countability", "form": "uncountable" }
-      ]
+      "sense": {
+        "translation": "пропускная способность",
+        "surfaceForm": "throughput",
+        "unitType": "noun",
+        "baseLemma": "throughput",
+        "headLemma": "throughput",
+        "explanation": "Объём работы, который система успевает выполнить за единицу времени.",
+        "contextualApplications": [
+          {
+            "sentence": "Batching improved [[throughput]] tenfold.",
+            "translation": "Пакетная обработка повысила пропускную способность в десять раз.",
+            "alignment": [
+              { "source": "Batching", "target": "Пакетная обработка" },
+              { "source": "improved throughput", "target": "повысила пропускную способность" },
+              { "source": "tenfold", "target": "в десять раз" }
+            ]
+          }
+        ],
+        "synonyms": ["capacity"],
+        "collocations": ["high throughput", "improve throughput"],
+        "grammarTags": [
+          { "category": "countability", "form": "uncountable" }
+        ]
+      }
     },
     {
       "id": "card-bottleneck",
       "lemma_id": "lemma-bottleneck",
-      "translation": "узкое место",
-      "surface_form": "bottleneck",
-      "unit_type": "noun",
-      "base_lemma": "bottleneck",
-      "head_lemma": "bottleneck",
-      "explanation": "Самый медленный участок, ограничивающий скорость всей системы.",
-      "examples": [
-        {
-          "sentence": "The database is the current [[bottleneck]].",
-          "translation": "База данных — текущее узкое место.",
-          "alignment": [
-            { "source": "The database", "target": "База данных" },
-            { "source": "is the current bottleneck", "target": "текущее узкое место" }
-          ]
-        }
-      ],
-      "synonyms": ["constraint"],
-      "collocations": ["a performance bottleneck", "the main bottleneck"],
-      "grammar_tags": [
-        { "category": "number", "form": "singular" },
-        { "category": "countability", "form": "countable" }
-      ]
+      "sense": {
+        "translation": "узкое место",
+        "surfaceForm": "bottleneck",
+        "unitType": "noun",
+        "baseLemma": "bottleneck",
+        "headLemma": "bottleneck",
+        "explanation": "Самый медленный участок, ограничивающий скорость всей системы.",
+        "contextualApplications": [
+          {
+            "sentence": "The database is the current [[bottleneck]].",
+            "translation": "База данных — текущее узкое место.",
+            "alignment": [
+              { "source": "The database", "target": "База данных" },
+              { "source": "is the current bottleneck", "target": "текущее узкое место" }
+            ]
+          }
+        ],
+        "synonyms": ["constraint"],
+        "collocations": ["a performance bottleneck", "the main bottleneck"],
+        "grammarTags": [
+          { "category": "number", "form": "singular" },
+          { "category": "countability", "form": "countable" }
+        ]
+      }
     }
   ]
 }

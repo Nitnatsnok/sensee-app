@@ -1,12 +1,12 @@
 package app.sensee.verification.integration
 
-import app.sensee.verification.core.Finding
-import app.sensee.verification.core.FindingSeverity
-import app.sensee.verification.core.FindingTarget
-import app.sensee.verification.core.LexicalSourceRef
-import app.sensee.verification.core.NormalizationKind
-import app.sensee.verification.core.NormalizationOutcome
-import app.sensee.verification.core.SuggestedAction
+import app.sensee.verification.core.contract.Finding
+import app.sensee.verification.core.contract.FindingSeverity
+import app.sensee.verification.core.contract.FindingTarget
+import app.sensee.verification.core.contract.LexicalSourceRef
+import app.sensee.verification.core.contract.NormalizationKind
+import app.sensee.verification.core.contract.NormalizationOutcome
+import app.sensee.verification.core.contract.SuggestedAction
 
 internal fun normalizationFindings(normalization: NormalizationOutcome): List<Finding> {
     val candidates =

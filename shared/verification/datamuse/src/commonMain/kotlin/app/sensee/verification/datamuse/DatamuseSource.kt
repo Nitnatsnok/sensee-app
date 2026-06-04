@@ -1,8 +1,8 @@
 package app.sensee.verification.datamuse
 
-import app.sensee.verification.core.AttributionPolicy
-import app.sensee.verification.core.LexicalSource
-import app.sensee.verification.core.LicensePolicy
+import app.sensee.verification.core.contract.AttributionPolicy
+import app.sensee.verification.core.contract.LexicalSource
+import app.sensee.verification.core.contract.LicensePolicy
 
 /**
  * Datamuse word-finding API (https://www.datamuse.com/api/). Free, no API

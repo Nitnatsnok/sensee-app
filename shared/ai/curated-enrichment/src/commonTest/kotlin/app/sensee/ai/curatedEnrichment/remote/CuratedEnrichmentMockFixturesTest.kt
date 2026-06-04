@@ -1,7 +1,7 @@
 package app.sensee.ai.curatedEnrichment.remote
 
-import app.sensee.ai.core.EnrichmentResponseV1
-import app.sensee.ai.core.EnrichmentSchema
+import app.sensee.ai.core.request.EnrichmentSchema
+import app.sensee.ai.core.wire.EnrichmentResponseV1
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
