@@ -5,7 +5,8 @@ Agents use it through `.agents/skills/commit-preparation`; root `AGENTS.md` link
 
 ## Format
 
-Use a short Conventional Commits-style header:
+This convention conforms to Conventional Commits 1.0.0. The header is the
+changelog line, so keep it short and self-sufficient:
 
 ```text
 type(scope): imperative summary
@@ -19,6 +20,7 @@ fix(srs): keep review cards out of same-session recycling
 docs(c4): clarify current learning slice
 build(gradle-plugins): wire compose stability reports
 ci(actions): keep hook smoke test on tooling changes
+feat(lexicon)!: identify senses by service-namespaced sense_id
 ```
 
 ## Types
@@ -33,6 +35,29 @@ ci(actions): keep hook smoke test on tooling changes
 - `perf` - performance changes without external behavior changes.
 - `style` - formatting-only changes.
 - `chore` - supporting changes that do not fit the types above.
+
+`feat`, `fix`, `perf`, and breaking changes surface in the changelog; the rest
+(`refactor`, `test`, `docs`, `build`, `ci`, `style`, `chore`) are housekeeping.
+
+## Breaking changes
+
+Sensee is a client app, not a published library, so "breaking" means what breaks
+for an already-installed user on update, or at an external boundary, not internal
+module APIs (those are refactors: every caller lives in this repo and is fixed in
+the same change).
+
+Mark a commit breaking when it:
+
+- changes locally persisted data without a migration (DB schema, settings, secure
+  storage, serialized Decompose configs), so an update loses data or resets state
+  (no migrations yet, so today this means a dev reset);
+- changes or removes an external entry point (deep link / URL scheme);
+- breaks compatibility with a backend contract the client relies on;
+- drops a supported target/platform or raises a minimum (minSdk, iOS version).
+
+Indicate it with `!` before the colon and/or a `BREAKING CHANGE:` footer stating
+what breaks and what the user or tester must do (reinstall, re-enter keys). In 0.x
+this bumps the minor tag, but still mark it; it is the release-note signal.
 
 ## Scope
 
@@ -51,29 +76,28 @@ If one scope is misleading, split the diff into multiple commits or use a broade
 - Write the header in English.
 - Use imperative mood: `add`, `fix`, `keep`, `wire`, `document`.
 - Do not end the header with a period.
+- Start the description in lowercase.
 - Avoid vague summaries like `improve code quality`, `update stuff`, or `misc fixes`.
 - Do not claim more than the diff and task context support.
 
 ## Body
 
-Add a body when the header is not enough:
+Optional and free-form (Conventional Commits rules 6-7): one blank line after the
+description, any number of paragraphs. The spec only asks for "additional
+contextual information about the code changes". Use a body when the header is not
+enough to expand what the change does (scope, behavior consequences), give the
+motivation, or note migrations, constraints, and known risk. Add only what the
+header and diff do not already make obvious; do not narrate the diff line by line
+or pad by restating the header. Verification output and observations go to the PR
+or chat.
 
-- explain why the change exists;
-- list important behavior consequences;
-- name affected architecture boundaries, ADRs, or LikeC4 views;
-- document migrations, constraints, manual checks, or known risk.
+## Footers
 
-Recommended short template:
-
-```text
-Why:
-- ...
-
-Verification:
-- ...
-```
-
-Do not write a body only to repeat the header.
+Optional trailers, one blank line below the body (Conventional Commits rules
+8-10). Use the `Token: value` form, with tokens using `-` instead of spaces.
+Trace work with `Closes: EB-<N>` (the item this commit implements) or
+`Refs: EB-<N>` / `Refs: ADR-<NNN>`. `BREAKING CHANGE:` is the only spaced,
+uppercase token.
 
 ## Commit Splitting
 
