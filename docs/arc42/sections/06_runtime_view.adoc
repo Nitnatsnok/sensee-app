@@ -59,7 +59,8 @@
 * поток одностраничный: пользователь мультивыбором отмечает смыслы, которые хочет добавить, и/или добавляет свой смысл вручную;
 * опциональное действие «дополнить ассистентом» не меняет правило подтверждения: выбранный пользователем смысл становится подтверждённым;
 * подтверждённые `Sense` сохраняются через `SenseWriteRepository` (`WriteIntent`) в единственную таблицу `sense` (`lexicon`); статус — per-sense `Draft`/`Confirmed`, идентичность — стабильный `sense_id`; `library` читает наружу через `SenseReadRepository`;
-* `SenseCatalogProjection` проецирует Confirmed Personal смыслы в captured deck, группирует siblings по `lemma_key` и создаёт form-variant cards (`${sense_id}:form:…`) для неправильных глаголов.
+* `SenseCatalogProjection` проецирует Confirmed Personal смыслы в captured deck, группирует siblings по `lemma_key` и создаёт form-variant cards (`${sense_id}:form:…`) для неправильных глаголов;
+* после confirm каждый сохранённый смысл best-effort индексируется для «похоже»: `ConfirmSensesUseCase` зовёт `EmbeddingPort.embed` (вектор от `AiEmbeddingClient`, OpenAI `/v1/embeddings` своим путём — не на enrichment-wire), вектор пишется в `sense_embedding` после коммита смысла, вне write-транзакции; сбой, офлайн или отсутствие ключа не блокируют подтверждение (similar-sense выбор пользователя — навесное). Покрытие следует владению: `claim` тоже индексирует свою копию, а подписанные Service-зеркала — нет (см. Библиотеку каталога ниже).
 
 Планируемое: UI-навигация по семье леммы, полноценные detail-экраны и курирование derived cards. Решение — ADR-001; граница AI-интеграции — ADR-005; граница lexical verification — ADR-007. Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`); схемы — `docs/c4/`; доменные типы — `shared/lexicon/domain` и `shared/feature/vocabulary-editor/domain`.
 
@@ -72,7 +73,7 @@ Library — владелец каталога лексического мате�
 Реализовано (`LibraryHomeLogic`/`DefaultLibraryHomeComponent`/`LibrarySectionScreen`):
 
 1. Пользователь открывает раздел `Library`; `LibraryHomeLogic` загружает связанный (отфильтрованный до собственного материала) каталог и список сервисных наборов для подписки.
-2. Пользователь подписывается на сервисный набор целиком: смыслы приходят как зеркало (`origin=Service`), практикуются по `sense_id` и обновляются ре-синком по `source_ref`. Подписку можно отменить (unsubscribe). Производная captured-колода Personal-смыслов принадлежит пользователю. `claim` отдельного смысла в детачнутую Personal-копию реализован репозиторием (`ClaimRepository` + `copySnapshot`), его UI — planned.
+2. Пользователь подписывается на сервисный набор целиком: смыслы приходят как зеркало (`origin=Service`), практикуются по `sense_id` и обновляются ре-синком по `source_ref`. Подписку можно отменить (unsubscribe). Производная captured-колода Personal-смыслов принадлежит пользователю. `claim` отдельного смысла в детачнутую Personal-копию реализован репозиторием (`ClaimRepository` + `copySnapshot`), его UI — planned; копия индексируется для «похоже» через `EmbeddingPort.embed` после коммита (best-effort). Подписанные Service-зеркала **не** эмбеддятся: similar-sense сравнивает собственный материал пользователя, поэтому покрытие следует владению (`claim`), а не членству (subscribe) — ADR-008.
 
 Планируется:
 

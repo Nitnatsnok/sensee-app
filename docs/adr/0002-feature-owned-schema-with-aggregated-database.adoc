@@ -1,5 +1,5 @@
 = ADR-002: Feature-owned schema with aggregated shared database — feature-схемы остаются в feature-модулях, агрегация в `shared/database`
-:revdate: 2026-05-12
+:revdate: 2026-06-06
 
 Статус:: Accepted
 Дата:: 2026-05-12
@@ -22,7 +22,7 @@ Feature- и seam-owned schema остаётся в своих модулях (`sh
 * Все feature- и seam-owned `.sq` компилируются в один namespace `app.sensee.core.database` единого `SenseeDatabase`. Изоляция ownership — **конвенциональная, не принудительная**: дисциплина имён таблиц/колонок (модульные префиксы `practice_`/`user_`/`tts_` и domain-owned имена `sense`/`deck`/`deck_membership`) удерживает отсутствие коллизий, но компилятор её не гарантирует. Это сознательно принятая цена выбранной агрегации, а не недосмотр.
 * `shared/lexicon` владеет канонической `sense`-схемой как domain-seam по тому же паттерну, что `verification/database-schema`: `shared/lexicon/database-schema` держит `.sq`, `shared/lexicon/data` — impl, агрегация в `SenseeDatabase` — одной зависимостью. Konsist по слоям (`LexiconLayeringKonsistTest`): `lexicon/domain` чистый (без persistence/SRS/feature), `lexicon/data → shared/database` разрешён, feature/SRS — нет. Service-identity защищена `CHECK(origin != 'Service' OR source_ref IS NOT NULL)` и partial unique index по `source_ref`.
 * `shared/feature/library/database-schema` держит deck-схему (`deck`/`deck_membership` + флаг `subscribed`); `deck_membership` ссылается на `sense_id` без копии контента смысла и без cross-module FK (read-сторона отфильтровывает висячие ссылки). Контент смысла принадлежит только `lexicon`.
-* Кросс-владельческие атомарные операции идут через нейтральный `DatabaseTransactionRunner` (`shared/database`, поверх `SenseeDatabase.transactionWithResult`): `claim` композирует lexicon `upsert(ForceMint)` + SRS `copySnapshot` в одной транзакции, не открывая вложенных (claimed-смысл всплывает через captured-деку, явный deck membership в ядре не пишется — это editing-UX EB-9). `sense_embedding` — отдельная таблица, навесное (после ядра).
+* Кросс-владельческие атомарные операции идут через нейтральный `DatabaseTransactionRunner` (`shared/database`, поверх `SenseeDatabase.transactionWithResult`): `claim` композирует lexicon `upsert(ForceMint)` + SRS `copySnapshot` в одной транзакции, не открывая вложенных (claimed-смысл всплывает через captured-деку, явный deck membership в ядре не пишется — это editing-UX EB-9). `sense_embedding` — отдельная lean-таблица в том же `shared/lexicon/database-schema` (один нормализованный float32-вектор на смысл за `EmbeddingPort`, навесное); реализована.
 
 Последствия (ожидаемые)::
 * Новая feature подключает свой `database-schema` в агрегирующий модуль одной зависимостью; app shell и навигация не переписываются (CS-3).

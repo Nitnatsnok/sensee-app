@@ -1,5 +1,5 @@
 = ADR-008: Идентичность смысла и дедуп capture-материала — стабильный `sense_id` поверх единого sense-store
-:revdate: 2026-06-05
+:revdate: 2026-06-06
 
 Статус:: Accepted
 Дата:: 2026-06-05
@@ -35,13 +35,13 @@
 * SRS re-key: `SenseCatalogProjection` строит карту `id = sense_id` и формы `${sense_id}:form:${GrammarForm.id}`; `SrsCardStore.copySnapshot` (default-метод поверх `getCard`/`saveCard`) клонирует FSRS-снимок на новый id для `claim`.
 * `lexical_entry`/`practice_card`/`practice_lemma`, `CapturedCatalogDerivation` и `confirmSenses`-merge удалены; `VocabularyCaptureLogic` пишет через `SenseWriteRepository`, `library` читает через `SenseCatalogProjection`. `claim` — оркестратор в `library/data` (`DefaultClaimRepository`) поверх нейтрального `DatabaseTransactionRunner` (`shared/database`): `upsert(ForceMint, Personal)` + `copySnapshot` в одной транзакции.
 * Konsist-инварианты: `LexiconLayeringKonsistTest` (`lexicon/domain` без persistence/SRS/feature; `lexicon/data` без feature/SRS, `shared/database` разрешён) и `PracticeDomainLeafKonsistTest`. `claim` не входит в `SenseWriteRepository` по построению — он оркестратор в `library/data`. Тесты пинят `sense_id`-стабильность (re-capture сохраняет `sense_id` и SRS через реальный `DefaultSenseRepository`), constraints, `copySnapshot`, `claim`.
+* `embedding` (4-й ключ — мягкое «похоже») реализован навесным за `EmbeddingPort` (`lexicon/domain` контракт, `DefaultEmbeddingPort` в `lexicon/data` — отдельный класс, репозиторий на потолке функций): отдельная lean-таблица `sense_embedding` в `lexicon/database-schema` (нормализованный float32-вектор, gate `(model_ref, dim)`, порог cosine ~0.85), `sense`-строка вектор не несёт. Вектор даёт `AiEmbeddingClient` (`ai/core` контракт, `LlmAiEmbeddingClient` → OpenAI `/v1/embeddings` своим путём, не на enrichment-wire — ADR-005/006); вектор пишется best-effort после коммита (вне write-транзакции, сбой/офлайн не блокирует save). **Покрытие следует владению, а не членству:** эмбеддятся только Personal-пути, где пользователь создаёт или забирает смысл себе — capture-confirm (`ConfirmSensesUseCase`) и `claim` (`DefaultClaimRepository`, детач-копия). Подписанные Service-зеркала **не** эмбеддятся (транзитивны — ре-синк перетирает контент; отписываемы; similar-sense сравнивает собственный материал пользователя, так же origin-scoped, как `content_key`-дедуп). Similar-sense выбор пользователя — навесное.
 
 Последствия (ожидаемые)::
 
 * Один смысл → один `sense_id` → один SRS-профиль во всех наборах и сессиях: практика в любом месте двигает прогресс везде (разблокирует эфемерную сессию EB-3 — список `sense_id` без доработок модели).
 * Остаточные дубли (`ForceMint`, правка-в-коллизию, кросс-origin) консолидируются позже через «возможные дубли» (`SearchPort`, навесное); tie-break `max(updated)` даёт детерминизм, а не максимум сохранённого SRS.
 * Form-навигация по семье леммы (`lemma_key`) и draft-очередь — проекции единого стора; их UI остаётся planned (навесное).
-* `sense_embedding` (мягкое «похоже») — отдельная lean-таблица, навесное после ядра; `sense`-строка не несёт вектор.
 
 Связанные ADR::
 

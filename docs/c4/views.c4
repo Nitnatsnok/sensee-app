@@ -130,6 +130,7 @@ views 'Sensee Client' {
     include client.ai.ai_seam
     include client.ai.ai_curated
     include client.ai.ai_llm
+    include client.ai.ai_embedding
     include client.tts
     include client.tts.tts_seam
     include client.tts.tts_providers
@@ -265,7 +266,7 @@ views 'Sensee Client' {
 
   dynamic view vocabulary_capture_flow {
     title 'Поведение / Захват слова'
-    description 'Реализованный основной продуктовый сценарий: ввод → pre-AI grounding в prompt → curated/LLM enrichment → набор Sense → post-AI silent фильтр качества примеров → мультивыбор + ручной смысл → подтверждение → durable persist → captured catalog projection. Verification подключён к живому capture в двух узких ролях.'
+    description 'Реализованный основной продуктовый сценарий: ввод → pre-AI grounding в prompt → curated/LLM enrichment → набор Sense → post-AI silent фильтр качества примеров → мультивыбор + ручной смысл → подтверждение → durable persist (+ best-effort embedding) → captured catalog projection. Verification подключён к живому capture в двух узких ролях.'
 
     learner -> client.shell.primary_navigation 'нажимает кнопку Vocabulary Editor (add-path)'
     client.shell.primary_navigation -> client.feature_vocabulary.vocabulary_ui 'открывает QuickCapture'
@@ -281,6 +282,8 @@ views 'Sensee Client' {
     client.feature_vocabulary.vocabulary_ui -> client.feature_vocabulary.vocabulary_capture 'выбор и есть подтверждение → SenseStatus.Confirmed'
     client.feature_vocabulary.vocabulary_capture -> client.lexicon.lexical_data 'сохраняет подтверждённые Sense (SenseWriteRepository)'
     client.lexicon.lexical_data -> client.persistence 'durable в таблицу sense'
+    client.lexicon.lexical_data -> client.ai.ai_embedding 'после коммита: best-effort embedding (EmbeddingPort → AiEmbeddingClient, свой путь)'
+    client.ai.ai_embedding -> provider_apis 'вызывает /v1/embeddings; вектор в sense_embedding (сбой/офлайн не блокируют save)'
     client.lexicon.lexical_model -> client.feature_library.card_derivation 'проецирует Confirmed Personal смыслы в captured deck (SenseCatalogProjection): группировка по lemma_key и form cards'
   }
 

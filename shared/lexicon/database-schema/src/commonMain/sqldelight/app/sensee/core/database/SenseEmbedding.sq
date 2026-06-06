@@ -1,0 +1,33 @@
+-- A sense's embedding vector, kept in its own table so the `sense` row stays
+-- lean and a re-embed only rewrites this row (ADR-001/002, a bolt-on signal).
+-- One row per sense: the vector is normalized float32 packed little-endian into
+-- the BLOB; model_ref and dim gate which vectors are comparable (only equal
+-- pairs). The FK declares ON DELETE CASCADE, but this app runs SQLite with
+-- foreign-key enforcement off, so deleting a sense leaves its embedding orphaned
+-- until cleanup — `findSimilar` resolves each candidate and skips orphans.
+CREATE TABLE sense_embedding (
+    sense_id TEXT NOT NULL PRIMARY KEY REFERENCES sense(sense_id) ON DELETE CASCADE,
+    vector BLOB NOT NULL,
+    model_ref TEXT NOT NULL,
+    dim INTEGER NOT NULL
+);
+
+-- Brute-force similarity scans one model's rows; the index keeps that to the
+-- comparable set instead of the whole table.
+CREATE INDEX sense_embedding_model ON sense_embedding(model_ref, dim);
+
+upsert:
+INSERT OR REPLACE INTO sense_embedding(sense_id, vector, model_ref, dim)
+VALUES (?, ?, ?, ?);
+
+selectById:
+SELECT *
+FROM sense_embedding
+WHERE sense_id = ?;
+
+-- Candidates for cosine comparison: only vectors from the same model and
+-- dimension as the query.
+selectByModel:
+SELECT *
+FROM sense_embedding
+WHERE model_ref = ? AND dim = ?;

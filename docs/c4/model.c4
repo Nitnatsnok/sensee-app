@@ -180,7 +180,7 @@ model {
       link ../domain/information-model.adoc
 
       lexical_model = component 'Sense Source Model' {
-        description 'Центральный `Sense` (+`ContextualApplication`/`AlignmentChunk`/`WordFamilyMember`), read model `StoredSense`, `SenseId`, `WriteIntent`, раздельные `SenseReadRepository`/`SenseWriteRepository`/`SearchPort`/`LexicalGraphReader` (+`SenseQuery`/`LexicalEdge`) и `CefrLevel`.'
+        description 'Центральный `Sense` (+`ContextualApplication`/`AlignmentChunk`/`WordFamilyMember`), read model `StoredSense`, `SenseId`, `WriteIntent`, раздельные `SenseReadRepository`/`SenseWriteRepository`/`SearchPort`/`LexicalGraphReader`/`EmbeddingPort` (+`SenseQuery`/`LexicalEdge`/`EmbeddingVector`/`SimilarSense`) и `CefrLevel`.'
         technology 'shared/lexicon/domain'
       }
 
@@ -190,12 +190,12 @@ model {
       }
 
       lexical_data = component 'Sense Store' {
-        description 'Единственный durable-store `Sense`: `DefaultSenseRepository` (read/write/search контракты) + `DefaultLexicalGraphReader` (derive-on-read граф), `DefaultSenseIdFactory` (Personal `Uuid` / Service `svc-`+FNV-1a), origin-scoped `resolveOrMint`, id-preserving правка.'
+        description 'Единственный durable-store `Sense`: `DefaultSenseRepository` (read/write/search контракты) + `DefaultLexicalGraphReader` (derive-on-read граф) + `DefaultEmbeddingPort` (similar-sense: `sense_embedding`, brute-force cosine, отдельный класс), `DefaultSenseIdFactory` (Personal `Uuid` / Service `svc-`+FNV-1a), origin-scoped `resolveOrMint`, id-preserving правка.'
         technology 'shared/lexicon/data'
       }
 
       lexical_schema = store 'Sense Schema' {
-        description 'Seam-owned SQLDelight schema канонической таблицы `sense` (CHECK/partial unique index по `source_ref`).'
+        description 'Seam-owned SQLDelight schema: каноническая таблица `sense` (CHECK/partial unique index по `source_ref`) + `sense_embedding` (нормализованный float32-вектор смысла, навесное).'
         technology 'shared/lexicon/database-schema'
         icon tech:sqlite
       }
@@ -255,6 +255,11 @@ model {
       ai_llm = component 'LLM Adapter' {
         description 'OpenAI-compatible LLM adapter и model catalog, когда настройки дают валидный provider/key.'
         technology 'shared/ai/llm'
+      }
+
+      ai_embedding = component 'AI Embedding Boundary' {
+        description 'Второй контракт того же шва — embedding: `AiEmbeddingClient` (`core`), `LlmAiEmbeddingClient` (`llm`, OpenAI `/v1/embeddings`, degrade→null), биндинг в `integration` (реюз ключа/базового URL провайдера). Идёт отдельным путём, вектор не на enrichment-wire (ADR-006).'
+        technology 'shared/ai/{core,llm,integration}'
       }
     }
 
@@ -457,6 +462,7 @@ model {
     lexicon.lexical_data -[depends]-> lexicon.lexical_model 'implements Sense read/write repositories'
     lexicon.lexical_data -[depends]-> lexicon.lexical_schema 'owns sense table'
     lexicon.lexical_data -[flows]-> persistence 'stores senses' { technology 'SQLDelight' }
+    lexicon.lexical_data -[flows]-> ai.ai_embedding 'embeds confirmed senses on save (best-effort)'
 
     // Profile
     feature_profile.profile_ui -[flows]-> settings.settings_domain 'edits user settings'
@@ -474,6 +480,8 @@ model {
     ai.ai_seam -[depends]-> settings.settings_domain 'reads AI settings'
     ai.ai_curated -[flows]-> core.mock_backend 'fetches curated enrichment fixtures' { technology 'Ktor client' }
     ai.ai_llm -[flows]-> provider_apis 'calls compatible model APIs' { technology 'HTTPS' }
+    ai.ai_embedding -[depends]-> settings.settings_domain 'reuses provider key/base URL'
+    ai.ai_embedding -[flows]-> provider_apis 'calls embedding API' { technology 'HTTPS' }
 
     // TTS seam
     tts.tts_seam -[flows]-> tts.tts_providers 'routes to selected provider'

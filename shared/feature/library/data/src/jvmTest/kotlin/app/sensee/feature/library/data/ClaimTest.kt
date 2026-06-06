@@ -15,10 +15,14 @@ import app.sensee.grammar.domain.SurfaceForm
 import app.sensee.lexicon.data.DefaultSenseIdFactory
 import app.sensee.lexicon.data.DefaultSenseRepository
 import app.sensee.lexicon.domain.ContextualApplication
+import app.sensee.lexicon.domain.EmbeddingPort
+import app.sensee.lexicon.domain.EmbeddingVector
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseId
 import app.sensee.lexicon.domain.SenseOrigin
 import app.sensee.lexicon.domain.SenseStatus
+import app.sensee.lexicon.domain.SimilarSense
+import app.sensee.lexicon.domain.StoredSense
 import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.fsrs.FsrsParameters
 import app.sensee.srs.testKit.InMemorySrsStorage
@@ -48,7 +52,29 @@ class ClaimTest {
         override suspend fun database(): SenseeDatabase = db
     }
 
-    private class Fixture {
+    // Records the senses it was asked to embed; [failing] exercises the best-effort
+    // path (the caller must swallow the error).
+    private class RecordingEmbeddingPort(
+        private val failing: Boolean = false,
+    ) : EmbeddingPort {
+        val embedded: MutableList<SenseId> = mutableListOf()
+
+        override suspend fun embed(stored: StoredSense): EmbeddingVector? {
+            if (failing) error("embedding store offline")
+            embedded += stored.id
+            return EmbeddingVector(floatArrayOf(1f, 0f), "test-model")
+        }
+
+        override suspend fun findSimilar(
+            query: EmbeddingVector,
+            excluding: SenseId,
+            threshold: Float,
+        ): List<SimilarSense> = emptyList()
+    }
+
+    private class Fixture(
+        val embedding: RecordingEmbeddingPort = RecordingEmbeddingPort(),
+    ) {
         private val db =
             SenseeDatabase(
                 JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, Properties(), SenseeDatabase.Schema.synchronous()),
@@ -65,7 +91,28 @@ class ClaimTest {
                 noOpAppDiagnostics(),
             )
         val claim =
-            DefaultClaimRepository(senseRepository, senseRepository, srs, DefaultDatabaseTransactionRunner(provider))
+            DefaultClaimRepository(
+                senseRepository,
+                senseRepository,
+                embedding,
+                srs,
+                DefaultDatabaseTransactionRunner(provider),
+                noOpAppDiagnostics(),
+            )
+
+        suspend fun upsertService(sourceRef: String): StoredSense =
+            senseRepository.upsert(
+                sense =
+                    Sense(
+                        translation = "бросать",
+                        surfaceForm = SurfaceForm.parse("throw"),
+                        contextualApplications =
+                            listOf(ContextualApplication(StudiedSentence.parse("I [[throw]] it."))),
+                    ),
+                status = SenseStatus.Confirmed,
+                origin = SenseOrigin.Service,
+                sourceRef = sourceRef,
+            )
     }
 
     @Test
@@ -115,6 +162,36 @@ class ClaimTest {
                 SenseOrigin.Service,
                 fixture.senseRepository.getById(service.id)?.origin,
                 "source sense untouched",
+            )
+        }
+
+    @Test
+    fun `claim embeds the detached copy`() =
+        runTest {
+            val fixture = Fixture()
+            val service = fixture.upsertService("card-x")
+
+            val claimed = fixture.claim.claim(CardId(service.id.value))
+
+            assertEquals(
+                listOf(SenseId(claimed.value)),
+                fixture.embedding.embedded,
+                "the detached copy is embedded for similarity coverage, not the source",
+            )
+        }
+
+    @Test
+    fun `a claim still succeeds when embedding fails`() =
+        runTest {
+            val fixture = Fixture(RecordingEmbeddingPort(failing = true))
+            val service = fixture.upsertService("card-x")
+
+            val claimed = fixture.claim.claim(CardId(service.id.value))
+
+            assertEquals(
+                SenseOrigin.Personal,
+                fixture.senseRepository.getById(SenseId(claimed.value))?.origin,
+                "the copy is committed even though embedding failed (best-effort, post-commit)",
             )
         }
 }

@@ -1,5 +1,5 @@
 = ADR-005: Граница AI-enrichment — явный versioned contract с anti-corruption mapping
-:revdate: 2026-05-17
+:revdate: 2026-06-06
 
 Статус:: Accepted
 Дата:: 2026-05-15
@@ -21,6 +21,7 @@ AI-enrichment оформлен как **явный версионируемый 
 
 Последствия (реализованные, 2026-05-17)::
 * В коде `shared/ai/{core,curated-enrichment,llm,integration}`: контракт не зависит от провайдера и feature-домена, curated enrichment работает без ключа для покрытых лемм, OpenAI-совместимый LLM используется при настроенном ключе, маршрутизация идёт по настройкам, деградация наблюдаема. Anti-corruption (`EnrichmentSuggestion → Sense`) живёт в `shared/lexicon/enrichment`; Vocabulary Editor держит editor-state `CaptureSense` (`presentation/api`) только как authoring/selection-обёртку поверх `Sense`. `HttpClient` — app-синглтон на реальном per-platform движке (best practice Ktor), отделён от mock-движка. Покрыто тестами на границе.
+* (2026-06-06) Тот же паттерн границы расширен на второй шов — **embedding**: `AiEmbeddingClient` (`shared/ai/core`, провайдер-агностичный контракт `embed(text): Embedding?`), impl `LlmAiEmbeddingClient` (`shared/ai/llm`, OpenAI `/v1/embeddings`), биндинг в `shared/ai/integration` (реюз device-scoped ключа и базового URL провайдера, общий пул LLM-клиента). Недоступность — штатный `null` (нет ключа / офлайн / провайдер без embedding-эндпоинта / битый ответ), не исключение через шов. Вектор едет своим вызовом, не на enrichment-wire (ADR-006). Потребитель — `EmbeddingPort` (`shared/lexicon`), не feature напрямую.
 
 Последствия (ожидаемые)::
 * Провайдера можно заменить или подменить mock-реализацией, не трогая feature/домен; curated-first routing остаётся внутри `shared/ai/integration`.

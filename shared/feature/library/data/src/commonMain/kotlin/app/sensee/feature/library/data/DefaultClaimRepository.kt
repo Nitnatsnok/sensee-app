@@ -1,8 +1,11 @@
 package app.sensee.feature.library.data
 
+import app.sensee.core.coroutines.runCatchingCancellable
+import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.database.DatabaseTransactionRunner
 import app.sensee.feature.library.domain.CardId
 import app.sensee.feature.library.domain.ClaimRepository
+import app.sensee.lexicon.domain.EmbeddingPort
 import app.sensee.lexicon.domain.SenseOrigin
 import app.sensee.lexicon.domain.SenseReadRepository
 import app.sensee.lexicon.domain.SenseStatus
@@ -28,6 +31,10 @@ import dev.zacsweers.metro.binding
  *
  * The claimed Personal sense needs no deck membership in the core — the captured
  * deck surfaces it; claiming into a named Personal deck is editing-UX (EB-9).
+ *
+ * Claiming takes ownership, so the copy is embedded best-effort after the
+ * transaction commits (ADR-008: embedding follows ownership — a subscribed Service
+ * mirror is not embedded). A provider miss never fails the claim.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -38,26 +45,41 @@ import dev.zacsweers.metro.binding
 public class DefaultClaimRepository(
     private val senseReadRepository: SenseReadRepository,
     private val senseWriteRepository: SenseWriteRepository,
+    private val embeddingPort: EmbeddingPort,
     private val srsStorage: SrsStorage<FsrsParameters>,
     private val transactionRunner: DatabaseTransactionRunner,
+    appDiagnostics: AppDiagnostics,
 ) : ClaimRepository {
-    override suspend fun claim(cardId: CardId): CardId =
-        transactionRunner.transaction {
-            val sourceId = SenseCatalogProjection.senseIdOf(cardId)
-            val source = requireNotNull(senseReadRepository.getById(sourceId)) { "Claim source $sourceId not found" }
-            val copy =
-                senseWriteRepository.upsert(
-                    sense = source.sense,
-                    status = SenseStatus.Confirmed,
-                    origin = SenseOrigin.Personal,
-                    intent = WriteIntent.ForceMint,
-                )
-            // Clone SRS for the base sense and every form card onto the new sense_id,
-            // so review progress carries over to the detached copy.
-            SenseCatalogProjection.cardsFor(source).forEach { card ->
-                val target = copy.id.value + card.id.value.removePrefix(source.id.value)
-                srsStorage.copySnapshot(SrsCardId(card.id.value), SrsCardId(target))
+    private val logger = appDiagnostics.logger.tag("Claim")
+
+    override suspend fun claim(cardId: CardId): CardId {
+        val copy =
+            transactionRunner.transaction {
+                val sourceId = SenseCatalogProjection.senseIdOf(cardId)
+                val source =
+                    requireNotNull(senseReadRepository.getById(sourceId)) { "Claim source $sourceId not found" }
+                val copy =
+                    senseWriteRepository.upsert(
+                        sense = source.sense,
+                        status = SenseStatus.Confirmed,
+                        origin = SenseOrigin.Personal,
+                        intent = WriteIntent.ForceMint,
+                    )
+                // Clone SRS for the base sense and every form card onto the new sense_id,
+                // so review progress carries over to the detached copy.
+                SenseCatalogProjection.cardsFor(source).forEach { card ->
+                    val target = copy.id.value + card.id.value.removePrefix(source.id.value)
+                    srsStorage.copySnapshot(SrsCardId(card.id.value), SrsCardId(target))
+                }
+                copy
             }
-            CardId(copy.id.value)
-        }
+        // Embed the detached copy after the transaction commits and outside it
+        // (EmbeddingPort contract): coverage for the new Personal sense, best-effort
+        // so a provider miss or storage error never fails the claim.
+        runCatchingCancellable { embeddingPort.embed(copy) }
+            .onFailure { failure ->
+                logger.warn(failure) { "Embedding claimed sense ${copy.id} failed; leaving it for a later backfill." }
+            }
+        return CardId(copy.id.value)
+    }
 }

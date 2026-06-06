@@ -9,6 +9,7 @@ import app.sensee.ai.core.request.EnrichmentRequest
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
+import app.sensee.feature.vocabularyEditor.domain.usecase.ConfirmSensesUseCase
 import app.sensee.feature.vocabularyEditor.domain.usecase.SuggestVocabularySensesUseCase
 import app.sensee.feature.vocabularyEditor.presentation.api.CaptureSenseStatus
 import app.sensee.grammar.domain.GrammarCategory
@@ -22,11 +23,14 @@ import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.TaxonomyInvariants
 import app.sensee.grammar.domain.TaxonomyInvariantsProvider
+import app.sensee.lexicon.domain.EmbeddingPort
+import app.sensee.lexicon.domain.EmbeddingVector
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseId
 import app.sensee.lexicon.domain.SenseOrigin
 import app.sensee.lexicon.domain.SenseStatus
 import app.sensee.lexicon.domain.SenseWriteRepository
+import app.sensee.lexicon.domain.SimilarSense
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.lexicon.domain.WriteIntent
 import app.sensee.lexicon.domain.deriveLemmaKey
@@ -77,6 +81,25 @@ class VocabularyCaptureLogicTest {
             senses.map { upsert(it, SenseStatus.Confirmed, SenseOrigin.Personal) }
     }
 
+    // Records embedded senses; an embedding failure must never fail the confirm.
+    private class FakeEmbeddingPort(
+        private val failing: Boolean = false,
+    ) : EmbeddingPort {
+        val embedded: MutableList<SenseId> = mutableListOf()
+
+        override suspend fun embed(stored: StoredSense): EmbeddingVector? {
+            if (failing) error("embedding store offline")
+            embedded += stored.id
+            return EmbeddingVector(floatArrayOf(1f, 0f), "test-model")
+        }
+
+        override suspend fun findSimilar(
+            query: EmbeddingVector,
+            excluding: SenseId,
+            threshold: Float,
+        ): List<SimilarSense> = emptyList()
+    }
+
     private class FakeAi(
         private val result: EnrichmentResult,
     ) : AiEnrichmentClient {
@@ -109,10 +132,11 @@ class VocabularyCaptureLogicTest {
     private fun logic(
         ai: AiEnrichmentClient,
         repo: FakeSenseWriteRepository = FakeSenseWriteRepository(),
+        embeddingPort: EmbeddingPort = FakeEmbeddingPort(),
         taxonomyProvider: TaxonomyInvariantsProvider = noTaxonomyProvider,
         labelsProvider: GrammarLabelsProvider = emptyLabelsProvider,
     ) = VocabularyCaptureLogic(
-        senseWriteRepository = repo,
+        confirmSenses = ConfirmSensesUseCase(repo, embeddingPort, noOpAppDiagnostics()),
         suggestSenses =
             SuggestVocabularySensesUseCase(
                 ai,
@@ -171,6 +195,19 @@ class VocabularyCaptureLogicTest {
 
         assertEquals(listOf("наткнуться", "ощущаться"), repo.upserted.map { it.translation })
         assertEquals("come across", logic.uiState.value.confirmedTerm)
+    }
+
+    @Test
+    fun `confirming embeds each saved sense`() {
+        val embeddingPort = FakeEmbeddingPort()
+        val logic = logic(availableAi("наткнуться", "ощущаться"), embeddingPort = embeddingPort)
+        logic.suggest(term = "come across")
+
+        logic.toggleCandidate(logic.candidateContentKey(0))
+        logic.toggleCandidate(logic.candidateContentKey(1))
+        logic.confirmSelected()
+
+        assertEquals(2, embeddingPort.embedded.size, "each confirmed sense is embedded on save")
     }
 
     @Test

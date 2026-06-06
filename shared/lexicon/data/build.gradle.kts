@@ -9,6 +9,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.shared.lexicon.domain)
+                implementation(projects.shared.ai.core)
                 implementation(projects.shared.lexicon.serialization)
                 implementation(projects.shared.core.coroutines)
                 implementation(projects.shared.core.observability)

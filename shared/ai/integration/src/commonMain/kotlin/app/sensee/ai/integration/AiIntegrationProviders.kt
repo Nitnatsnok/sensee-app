@@ -1,5 +1,6 @@
 package app.sensee.ai.integration
 
+import app.sensee.ai.core.contract.AiEmbeddingClient
 import app.sensee.ai.core.contract.AiEnrichmentExtension
 import app.sensee.ai.core.contract.AiModelCatalog
 import app.sensee.ai.core.model.DefaultAiEnrichmentExtensions
@@ -9,6 +10,7 @@ import app.sensee.ai.core.request.UserEnrichmentPreferences
 import app.sensee.ai.core.request.UserEnrichmentPreferencesProvider
 import app.sensee.ai.llm.api.LlmHttpClientFactory
 import app.sensee.ai.llm.catalog.LlmModelCatalogFactory
+import app.sensee.ai.llm.client.LlmAiEmbeddingClientFactory
 import app.sensee.ai.llm.client.LlmAiEnrichmentClient
 import app.sensee.ai.llm.client.LlmAiEnrichmentClientFactory
 import app.sensee.core.network.createRealHttpClientEngine
@@ -68,6 +70,25 @@ public interface AiIntegrationProviders {
     public fun provideAiModelCatalog(
         @LlmHttpClient httpClient: HttpClient,
     ): AiModelCatalog = LlmModelCatalogFactory.create(httpClient = httpClient)
+
+    /**
+     * One real-network embedding client for the app lifetime: reuses the shared
+     * LLM [HttpClient] (same provider, same pool) and resolves key and base URL
+     * per request from settings. Embedding rides its own `/v1/embeddings` call,
+     * not the enrichment wire (ADR-006).
+     */
+    @SingleIn(AppScope::class)
+    @Provides
+    public fun provideAiEmbeddingClient(
+        @LlmHttpClient httpClient: HttpClient,
+        credentials: SettingsBackedAiCredentialsProvider,
+        configProvider: SettingsLlmConfigProvider,
+    ): AiEmbeddingClient =
+        LlmAiEmbeddingClientFactory.create(
+            httpClient = httpClient,
+            credentials = credentials,
+            configProvider = configProvider,
+        )
 
     @SingleIn(AppScope::class)
     @Provides

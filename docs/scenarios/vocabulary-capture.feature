@@ -9,7 +9,8 @@
   примеров (`ExampleQualityChecker`, не опустошает список) -> мультивыбор +
   ручной смысл (опционально «дополнить ассистентом») -> подтверждение ->
   подтверждённые `Sense` сохраняются через `SenseWriteRepository` в единую
-  таблицу `sense` (`lexicon`, ADR-008). Captured deck projection, grouping по
+  таблицу `sense` (`lexicon`, ADR-008) и best-effort индексируются для «похоже»
+  (`EmbeddingPort` → `sense_embedding`, навесное). Captured deck projection, grouping по
   `lemma_key` и карточки форм неправильных глаголов уже реализованы в
   data/domain слое. Сценарии с `@implemented` соответствуют коду;
   `@planned` — спроектированное, но ещё не реализованное UI/curation-поведение.
@@ -62,6 +63,12 @@
   - граница AI-интеграции `shared/ai/*` (ADR-005) — реализована:
     curated enrichment без ключа для покрытых лемм, LLM по пользовательскому ключу,
     manual path при miss без ключа
+  - embedding-шов (ADR-005/006, своим путём, не на enrichment-wire):
+    `AiEmbeddingClient` (`shared/ai/core`) + `LlmAiEmbeddingClient` (`shared/ai/llm`,
+    OpenAI `/v1/embeddings`, degrade→`null`); `EmbeddingPort`/`DefaultEmbeddingPort`
+    (`shared/lexicon`) + таблица `sense_embedding` (`shared/lexicon/database-schema`);
+    embed-on-confirm best-effort в `ConfirmSensesUseCase`
+    (`shared/feature/vocabulary-editor/domain`)
   - `shared/feature/library/data/SenseCatalogProjection` — проекция
     подтверждённого Personal-материала в practice-каталог (есть; расширение до
     UI-навигации по lemma-семье — планируемое)
@@ -231,6 +238,17 @@
     Допустим пользователь добавил хотя бы один смысл
     Тогда выбранные смыслы сохраняются в store со статусом `Confirmed`
     И смыслы становятся пригодны для derivation в practice-карточки
+
+  @implemented
+  Сценарий: Подтверждённые смыслы индексируются для «похоже» best-effort
+    Допустим пользователь подтвердил один или несколько смыслов
+    Когда смыслы сохранены в `sense` со статусом `Confirmed`
+    Тогда каждый сохранённый смысл отправляется на embedding через `AiEmbeddingClient` (OpenAI `/v1/embeddings`, своим путём — не на enrichment-wire)
+    И вектор пишется в отдельную таблицу `sense_embedding` после коммита смысла, вне write-транзакции
+    И сбой, офлайн или отсутствие ключа не блокируют подтверждение — смысл остаётся «не эмбеднутым» для позднего бэкфилла
+    # Выбор пользователя по «похожим» (similar-sense) ещё не в UI (навесное).
+    # Покрытие следует владению: claim тоже эмбеддит свою копию; подписанные
+    # Service-зеркала — нет (similar-sense сравнивает собственный материал, ADR-008).
 
   @implemented
   Сценарий: Деградация без AI-источника

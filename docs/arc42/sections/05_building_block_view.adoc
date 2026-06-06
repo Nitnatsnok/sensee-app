@@ -40,7 +40,7 @@
 |Core Runtime|`shared/core/decompose` задаёт инфраструктуру компонентов и навигации, `shared/core/presentation` — общие presentation states, `shared/core/compose` — переиспользуемые Compose-утилиты; DI собирается Metro-графом `AppGraph` в `shared/app-shell`
 |Client Integration Foundations|`shared/database`, `shared/core/network`, `shared/core/mock-backend` и `shared/core/observability` предоставляют хранение, `HttpClient` boundary, транспорт на фикстурах и границу runtime diagnostics для текущих сценариев
 |SRS Libraries|`shared/srs/*` содержат domain/engine/FSRS библиотеки, которые используются practice data flow для планирования повторений
-|AI Enrichment Boundary|`shared/ai/*` — `core` (provider-agnostic boundary contract + request/response extension points: `EnrichmentRequestModifier`, `AiEnrichmentExtension`), `curated-enrichment` (курированное покрытие, отдаётся бэкендом по HTTP), `llm` (LLM-провайдеры, schema из таксономии времени выполнения), `integration` (curated-first routing + DI композиция). Anti-corruption граница для вертикали ввода (ADR-005, ADR-006)
+|AI Enrichment Boundary|`shared/ai/*` — `core` (provider-agnostic boundary contract + request/response extension points: `EnrichmentRequestModifier`, `AiEnrichmentExtension`), `curated-enrichment` (курированное покрытие, отдаётся бэкендом по HTTP), `llm` (LLM-провайдеры, schema из таксономии времени выполнения), `integration` (curated-first routing + DI композиция). Anti-corruption граница для вертикали ввода (ADR-005, ADR-006). Тот же шов несёт второй контракт — embedding: `core` `AiEmbeddingClient`, `llm` `LlmAiEmbeddingClient` (OpenAI `/v1/embeddings`), биндинг в `integration`; идёт отдельным путём, вектор не на enrichment-wire
 |Lexical Verification Boundary|`shared/verification/*` — `core` contracts, `sensee-curated` backend-served reference providers (frequency/CEFR/senses/family по HTTP), network adapters, `database-schema` L2 cache и `integration` aggregator. Сам seam реализован, DI-bound и подключён к живому capture в двух узких ролях: pre-AI grounding (`SuggestVocabularySensesUseCase` зовёт verifier до AI, `EnrichmentGroundingBuilder.toEnrichmentGrounding()` фильтрует по `usableAsLlmContext` и кладёт результат в `EnrichmentRequest.grounding`, `GroundingModifier` рендерит его в prompt) и post-AI silent example-quality (опциональный `ExampleQualityChecker` отсеивает пример только при `Error`, никогда не опустошая список). Деградация штатная: недоступный verifier/checker оставляет capture работать без grounding и без отсева
 |TTS Seam|`shared/tts/*` — `core` contract, `system`/`elevenlabs`/`openai` impl-адаптеры, `playback`, `cache`, `integration` композиция. Та же seam-конвенция, что и AI
 |Neutral Grammar|`shared/grammar/domain` и `shared/grammar/data` задают нейтральную грамматическую таксономию, не привязанную к конкретному языку или AI-провайдеру
@@ -176,21 +176,23 @@ NOTE: Каталог записей и колоды принадлежат `Libr
 * `StoredSense`
 * `SenseStatus` / `SenseOrigin`
 * `WriteIntent`
-* `SenseReadRepository` / `SenseWriteRepository` / `SearchPort` / `LexicalGraphReader` (+ `SenseQuery`, `LexicalEdge`)
+* `SenseReadRepository` / `SenseWriteRepository` / `SearchPort` / `LexicalGraphReader` / `EmbeddingPort` (+ `SenseQuery`, `LexicalEdge`, `EmbeddingVector`, `SimilarSense`)
 * `isConfirmable` / `requireConfirmable` (confirm-gate)
 * `CefrLevel`
-* `shared/lexicon/database-schema` (таблица `sense`)
+* `shared/lexicon/database-schema` (таблицы `sense`, `sense_embedding`)
 * `shared/lexicon/data`
 * `DefaultSenseRepository`
 * `DefaultSenseIdFactory`
+* `DefaultEmbeddingPort` (similar-sense, отдельный класс)
 * `shared/lexicon/enrichment` / `shared/lexicon/serialization`
 * `shared/feature/vocabulary-editor/domain`
 * `SuggestVocabularySensesUseCase`
+* `ConfirmSensesUseCase` (confirm + best-effort embed)
 * `shared/feature/vocabulary-editor/presentation/api`
 * `CaptureSense`
 
 Ответственность::
-Маппить provider-agnostic AI enrichment в центральный `Sense`; редактор оборачивает его в editor-state `CaptureSense` (`presentation/api`) только для выбора. Запись идёт через `SenseWriteRepository` с явным `WriteIntent` в единственную durable-таблицу `sense`, которой владеет `lexicon` (seam-owned schema, агрегируется в `SenseeDatabase`, ADR-002); идентичность — стабильный `sense_id` (ADR-008). `library` читает через `SenseReadRepository`/`SenseCatalogProjection`. `SuggestVocabularySensesUseCase` дополнительно несёт две узкие роли verification: pre-AI grounding (verifier → `EnrichmentGroundingBuilder` → `EnrichmentRequest.grounding`) и post-AI silent `ExampleQualityChecker`-фильтр примеров (никогда не опустошает список).
+Маппить provider-agnostic AI enrichment в центральный `Sense`; редактор оборачивает его в editor-state `CaptureSense` (`presentation/api`) только для выбора. Запись идёт через `SenseWriteRepository` с явным `WriteIntent` в единственную durable-таблицу `sense`, которой владеет `lexicon` (seam-owned schema, агрегируется в `SenseeDatabase`, ADR-002); идентичность — стабильный `sense_id` (ADR-008). `library` читает через `SenseReadRepository`/`SenseCatalogProjection`. `SuggestVocabularySensesUseCase` дополнительно несёт две узкие роли verification: pre-AI grounding (verifier → `EnrichmentGroundingBuilder` → `EnrichmentRequest.grounding`) и post-AI silent `ExampleQualityChecker`-фильтр примеров (никогда не опустошает список). После confirm `ConfirmSensesUseCase` индексирует каждый смысл для «похоже» best-effort: `EmbeddingPort.embed` (вектор от `AiEmbeddingClient`) пишет `sense_embedding` после коммита смысла, вне write-транзакции; сбой/офлайн/нет ключа не блокируют save. Покрытие следует владению: эмбеддятся capture и `claim` (`library/data`, Personal-копия); подписанные Service-зеркала не эмбеддятся (similar-sense сравнивает собственный материал — ADR-008). Similar-sense выбор пользователя — навесное.
 
 Грамматическая таксономия — нейтральный `shared/grammar/domain`: sealed-типы с `Unknown(id)`-ветками, парные инварианты — `TaxonomyInvariants` времени выполнения, ADR-006.
 

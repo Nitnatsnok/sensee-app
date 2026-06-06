@@ -6,6 +6,7 @@ import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.decompose.logic.BaseLogic
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState
+import app.sensee.feature.vocabularyEditor.domain.usecase.ConfirmSensesUseCase
 import app.sensee.feature.vocabularyEditor.domain.usecase.SuggestVocabularySensesUseCase
 import app.sensee.feature.vocabularyEditor.presentation.api.CaptureSense
 import app.sensee.feature.vocabularyEditor.presentation.api.CaptureSenseSource
@@ -18,7 +19,6 @@ import app.sensee.grammar.domain.GrammarLabelsProvider
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.SurfaceForm
 import app.sensee.lexicon.domain.Sense
-import app.sensee.lexicon.domain.SenseWriteRepository
 import app.sensee.lexicon.domain.deriveSenseContentKey
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 
 @AssistedInject
 public class VocabularyCaptureLogic(
-    private val senseWriteRepository: SenseWriteRepository,
+    private val confirmSenses: ConfirmSensesUseCase,
     private val suggestSenses: SuggestVocabularySensesUseCase,
     private val grammarLabelsProvider: GrammarLabelsProvider,
     appDispatchers: AppDispatchers,
@@ -213,11 +213,9 @@ public class VocabularyCaptureLogic(
         logicScope.launch {
             try {
                 runCatchingCancellable {
-                    // Each sense resolves to a stable sense_id (reused on exact content
-                    // match) so a re-capture keeps its SRS. The batch confirms in one
-                    // transaction: the gate is checked across all senses before any
-                    // write, so a rejected sense never leaves the rest half-saved.
-                    senseWriteRepository.confirmAll(senses)
+                    // Delegate the transactional confirm and best-effort embedding to the
+                    // domain use-case; a re-capture reuses each sense_id (keeps its SRS).
+                    confirmSenses(senses)
                 }.onSuccess {
                     mutableUiState.update { state -> state.freshSessionState(confirmedTerm = confirmedTerm) }
                 }.onFailure { throwable ->
