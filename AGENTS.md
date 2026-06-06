@@ -27,7 +27,7 @@ Primary goals when changing code:
 - `shared/tts` - text-to-speech seam (`core` contract, provider/playback implementations, `integration` composition).
 - `shared/verification` - lexical verification seam (`core` contract, dictionary/network providers, `integration` composition).
 - `shared/grammar` / `shared/settings` - neutral grammar taxonomy and user-settings domain/data.
-- `shared/lexicon` - neutral lexical sense model, enrichment mapping, and shared serialization.
+- `shared/lexicon` - neutral lexical sense model, canonical sense store, and shared serialization.
 - `shared/ui` - reusable UI libraries such as design system, adaptive UI, and learning deck.
 - `gradle-plugins` - local convention plugins and shared Gradle build logic.
 - `quality` - custom detekt rules and Konsist architecture checks.

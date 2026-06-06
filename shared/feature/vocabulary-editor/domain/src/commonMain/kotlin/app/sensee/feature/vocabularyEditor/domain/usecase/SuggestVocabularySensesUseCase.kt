@@ -8,13 +8,13 @@ import app.sensee.ai.core.request.SenseCoverage
 import app.sensee.core.coroutines.runCatchingCancellable
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.feature.vocabularyEditor.domain.mapping.toEnrichmentGrounding
+import app.sensee.feature.vocabularyEditor.domain.mapping.toSenses
 import app.sensee.grammar.domain.SentenceSegment
 import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.deriveSenseContentKey
 import app.sensee.lexicon.domain.isConfirmable
-import app.sensee.lexicon.enrichment.toSenses
 import app.sensee.verification.core.contract.ExampleCheckRequest
 import app.sensee.verification.core.contract.ExampleQualityChecker
 import app.sensee.verification.core.contract.FindingSeverity

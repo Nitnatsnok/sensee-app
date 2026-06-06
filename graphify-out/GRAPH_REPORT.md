@@ -1,16 +1,16 @@
 # Graph Report - sensee-app  (2026-06-06)
 
 ## Corpus Check
-- 1000 files · ~248,153 words
+- 999 files · ~248,143 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 8413 nodes · 13974 edges · 814 communities (635 shown, 179 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 970 edges (avg confidence: 0.8)
+- 8416 nodes · 13975 edges · 812 communities (632 shown, 180 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 974 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1fa06d2f`
+- Built from commit: `5827cf3a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -461,10 +461,8 @@
 - [[_COMMUNITY_Community 444|Community 444]]
 - [[_COMMUNITY_Community 445|Community 445]]
 - [[_COMMUNITY_Community 446|Community 446]]
-- [[_COMMUNITY_Community 447|Community 447]]
 - [[_COMMUNITY_Community 448|Community 448]]
 - [[_COMMUNITY_Community 449|Community 449]]
-- [[_COMMUNITY_Community 450|Community 450]]
 - [[_COMMUNITY_Community 451|Community 451]]
 - [[_COMMUNITY_Community 452|Community 452]]
 - [[_COMMUNITY_Community 453|Community 453]]
@@ -541,7 +539,6 @@
 - [[_COMMUNITY_Community 525|Community 525]]
 - [[_COMMUNITY_Community 526|Community 526]]
 - [[_COMMUNITY_Community 527|Community 527]]
-- [[_COMMUNITY_Community 528|Community 528]]
 - [[_COMMUNITY_Community 529|Community 529]]
 - [[_COMMUNITY_Community 530|Community 530]]
 - [[_COMMUNITY_Community 531|Community 531]]
@@ -595,7 +592,6 @@
 - [[_COMMUNITY_Community 581|Community 581]]
 - [[_COMMUNITY_Community 582|Community 582]]
 - [[_COMMUNITY_Community 583|Community 583]]
-- [[_COMMUNITY_Community 584|Community 584]]
 - [[_COMMUNITY_Community 585|Community 585]]
 - [[_COMMUNITY_Community 586|Community 586]]
 - [[_COMMUNITY_Community 587|Community 587]]
@@ -642,17 +638,14 @@
 - [[_COMMUNITY_Community 628|Community 628]]
 - [[_COMMUNITY_Community 629|Community 629]]
 - [[_COMMUNITY_Community 630|Community 630]]
-- [[_COMMUNITY_Community 661|Community 661]]
+- [[_COMMUNITY_Community 654|Community 654]]
 - [[_COMMUNITY_Community 726|Community 726]]
-- [[_COMMUNITY_Community 727|Community 727]]
 - [[_COMMUNITY_Community 728|Community 728]]
 - [[_COMMUNITY_Community 729|Community 729]]
 - [[_COMMUNITY_Community 760|Community 760]]
-- [[_COMMUNITY_Community 761|Community 761]]
 - [[_COMMUNITY_Community 763|Community 763]]
 - [[_COMMUNITY_Community 793|Community 793]]
 - [[_COMMUNITY_Community 794|Community 794]]
-- [[_COMMUNITY_Community 795|Community 795]]
 - [[_COMMUNITY_Community 796|Community 796]]
 - [[_COMMUNITY_Community 797|Community 797]]
 - [[_COMMUNITY_Community 798|Community 798]]
@@ -669,6 +662,12 @@
 - [[_COMMUNITY_Community 809|Community 809]]
 - [[_COMMUNITY_Community 810|Community 810]]
 - [[_COMMUNITY_Community 811|Community 811]]
+- [[_COMMUNITY_Community 815|Community 815]]
+- [[_COMMUNITY_Community 816|Community 816]]
+- [[_COMMUNITY_Community 818|Community 818]]
+- [[_COMMUNITY_Community 819|Community 819]]
+- [[_COMMUNITY_Community 820|Community 820]]
+- [[_COMMUNITY_Community 823|Community 823]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `runCatchingCancellable()` - 70 edges
@@ -697,7 +696,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (814 total, 179 thin omitted)
+## Communities (812 total, 180 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.06
@@ -716,8 +715,8 @@ Cohesion: 0.08
 Nodes (56): AppChildCompactDetailTransitionSpec, AppChildPaneBoundsTransformSelector, AppChildPanels(), AppChildPanelsAnimation, AppChildPanelsCompactScope, AppChildPanelsDefaults, AppChildPaneMotionContext, AppChildPaneMotionPhase (+48 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.14
-Nodes (20): FakeModelCatalog, FakeSettings, ProfileAiSettingsLogicTest, setAiApiKey(), setAiModel(), setAiProvider(), setTtsApiKey(), setTtsModel() (+12 more)
+Cohesion: 0.08
+Nodes (33): AiModelCatalog, FakeModelCatalog, FakeSettings, FakeTtsCatalog, ProfileAiSettingsLogicTest, setAiApiKey(), setAiModel(), setAiProvider() (+25 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.05
@@ -732,8 +731,8 @@ Cohesion: 0.10
 Nodes (59): Cardinal, Case, Comparative, ConjunctionType, Coordinating, Correlative, Countability, Countable (+51 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.06
-Nodes (37): rememberAppAdaptiveInfo(), AppContentFrame, App(), toContentPresentation(), AppComposeEnvironment(), HapticFeedback, HapticFeedbackOnTriggerTest, RecordingHapticFeedback (+29 more)
+Cohesion: 0.13
+Nodes (15): HapticFeedback, HapticFeedbackOnTriggerTest, RecordingHapticFeedback, HapticFeedbackOnThresholdCrossing(), HapticFeedbackOnTrigger(), SenseeHaptics, RecordingHapticFeedback, SenseeHapticsTest (+7 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.08
@@ -752,8 +751,8 @@ Cohesion: 0.08
 Nodes (35): CefrLevelProvider, DictionarySenseSummary, FrequencyBand, FrequencyProvider, LexicalFamilyProvider, LexicalLemma, LexicalUnitInfo, bandFor() (+27 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.26
-Nodes (19): EnrichedSense, identityFingerprint(), resolveComplement(), resolveGrammarTag(), resolveUnitType(), resolveUsageLabel(), toEnrichedSense(), toEnrichedSenses() (+11 more)
+Cohesion: 0.13
+Nodes (20): SenseCatalogProjection, CardSummary, derivativesOfSenses(), Lemma, LemmaDerivative, Card, CardId, DeckId (+12 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.07
@@ -776,8 +775,8 @@ Cohesion: 0.09
 Nodes (34): FocusRequester, Key, LearningCardInputCallbacks, LearningCardInputSpec, calculateSwipeExitTarget(), calculateSwipeThresholdPx(), distance(), gestureLearningCardInput() (+26 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.23
-Nodes (11): deckOf(), DeckPracticeLogicTest, FakeDecksRepository, learning(), review(), DeckPracticeLogic, FakeDecksRepository, DeckId (+3 more)
+Cohesion: 0.07
+Nodes (30): DefaultPracticeReviewRepository, card(), deckOf(), DeckPracticeLogicTest, FakeDecksRepository, learning(), review(), DeckPracticeLogic (+22 more)
 
 ### Community 21 - "Community 21"
 Cohesion: 0.07
@@ -792,8 +791,8 @@ Cohesion: 0.12
 Nodes (23): EnrichmentRequestModifier, FormatModifier, GroundingModifier, IdentityModifier, LanguageModifier, PhrasalVerbCoverageModifier, PolysemyHintsModifier, PreferredTopicsModifier (+15 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.13
-Nodes (17): DefaultProfileAiSettingsComponent, FakeProfileAiSettingsComponent, LiveProfileAiSettingsComponent, ProfileAiSettingsScreenUiTest, TestModelCatalog, TestUserSettingsRepository, ProfileAiSettingsComponent, ProfileAiSettingsLogic (+9 more)
+Cohesion: 0.09
+Nodes (24): DefaultProfileAiSettingsComponent, FakeProfileAiSettingsComponent, LiveProfileAiSettingsComponent, ProfileAiSettingsScreenUiTest, TestModelCatalog, TestTtsCatalog, TestUserSettingsRepository, ProfileAiSettingsComponent (+16 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.08
@@ -813,23 +812,23 @@ Nodes (18): CachingGrammarLabelsProvider, CachingGrammarLabelsProviderTest, Fake
 
 ### Community 29 - "Community 29"
 Cohesion: 0.06
-Nodes (30): SenseCardPreviewCase, SenseCardPreviewCaseProvider, SenseSelectionCardPreview(), DeckPracticePanePreview(), DeckPracticeUiStateProvider, CardDetailContentPreview(), CardDetailUiStateProvider, PracticeHomeContentPreview() (+22 more)
+Nodes (31): SenseCardPreviewCase, SenseCardPreviewCaseProvider, SenseSelectionCardPreview(), DeckPracticePanePreview(), DeckPracticeUiStateProvider, CardDetailContentPreview(), CardDetailUiStateProvider, PracticeHomeContentPreview() (+23 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.09
 Nodes (22): JsAny, JsAudioElement, newAudioElement(), newWebAudioElement(), WasmJsWebAudioElement, Double, String, WebAudioElement (+14 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.23
-Nodes (20): aiResultItems(), aiSection(), BodyMutedText(), frameItem(), ProfileAiSettingsListContext, ProfileAiSettingsScreen(), rememberProfileAiSettingsTextProvider(), SectionHeader() (+12 more)
+Cohesion: 0.14
+Nodes (30): hasResult(), KeyCheckMessage(), ModelField(), VerifyRow(), aiResultItems(), aiSection(), BodyMutedText(), frameItem() (+22 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.09
 Nodes (25): SenseeSpeakIconButton(), SenseeSpeakIconButtonContent(), SenseeSpeakIconButtonDefaults, SenseeSpeakIconButtonLoading(), SenseeSpeakIconButtonPulsingIcon(), SenseeSpeakIconButtonState, SenseeIcon(), ImageBitmap (+17 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.12
-Nodes (21): DeckPracticeSpeechController, isTerminal(), DeckPracticeSpeechControllerTest, FakeSpeaker, FakeSpeechHandle, FakeSpeechHandle, Boolean, CoroutineScope (+13 more)
+Cohesion: 0.23
+Nodes (10): DeckPracticeSpeechControllerTest, FakeSpeaker, FakeSpeechHandle, FakeSpeechHandle, CoroutineScope, Int, SpeechHandle, SpeechRequest (+2 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.12
@@ -848,8 +847,8 @@ Cohesion: 0.09
 Nodes (20): DefaultPrimaryShellComponent, Factory, PrimarySectionComponentFactories, PrimaryShellBackAction, PrimaryShellBackPolicyTest, PrimarySectionConfig, PrimaryShellComponent, AppComponent (+12 more)
 
 ### Community 38 - "Community 38"
-Cohesion: 0.10
-Nodes (34): FamilyContext, FrequencyScore, AdapterContributions, bestAvailability(), dedupByDisplayForm(), FamilyResolution, mergeAvailability(), mergeFamily() (+26 more)
+Cohesion: 0.09
+Nodes (35): FamilyContext, FrequencyScore, AdapterContributions, bestAvailability(), dedupByDisplayForm(), FamilyResolution, mergeAvailability(), mergeFamily() (+27 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.08
@@ -860,12 +859,12 @@ Cohesion: 0.11
 Nodes (32): SenseeBadge(), ChipFlow(), DetailBlock(), hasSecondaryDetail(), SenseCandidateTitleRow(), SenseExpandHandle(), SenseSecondaryDetail(), SenseSelectionCard() (+24 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.13
-Nodes (20): SenseCatalogProjection, CardSummary, derivativesOfSenses(), Lemma, LemmaDerivative, Card, CardId, DeckId (+12 more)
+Cohesion: 0.19
+Nodes (10): CFDataRef, CFMutableDictionaryRef, CFTypeRef, IosKeychainSecureStorage, platformSecureStorage(), SecureStorageKey, String, AppDispatchers (+2 more)
 
 ### Community 42 - "Community 42"
-Cohesion: 0.15
-Nodes (15): RoutingLexicalVerifier, RoutingLexicalVerifierTest, VerificationContributors, LexicalSource, Map, String, AppDiagnostics, Confidence (+7 more)
+Cohesion: 0.17
+Nodes (13): RoutingLexicalVerifier, RoutingLexicalVerifierTest, VerificationContributors, Map, AppDiagnostics, Confidence, ExampleQualityChecker, LexicalEntryLookup (+5 more)
 
 ### Community 43 - "Community 43"
 Cohesion: 0.19
@@ -876,20 +875,20 @@ Cohesion: 0.07
 Nodes (25): CefrLevelProvider, CefrResult, ExampleCheckRequest, ExampleCheckResult, ExampleQualityChecker, FamilyResult, FrequencyProvider, FrequencyResult (+17 more)
 
 ### Community 45 - "Community 45"
-Cohesion: 0.08
-Nodes (30): AppDiagnostics, DefaultAppDiagnostics, LearningSettings, FailingSettings, FakeSettings, FakeTopicCatalog, RoutingAiEnrichmentClientTest, AppLoggerFactory (+22 more)
+Cohesion: 0.24
+Nodes (13): FakeSettings, FakeTopicCatalog, RoutingAiEnrichmentClientTest, RoutingAiEnrichmentClient, AppDiagnostics, CuratedAiEnrichmentClient, Int, LearningTopic (+5 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.09
 Nodes (17): AbstractCoroutineContextElement, InMemorySpanProcessor, String, T, Clock, Instant, Long, Pair (+9 more)
 
 ### Community 47 - "Community 47"
-Cohesion: 0.16
-Nodes (10): AudioPlayer, AudioPlayerFactory, FixedPlayerFactory, NewPlayerFactory, NoopSpeaker, RecordingAudioPlayer, RoutingSpeakerTest, WebAudioPlayerFactory (+2 more)
+Cohesion: 0.10
+Nodes (18): AudioPlayer, AudioPlayerFactory, FakeSettings, FixedPlayerFactory, NewPlayerFactory, NoopSpeaker, RecordingAudioPlayer, RoutingSpeakerTest (+10 more)
 
 ### Community 48 - "Community 48"
-Cohesion: 0.10
-Nodes (16): OpenAiSpeechApi, toTtsException(), LlmAiEnrichmentClientTest, OpenAiCredentialsProvider, OpenAiSynthesizer, List, MockEngine, String (+8 more)
+Cohesion: 0.24
+Nodes (4): LlmAiEnrichmentClientTest, List, MockEngine, String
 
 ### Community 49 - "Community 49"
 Cohesion: 0.10
@@ -904,8 +903,8 @@ Cohesion: 0.10
 Nodes (20): verificationHttpClient(), VerificationIntegrationProviders, SenseeCefrLevelProvider, SenseeFrequencyProvider, SenseeLexicalFamilyProvider, SenseeSenseInventoryProvider, CefrLevelProvider, DatamuseLexicalAdapter (+12 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.25
-Nodes (7): CachingSpeechSynthesizerTest, InMemoryAudioClipStore, app, AppLogger, String, List, FakeSpeechSynthesizer
+Cohesion: 0.29
+Nodes (6): CachingSpeechSynthesizerTest, InMemoryAudioClipStore, app, String, List, FakeSpeechSynthesizer
 
 ### Community 53 - "Community 53"
 Cohesion: 0.15
@@ -920,8 +919,8 @@ Cohesion: 0.11
 Nodes (18): Factory, freshSessionState(), initialLabelsState(), noteFor(), toggleSelection(), VocabularyCaptureLogic, EnrichmentAvailability, CaptureSense (+10 more)
 
 ### Community 56 - "Community 56"
-Cohesion: 0.05
-Nodes (35): CFDataRef, CFMutableDictionaryRef, CFTypeRef, DefaultUserSettingsRepositoryTest, Harness, InMemorySecureStorage, KeyringBackend, SecureStorage (+27 more)
+Cohesion: 0.16
+Nodes (10): DefaultUserSettingsRepositoryTest, Harness, InMemorySecureStorage, Boolean, Map, MutableMap, Pair, SecureStorageKey (+2 more)
 
 ### Community 57 - "Community 57"
 Cohesion: 0.07
@@ -941,7 +940,7 @@ Nodes (10): DefaultSenseRepositoryTest, FakeDbProvider, MutableClock, Sequential
 
 ### Community 61 - "Community 61"
 Cohesion: 0.19
-Nodes (9): DeckPracticeLogic, Factory, toReviewRating(), DeckPracticeAction, DeckPracticeRatingAction, ReviewRating, StateFlow, String (+1 more)
+Nodes (9): Factory, initialLabelsState(), toReviewRating(), DataLoadingState, DeckPracticeRatingAction, GrammarLabels, ReviewRating, String (+1 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.12
@@ -952,8 +951,8 @@ Cohesion: 0.11
 Nodes (34): DeckPracticeDetailPane(), DeckPracticeDetailSheet(), DetailBadges(), CardBodySection(), CardDetailBody(), CardDetailContent(), CardDetailScreen(), CardHeader() (+26 more)
 
 ### Community 64 - "Community 64"
-Cohesion: 0.06
-Nodes (34): AdvanceableClock, CacheRow, LexicalVerificationQuery, PartOfSpeechHint, VerificationPolicy, DatamuseLexicalAdapterTest, FreeDictionaryLexicalAdapterTest, AdvanceableClock (+26 more)
+Cohesion: 0.07
+Nodes (29): AdvanceableClock, CacheRow, LexicalVerificationQuery, PartOfSpeechHint, VerificationPolicy, FreeDictionaryLexicalAdapterTest, AdvanceableClock, CacheRow (+21 more)
 
 ### Community 65 - "Community 65"
 Cohesion: 0.19
@@ -968,8 +967,8 @@ Cohesion: 0.11
 Nodes (14): AudioClipStore, SqlDelightAudioClipStore, SqlDelightAudioClipStoreFactory, AppDispatchers, AudioCacheConfig, AudioClip, AudioFormat, SenseeDatabaseProvider (+6 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.16
-Nodes (30): Constraints, BadgeRow(), buildContextSentence(), ContextSentenceLine(), EnglishCardContent(), legacyHeadwordSentence(), PracticeCardBackContent(), PracticeCardFrontContent() (+22 more)
+Cohesion: 0.23
+Nodes (26): BadgeRow(), buildContextSentence(), ContextSentenceLine(), EnglishCardContent(), legacyHeadwordSentence(), PracticeCardBackContent(), PracticeCardFrontContent(), rememberHeadwordAnnotated() (+18 more)
 
 ### Community 69 - "Community 69"
 Cohesion: 0.10
@@ -985,7 +984,7 @@ Nodes (15): ChunkFeedInputStream, audioPlayerFactory(), ignoreCleanupFailure(), 
 
 ### Community 72 - "Community 72"
 Cohesion: 0.12
-Nodes (24): categoryIcon(), ProfileHomeScreen(), ProfileMenuRow(), rememberProfileHomeTextProvider(), ProfileDetailBody(), ProfileDetailPane(), profilePaneLayoutMetrics(), ProfileSectionScreen() (+16 more)
+Nodes (19): SenseeCheckbox(), ImmutableSet, ProfileTopicPickerBody(), ProfileTopicPickerScreen(), TopicList(), TopicRow(), SenseeCheckboxDarkPreview(), Boolean (+11 more)
 
 ### Community 73 - "Community 73"
 Cohesion: 0.19
@@ -1008,36 +1007,36 @@ Cohesion: 0.18
 Nodes (15): Boolean, Int, WindowState, ComposeWindow, installWindowsWindowDecoration(), minimizeWindow(), User32Ex, WindowsWindowProcedure (+7 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.20
-Nodes (8): FakeSettings, ProfileTopicPickerLogicTest, SuspendedSettings, AppCoroutineScopes, Flow, UserSettingsScope, UserSettingsSnapshot, UserSettingsRepository
+Cohesion: 0.18
+Nodes (9): LearningSettings, FakeSettings, ProfileTopicPickerLogicTest, SuspendedSettings, AppCoroutineScopes, Flow, UserSettingsScope, UserSettingsSnapshot (+1 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.18
 Nodes (12): ElevenLabsSpeechHandle, AudioPlayer, Job, Long, SpeechHandle, SpeechRequest, SpeechState, StateFlow (+4 more)
 
 ### Community 80 - "Community 80"
-Cohesion: 0.25
-Nodes (17): PrimaryNavDestination, PrimaryNavigationItem(), PrimaryShellBottomNavigationLayout(), PrimaryShellChildren(), PrimaryShellNavigationRailLayout(), PrimaryShellScreen(), PrimaryShellTopBarLayout(), rememberPrimaryShellTextProvider() (+9 more)
+Cohesion: 0.17
+Nodes (22): PrimaryNavDestination, PrimaryNavigationItem(), PrimaryShellBottomNavigationLayout(), PrimaryShellChildren(), PrimaryShellNavigationRailLayout(), PrimaryShellScreen(), PrimaryShellTopBarLayout(), rememberPrimaryShellTextProvider() (+14 more)
 
 ### Community 81 - "Community 81"
-Cohesion: 0.30
-Nodes (7): OpenAiSpeechHandle, AudioPlayer, Long, SpeechRequest, Throwable, TimeMark, OpenAiSpeaker
+Cohesion: 0.18
+Nodes (12): OpenAiSpeechHandle, AudioPlayer, Job, Long, SpeechHandle, SpeechRequest, SpeechState, StateFlow (+4 more)
 
 ### Community 82 - "Community 82"
-Cohesion: 0.16
-Nodes (9): AppLogger, DefaultAppLogger, NoOpAppLogger, LogSeverity, String, Throwable, String, Throwable (+1 more)
+Cohesion: 0.24
+Nodes (6): AppLogger, NoOpAppLogger, String, String, Throwable, Unit
 
 ### Community 83 - "Community 83"
-Cohesion: 0.14
-Nodes (20): AppDiagnostics, EmbeddingVector, Float, List, MutableList, Sense, SenseId, SenseOrigin (+12 more)
+Cohesion: 0.11
+Nodes (24): SenseWriteRepository, AppDiagnostics, List, Sense, StoredSense, EmbeddingVector, Float, List (+16 more)
 
 ### Community 84 - "Community 84"
-Cohesion: 0.29
-Nodes (8): EnrichmentItemV1, EnrichmentResponseV1, EnrichmentSuggestion, EnrichmentResult, JsonElement, List, Map, Pair
+Cohesion: 0.24
+Nodes (11): EnrichmentItemV1, EnrichmentResponseV1, EnrichmentSuggestion, EnrichmentExample, EnrichmentResult, JsonElement, List, Map (+3 more)
 
 ### Community 85 - "Community 85"
-Cohesion: 0.19
-Nodes (11): AiEnrichmentClient, ExampleQualityChecker, EnrichmentRequest, EnrichmentResult, String, FakeAi, FlaggingExampleChecker, NoOpExampleQualityChecker (+3 more)
+Cohesion: 0.14
+Nodes (14): AiEnrichmentClient, ExampleQualityChecker, EnrichmentRequest, EnrichmentResult, EnrichmentRequest, EnrichmentResult, ExampleCheckRequest, ExampleCheckResult (+6 more)
 
 ### Community 86 - "Community 86"
 Cohesion: 0.15
@@ -1048,8 +1047,8 @@ Cohesion: 0.15
 Nodes (17): CuratedAiEnrichmentClient, DecodedItem, DecodedItems, Degraded, Found, ItemLookup, Miss, toSlug() (+9 more)
 
 ### Community 88 - "Community 88"
-Cohesion: 0.20
-Nodes (14): DefaultSenseRepository, ResolvedWrite, SearchPort, AppLogger, Flow, List, Sense, SenseeDatabase (+6 more)
+Cohesion: 0.29
+Nodes (8): DefaultSenseRepository, SearchPort, AppLogger, Flow, List, SenseQuery, SenseStatus, StoredSense
 
 ### Community 89 - "Community 89"
 Cohesion: 0.14
@@ -1060,20 +1059,20 @@ Cohesion: 0.14
 Nodes (15): MutableSpeechHandle, CoroutineScope, Double, PlatformContext, SpeechHandle, SpeechRequest, String, TtsError (+7 more)
 
 ### Community 91 - "Community 91"
-Cohesion: 0.20
-Nodes (8): Boolean, String, Throwable, CompositeTextProvider, QuantityTextKey, TextKey, TextProvider, withFallback()
+Cohesion: 0.06
+Nodes (40): SrsEngine, SrsCardNotFoundException, SrsEngineException, Any, List, Property, T, ListPropertyDelegate (+32 more)
 
 ### Community 92 - "Community 92"
-Cohesion: 0.13
-Nodes (13): CancellableContinuation, audioPlayerFactory(), newWebAudioElement(), WebAudioElement, WebAudioPlayer, AppDispatchers, AppLogger, AudioClip (+5 more)
+Cohesion: 0.12
+Nodes (14): CancellableContinuation, audioPlayerFactory(), newWebAudioElement(), WebAudioElement, WebAudioPlayer, WebAudioPlayerFactory, AppDispatchers, AppLogger (+6 more)
 
 ### Community 93 - "Community 93"
 Cohesion: 0.17
 Nodes (24): Char, KoFileDeclaration, featurePackageName(), importedPath(), isProductionSourcePath(), kebabToCamel(), KonsistTestSupport, maskCommentsAndStringLiterals() (+16 more)
 
 ### Community 94 - "Community 94"
-Cohesion: 0.20
-Nodes (10): FakeDbProvider, SenseSearchTest, SequentialSenseIdFactory, DefaultSenseRepository, List, Sense, SenseeDatabase, SenseId (+2 more)
+Cohesion: 0.17
+Nodes (12): FakeDbProvider, MutableClock, SenseSearchTest, SequentialSenseIdFactory, DefaultSenseRepository, Instant, List, Sense (+4 more)
 
 ### Community 95 - "Community 95"
 Cohesion: 0.10
@@ -1096,24 +1095,24 @@ Cohesion: 0.15
 Nodes (11): KeyStore, SecretKey, AndroidSecureStorage, platformSecureStorage(), Boolean, SecureStorageKey, String, AppDispatchers (+3 more)
 
 ### Community 100 - "Community 100"
-Cohesion: 0.20
-Nodes (3): SenseDto, UnitComponentDto, SenseDtoRoundTripTest
+Cohesion: 0.09
+Nodes (16): PrepositionGovernment, PrepositionGovernmentTest, AlignmentChunkDto, ContextualApplicationDto, GrammarTagDto, IrregularFormsDto, PrepositionGovernmentDto, SenseDto (+8 more)
 
 ### Community 101 - "Community 101"
-Cohesion: 0.19
-Nodes (21): androidx, DeckPracticeBody(), DeckPracticeBodyState, DeckPracticeCardDeck(), DeckPracticeLearningCard(), DeckPracticePane(), DeckPracticeScreen(), practiceDeckSizeModifier() (+13 more)
+Cohesion: 0.11
+Nodes (31): androidx, PracticeDeckSize, PracticeRatingRow(), RevealMeaningButton(), toRating(), DeckPracticeBody(), DeckPracticeBodyState, DeckPracticeCardDeck() (+23 more)
 
 ### Community 102 - "Community 102"
 Cohesion: 0.10
-Nodes (21): appChildPanels(), withComponentCapabilities(), PanelsNavigation, AppComponentContext, Boolean, ChildPanels, ComponentResultDispatcher, DC (+13 more)
+Nodes (22): appChildPanels(), withComponentCapabilities(), PanelsNavigation, AppComponentContext, Boolean, ChildPanels, ComponentResultDispatcher, DC (+14 more)
 
 ### Community 103 - "Community 103"
 Cohesion: 0.25
 Nodes (21): BodyMutedText(), candidateList(), captureIntro(), confirmButton(), confirmedTermBlock(), ConfirmedTermText(), IntroHeader(), manualEntryBlock() (+13 more)
 
 ### Community 104 - "Community 104"
-Cohesion: 0.10
-Nodes (19): PracticeDeckSize, PracticeRatingRow(), RevealMeaningButton(), toRating(), SenseePracticeRatingButton(), SenseePracticeRatingButtonPreview(), Boolean, DeckPracticeRatingAction (+11 more)
+Cohesion: 0.18
+Nodes (9): SenseePracticeRatingButton(), SenseePracticeRatingButtonPreview(), Boolean, Dp, ImageVector, Modifier, SenseePracticeRatingButtonColors, Shape (+1 more)
 
 ### Community 105 - "Community 105"
 Cohesion: 0.26
@@ -1124,8 +1123,8 @@ Cohesion: 0.13
 Nodes (16): HttpClientEngineFactory, Logger, applyNetworkDefaults(), NetworkHttpClientFactory, KtorNetworkLogger, NetworkLogger, NoOpNetworkLogger, HttpClient (+8 more)
 
 ### Community 107 - "Community 107"
-Cohesion: 0.07
-Nodes (48): InlineTextContent, pop(), toNavigationRequestStatus(), SenseeSentenceClick, SenseeSentencePillPalette, SenseeSentencePlaceholderMetrics, SenseeSentenceTextColors, SenseeSentenceTextStyles (+40 more)
+Cohesion: 0.15
+Nodes (22): InlineTextContent, SenseeSentenceClick, SenseeSentencePillPalette, SenseeSentencePlaceholderMetrics, SenseeSentenceTextColors, placeholderWidth(), rememberSenseeSentenceInlineContent(), resolveFontSizeDp() (+14 more)
 
 ### Community 108 - "Community 108"
 Cohesion: 0.12
@@ -1136,8 +1135,8 @@ Cohesion: 0.12
 Nodes (12): FixtureReader, InMemoryFixtureReader, toFixturePath(), MergedFixtureReader, MergedFixtureReaderTest, MockFixtureSet, String, Map (+4 more)
 
 ### Community 110 - "Community 110"
-Cohesion: 0.18
-Nodes (10): ProfileAppSettingsScreen(), rememberProfileAppSettingsTextProvider(), Modifier, ProfileAppSettingsComponent, TextProvider, Boolean, Modifier, SenseeSwitchColors (+2 more)
+Cohesion: 0.11
+Nodes (16): ProfileAppSettingsScreen(), rememberProfileAppSettingsTextProvider(), SenseeSelectField(), Modifier, ProfileAppSettingsComponent, TextProvider, ImmutableList, Modifier (+8 more)
 
 ### Community 111 - "Community 111"
 Cohesion: 0.14
@@ -1148,12 +1147,12 @@ Cohesion: 0.27
 Nodes (5): RecordingSqlDriver, Query, MutableList, String, Transacter
 
 ### Community 113 - "Community 113"
-Cohesion: 0.19
-Nodes (16): ComplementType, GrammarLabel, GrammarLabelForm, GrammarLabels, GrammarLabelStyle, key(), GrammarCategory, GrammarForm (+8 more)
+Cohesion: 0.05
+Nodes (53): AiEnrichmentExtension, ComplementType, ContextualApplication, GrammarLabel, GrammarLabelForm, GrammarLabels, GrammarLabelStyle, key() (+45 more)
 
 ### Community 114 - "Community 114"
-Cohesion: 0.11
-Nodes (24): Args, Close, DeckPracticeAction, DeckPracticeCardUiState, DeckPracticeComponent, DeckPracticeRatingAction, DeckPracticeSpeechPhase, DeckPracticeSpeechUiState (+16 more)
+Cohesion: 0.15
+Nodes (18): Args, Close, DeckPracticeAction, DeckPracticeCardUiState, DeckPracticeRatingAction, DeckPracticeSpeechPhase, DeckPracticeSpeechUiState, DeckPracticeUiState (+10 more)
 
 ### Community 115 - "Community 115"
 Cohesion: 0.11
@@ -1169,19 +1168,19 @@ Nodes (14): AiIntegrationProviders, LlmHttpClient, SettingsBackedAiCredentialsPr
 
 ### Community 118 - "Community 118"
 Cohesion: 0.09
-Nodes (26): Deferred, degradedCefr(), degradedExample(), degradedFamily(), degradedFrequency(), degradedLookup(), degradedSense(), runSenseInventory() (+18 more)
+Nodes (25): degradedCefr(), degradedExample(), degradedFamily(), degradedFrequency(), degradedLookup(), degradedSense(), runSenseInventory(), CefrResult (+17 more)
 
 ### Community 119 - "Community 119"
-Cohesion: 0.12
-Nodes (16): Home, HomeConfig, Home, LibraryConfig, CardDetail, DeckPractice, Home, PracticeConfig (+8 more)
+Cohesion: 0.13
+Nodes (14): SomeConfig, Home, HomeConfig, Home, LibraryConfig, CardDetail, DeckPractice, Home (+6 more)
 
 ### Community 120 - "Community 120"
 Cohesion: 0.22
 Nodes (17): SenseeNavigationIcon(), BottomBarNavigationItemBody(), RailNavigationItemBody(), SenseeNavigationActionButton(), SenseeNavigationItem(), TopBarNavigationItemBody(), SenseeNavigationRailExpandedPreview(), Color (+9 more)
 
 ### Community 122 - "Community 122"
-Cohesion: 0.10
-Nodes (13): Factory, ProfileAppSettingsLogic, runCatchingCancellable(), RunCatchingCancellableTest, Result, T, AppThemeMode, Boolean (+5 more)
+Cohesion: 0.13
+Nodes (10): Factory, ProfileAppSettingsLogic, runCatchingCancellable(), RunCatchingCancellableTest, Result, T, AppThemeMode, Boolean (+2 more)
 
 ### Community 123 - "Community 123"
 Cohesion: 0.14
@@ -1219,6 +1218,10 @@ Nodes (7): IntRangeSerializer, Surrogate, KSerializer, Decoder, Encoder, IntRang
 Cohesion: 0.33
 Nodes (9): EnrichmentTaxonomy, EnrichmentSchema, Field, AiEnrichmentExtension, JsonElement, List, Map, Set (+1 more)
 
+### Community 132 - "Community 132"
+Cohesion: 0.22
+Nodes (11): DeckPracticeSpeechController, isTerminal(), Boolean, CoroutineScope, DeckPracticeSpeechUiState, Job, SpeechHandle, SpeechLocale (+3 more)
+
 ### Community 133 - "Community 133"
 Cohesion: 0.22
 Nodes (8): FakeDbProvider, PracticeSrsStorageTest, Instant, Int, SenseeDatabase, SrsCardSnapshot, SrsCardState, String
@@ -1244,12 +1247,12 @@ Cohesion: 0.21
 Nodes (16): collectDirectComposeStabilityDependencyProjects(), ComposeMultiplatformPlugin, configureComposeStability(), enableComposePreviewTooling(), isComposeStabilityDependencyConfiguration(), isComposeStabilityRefreshRequested(), isComposeStabilityRefreshTaskName(), isComposeStabilityReportCompilationTaskName() (+8 more)
 
 ### Community 139 - "Community 139"
-Cohesion: 0.06
-Nodes (26): CatalogOrigin, DefaultCatalogAdoptionRepository, CatalogAdoptionRepository, deck(), FakeCatalog, LibraryHomeLogicTest, LibraryHomeLogic, Deck (+18 more)
+Cohesion: 0.17
+Nodes (8): FakeCatalog, LibraryHomeLogicTest, LibraryHomeLogic, DeckId, DeckWithCards, FakeCatalog, Lemma, LemmaId
 
 ### Community 140 - "Community 140"
-Cohesion: 0.12
-Nodes (13): DefaultProfileTopicPickerComponent, ProfileTopicPickerComponent, FakeProfileAiSettingsComponent, FakeProfileAppSettingsComponent, FakeProfileTopicPickerComponent, ProfileSectionFixture, ProfileAiSettingsAction, ProfileAiSettingsUiState (+5 more)
+Cohesion: 0.25
+Nodes (5): DefaultProfileTopicPickerComponent, ProfileTopicPickerComponent, FakeProfileTopicPickerComponent, ProfileTopicPickerAction, ProfileTopicPickerUiState
 
 ### Community 141 - "Community 141"
 Cohesion: 0.16
@@ -1260,8 +1263,8 @@ Cohesion: 0.15
 Nodes (14): Args, CardDetailAction, CardDetailCardUiState, CardDetailComponent, CardDetailUiState, Factory, OpenRelated, RelatedCardUiState (+6 more)
 
 ### Community 143 - "Community 143"
-Cohesion: 0.18
-Nodes (13): app, Boolean, EnrichmentResult, LexicalVerificationReport, List, Sense, SenseCoverage, SentenceHint (+5 more)
+Cohesion: 0.11
+Nodes (21): App, Boolean, EnrichmentResult, iOSApp, LexicalVerificationReport, Scene, SenseCoverage, SentenceHint (+13 more)
 
 ### Community 144 - "Community 144"
 Cohesion: 0.16
@@ -1272,8 +1275,8 @@ Cohesion: 0.19
 Nodes (5): CuratedAiEnrichmentClientTest, AiEnrichmentExtension, CuratedAiEnrichmentClient, Set, String
 
 ### Community 146 - "Community 146"
-Cohesion: 0.13
-Nodes (12): DefaultSenseIdFactory, fnv1aHex(), CatalogProjectionIntegrationTest, FailingSrsStorage, Fixture, FsrsParameters, Sense, SrsCardSnapshot (+4 more)
+Cohesion: 0.19
+Nodes (8): CatalogProjectionIntegrationTest, FailingSrsStorage, Fixture, FsrsParameters, Sense, SrsCardSnapshot, SrsStorage, String
 
 ### Community 147 - "Community 147"
 Cohesion: 0.14
@@ -1297,15 +1300,15 @@ Nodes (8): RecordingVerifier, VerifyVocabularySuggestionsUseCaseTest, ExampleIss
 
 ### Community 152 - "Community 152"
 Cohesion: 0.14
-Nodes (12): UnavailableVerifier, LexicalVerifier, LexicalVerificationQuery, LexicalVerificationReport, LexicalVerificationQuery, LexicalVerificationReport, LexicalVerificationQuery, LexicalVerificationReport (+4 more)
+Nodes (13): UnavailableVerifier, LexicalVerifier, LexicalVerificationQuery, LexicalVerificationReport, LexicalVerificationQuery, LexicalVerificationReport, LexicalVerificationQuery, LexicalVerificationReport (+5 more)
 
 ### Community 153 - "Community 153"
 Cohesion: 0.18
 Nodes (9): Factory, LibraryHomeLogic, toUi(), Boolean, Job, LibraryDeckUiState, LibraryHomeUiState, StateFlow (+1 more)
 
 ### Community 154 - "Community 154"
-Cohesion: 0.21
-Nodes (6): ChainedNavigationDispatcher, ChainedNavigationDispatcherTest, FakeDispatcher, SomeConfig, NavigationRequestStatus, ScreenConfig
+Cohesion: 0.23
+Nodes (5): ChainedNavigationDispatcher, ChainedNavigationDispatcherTest, FakeDispatcher, NavigationRequestStatus, ScreenConfig
 
 ### Community 155 - "Community 155"
 Cohesion: 0.24
@@ -1324,8 +1327,8 @@ Cohesion: 0.16
 Nodes (11): EpochMillisClock, SystemEpochMillisClock, FakeDbProvider, MutableClock, SqlDelightAudioClipStoreTest, Long, AudioCacheConfig, Int (+3 more)
 
 ### Community 159 - "Community 159"
-Cohesion: 0.17
-Nodes (8): CatalogLocalDataSource, CatalogLocalDataSourceTest, FakeDbProvider, FixedClock, Instant, Int, IrregularForms, SenseeDatabase
+Cohesion: 0.21
+Nodes (6): CatalogLocalDataSource, CatalogLocalDataSourceTest, FakeDbProvider, Int, IrregularForms, SenseeDatabase
 
 ### Community 160 - "Community 160"
 Cohesion: 0.14
@@ -1360,12 +1363,12 @@ Cohesion: 0.20
 Nodes (11): ClaimTest, Fixture, RecordingEmbeddingPort, EmbeddingVector, Float, List, MutableList, SenseId (+3 more)
 
 ### Community 168 - "Community 168"
-Cohesion: 0.40
-Nodes (10): manualAddButtonItem(), manualExampleItem(), manualSurfaceFormItem(), manualTranslationItem(), manualUnitTypeItem(), SenseeAdaptiveLayoutMetrics, TextProvider, VocabularyCaptureComponent (+2 more)
+Cohesion: 0.16
+Nodes (11): KeyringBackend, SecureStorage, DesktopSecureStorage, InMemoryKeyringBackend, KeyringBackend, OsKeyringBackend, SecureStorageException, Boolean (+3 more)
 
 ### Community 169 - "Community 169"
-Cohesion: 0.19
-Nodes (12): InMemorySenseStore, SenseReadRepository, SenseWriteRepository, Flow, List, Sense, SenseId, SenseOrigin (+4 more)
+Cohesion: 0.20
+Nodes (11): InMemorySenseStore, SenseReadRepository, Flow, List, Sense, SenseId, SenseOrigin, SenseStatus (+3 more)
 
 ### Community 170 - "Community 170"
 Cohesion: 0.17
@@ -1460,8 +1463,8 @@ Cohesion: 0.27
 Nodes (13): Draft, ProfileAiSettingsAction, Save, SetAiApiKey, SetAiModel, SetAiProvider, SetTtsApiKey, SetTtsModel (+5 more)
 
 ### Community 193 - "Community 193"
-Cohesion: 0.07
-Nodes (25): Factory, LibrarySectionComponent, Factory, ProfileSectionComponent, Factory, VocabularyEditorSectionComponent, LibraryConfig, BottomBarVisibilityOwner (+17 more)
+Cohesion: 0.18
+Nodes (9): Factory, ProfileSectionComponent, BottomBarVisibilityOwner, Boolean, StateFlow, AppComponentContext, ProfileChildPanels, ProfileConfig (+1 more)
 
 ### Community 194 - "Community 194"
 Cohesion: 0.20
@@ -1480,16 +1483,16 @@ Cohesion: 0.38
 Nodes (13): Adjective, BareInfinitive, ComplementType, fromId(), Gerund, Intransitive, Noun, PrepositionalPhrase (+5 more)
 
 ### Community 198 - "Community 198"
-Cohesion: 0.27
-Nodes (10): Any, List, Property, T, ListPropertyDelegate, property(), PropertyDelegate, KProperty (+2 more)
+Cohesion: 0.15
+Nodes (12): OpenAiSpeechApi, toTtsException(), OpenAiCredentialsProvider, OpenAiSynthesizer, ByteArray, Flow, SpeechRequestDto, String (+4 more)
 
 ### Community 199 - "Community 199"
-Cohesion: 0.14
-Nodes (17): ElevenLabsSpeaker, ElevenLabsHttpClient, TtsIntegrationProviders, OpenAiSpeaker, AppCoroutineScopes, AppDispatchers, AppLogger, AudioClipStore (+9 more)
+Cohesion: 0.26
+Nodes (15): SenseeScreenContent(), SenseeScreenContentFrame(), manualAddButtonItem(), manualExampleItem(), manualSurfaceFormItem(), manualTranslationItem(), manualUnitTypeItem(), SenseeAdaptiveLayoutMetrics (+7 more)
 
 ### Community 200 - "Community 200"
-Cohesion: 0.21
-Nodes (7): IllegalStateException, DefaultAppLoggerTest, RecordingLogSink, RecordingLogSink, AppLogger, LogRecord, LogSeverity
+Cohesion: 0.25
+Nodes (6): DefaultAppLoggerTest, RecordingLogSink, RecordingLogSink, AppLogger, LogRecord, LogSeverity
 
 ### Community 201 - "Community 201"
 Cohesion: 0.48
@@ -1548,8 +1551,8 @@ Cohesion: 0.23
 Nodes (8): UserSettingsLocalDataSource, Flow, List, String, User_setting, UserSettingEntry, UserSettingsCategory, UserSettingsScope
 
 ### Community 215 - "Community 215"
-Cohesion: 0.18
-Nodes (9): FakeSettings, StaticSynthesizer, AudioClip, ByteArray, Float, Flow, SpeechRequest, UserSettingsScope (+1 more)
+Cohesion: 0.15
+Nodes (10): DeckPracticeComponent, ProfileSettingsPlaceholderComponent, AppComponent, DeckPracticeChildPanels, DefaultProfileSettingsPlaceholderComponent, DeckPracticeAction, DeckPracticeUiState, StateFlow (+2 more)
 
 ### Community 216 - "Community 216"
 Cohesion: 0.28
@@ -1572,12 +1575,12 @@ Cohesion: 0.33
 Nodes (11): effectiveAiKeyCheck(), effectiveAvailableTtsModels(), effectiveAvailableTtsVoices(), effectiveTtsKeyCheck(), matches(), AiProvider, Boolean, KeyCheckStatus (+3 more)
 
 ### Community 221 - "Community 221"
-Cohesion: 0.19
-Nodes (6): SourceCatalogCompletenessTest, SourceLicenseFileTest, Throwable, VerificationIntegrationProviders, Path, VerificationIntegrationProviders
+Cohesion: 0.13
+Nodes (11): InputStream, SourceCatalogCompletenessTest, SourceLicenseFileTest, ChunkFeedInputStream, ByteArray, Flow, Int, Throwable (+3 more)
 
 ### Community 222 - "Community 222"
-Cohesion: 0.20
-Nodes (8): DefaultProfileAppSettingsComponent, FakeProfileAppSettingsComponent, ProfileAppSettingsScreenUiTest, ProfileAppSettingsComponent, MutableList, ProfileAppSettingsAction, ProfileAppSettingsUiState, StateFlow
+Cohesion: 0.28
+Nodes (6): FakeProfileAppSettingsComponent, ProfileAppSettingsScreenUiTest, MutableList, ProfileAppSettingsAction, ProfileAppSettingsUiState, StateFlow
 
 ### Community 223 - "Community 223"
 Cohesion: 0.33
@@ -1596,8 +1599,8 @@ Cohesion: 0.29
 Nodes (10): countDecks(), countLemmas(), DevSchemaResetTest, execSync(), listObjects(), listTables(), AppLogger, List (+2 more)
 
 ### Community 227 - "Community 227"
-Cohesion: 0.29
-Nodes (7): ExampleFinding, ExampleCheckRequest, ExampleCheckResult, ExampleHint, ExampleQualityChecker, Int, Long
+Cohesion: 0.25
+Nodes (8): Deferred, ExampleFinding, ExampleCheckRequest, ExampleCheckResult, ExampleHint, ExampleQualityChecker, Int, Long
 
 ### Community 228 - "Community 228"
 Cohesion: 0.29
@@ -1632,8 +1635,8 @@ Cohesion: 0.21
 Nodes (7): JsWebAudioElement, newAudioElement(), newWebAudioElement(), Double, js, String, WebAudioElement
 
 ### Community 237 - "Community 237"
-Cohesion: 0.11
-Nodes (17): Factory, PracticeSectionComponent, Factory, PrimaryShellComponent, AppComponentContext, ChildStack, NodeConfig, PrimarySection (+9 more)
+Cohesion: 0.21
+Nodes (9): Factory, PrimaryShellComponent, AppComponentContext, ChildStack, NodeConfig, PrimarySection, ScreenConfig, StateFlow (+1 more)
 
 ### Community 238 - "Community 238"
 Cohesion: 0.27
@@ -1660,8 +1663,8 @@ Cohesion: 0.18
 Nodes (7): ComponentResultDispatcher, ChainedComponentResultDispatcher, NoOpComponentResultDispatcher, Boolean, ComponentResult, Boolean, ComponentResult
 
 ### Community 244 - "Community 244"
-Cohesion: 0.21
-Nodes (8): SrsEngine, SrsCardNotFoundException, SrsEngineException, SrsReviewOptionsPreview, SrsSchedulingPreview, SrsSchedulingResult, SrsPreviewRequest, SrsReviewRequest
+Cohesion: 0.29
+Nodes (5): DefaultCatalogAdoptionRepository, Deck, DeckId, Flow, List
 
 ### Community 245 - "Community 245"
 Cohesion: 0.29
@@ -1716,28 +1719,28 @@ Cohesion: 0.23
 Nodes (10): AiEnrichmentExtension, externalKeys(), extractItemExtensions(), EnrichmentSchema, JsonElement, JsonObject, List, Map (+2 more)
 
 ### Community 258 - "Community 258"
-Cohesion: 0.16
-Nodes (9): RecordingLogSink, StreamBrokenException, RuntimeException, SecureStorage, SecureStorageException, SecureStorageKey, String, LogRecord (+1 more)
+Cohesion: 0.20
+Nodes (7): RecordingLogSink, StreamBrokenException, RuntimeException, SecureStorageException, AppLogger, LogRecord, LogSink
 
 ### Community 259 - "Community 259"
-Cohesion: 0.12
-Nodes (19): ChunkFeedInputStream, audioPlayerFactory(), ChunkFeedInputStream, ignoreCleanupFailure(), JvmAudioPlayer, JvmAudioPlayerFactory, openLine(), AppDispatchers (+11 more)
+Cohesion: 0.14
+Nodes (15): ChunkFeedInputStream, audioPlayerFactory(), ignoreCleanupFailure(), JvmAudioPlayer, JvmAudioPlayerFactory, openLine(), AppDispatchers, AppLogger (+7 more)
 
 ### Community 260 - "Community 260"
-Cohesion: 0.17
-Nodes (8): DefaultPracticeReviewRepository, PracticeReviewRepository, Card, CardReview, ReviewOutcome, Card, CardReview, ReviewOutcome
+Cohesion: 0.29
+Nodes (5): CatalogAdoptionRepository, Deck, DeckId, Flow, List
 
 ### Community 261 - "Community 261"
 Cohesion: 0.22
 Nodes (5): ExtensionContainer, ExtensionAwareHolder, NestedExtension, PlainParentExtension, ArrayOf
 
 ### Community 262 - "Community 262"
-Cohesion: 0.33
-Nodes (9): Any, Array, Int, formatText(), PluralForm, quantityArguments(), QuantityTextTemplates, russianPluralForm() (+1 more)
+Cohesion: 0.42
+Nodes (3): DefaultAppLogger, LogSeverity, Throwable
 
 ### Community 263 - "Community 263"
-Cohesion: 0.26
-Nodes (4): TextProvider, MapTextProviderTest, MapTextProvider, ThrowableTextMapper
+Cohesion: 0.42
+Nodes (6): CatalogOrigin, deck(), Deck, Flow, List, String
 
 ### Community 264 - "Community 264"
 Cohesion: 0.29
@@ -1748,16 +1751,16 @@ Cohesion: 0.22
 Nodes (7): PracticeSrsProviders, PracticeSrsStorage, Clock, FsrsParameters, SrsClock, SrsEngine, SrsReviewLogIdGenerator
 
 ### Community 266 - "Community 266"
-Cohesion: 0.24
-Nodes (7): DefaultProfileSectionComponent, ProfileSectionFixture, FakeProfileHomeComponent, AppContentPresentation, Boolean, ImmutableList, ProfileConfig
+Cohesion: 0.21
+Nodes (8): DefaultProfileSectionComponent, ProfileSectionFixture, FakeProfileHomeComponent, ProfileSectionFixture, AppContentPresentation, Boolean, ImmutableList, ProfileConfig
 
 ### Community 267 - "Community 267"
-Cohesion: 0.12
-Nodes (19): SenseeCheckbox(), ImmutableSet, ProfileTopicPickerBody(), ProfileTopicPickerScreen(), TopicList(), TopicRow(), SenseeCheckboxDarkPreview(), Boolean (+11 more)
+Cohesion: 0.25
+Nodes (4): DefaultClaimRepository, ClaimRepository, CardId, CardId
 
 ### Community 268 - "Community 268"
-Cohesion: 0.29
-Nodes (5): AudioInputStream, InputStream, decodeToPcm(), JvmAudioPlayerTest, ByteArray
+Cohesion: 0.33
+Nodes (4): AudioInputStream, decodeToPcm(), JvmAudioPlayerTest, ByteArray
 
 ### Community 270 - "Community 270"
 Cohesion: 0.31
@@ -1788,8 +1791,8 @@ Cohesion: 0.29
 Nodes (3): AppLogger, String, Throwable
 
 ### Community 279 - "Community 279"
-Cohesion: 0.24
-Nodes (10): hasResult(), KeyCheckMessage(), ModelField(), VerifyRow(), Boolean, ImmutableList, KeyCheckStatus, String (+2 more)
+Cohesion: 0.36
+Nodes (3): FailingSettings, Flow, UserSettingsScope
 
 ### Community 280 - "Community 280"
 Cohesion: 0.60
@@ -1804,8 +1807,8 @@ Cohesion: 0.33
 Nodes (5): SenseePracticeRatingButtonDefaults, Color, Dp, SenseePracticeRatingButtonColors, Shape
 
 ### Community 283 - "Community 283"
-Cohesion: 0.24
-Nodes (7): CoroutineScope, PlatformContext, SpeechHandle, SpeechRequest, Speaker, systemSpeaker(), UnsupportedSystemSpeaker
+Cohesion: 0.13
+Nodes (13): CoroutineScope, PlatformContext, SpeechHandle, SpeechRequest, CoroutineScope, PlatformContext, SpeechHandle, SpeechRequest (+5 more)
 
 ### Community 284 - "Community 284"
 Cohesion: 0.20
@@ -1828,8 +1831,8 @@ Cohesion: 0.25
 Nodes (7): Factory, HomeSectionComponent, HomeConfig, AppComponentContext, ChildStack, ScreenConfig, Value
 
 ### Community 289 - "Community 289"
-Cohesion: 0.20
-Nodes (8): card(), Card, CardId, CardReview, Lemma, LemmaId, ReviewOutcome, String
+Cohesion: 0.32
+Nodes (4): Factory, ProfileLearningSettingsLogic, ProfileLearningSettingsUiState, StateFlow
 
 ### Community 290 - "Community 290"
 Cohesion: 0.22
@@ -1868,8 +1871,8 @@ Cohesion: 0.22
 Nodes (9): PrepositionGovernmentHint, EnrichmentItemV1, EnrichmentResponseV1, GrammarTagDtoV1, IrregularFormsDtoV1, PrepositionGovernmentDtoV1, UnitComponentDtoV1, UsageLabelDtoV1 (+1 more)
 
 ### Community 299 - "Community 299"
-Cohesion: 0.29
-Nodes (5): Job, SpeechHandle, SpeechState, StateFlow, OpenAiSpeechHandle
+Cohesion: 0.14
+Nodes (16): AppContentFrame, App(), toContentPresentation(), ErrorPanel(), LoadingPanel(), rememberStartupTextProvider(), StartupScreen(), RootScreen() (+8 more)
 
 ### Community 300 - "Community 300"
 Cohesion: 0.22
@@ -1908,8 +1911,8 @@ Cohesion: 0.31
 Nodes (6): DefaultProfileHomeComponent, Factory, ProfileHomeComponent, AppComponentContext, ImmutableList, ProfileConfig
 
 ### Community 311 - "Community 311"
-Cohesion: 0.31
-Nodes (5): FakeProfileHomeComponent, ProfileHomeScreenUiTest, ImmutableList, MutableList, ProfileConfig
+Cohesion: 0.09
+Nodes (29): categoryIcon(), ProfileHomeScreen(), ProfileMenuRow(), rememberProfileHomeTextProvider(), FakeProfileHomeComponent, ProfileHomeScreenUiTest, ProfileDetailBody(), ProfileDetailPane() (+21 more)
 
 ### Community 312 - "Community 312"
 Cohesion: 0.33
@@ -1924,8 +1927,8 @@ Cohesion: 0.36
 Nodes (5): PracticeWebRoute, List, Map, PracticeConfig, String
 
 ### Community 315 - "Community 315"
-Cohesion: 0.27
-Nodes (6): AiModelCatalog, LlmModelCatalog, AiKeyCheck, Boolean, Int, String
+Cohesion: 0.29
+Nodes (6): createAppRoot(), ComponentContext, DatabaseConfig, PlatformEnvironment, RootComponent, String
 
 ### Community 316 - "Community 316"
 Cohesion: 0.20
@@ -1964,8 +1967,8 @@ Cohesion: 0.28
 Nodes (5): Color, Dp, PaddingValues, SenseeTopBarColors, SenseeTopBarDefaults
 
 ### Community 325 - "Community 325"
-Cohesion: 0.25
-Nodes (7): AiEnrichmentExtension, CefrEnrichmentExtension, cefrLevelId(), EnrichmentSchema, List, Set, String
+Cohesion: 0.47
+Nodes (3): SecureStorage, SecureStorageKey, String
 
 ### Community 326 - "Community 326"
 Cohesion: 0.43
@@ -2028,8 +2031,8 @@ Cohesion: 0.36
 Nodes (3): LearningCardFlipState, rememberLearningCardFlipState(), Boolean
 
 ### Community 342 - "Community 342"
-Cohesion: 0.32
-Nodes (4): Factory, ProfileLearningSettingsLogic, ProfileLearningSettingsUiState, StateFlow
+Cohesion: 0.21
+Nodes (18): SenseeSentenceTextStyles, SenseeTextRangeHighlight, addSentenceHighlights(), appendSentencePlaceholder(), appendSentenceWord(), buildSenseeSentenceAnnotatedString(), decode(), encode() (+10 more)
 
 ### Community 344 - "Community 344"
 Cohesion: 0.25
@@ -2061,19 +2064,19 @@ Nodes (3): SenseeIconButtonColors, Boolean, Color
 
 ### Community 351 - "Community 351"
 Cohesion: 0.15
-Nodes (9): Clock, FixedClock, FixedClock, MutableClock, FixedClock, Instant, Instant, Instant (+1 more)
+Nodes (9): Clock, FixedClock, FixedClock, FixedClock, FixedClock, Instant, Instant, Instant (+1 more)
 
 ### Community 352 - "Community 352"
 Cohesion: 0.33
 Nodes (3): ServiceDeckSenseFixtureTest, Sense, String
 
 ### Community 353 - "Community 353"
-Cohesion: 0.42
-Nodes (8): AlignmentChunkDto, ContextualApplicationDto, GrammarTagDto, IrregularFormsDto, PrepositionGovernmentDto, toDto(), UsageLabelDto, WordFamilyMemberDto
+Cohesion: 0.33
+Nodes (5): DatamuseLexicalAdapterTest, DatamuseLexicalAdapter, LexicalVerificationQuery, MockEngine, String
 
 ### Community 354 - "Community 354"
-Cohesion: 0.32
-Nodes (5): CachingSpeechSynthesizer, AudioClip, ByteArray, Flow, SpeechRequest
+Cohesion: 0.40
+Nodes (4): RemoteModelDto, RemoteVoiceDto, TextToSpeechRequestDto, VoiceListResponseDto
 
 ### Community 355 - "Community 355"
 Cohesion: 0.52
@@ -2096,8 +2099,8 @@ Cohesion: 0.29
 Nodes (5): SpeechSynthesizer, AudioClip, ByteArray, Flow, SpeechRequest
 
 ### Community 361 - "Community 361"
-Cohesion: 0.29
-Nodes (5): DefaultProfileLearningSettingsComponent, ProfileLearningSettingsComponent, FakeProfileLearningSettingsComponent, ProfileLearningSettingsAction, ProfileLearningSettingsUiState
+Cohesion: 0.17
+Nodes (9): DefaultProfileLearningSettingsComponent, ProfileLearningSettingsComponent, FakeProfileAiSettingsComponent, FakeProfileLearningSettingsComponent, ProfileAiSettingsAction, ProfileAiSettingsUiState, ProfileLearningSettingsAction, ProfileLearningSettingsUiState (+1 more)
 
 ### Community 363 - "Community 363"
 Cohesion: 0.52
@@ -2108,16 +2111,16 @@ Cohesion: 0.43
 Nodes (4): EmptyNetworkHeadersProvider, NetworkHeadersProvider, Map, String
 
 ### Community 365 - "Community 365"
-Cohesion: 0.25
-Nodes (4): DefaultClaimRepository, ClaimRepository, CardId, CardId
+Cohesion: 0.83
+Nodes (3): Editor, QuickCapture, VocabularyEditorConfig
 
 ### Community 366 - "Community 366"
 Cohesion: 0.29
 Nodes (5): AudioPlayerProviders, AppDispatchers, AppLogger, AudioPlayerFactory, PlatformContext
 
 ### Community 367 - "Community 367"
-Cohesion: 0.22
-Nodes (14): PracticeHomeContent(), PracticeHomeList(), PracticeHomeScreen(), SenseeScreenContent(), SenseeScreenContentFrame(), DeckSummaryUiState, ImmutableList, Modifier (+6 more)
+Cohesion: 0.31
+Nodes (9): PracticeHomeContent(), PracticeHomeList(), PracticeHomeScreen(), DeckSummaryUiState, ImmutableList, Modifier, PracticeHomeComponent, PracticeHomeUiState (+1 more)
 
 ### Community 368 - "Community 368"
 Cohesion: 0.43
@@ -2156,8 +2159,8 @@ Cohesion: 0.33
 Nodes (5): ProfileAiSettingsUiState, AiProvider, Boolean, PersistentList, TtsProvider
 
 ### Community 377 - "Community 377"
-Cohesion: 0.47
-Nodes (8): resolveLayoutMetrics(), SenseeAdaptiveLayoutMetrics, Dp, SenseeAdaptiveLayoutMetrics, senseeCompactLayoutMetrics(), senseeExpandedLayoutMetrics(), senseeLayoutMetricsFor(), senseeMediumLayoutMetrics()
+Cohesion: 0.19
+Nodes (14): rememberAppAdaptiveInfo(), AppComposeEnvironment(), resolveLayoutMetrics(), Boolean, Platform, SenseeAdaptiveLayoutMetrics, SenseeThemeMode, AppAdaptiveInfo (+6 more)
 
 ### Community 378 - "Community 378"
 Cohesion: 0.33
@@ -2202,14 +2205,6 @@ Nodes (4): DatabaseTransactionRunner, DefaultDatabaseTransactionRunner, T, T
 ### Community 388 - "Community 388"
 Cohesion: 0.32
 Nodes (4): LexiconLayeringKonsistTest, List, Pair, String
-
-### Community 389 - "Community 389"
-Cohesion: 0.29
-Nodes (6): SenseeSelectField(), ImmutableList, Modifier, SenseeSelectFieldColors, String, T
-
-### Community 390 - "Community 390"
-Cohesion: 0.47
-Nodes (3): Flow, UserSettingsScope, UserSettingsSnapshot
 
 ### Community 391 - "Community 391"
 Cohesion: 0.33
@@ -2319,10 +2314,6 @@ Nodes (3): DeckPracticePreviewData, PracticeCardFront, String
 Cohesion: 0.40
 Nodes (4): AppDiagnostics, AnalyticsTracker, AppLogger, CrashReporter
 
-### Community 420 - "Community 420"
-Cohesion: 0.20
-Nodes (5): PrepositionGovernment, PrepositionGovernmentTest, toDomain(), SenseDtoTest, Sense
-
 ### Community 421 - "Community 421"
 Cohesion: 0.40
 Nodes (4): AlignmentChunk, ContextualApplication, Sense, WordFamilyMember
@@ -2332,8 +2323,8 @@ Cohesion: 0.27
 Nodes (5): deriveSenseContentKey(), stableIdPart(), SenseIdentityTest, Sense, String
 
 ### Community 423 - "Community 423"
-Cohesion: 0.12
-Nodes (14): saveItem(), Arrangement, SenseeButton(), SenseeErrorStatePreview(), SenseeButtonColors, Boolean, ProfileAiSettingsListContext, Alignment (+6 more)
+Cohesion: 0.13
+Nodes (13): saveItem(), Arrangement, SenseeButton(), SenseeButtonColors, Boolean, ProfileAiSettingsListContext, Alignment, Boolean (+5 more)
 
 ### Community 427 - "Community 427"
 Cohesion: 0.40
@@ -2383,10 +2374,6 @@ Nodes (3): ComponentResultDispatcher, Boolean, ComponentResult
 Cohesion: 0.40
 Nodes (4): platformSecureStorage(), AppDispatchers, PlatformEnvironment, SecureStorage
 
-### Community 441 - "Community 441"
-Cohesion: 0.40
-Nodes (4): TestTtsCatalog, TtsCatalog, TtsKeyCheck, TtsKeyVerificationRequest
-
 ### Community 442 - "Community 442"
 Cohesion: 0.60
 Nodes (4): GrammarLabels, String, description(), shortLabel()
@@ -2407,10 +2394,6 @@ Nodes (3): ProfileAppSettingsAction, SetHapticFeedbackEnabled, SetThemeMode
 Cohesion: 0.83
 Nodes (3): OpenPicker, ProfileLearningSettingsAction, Retry
 
-### Community 447 - "Community 447"
-Cohesion: 0.50
-Nodes (3): App, iOSApp, Scene
-
 ### Community 448 - "Community 448"
 Cohesion: 0.50
 Nodes (3): UIViewController, IosRootHolder, MainViewController()
@@ -2418,10 +2401,6 @@ Nodes (3): UIViewController, IosRootHolder, MainViewController()
 ### Community 449 - "Community 449"
 Cohesion: 0.50
 Nodes (3): labelKey(), ProfileAppSettingsTextKeys, TextKey
-
-### Community 450 - "Community 450"
-Cohesion: 0.25
-Nodes (6): CoroutineScope, PlatformContext, SpeechHandle, SpeechRequest, IosSystemSpeaker, systemSpeaker()
 
 ### Community 452 - "Community 452"
 Cohesion: 0.50
@@ -2476,8 +2455,8 @@ Cohesion: 0.50
 Nodes (3): MockFixtureSet, Map, String
 
 ### Community 484 - "Community 484"
-Cohesion: 0.35
-Nodes (8): toPresentation(), Boolean, Card, DeckPracticeCardUiState, DeckPracticeUiState, Int, PersistentList, SrsCardSnapshot
+Cohesion: 0.22
+Nodes (11): DeckPracticeLogic, toPresentation(), Boolean, Card, DeckPracticeAction, DeckPracticeCardUiState, DeckPracticeUiState, Int (+3 more)
 
 ### Community 485 - "Community 485"
 Cohesion: 0.38
@@ -2508,16 +2487,12 @@ Cohesion: 0.33
 Nodes (4): AiEmbeddingClient, Embedding, Embedding, String
 
 ### Community 499 - "Community 499"
-Cohesion: 0.53
-Nodes (5): matchRank(), RankedSense, searchableText(), SenseMatchRank, String
+Cohesion: 0.60
+Nodes (4): matchRank(), RankedSense, searchableText(), SenseMatchRank
 
 ### Community 501 - "Community 501"
-Cohesion: 0.40
-Nodes (3): SenseIdFactory, SenseId, String
-
-### Community 502 - "Community 502"
-Cohesion: 0.18
-Nodes (9): IrregularFormsDtoV1, EnrichmentExample, IrregularFormsHint, String, UnitComponentHint, WordFamilyHint, UnitComponentDtoV1, EnrichmentResponseMapper (+1 more)
+Cohesion: 0.21
+Nodes (7): DefaultSenseIdFactory, fnv1aHex(), SenseIdFactory, SenseId, String, SenseId, String
 
 ### Community 503 - "Community 503"
 Cohesion: 0.40
@@ -2532,24 +2507,16 @@ Cohesion: 0.33
 Nodes (6): createNestedExtension(), Any, Array, ExtensionAware, String, T
 
 ### Community 510 - "Community 510"
-Cohesion: 0.17
-Nodes (8): Factory, HomeComponent, ProfileSettingsPlaceholderComponent, AppComponent, DefaultHomeComponent, DefaultProfileSettingsPlaceholderComponent, AppComponentContext, ProfileConfig
+Cohesion: 0.33
+Nodes (4): Factory, HomeComponent, DefaultHomeComponent, AppComponentContext
 
 ### Community 511 - "Community 511"
 Cohesion: 0.47
 Nodes (4): configureKotlinManagedWebToolchainRepositories(), KmpWebToolchainPlugin, Project, Plugin
 
-### Community 514 - "Community 514"
-Cohesion: 0.40
-Nodes (5): rememberVocabularyCaptureTextProvider(), VocabularyEditorSectionScreen(), Modifier, TextProvider, VocabularyEditorSectionComponent
-
 ### Community 518 - "Community 518"
 Cohesion: 0.33
 Nodes (4): AudioClip, ByteArray, Flow, SpeechRequest
-
-### Community 528 - "Community 528"
-Cohesion: 0.40
-Nodes (4): FakeTtsCatalog, TtsKeyCheck, TtsKeyVerificationRequest, TtsCatalog
 
 ### Community 530 - "Community 530"
 Cohesion: 0.40
@@ -2571,10 +2538,6 @@ Nodes (3): Boolean, LexicalVerificationReport, VerifierReports
 Cohesion: 0.47
 Nodes (3): CoroutineDispatcher, BaseLogicTest, TestLogic
 
-### Community 584 - "Community 584"
-Cohesion: 0.50
-Nodes (3): ProfileAiSettingsSnapshot, TtsVerifyTarget, Boolean
-
 ### Community 593 - "Community 593"
 Cohesion: 0.50
 Nodes (3): NoOpExampleQualityChecker, ExampleCheckRequest, ExampleCheckResult
@@ -2583,49 +2546,77 @@ Nodes (3): NoOpExampleQualityChecker, ExampleCheckRequest, ExampleCheckResult
 Cohesion: 0.24
 Nodes (7): kotlinMultiplatform(), ensurePlugin(), whenPlugin(), MockFixturesPlugin, String, Project, Unit
 
-### Community 661 - "Community 661"
-Cohesion: 0.50
-Nodes (4): ContextualApplication, toContextualApplication(), ContextualApplication, EnrichmentExample
-
-### Community 727 - "Community 727"
-Cohesion: 0.50
-Nodes (3): Deck, Flow, List
+### Community 654 - "Community 654"
+Cohesion: 0.19
+Nodes (7): AppDiagnostics, DefaultAppDiagnostics, ObservabilityProviders, AnalyticsTracker, AppDiagnostics, AppLogger, CrashReporter
 
 ### Community 729 - "Community 729"
 Cohesion: 0.50
 Nodes (3): SenseOrigin, SenseStatus, StoredSense
 
 ### Community 760 - "Community 760"
-Cohesion: 0.50
-Nodes (4): resolveComponent(), UnitComponent, UnitComponentHint, UnitComponent
+Cohesion: 0.36
+Nodes (7): ResolvedWrite, Sense, SenseeDatabase, SenseId, SenseOrigin, String, WriteIntent
 
-### Community 761 - "Community 761"
-Cohesion: 0.50
-Nodes (4): resolveWordFamilyMember(), WordFamilyHint, WordFamilyMember, WordFamilyMember
+### Community 763 - "Community 763"
+Cohesion: 0.22
+Nodes (8): Factory, PracticeSectionComponent, AppComponentContext, ChildStack, PracticeConfig, ScreenConfig, Value, WebNavigationOwner
+
+### Community 794 - "Community 794"
+Cohesion: 0.20
+Nodes (6): AppLoggerFactory, DefaultAppLoggerFactory, AppLogger, String, AppLogger, String
+
+### Community 797 - "Community 797"
+Cohesion: 0.25
+Nodes (7): Factory, LibrarySectionComponent, LibraryConfig, AppComponentContext, ChildStack, ScreenConfig, Value
 
 ### Community 808 - "Community 808"
 Cohesion: 0.60
 Nodes (4): _default_out(), _ensure_graphify(), main(), Re-exec under a graphify-capable interpreter when this one lacks it.      graphi
 
+### Community 815 - "Community 815"
+Cohesion: 0.33
+Nodes (5): SenseeSentencePlaceholderMetrics, SenseeSentenceTextColors, SenseeSentenceTextDefaults, SenseeSentenceTextStyles, SpanStyle
+
+### Community 816 - "Community 816"
+Cohesion: 0.29
+Nodes (5): DefaultProfileAppSettingsComponent, ProfileAppSettingsComponent, FakeProfileAppSettingsComponent, ProfileAppSettingsAction, ProfileAppSettingsUiState
+
+### Community 818 - "Community 818"
+Cohesion: 0.43
+Nodes (4): Constraints, speakableSlotTextConstraints(), DeckPracticeCardContentLayoutTest, Int
+
+### Community 819 - "Community 819"
+Cohesion: 0.15
+Nodes (9): Factory, VocabularyEditorSectionComponent, NoOpNavigationDispatcher, NavigationDispatcher, NavigationRequestStatus, ScreenConfig, AppComponentContext, VocabularyCaptureComponent (+1 more)
+
+### Community 820 - "Community 820"
+Cohesion: 0.40
+Nodes (4): platformSecureStorage(), AppDispatchers, PlatformEnvironment, SecureStorage
+
+### Community 823 - "Community 823"
+Cohesion: 0.67
+Nodes (3): pop(), toNavigationRequestStatus(), NavigationRequestStatus
+
 ## Knowledge Gaps
-- **2040 isolated node(s):** `WindowState`, `WindowState`, `ResourceLoader`, `String`, `Painter` (+2035 more)
+- **2039 isolated node(s):** `WindowState`, `WindowState`, `ResourceLoader`, `String`, `Painter` (+2034 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **179 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **180 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `runCatchingCancellable()` connect `Community 122` to `Community 128`, `Community 1`, `Community 5`, `Community 6`, `Community 143`, `Community 16`, `Community 18`, `Community 149`, `Community 22`, `Community 153`, `Community 25`, `Community 28`, `Community 412`, `Community 34`, `Community 35`, `Community 48`, `Community 178`, `Community 53`, `Community 55`, `Community 56`, `Community 315`, `Community 61`, `Community 202`, `Community 79`, `Community 81`, `Community 211`, `Community 342`, `Community 87`, `Community 227`, `Community 99`, `Community 232`, `Community 365`, `Community 246`, `Community 118`?**
-  _High betweenness centrality (0.099) - this node is a cross-community bridge._
-- **Why does `append()` connect `Community 161` to `Community 68`, `Community 38`, `Community 203`, `Community 107`, `Community 16`, `Community 48`, `Community 177`, `Community 50`, `Community 53`, `Community 22`, `Community 25`, `Community 221`?**
-  _High betweenness centrality (0.083) - this node is a cross-community bridge._
-- **Why does `noOpAppDiagnostics()` connect `Community 83` to `Community 1`, `Community 34`, `Community 97`, `Community 4`, `Community 43`, `Community 139`, `Community 45`, `Community 78`, `Community 20`, `Community 148`, `Community 86`, `Community 85`, `Community 24`, `Community 187`, `Community 60`, `Community 125`, `Community 94`, `Community 159`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `runCatchingCancellable()` connect `Community 122` to `Community 128`, `Community 1`, `Community 4`, `Community 5`, `Community 6`, `Community 267`, `Community 143`, `Community 16`, `Community 18`, `Community 149`, `Community 22`, `Community 153`, `Community 25`, `Community 28`, `Community 412`, `Community 289`, `Community 34`, `Community 35`, `Community 168`, `Community 178`, `Community 53`, `Community 55`, `Community 61`, `Community 198`, `Community 202`, `Community 79`, `Community 81`, `Community 211`, `Community 83`, `Community 87`, `Community 227`, `Community 484`, `Community 99`, `Community 232`, `Community 246`, `Community 118`?**
+  _High betweenness centrality (0.095) - this node is a cross-community bridge._
+- **Why does `append()` connect `Community 161` to `Community 68`, `Community 198`, `Community 38`, `Community 203`, `Community 16`, `Community 177`, `Community 48`, `Community 50`, `Community 53`, `Community 22`, `Community 342`, `Community 25`, `Community 221`?**
+  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+- **Why does `noOpAppDiagnostics()` connect `Community 83` to `Community 1`, `Community 4`, `Community 139`, `Community 654`, `Community 20`, `Community 148`, `Community 24`, `Community 794`, `Community 159`, `Community 34`, `Community 43`, `Community 187`, `Community 60`, `Community 78`, `Community 85`, `Community 86`, `Community 94`, `Community 97`, `Community 125`?**
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Are the 67 inferred relationships involving `runCatchingCancellable()` (e.g. with `.load()` and `.save()`) actually correct?**
   _`runCatchingCancellable()` has 67 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 16 inferred relationships involving `RoutingLexicalVerifier` (e.g. with `.persisted()` and `.`a contributing source missing from the catalog rides in as non persistable and is not dropped`()`) actually correct?**
   _`RoutingLexicalVerifier` has 16 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `WindowState`, `WindowState`, `ResourceLoader` to the rest of the system?**
-  _2043 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2042 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06229797237731413 - nodes in this community are weakly interconnected._

@@ -1,4 +1,4 @@
-package app.sensee.lexicon.enrichment
+package app.sensee.feature.vocabularyEditor.domain.mapping
 
 import app.sensee.ai.core.contract.EnrichmentResult
 import app.sensee.ai.core.model.EnrichmentExample
@@ -31,9 +31,10 @@ import app.sensee.lexicon.domain.WordFamilyMember
 
 /**
  * Maps an AI enrichment suggestion into the central lexical [Sense] shape. This
- * is the single anti-corruption boundary between the AI seam and the canon: a
- * suggestion becomes a [Sense] directly (ADR-001), there is no intermediate
- * wrapper.
+ * is the anti-corruption boundary between the AI seam and the canon: a suggestion
+ * becomes a [Sense] directly (ADR-001), there is no intermediate wrapper. It lives
+ * in Vocabulary Editor — capture is the only producer that maps AI output into the
+ * canon; the catalog path uses `SenseDto.toDomain()` instead.
  *
  * [invariants] controls per-field validation:
  * - `null` means pass-through; unknown ids surface as `Unknown(id)`.

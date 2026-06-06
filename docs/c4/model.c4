@@ -184,9 +184,9 @@ model {
         technology 'shared/lexicon/domain'
       }
 
-      enrichment_mapping = component 'Enrichment Mapping' {
-        description 'Общий mapper enrichment→`Sense` и общий `SenseDto` (`Sense` ⇄ JSON).'
-        technology 'shared/lexicon/{enrichment,serialization}'
+      sense_serialization = component 'Sense Serialization' {
+        description 'Общий `SenseDto` (`Sense` ⇄ JSON) — сериализованная форма канона для персиста и сервис-wire.'
+        technology 'shared/lexicon/serialization'
       }
 
       lexical_data = component 'Sense Store' {
@@ -439,7 +439,7 @@ model {
     feature_library.library_catalog -[flows]-> core.network 'loads fixture-backed catalog/decks' { technology 'Ktor client' }
     feature_library.library_catalog -[flows]-> core.mock_backend 'contributes catalog fixtures'
     feature_library.library_catalog -[flows]-> lexicon.lexical_model 'reads/writes senses via Sense*Repository'
-    feature_library.library_catalog -[depends]-> lexicon.enrichment_mapping 'maps the service SenseDto wire to Sense'
+    feature_library.library_catalog -[depends]-> lexicon.sense_serialization 'maps the service SenseDto wire to Sense'
     feature_library.library_catalog -[depends]-> srs.srs_engine 'materializes SRS card state via SrsStorage'
     feature_library.library_catalog -[flows]-> persistence 'stores deck/membership state' { technology 'SQLDelight' }
     feature_library.library_catalog -[depends]-> feature_library.library_schema 'owns deck tables'
@@ -452,7 +452,7 @@ model {
     // Vocabulary capture / editing
     feature_vocabulary.vocabulary_ui -[flows]-> verification.verification_seam 'grounding before AI, example-quality after AI'
     feature_vocabulary.vocabulary_ui -[flows]-> ai.ai_seam 'requests candidate enrichment'
-    feature_vocabulary.vocabulary_ui -[depends]-> lexicon.enrichment_mapping 'maps AI response to Sense'
+    feature_vocabulary.vocabulary_domain -[depends]-> lexicon.lexical_model 'maps AI response into Sense (domain mapper)'
     feature_vocabulary.vocabulary_ui -[flows]-> feature_vocabulary.vocabulary_capture 'selection = confirmation'
     feature_vocabulary.vocabulary_ui -[depends]-> feature_vocabulary.vocabulary_domain 'uses SuggestVocabularySensesUseCase'
     feature_vocabulary.vocabulary_capture -[flows]-> lexicon.lexical_data 'persists confirmed senses via SenseWriteRepository'

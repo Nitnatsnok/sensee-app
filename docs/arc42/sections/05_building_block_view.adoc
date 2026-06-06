@@ -184,10 +184,11 @@ NOTE: Каталог записей и колоды принадлежат `Libr
 * `DefaultSenseRepository`
 * `DefaultSenseIdFactory`
 * `DefaultEmbeddingPort` (similar-sense, отдельный класс)
-* `shared/lexicon/enrichment` / `shared/lexicon/serialization`
+* `shared/lexicon/serialization`
 * `shared/feature/vocabulary-editor/domain`
 * `SuggestVocabularySensesUseCase`
 * `ConfirmSensesUseCase` (confirm + best-effort embed)
+* `EnrichmentSenseMapper` (`mapping`: AI enrichment → `Sense`)
 * `shared/feature/vocabulary-editor/presentation/api`
 * `CaptureSense`
 

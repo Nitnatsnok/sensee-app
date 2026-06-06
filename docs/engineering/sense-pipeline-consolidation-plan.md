@@ -271,15 +271,14 @@ EnrichmentItemV1 (wire) → EnrichmentSuggestion (neutral) → EnrichedSense (se
    `lexicon.domain`, `AlignmentChunkDto` в `lexicon.serialization`); `UnitComponentFact` — в
    `ai.core` и `verification.core` (нулевые листья без общего предка). `EnrichmentExample`
    ↔ `ContextualApplication` — **не** зеркала (anti-corruption parse в `StudiedSentence`,
-   [`EnrichmentSenseMapper.kt:116`](../../shared/lexicon/enrichment/src/commonMain/kotlin/app/sensee/lexicon/enrichment/EnrichmentSenseMapper.kt)).
+   [`EnrichmentSenseMapper.kt`](../../shared/feature/vocabulary-editor/domain/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/domain/mapping/EnrichmentSenseMapper.kt)).
 5. **Промежуточный enrichment-крюк на пути наборов сервиса.** `CardDto.enrichment` —
    `EnrichmentItemV1` (тот же versioned wire `ai.core`, что и для capture). Он **не** совпадает
    поле-в-поле с `SenseDto`: примеры различаются — `EnrichmentItemV1.examples` несёт сырое
    предложение-строку, а `SenseDto.contextualApplications` — уже распарсенный `StudiedSentence`.
    Поэтому каталог гоняет уже-идеальные смыслы через **всю** enrichment-цепочку (`EnrichmentItemV1
    → EnrichmentSuggestion → Sense`, с `StudiedSentence.parse` и резолвом таксономии), а не через
-   короткий `SenseDto.toDomain()`. Лишняя цепочка + зависимости `library/data` на `shared.ai.core`
-   и `shared.lexicon.enrichment`.
+   короткий `SenseDto.toDomain()`.
 6. **`Sense` в двух durable-схемах; идентичность и SRS привязаны к контенту/позиции.**
    Captured-дека деривится на каждом чтении ([`CapturedCatalogDerivation`](../../shared/feature/library/data/src/commonMain/kotlin/app/sensee/feature/library/data/CapturedCatalogDerivation.kt),
    фильтр `status == Confirmed`). **SRS ключуется по `card id`**
@@ -571,7 +570,7 @@ bare `enrich` — **ни grounding, ни snapshots не подключены**. 
   **заморожена** (контракт для 4′); `cefr` round-trips; confirm с пустым переводом или без примера падает.
 
 Проверка: `.\gradlew.bat :shared:feature:vocabulary-editor:domain:check`,
-`:shared:feature:vocabulary-editor:presentation:impl:check`, `:shared:lexicon:enrichment:check`.
+`:shared:feature:vocabulary-editor:presentation:impl:check`.
 После правки `ai/AGENTS.md`: `python3 scripts/agents/validate-agent-instructions.py`.
 
 ### Фаза 2 — verification → grounding + example-quality (тихий фильтр)
@@ -616,8 +615,7 @@ bare `enrich` — **ни grounding, ни snapshots не подключены**. 
 ### Фаза 3 — граничные зеркала (узкий объём)
 
 Цель: пометить намеренные зеркала, дедупить только безопасное. Направление: `ai.core`/
-`verification.core` — нулевые листья; `lexicon.domain → grammar.domain`;
-`lexicon.enrichment → ai.core+lexicon.domain+grammar.domain`.
+`verification.core` — нулевые листья; `lexicon.domain → grammar.domain`.
 
 * `EnrichmentResponseV1`/`EnrichmentItemV1` (wire) и `*Dto` (persist) — **оставить** как
   осознанные зеркала; KDoc «intentional boundary mirror». (Embedding **не** добавляем на wire —

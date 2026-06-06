@@ -1,4 +1,4 @@
-package app.sensee.lexicon.enrichment
+package app.sensee.feature.vocabularyEditor.domain.mapping
 
 import app.sensee.ai.core.model.CefrEnrichmentExtension
 import app.sensee.ai.core.model.EnrichmentExample

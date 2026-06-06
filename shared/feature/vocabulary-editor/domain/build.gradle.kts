@@ -9,7 +9,6 @@ kotlin {
             dependencies {
                 api(projects.shared.grammar.domain)
                 api(projects.shared.lexicon.domain)
-                api(projects.shared.lexicon.enrichment)
                 api(projects.shared.ai.core)
                 api(projects.shared.verification.core)
                 api(libs.kotlinx.coroutines.core)
@@ -23,6 +22,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlinx.serialization.json)
                 implementation(projects.shared.core.testKit)
             }
         }

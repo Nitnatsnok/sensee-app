@@ -96,7 +96,7 @@ views 'Sensee Client' {
     include client.ai.ai_seam
     include client.lexicon.lexical_model
     include client.lexicon.lexical_data
-    include client.lexicon.enrichment_mapping
+    include client.lexicon.sense_serialization
     include client.grammar.grammar_taxonomy
     include client.persistence
     // planned cross-feature navigation lives in cross_feature_navigation
@@ -276,7 +276,7 @@ views 'Sensee Client' {
     client.ai.ai_seam -> client.ai.ai_curated 'сначала проверяет curated enrichment (backend HTTP); hit short-circuits LLM'
     client.ai.ai_seam -> client.ai.ai_llm 'при miss и настроенном ключе маршрутизирует в LLM adapter'
     client.ai.ai_llm -> provider_apis 'вызывает provider API'
-    client.feature_vocabulary.vocabulary_ui -> client.lexicon.enrichment_mapping 'общий mapper приводит ответ к Sense, editor оборачивает в CaptureSense'
+    client.feature_vocabulary.vocabulary_ui -> client.lexicon.lexical_model 'маппер vocabulary-домена приводит ответ к Sense, editor оборачивает в CaptureSense'
     client.feature_vocabulary.vocabulary_ui -> client.verification.verification_seam 'post-AI: silent ExampleQualityChecker отсеивает слабые примеры (≥1 пример остаётся)'
     learner -> client.feature_vocabulary.vocabulary_ui 'мультивыбор смыслов и/или ручной смысл (опц. «дополнить ассистентом»)'
     client.feature_vocabulary.vocabulary_ui -> client.feature_vocabulary.vocabulary_capture 'выбор и есть подтверждение → SenseStatus.Confirmed'

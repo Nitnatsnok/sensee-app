@@ -36,8 +36,8 @@
     `SenseStatus`/`SenseOrigin`, `WriteIntent`,
     `SenseReadRepository`/`SenseWriteRepository`, `ContextualApplication`,
     `surfaceForm`, `headLemma` (реализованы)
-  - `shared/lexicon/enrichment/*`: общий mapper `EnrichmentSuggestion -> Sense`
-    для user capture и service catalog material
+  - `shared/feature/vocabulary-editor/domain/*` (`mapping`): mapper `EnrichmentSuggestion -> Sense`
+    для user capture (service catalog маппится через `SenseDto.toDomain()`)
   - `shared/feature/vocabulary-editor/domain/*`: `SuggestVocabularySensesUseCase`
     (enrich-only) + `EnrichmentGroundingBuilder` несут две узкие роли
     verification (pre-AI grounding, post-AI silent example-quality);
