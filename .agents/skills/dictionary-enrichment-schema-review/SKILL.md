@@ -1,6 +1,6 @@
 ---
 name: dictionary-enrichment-schema-review
-description: Use this skill when Sensee work touches vocabulary enrichment prompts or schemas, AI enrichment DTOs, lexical verification evidence, dictionary/provider adapters, part-of-speech/forms modeling, phrase/idiom/phrasal-verb handling, sense splitting, or material verification flows.
+description: Use this skill when Sensee work touches vocabulary enrichment prompts or schemas, AI enrichment DTOs, lexical verification evidence, dictionary/provider adapters, part-of-speech/forms modeling, phrase/idiom/phrasal-verb handling, sense splitting, or material verification flows. Covers logical AI/verification schemas and DTO contracts, not the physical SQLDelight layer (sqldelight-schema-aggregation-review).
 ---
 
 # Dictionary Enrichment Schema Review

@@ -31,7 +31,7 @@ Review/support. Treat scheduling behavior as invariant-sensitive and test-driven
 - Same-session re-show of FSRS-graduated `Review` cards is not reintroduced.
 - Clock and id generation are injectable/deterministic in tests.
 - Review logs preserve invariants and enough evidence to audit transitions.
-- Edge cases are covered: repeated review, overdue cards, same-day review, weak/new modes, timezone boundaries.
+- Edge cases are covered: repeated review, overdue cards, same-day review, weak/new modes, and timezone/day-boundary handling when the change touches day bucketing or local-day logic.
 - LikeC4/docs are updated if scheduling ownership or major flow changes.
 
 ## Output

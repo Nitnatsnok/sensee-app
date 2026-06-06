@@ -13,14 +13,14 @@ Review only. Do not edit files unless the user explicitly asks.
 
 ## Non-goals
 
-- Do not turn every small diff into a full architecture audit.
 - Do not propose commit messages unless the user asks for commit preparation.
+- Do not turn every small localized diff into an architecture audit (see Review level).
 
 ## Review level
 
 - Default to a pragmatic senior-level review for ordinary changes: correctness, regressions, missing tests, unnecessary churn, local readability, and fit with nearby patterns.
 - Escalate to principal-level systemic review only when the diff materially touches architecture, build/Gradle, module boundaries, public APIs, persistence, navigation, observability, LikeC4, CI, security, or cross-feature contracts.
-- Do not turn every small localized diff into an architecture audit. If the scope does not justify systemic concerns, say that and keep the review focused.
+- If the scope does not justify systemic concerns, say that and keep the review focused.
 
 ## Workflow
 

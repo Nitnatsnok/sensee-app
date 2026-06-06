@@ -30,6 +30,15 @@ The documentation describes the Sensee KMP client: Android, iOS, Desktop JVM, JS
 - Keep client-facing documentation concise. Prefer a small number of clear entry points over long navigation pages and internal process notes.
 - Keep internal planning notes, backlogs, and tool usage instructions out of the main client documentation flow unless the user explicitly wants them documented there.
 
+## Language and terminology
+
+These apply to prose, not to code identifiers, module/type names, Gradle paths, or backticked terms (those stay English per the root policy).
+
+- Prefer the established Russian term when one exists; use English only for terms genuinely ambiguous in Russian or for stable abbreviations and technical terms. Do not mix languages where a clean Russian equivalent exists.
+- On a term's first occurrence in a file, add its English equivalent in parentheses when it aids understanding. Canonical RU/EN term pairs live in the glossary (`arc42/sections/12_glossary.adoc`); reuse them and add new terms there instead of inventing per-file translations.
+- Expand every abbreviation in parentheses on its first occurrence in a file.
+- Keep prose free of spelling, punctuation, grammar, and style errors. For a focused language pass, use the `docs-language-review` skill.
+
 ## Keeping docs and code in sync
 
 - Before making architectural claims, verify `settings.gradle.kts`, the relevant module `build.gradle.kts` files, and the actual files under `src/`.
@@ -39,7 +48,7 @@ The documentation describes the Sensee KMP client: Android, iOS, Desktop JVM, JS
 - Do not keep generated exports or tool-specific helper files in client documentation unless they are actually referenced or explicitly needed.
 - If a code change affects architecture, module boundaries, workflow, or observable behavior, update the relevant documentation as part of the same task.
 - Do not leave documentation knowingly stale after the implementation is finished.
-- For exploratory or unstable work, it is acceptable to stabilize the code first and update the docs after that, but the final task state should leave docs either accurate or explicitly marked `WIP` / planned.
+- For exploratory or unstable work, it is acceptable to stabilize the code first and update the docs after that, but the final task state should leave docs either accurate or explicitly marked `WIP` / planned. (`early-stage` relaxation — registered in arc42 §11.)
 - If the user updates documentation first and then asks for implementation, treat the documentation as the target specification unless the user explicitly calls it a draft.
 - If such documentation is ambiguous, incomplete, or conflicts with the current code, call out the mismatch before implementing the disputed part.
 
@@ -70,3 +79,7 @@ The documentation describes the Sensee KMP client: Android, iOS, Desktop JVM, JS
 - `.agents/skills/architecture-docs-sync`
 - `.agents/skills/likec4-architecture-model-review`
 - `.agents/skills/code-comments-and-docs-review`
+- `.agents/skills/arc42-authoring`
+- `.agents/skills/adr-authoring`
+- `.agents/skills/gherkin-scenario-authoring`
+- `.agents/skills/docs-language-review`

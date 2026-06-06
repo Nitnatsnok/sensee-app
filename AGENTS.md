@@ -43,7 +43,7 @@ Primary goals when changing code:
 - User instructions in the current task override repository instructions.
 - Do not duplicate root rules in nested files; nested files should describe only local differences, sharper invariants, or local verification commands.
 - If a nested file conflicts with this root file, prefer the closest file for local workflow details and this root file for repository-wide safety, security, commit, and architecture rules. If the conflict is accidental, fix the documentation instead of silently choosing one.
-- Every `AGENTS.md` must have a sibling `CLAUDE.md` containing exactly `@AGENTS.md`.
+- Every `AGENTS.md` must have a sibling `CLAUDE.md` containing the single line `@AGENTS.md`.
 
 Current local instruction files:
 
@@ -134,8 +134,9 @@ Dependency direction:
 - Update LikeC4 model/views when an architecturally significant change affects module boundaries, navigation, persistence ownership, external integrations, runtime flows, or deployment targets.
 - Keep arc42/ADR text and LikeC4 views synchronized. ADRs explain decisions and trade-offs; LikeC4 shows resulting structure and relationships.
 - Repository-defined LikeC4 commands are documented in `docs/README.md`: `npx likec4 start docs/c4`, `npx likec4 validate docs/c4`, and `npx likec4 build docs/c4 -o build/likec4/docs-c4`.
-- This repository currently has no root Node package-manager project for LikeC4. Use the ambient `npx likec4 ...` CLI until a project-local toolchain is deliberately introduced.
+- This repository currently has no root Node package-manager project for LikeC4. Use the ambient `npx likec4 ...` CLI until a project-local toolchain is deliberately introduced (`early-stage`; registered in arc42 §11).
 - Static exports from `docs/c4` are not canonical. Do not commit generated diagram exports unless repository docs start referencing them deliberately.
+- Mark a deliberate, temporary early-stage relaxation — a simplification taken for speed that should be tightened later — with an inline `early-stage` token next to the rule or decision, and register it in arc42 §11 (`docs/arc42/sections/11_technical_risks.adoc`) with its tightening trigger; track actionable tightening as a `docs/backlog/` `EB-N` item. Permanent conscious choices carry no trigger and are not tokened.
 
 ## Build and verification commands
 

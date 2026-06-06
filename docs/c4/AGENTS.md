@@ -50,7 +50,7 @@ query the architecture without exporting diagrams. It needs `npx` (Node) on
 ## Local verification
 
 - To read or query the model (elements, relationships, tags, views), prefer the `likec4` MCP server described above (read-only); use the CLI below for validation, preview, and static build.
-- The repository currently has no root Node package-manager project for LikeC4; use the documented ambient `npx likec4 ...` commands until a project-local toolchain is introduced deliberately.
+- The repository currently has no root Node package-manager project for LikeC4; use the documented ambient `npx likec4 ...` commands until a project-local toolchain is introduced deliberately (`early-stage`; tightening trigger in arc42 §11).
 - Validate LikeC4 after changing `.c4` or `likec4.config.json`:
   ```shell
   npx likec4 validate docs/c4

@@ -30,13 +30,15 @@ Review/support. Decide documentation impact first; edit docs only when the curre
 
 ## Check
 
-- ADR needed: architectural decision, trade-off, invariant, or rejected alternative.
-- Arc42 needed: current structure, runtime flow, deployment, quality risk, or concept changed.
+- ADR needed: architecturally significant decision, trade-off, cross-module contract, or rejected alternative (a local invariant belongs in a test or KDoc, not an ADR). Author/review the ADR via `adr-authoring`.
+- Arc42 needed: current structure, runtime flow, deployment, quality risk, or concept changed; author/review the chapter via `arc42-authoring`.
 - LikeC4 needed: module boundary, relationship, runtime flow, persistence ownership, deployment target, external integration, or documented subsystem changed.
-- Scenario needed: user-facing workflow changed or was newly designed.
+- Scenario needed: user-facing workflow changed or was newly designed; author/review via `gherkin-scenario-authoring`.
+- Prose language: a focused language/terminology pass uses `docs-language-review`.
 - README/CONTRIBUTING needed: onboarding, build, verification, release, or setup changed.
 - Docs should not duplicate detailed structural relationships already in LikeC4 unless useful for reading.
 - Generated diagrams are not committed unless repository convention changes.
+- Early-stage relaxation: if the change deliberately relaxes a documented rule for speed, mark it `early-stage` and register it in arc42 §11 with a tightening trigger (`backlog-maintenance` for an actionable `EB-N`).
 
 ## Output
 

@@ -28,7 +28,7 @@ Review/support. Recommend comment, KDoc, or docs changes; edit only when the cur
 - Comments explain why, invariants, contracts, or trade-offs, not obvious code.
 - KDoc and code comments are written in English.
 - Public API contracts have enough KDoc for callers in other modules.
-- Tests pin behavior when prose would become stale.
+- Tests pin *behavioral* invariants when prose would drift; API *contracts* still need KDoc (see above).
 - ADR/docs are better than a large local comment for architecture decisions.
 - LikeC4 is better than Markdown prose for structural relationships.
 - Existing comments are still true after the diff.

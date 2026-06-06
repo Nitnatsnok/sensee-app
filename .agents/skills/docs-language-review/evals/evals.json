@@ -1,0 +1,20 @@
+{
+  "skill_name": "docs-language-review",
+  "evals": [
+    {
+      "id": "backticks-and-proper-nouns-not-violations",
+      "prompt": "A Russian arc42 paragraph uses `RootComponent`, `shared/app-shell`, Decompose, and Kotlin Multiplatform. Flag the language mixing.",
+      "expected_output": "Does NOT flag backticked code terms, module paths, or established technical proper nouns; flags only genuine gratuitous English where a clean Russian equivalent exists. Avoids false positives."
+    },
+    {
+      "id": "term-glossing-first-occurrence",
+      "prompt": "A Russian doc introduces the term 'захват' for the first time without its English equivalent, then repeats it later and in another file. Review.",
+      "expected_output": "Suggests glossing 'захват (capture)' on its first occurrence in that file when it aids understanding, reusing the glossary pair; does not require glossing every occurrence or across files; adds the pair to docs/arc42/sections/12_glossary.adoc if missing."
+    },
+    {
+      "id": "abbreviation-expansion",
+      "prompt": "A Russian doc introduces a non-obvious domain abbreviation on first use without expansion, alongside stable technical ones like SRS and TTS. Review.",
+      "expected_output": "Suggests expanding the non-obvious domain abbreviation in parentheses on its first occurrence in the file; does NOT flag stable, established technical abbreviations (SRS, TTS, AI, LLM) per the skill's 'not a violation' note; leaves code identifiers and backticked terms untouched."
+    }
+  ]
+}

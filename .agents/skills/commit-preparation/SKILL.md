@@ -17,7 +17,6 @@ Review/support. Inspect and propose commit boundaries/messages; do not change gi
 ## Non-goals
 
 - Do not duplicate the full commit convention from `docs/engineering/commits.md`.
-- Do not stage, commit, rewrite history, or push as part of preparation.
 
 ## Workflow
 
@@ -32,7 +31,7 @@ Review/support. Inspect and propose commit boundaries/messages; do not change gi
 ## Message rules
 
 - Use `type(scope): imperative summary`; the header is the changelog line.
-- Prefer scopes from real repo areas: `feature-practice`, `database`, `srs`, `ai`, `verification`, `gradle-plugins`, `c4`, `agents`, `ci`, `hooks`.
+- Use the scopes listed in `docs/engineering/commits.md`; pick the repo area the change belongs to.
 - Keep the header in English, lowercase description, no trailing period.
 - Mark a breaking change with `type(scope)!:` and/or a `BREAKING CHANGE:` footer.
 - Subject-only by default. Add a free-form body only for a non-obvious why; add footers (`Closes/Refs: EB-<N>`, `Refs: ADR-<NNN>`, `BREAKING CHANGE:`) only when they apply. Full rules in `docs/engineering/commits.md`.

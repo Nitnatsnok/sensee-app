@@ -4,7 +4,7 @@
 
 `CLAUDE.md` in the root and beside each `AGENTS.md` stays a thin `@AGENTS.md` adapter. For Claude Code, this keeps one source of rules without copying text. The commit convention lives separately in `docs/engineering/commits.md`.
 
-Architecture knowledge should not move into skills. ADRs explain decisions, `docs/arc42` describes the client state, and `docs/c4/*.c4` remains the canonical LikeC4 model.
+Canonical architecture *state* stays in its sources, not in skills: ADRs explain decisions, `docs/arc42` describes the client state, and `docs/c4/*.c4` remains the canonical LikeC4 model. Skills link to these instead of restating them. Skills may carry portable, repo-stable review methodology and bundled reference checklists; the boundary is the staleness-coupling test in `.agents/AGENTS.md`.
 
 ## Skills
 
@@ -25,6 +25,10 @@ Architecture knowledge should not move into skills. ADRs explain decisions, `doc
 | `dictionary-enrichment-schema-review` | Check vocabulary enrichment, verification, schema | active | review/support | Schema/prompt/verification risks |
 | `likec4-architecture-model-review` | Check LikeC4 model and views | active | review/support | Drift, view readability, validation |
 | `architecture-docs-sync` | Decide whether docs/ADR/LikeC4 updates are needed | active | review/support | Docs impact and concise patch suggestion |
+| `arc42-authoring` | Author/review an arc42 chapter against the standard | active | review/support | Chapter gaps and structure fixes |
+| `adr-authoring` | Write/review an ADR (worthiness, structure, lifecycle) | active | review/support | ADR draft, index row, supersede actions |
+| `gherkin-scenario-authoring` | Write/review a Gherkin behavior scenario | active | review/support | Anti-patterns and rewrites |
+| `docs-language-review` | Review docs prose for language and terminology | active | review-only | Language findings and glossary pairs |
 | `backlog-maintenance` | Add/update/remove a deferred-work item in `docs/backlog/` | active | implementation-support | Backlog item with synced index and references |
 
 ## Refinement
@@ -32,7 +36,7 @@ Architecture knowledge should not move into skills. ADRs explain decisions, `doc
 - Add gotchas after repeated agent mistakes.
 - Tighten `description` if a skill triggers too often or misses relevant requests.
 - Expand `evals/evals.json` only for important workflows where real runs expose a weak spot.
-- Do not copy long architecture references into skills; link to `docs/`, ADRs, and LikeC4 instead.
+- Do not restate canonical architecture state in skills; link to `docs/`, ADRs, and LikeC4. Portable methodology and bundled checklists may live in the skill (staleness-coupling test in `.agents/AGENTS.md`).
 
 ## Validation
 
@@ -44,8 +48,9 @@ python3 scripts/agents/validate-agent-instructions.py
 
 The validator checks:
 
-- skill frontmatter (`name` and `description`);
+- skill frontmatter — a terminated block with single-line `name` and `description`;
 - skill folder/name consistency;
+- the catalog table above matches the `.agents/skills/` directories;
 - commit convention links to `docs/engineering/commits.md`;
 - thin `CLAUDE.md` shims and `AGENTS.md`/`CLAUDE.md` sibling pairing;
 - structural eval JSON under `.agents/skills/*/evals/*.json`.

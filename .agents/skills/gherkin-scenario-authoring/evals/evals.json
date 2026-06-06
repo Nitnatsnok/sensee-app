@@ -1,0 +1,20 @@
+{
+  "skill_name": "gherkin-scenario-authoring",
+  "evals": [
+    {
+      "id": "multi-scenario-file-not-split",
+      "prompt": "Review practice-deck.feature — it has one Функция with about fifteen Сценарий under it. Should it be split into one scenario per file?",
+      "expected_output": "Does NOT demand one scenario per file; per docs/scenarios/README.md a .feature covers one behavior area (one arc42/06 runtime view) and normally holds several Сценарий. Reviews each scenario for one behavior, declarative wording, and status tags instead."
+    },
+    {
+      "id": "imperative-ui-steps",
+      "prompt": "A scenario step says 'Когда пользователь скроллит вниз, нажимает кнопку Save в правом верхнем углу и печатает p-a-n-d-a'. Review it.",
+      "expected_output": "Flags imperative, UI-coupled wording; suggests declarative behavior (what, not how), applies the implementation-change test, and notes UI selectors belong in step definitions, not the .feature."
+    },
+    {
+      "id": "conjunctive-when-vs-and-steps",
+      "prompt": "One scenario's Когда step performs two actions joined by 'и' in a single line; another scenario's Тогда has several 'И' lines asserting observable properties. Which is the anti-pattern?",
+      "expected_output": "Only the conjunctive single step with two actions is the anti-pattern (split it). Separate И/And steps, including several Then property assertions, are normal Gherkin and not a violation."
+    }
+  ]
+}

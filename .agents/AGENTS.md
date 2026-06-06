@@ -18,13 +18,13 @@ Applies to:
 - `SKILL.md` frontmatter must include `name` and `description`.
 - The `name` must match the folder name and use lowercase letters, numbers, and hyphens only.
 - Put triggering guidance in `description`; keep the body focused on workflow and project-specific checks.
-- Keep skills concise. Link to repository docs, ADRs, LikeC4, or source files instead of copying long reference material.
+- Keep skills concise and apply the staleness-coupling test. If a fact changes when the codebase changes — module inventory, ADR decisions, the LikeC4 model, or canonical policy in `docs/` — link to its source instead of restating it (`docs/`, `docs/adr/`, `docs/c4/*.c4`, `docs/scenarios/README.md`, `docs/adr/index.adoc`). If it is durable, repo-stable methodology — how to review a boundary, author an arc42 chapter, structure an ADR — it may live in the skill, inline or as bundled reference files loaded on demand.
 - Add `evals/evals.json` only for high-value skills where seed prompts will help future refinement.
 - Do not add placeholder skills. Mark planned/emerging behavior inside a skill only when the repository has a real planned direction for it.
 
 ## Local verification
 
-- Validate skill frontmatter, folder/name consistency, `description` presence, structural eval JSON, commit links, thin `CLAUDE.md` shims, and `AGENTS.md`/`CLAUDE.md` sibling pairing:
+- Validate skill frontmatter (a terminated block with single-line `name`/`description`), folder/name consistency, the `docs/agents/skills.md` catalog ↔ `.agents/skills/` match, structural eval JSON, commit links, thin `CLAUDE.md` shims, and `AGENTS.md`/`CLAUDE.md` sibling pairing:
   ```shell
   python3 scripts/agents/validate-agent-instructions.py
   ```
@@ -35,7 +35,7 @@ Applies to:
 
 - Do not create `README.md`, changelogs, or installation guides inside individual skill folders.
 - Do not add scripts unless they provide deterministic value and have a safe non-interactive path.
-- Do not duplicate full project architecture docs inside a skill.
+- Do not duplicate or fork the canonical project architecture *state* (module inventory, ADR decisions, the LikeC4 model) inside a skill; link to it. Portable methodology and bundled reference checklists are allowed — see the staleness-coupling test in `## Local rules`.
 
 ## Related skills
 

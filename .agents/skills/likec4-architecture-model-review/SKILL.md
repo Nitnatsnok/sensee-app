@@ -26,15 +26,11 @@ Review/support. Recommend model/view changes or validation; edit LikeC4 sources 
 
 ## Check
 
-- LikeC4 is the architecture model source, not a generated-image format.
-- Elements represent real ownership and boundaries; kinds carry meaning (`container` = module group, `component` = module, `store` = local storage, `capability` = cross-cutting product capability, `external_system` = outside the client).
-- Structure uses C4 nesting (system → container → component), not one flat tier; platform targets live in the `deployment {}` model, not as logical elements.
-- Relationships use the right kind: `depends` (static/DI), `flows` (runtime data), `navigates` (user navigation) — not one untyped edge space.
-- Views are purposeful projections, not one overloaded diagram; prefer scoped `view ... of <container>`. Aim for ≤15 *expanded leaf* nodes in component/feature views — parent/collaborator boundary frames and the C4 `containers` overview (which legitimately shows every module group) do not count. Keep planned cross-feature navigation in `cross_feature_navigation` via `exclude * -> * where tag is #prepared` / `#future` (a relationship predicate — `exclude * where tag is ...` filters elements, not edges), not in every component view. Remember `implicitViews: true` also generates per-element views.
-- View ids are stable (URLs/exports/arc42 prose). A rename updates the canonical list in `docs/README.md` and arc42 references in the same change.
-- Planned architecture is tagged `#prepared` (code exists, not wired) or `#future` (not implemented), on elements and relationships. Audit planned elements via `query-by-tags` / `query-by-tag-pattern` and planned relationships via `read-view` / `find-relationships` (tag queries return elements only, but relationship tags are exposed there); confirm planned cross-feature navigation is collected in the `cross_feature_navigation` view.
-- Markdown docs do not duplicate the model — the canonical view list lives in `docs/README.md`, not re-enumerated across arc42.
-- ADRs explain decisions; LikeC4 shows resulting structure. Generated artifacts are not committed by default.
+- The change follows the `docs/c4/AGENTS.md` modeling conventions (element kinds, C4 nesting, typed relationships `depends`/`flows`/`navigates`, `deployment {}` targets, view budget, planned `#prepared`/`#future` tagging, stable view ids) — verify against them rather than restating them here.
+- Elements and relationships reflect real ownership/boundaries and real code edges: no model edge without a code basis, no code dependency missing from the model.
+- Views stay purposeful and readable; planned cross-feature navigation is collected in `cross_feature_navigation`, not leaked into every component view.
+- A view-id rename updates the canonical list in `docs/README.md` and arc42 references in the same change.
+- Markdown does not duplicate the model; ADRs explain decisions while LikeC4 shows resulting structure; generated artifacts are not committed by default.
 
 ## Verification
 

@@ -1,6 +1,6 @@
 ---
 name: sqldelight-schema-aggregation-review
-description: Use this skill when Sensee work touches SQLDelight .sq/.sqm files, feature-owned database-schema modules, shared/database aggregation, migrations, repositories, query ownership, verification/TTS/settings/schema tables, or database tests.
+description: Use this skill when Sensee work touches SQLDelight .sq/.sqm files, feature-owned database-schema modules, shared/database aggregation, migrations, repositories, query ownership, verification/TTS/settings/schema tables, or database tests. Covers the physical SQLDelight layer and aggregation, not logical AI/verification schema contracts (dictionary-enrichment-schema-review).
 ---
 
 # SQLDelight Schema Aggregation Review

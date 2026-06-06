@@ -20,7 +20,7 @@ Applies to:
 - Keep runtime database access and platform drivers here; keep feature table ownership in the owning schema module.
 - Generated SQLDelight row types stay in the neutral `app.sensee.core.database` package.
 - `DatabaseConfig.resetOnSchemaMigration` is dev-only. Never enable schema auto-reset for production builds because it destroys user data.
-- During current schema churn, edit `.sq` files directly and rely on dev reset. Do not create placeholder `.sqm` migrations for churn.
+- During current schema churn (`early-stage`; tightening trigger in arc42 §11), edit `.sq` files directly and rely on dev reset. Do not create placeholder `.sqm` migrations for churn.
 - When production migrations become active, regenerate snapshots with SQLDelight and include the generated `<version>.db` snapshot in the same change.
 
 ## Local verification

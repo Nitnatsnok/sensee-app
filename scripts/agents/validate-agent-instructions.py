@@ -18,7 +18,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILLS_DIR = REPO_ROOT / ".agents" / "skills"
+SKILLS_CATALOG = REPO_ROOT / "docs" / "agents" / "skills.md"
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+CATALOG_ROW_RE = re.compile(r"^\|\s*`([a-z0-9-]+)`\s*\|")
 EVAL_ID_RE = re.compile(r"^[a-z0-9-]+$")
 ERROR = "ERROR"
 WARNING = "WARNING"
@@ -60,22 +62,37 @@ class ValidationReport:
         return sum(1 for finding in self.findings if finding.severity == WARNING)
 
 
-def parse_frontmatter(path: Path) -> dict[str, str]:
+@dataclass(frozen=True)
+class Frontmatter:
+    data: dict[str, str]
+    present: bool
+    terminated: bool
+    block_scalar_keys: tuple[str, ...]
+
+
+def parse_frontmatter(path: Path) -> Frontmatter:
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
-        return {}
+        return Frontmatter({}, present=False, terminated=False, block_scalar_keys=())
 
     data: dict[str, str] = {}
+    block_scalar_keys: list[str] = []
     for line in lines[1:]:
         if line.strip() == "---":
-            return data
+            return Frontmatter(data, present=True, terminated=True, block_scalar_keys=tuple(block_scalar_keys))
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         key, separator, value = line.partition(":")
         if not separator:
             continue
-        data[key.strip()] = value.strip()
-    return {}
+        key = key.strip()
+        value = value.strip()
+        data[key] = value
+        # A YAML block scalar (`>`/`|`) would let a multi-line value slip past the
+        # single-line presence and length checks below, so flag it for the caller.
+        if value.startswith((">", "|")):
+            block_scalar_keys.append(key)
+    return Frontmatter(data, present=True, terminated=False, block_scalar_keys=tuple(block_scalar_keys))
 
 
 def is_excluded_path(path: Path) -> bool:
@@ -118,8 +135,18 @@ def validate_skills(skill_dirs: list[Path]) -> list[Finding]:
             continue
 
         frontmatter = parse_frontmatter(skill_md)
-        name = frontmatter.get("name", "")
-        description = frontmatter.get("description", "")
+        if not frontmatter.present:
+            findings.append(Finding(skill_md, "SKILL.md is missing YAML frontmatter (no opening `---`)"))
+            continue
+        if not frontmatter.terminated:
+            findings.append(Finding(skill_md, "frontmatter block is not terminated by a closing `---`"))
+            continue
+        for scalar_key in ("name", "description"):
+            if scalar_key in frontmatter.block_scalar_keys:
+                findings.append(Finding(skill_md, f"frontmatter `{scalar_key}` must be a single-line scalar, not a YAML block scalar (`>`/`|`)"))
+
+        name = frontmatter.data.get("name", "")
+        description = frontmatter.data.get("description", "")
         if not name:
             findings.append(Finding(skill_md, "frontmatter is missing required name"))
         elif name != skill_dir.name:
@@ -217,6 +244,26 @@ def validate_eval_json(skill_dirs: list[Path]) -> tuple[list[Finding], int]:
     return findings, checked_eval_file_count
 
 
+def validate_skills_catalog(skill_dirs: list[Path]) -> list[Finding]:
+    findings: list[Finding] = []
+    if not SKILLS_CATALOG.exists():
+        findings.append(Finding(SKILLS_CATALOG, "skills catalog docs/agents/skills.md is missing"))
+        return findings
+
+    catalog_names: set[str] = set()
+    for line in SKILLS_CATALOG.read_text(encoding="utf-8").splitlines():
+        match = CATALOG_ROW_RE.match(line)
+        if match:
+            catalog_names.add(match.group(1))
+
+    dir_names = {skill_dir.name for skill_dir in skill_dirs}
+    for name in sorted(dir_names - catalog_names):
+        findings.append(Finding(SKILLS_CATALOG, f"skill '{name}' has no row in the catalog table"))
+    for name in sorted(catalog_names - dir_names):
+        findings.append(Finding(SKILLS_CATALOG, f"catalog lists '{name}' but .agents/skills/{name} does not exist"))
+    return findings
+
+
 def validate_commit_links() -> list[Finding]:
     findings: list[Finding] = []
     root_agents = REPO_ROOT / "AGENTS.md"
@@ -266,6 +313,7 @@ def run_validation() -> ValidationReport:
     skill_dirs = project_skill_dirs()
     findings: list[Finding] = []
     findings.extend(validate_skills(skill_dirs))
+    findings.extend(validate_skills_catalog(skill_dirs))
     eval_findings, checked_eval_file_count = validate_eval_json(skill_dirs)
     findings.extend(eval_findings)
     findings.extend(validate_commit_links())
