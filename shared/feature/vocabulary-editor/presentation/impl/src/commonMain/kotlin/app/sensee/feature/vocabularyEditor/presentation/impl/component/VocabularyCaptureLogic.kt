@@ -17,9 +17,12 @@ import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarLabelsLoadResult
 import app.sensee.grammar.domain.GrammarLabelsProvider
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.grammar.domain.SurfaceForm
+import app.sensee.lexicon.domain.ContextualApplication
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.deriveSenseContentKey
+import app.sensee.lexicon.domain.isConfirmable
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -133,13 +136,28 @@ public class VocabularyCaptureLogic(
         translation: String,
         surfaceForm: String? = null,
         unitType: GrammarUnitType? = null,
+        example: String? = null,
     ) {
         val trimmed = translation.trim()
         if (trimmed.isEmpty()) return
         val form = surfaceForm?.trim()?.takeIf { it.isNotEmpty() }?.let { SurfaceForm.parse(it) }
+        // A typed example makes the manual sense confirmable offline; without one it
+        // stays a thin draft the confirm-gate holds back until the assistant fills it.
+        val applications =
+            example
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { listOf(ContextualApplication(StudiedSentence.parse(it))) }
+                .orEmpty()
         val manual =
             CaptureSense(
-                sense = Sense(translation = trimmed, surfaceForm = form, unitType = unitType),
+                sense =
+                    Sense(
+                        translation = trimmed,
+                        surfaceForm = form,
+                        unitType = unitType,
+                        contextualApplications = applications,
+                    ),
                 source = CaptureSenseSource.Manual,
             )
         mutableUiState.update { it.copy(manualSenses = it.manualSenses + manual) }
@@ -196,17 +214,16 @@ public class VocabularyCaptureLogic(
 
     public fun confirmSelected() {
         val state = mutableUiState.value
-        val fromCandidates = state.candidates.filter { it.selected }.map { it.sense }
-        val fromManual =
-            state.manualSenses.flatMap { manual ->
-                // A picked enriched suggestion replaces the thin draft; with none
-                // picked the hand-authored sense stands on its own.
-                val picked = manual.assistantSuggestions.filter { it.selected }
-                if (picked.isEmpty()) listOf(manual.sense) else picked.map { it.sense }
-            }
-        // Dedup before write: two selections that share a content key are the
-        // same sense, so persisting both would fork its SRS state.
-        val senses = (fromCandidates + fromManual).distinctBy(::deriveSenseContentKey)
+        // Keep only confirmable senses — a thin manual sense with no example cannot
+        // be confirmed and stays in the form — then dedup before write: two
+        // selections sharing a content key are the same sense, so persisting both
+        // would fork its SRS state. Filter before dedup so a confirmable candidate
+        // is never shadowed by a non-confirmable manual sense with the same key.
+        val senses =
+            state
+                .selectedSenses()
+                .filter { it.isConfirmable() }
+                .distinctBy(::deriveSenseContentKey)
         if (senses.isEmpty() || confirming) return
         confirming = true
         val confirmedTerm = state.term

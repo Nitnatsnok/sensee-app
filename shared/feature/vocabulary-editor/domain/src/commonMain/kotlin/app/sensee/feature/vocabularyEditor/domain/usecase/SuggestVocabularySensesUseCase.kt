@@ -13,6 +13,7 @@ import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.deriveSenseContentKey
+import app.sensee.lexicon.domain.isConfirmable
 import app.sensee.lexicon.enrichment.toSenses
 import app.sensee.verification.core.contract.ExampleCheckRequest
 import app.sensee.verification.core.contract.ExampleQualityChecker
@@ -113,7 +114,9 @@ public class SuggestVocabularySensesUseCase(
     // Distinct content keys keep one card per sense: two suggestions that share
     // a content key are the same sense (selection is keyed by content key), so
     // the duplicate would otherwise be unselectable. Each kept sense then passes
-    // the silent post-AI example-quality filter before it can be confirmed.
+    // the silent post-AI example-quality filter, and any sense the provider left
+    // without a usable example (or translation) is dropped here — never surfaced
+    // as a candidate the user could select but the confirm-gate would reject.
     private suspend fun mapResultToSenses(
         result: EnrichmentResult,
         fallbackTerm: String,
@@ -126,6 +129,7 @@ public class SuggestVocabularySensesUseCase(
                 onUnknown = appDiagnostics::warnUnknownTaxonomyValue,
             ).distinctBy(::deriveSenseContentKey)
             .map { filterWeakExamples(it, studyLanguageTag) }
+            .filter { it.isConfirmable() }
 
     // Post-AI example-quality (ADR-007), the verifier's second narrow role: one
     // optional, silent ExampleQualityChecker call per example before save. Drops

@@ -349,7 +349,7 @@ wire/схему ломаем свободно (re-key, dev-reset).
   - `status` — бинарь `Draft|Confirmed`. Промежуточные статусы не вводим (§8).
   - `updated` пишем на каждый `upsert` (clock инжектится в `lexicon/data`, не в `domain`; нужно
     под draft-очистку EB-6).
-* **`sense_embedding`** 〔навесное / после ядра — в 4′ **не** создаём〕 (отдельная таблица, чтобы строка
+* **`sense_embedding`** 〔навесное / после ядра — **реализовано** post-4′ (embed-on-save для capture+claim, см. §«После ядра»); 4′ ядро его не создавало〕 (отдельная таблица, чтобы строка
   была lean): `sense_id (PK/FK `ON DELETE CASCADE`) · vector (BLOB, нормализованный float32 через
   `FloatArray↔ByteArray`) · model_ref · dim`. Вектор пишет `EmbeddingPort.embed()` на save —
   один путь, не on-device. Схема целиком уходит в post-core embedding-изменение (план: «таблицу заводим
@@ -701,7 +701,7 @@ correctness-единица**: write-сторона, read-проекция и SRS
   как регрессия невалиден; таргетить index-shift / lemma-key пути выше.
 * Синк Service не перетирает Personal; `ResolveOrMint` origin-scoped + tie-break `max(updated)`
   при дубле `content_key`; `ForceMint` не re-resolve'ится; `UpdateExisting` сохраняет `sense_id`;
-  Service row без `source_ref` невозможна, а дубль `source_ref` отклоняется partial unique index;
+  Service row без `source_ref` невозможна, а дубль `source_ref` схлопывается к одной строке по `source_ref` (partial unique index + `INSERT OR REPLACE`);
   правка — id-preserving (+warning при коллизии); confirm-gate (translation + ≥1 пример);
   `DuePracticeRepository` отдаёт due-count без зависимости Home на `library`.
 * **`copySnapshot`-примитив** (`srs.engine`, unit-тест в `commonTest` или через `test-kit`
@@ -726,13 +726,14 @@ correctness-единица**: write-сторона, read-проекция и SRS
   `library/data` потерял `ai.core` + `lexicon.enrichment`; фикстуры ре-кеены; cefr теперь течёт
   через `SenseDto.cefr` — gap каталога закрыт.
 * **Наборы — UX поверх ядровой схемы.** `deck`/`deck_membership` + `subscribe` уже в ядре (4′).
-  Здесь: `DeckRepository` Personal CRUD (создать/переименовать/наполнить/reorder), claim-UI (`claim`
+  Здесь: Personal-deck CRUD (создать/переименовать/наполнить/reorder) — фича сверх ядра, поверх
+  существующих `CatalogRepository`/`CatalogAdoptionRepository`/`ClaimRepository`; claim-UI (`claim`
   подмножества → Personal-копии + `copySnapshot` SRS), unsubscribe-UX. `EB-9`.
 * **Поиск** — `SearchPort`/`SenseQuery`, in-memory над проекционными колонками.
 * **Граф** — `LexicalGraphReader` (рёбра из blob + `lemma_key` на чтении, без таблицы рёбер).
-* **Embedding similar-sense выбор (создаёт схему `sense_embedding`)** — `EmbeddingPort.embed()` **eager
-  на save синхронно онлайн** (в пределах таймаут-бюджета): near-match → **выбор пользователя** (§2), не
-  пассивный баннер.
+* **Embedding similar-sense выбор** — `sense_embedding` + `EmbeddingPort.embed()` **реализованы**
+  (embed-on-save, eager в пределах таймаут-бюджета `EmbeddingPort.EAGER_EMBED_BUDGET_MS`, capture+claim);
+  остаётся навесным сам **выбор пользователя** на near-match (§2), не пассивный баннер.
   **Офлайн/таймаут/сбой** → строка `sense` коммитится первой без вектора, offline-save **не падает**;
   отсутствие строки в `sense_embedding` = «не эмбеднуто» → бэкфилл ленивым ре-эмбеддингом, отложенный
   выбор в «возможные дубли». Вектор провайдерный (`openai/text-embedding-3-small`, `dimensions=512`

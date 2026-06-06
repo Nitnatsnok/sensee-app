@@ -32,7 +32,7 @@ public class DefaultVocabularyCaptureComponent(
             is VocabularyCaptureAction.Suggest -> logic.suggest(action.term)
             is VocabularyCaptureAction.ToggleCandidate -> logic.toggleCandidate(action.contentKey)
             is VocabularyCaptureAction.AddManual ->
-                logic.addManual(action.translation, action.surfaceForm, action.unitType)
+                logic.addManual(action.translation, action.surfaceForm, action.unitType, action.example)
             is VocabularyCaptureAction.CompleteManualWithAssistant ->
                 logic.completeManualWithAssistant(action.manualIndex)
             is VocabularyCaptureAction.ToggleManualSuggestion ->

@@ -16,9 +16,10 @@ import kotlinx.coroutines.flow.map
 /**
  * Subscribing mirrors a Service deck into the user's practiced material: ingest
  * the deck's senses (origin = Service, keyed by source_ref) and flip the deck's
- * `subscribed` flag. It is not a copy — a re-sync overwrites mirrored content and
- * SRS state on the shared sense_id stays intact. The derived captured deck has no
- * deck row and is always owned, so it is neither subscribable nor unsubscribable.
+ * `subscribed` flag — both in one transaction. It is not a copy: a re-sync
+ * overwrites mirrored content, and SRS state on the shared sense_id stays intact.
+ * The derived captured deck has no deck row and is always owned, so it is neither
+ * subscribable nor unsubscribable.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -34,8 +35,9 @@ public class DefaultCatalogAdoptionRepository(
         require(deckId != SenseCatalogProjection.CAPTURED_DECK_ID) {
             "The captured deck is already owned and cannot be subscribed"
         }
-        base.loadDeck(deckId)
-        localDataSource.setDeckSubscribed(deckId.value, subscribed = true)
+        // Ingest + subscribe commit together (DefaultCatalogRepository.subscribeDeck);
+        // a mid-adopt failure leaves no partial durable state.
+        base.subscribeDeck(deckId)
     }
 
     override suspend fun unAdopt(deckId: DeckId) {

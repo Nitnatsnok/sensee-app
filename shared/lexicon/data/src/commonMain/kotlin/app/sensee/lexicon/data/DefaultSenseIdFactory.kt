@@ -26,8 +26,9 @@ public class DefaultSenseIdFactory : SenseIdFactory {
 
         // FNV-1a 64-bit → hex: deterministic on every target and colon-free, so a
         // Service source_ref maps to the same SenseId across re-syncs without a
-        // crypto dependency. The partial unique index on source_ref is the real
-        // collision guard; this id only has to be stable, not cryptographic.
+        // crypto dependency. The id only has to be stable, not cryptographic: the
+        // partial unique index keeps one row per source_ref, and at catalog scale a
+        // 64-bit hash collision (two source_refs → one id) is negligible.
         fun fnv1aHex(value: String): String {
             var hash = 0xcbf29ce484222325uL
             for (byte in value.encodeToByteArray()) {

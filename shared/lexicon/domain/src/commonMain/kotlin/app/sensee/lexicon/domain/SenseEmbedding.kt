@@ -71,8 +71,10 @@ public interface EmbeddingPort {
      * Embed [stored] and persist its vector, best-effort. Returns the vector, or
      * `null` when no provider answered (no key / offline / error) — the sense row
      * is left "not embedded" for a later lazy backfill. Never throws for a
-     * provider miss. Call this *after* the sense row has committed, outside the
-     * write transaction: embedding never blocks or fails a save.
+     * provider miss. Callers run it *after* the sense row has committed, outside
+     * the write transaction and within a bounded budget ([EAGER_EMBED_BUDGET_MS]),
+     * so a miss or overrun leaves the sense for a later backfill and never fails
+     * or blocks a save.
      */
     public suspend fun embed(stored: StoredSense): EmbeddingVector?
 
@@ -90,5 +92,12 @@ public interface EmbeddingPort {
     public companion object {
         /** Cosine threshold above which two senses are offered as "looks similar". */
         public const val DEFAULT_SIMILARITY_THRESHOLD: Float = 0.85f
+
+        /**
+         * Eager-embed-on-save ceiling. A confirm or claim embeds within this budget;
+         * past it the sense is left "not embedded" for a later lazy backfill, so the
+         * save's round-trip never blocks on a slow provider.
+         */
+        public const val EAGER_EMBED_BUDGET_MS: Long = 1_500L
     }
 }

@@ -14,5 +14,5 @@ UX-аффорданс «править подписанный → предлож
 
 Связи::
 * План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§2 subscribe/claim, §4 service sync)
-* Код: `DeckRepository` (subscribe/claim), `sense.origin`, SRS-клон по `sense_id`
+* Код: `CatalogAdoptionRepository`/`ClaimRepository` (subscribe/claim), `sense.origin`, SRS-клон по `sense_id`
 * Сценарий: `docs/scenarios/library.feature`

@@ -3,8 +3,9 @@
 :area: library
 
 Триггер / что разблокирует::
-Модель наборов (`deck` + `deck_membership` поверх канонических `sense_id`, CRUD в
-`DeckRepository` для Personal-наборов, Service — read-only) закладывается в ядре
+Модель наборов (`deck` + `deck_membership` поверх канонических `sense_id`; subscribe/claim уже
+в `CatalogAdoptionRepository`/`ClaimRepository`, Personal-deck CRUD — новый код этой фичи,
+Service — read-only) закладывается в ядре
 (см. `docs/engineering/sense-pipeline-consolidation-plan.md`, Фаза 5). Сам
 пользовательский UX — экраны создания/переименования/наполнения/переупорядочивания/
 удаления Personal-наборов в Library — это фича сверх ядра и поставляется отдельно.
@@ -12,9 +13,11 @@
 нескольких наборах. Редактирование набора ≠ редактирование смысла (разные пути). Добавление
 частей сервисного набора в Personal-набор — через `claim` (завладеть → Personal-копия, детач),
 не через подписку. Членство Personal-набора — только Personal-`sense_id`; порядок карт — колонка
-`position` в `deck_membership`.
+`position` в `deck_membership`. Счётчик карт owned/Personal-набора = реально присвоенным картам
+(user-side, сервисные обновления на него не влияют — пользователь сам дополняет/удаляет); подписанное
+Service-зеркало, наоборот, показывает заявленный сервисный счёт и ре-синкается.
 
 Связи::
 * План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§4 «Наборы», Фаза 5)
-* Код: `deck`/`deck_membership`, `DeckRepository` (subscribe/claim/CRUD)
+* Код: `deck`/`deck_membership`, `CatalogAdoptionRepository`/`ClaimRepository` (subscribe/claim есть), Personal-deck CRUD — новый
 * Сценарий: `docs/scenarios/library.feature`

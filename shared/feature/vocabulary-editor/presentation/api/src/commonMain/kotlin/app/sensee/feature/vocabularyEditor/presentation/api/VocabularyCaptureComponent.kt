@@ -7,6 +7,7 @@ import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.deriveSenseContentKey
+import app.sensee.lexicon.domain.isConfirmable
 import kotlinx.coroutines.flow.StateFlow
 
 public interface VocabularyCaptureComponent : AppComponent {
@@ -53,7 +54,21 @@ public data class VocabularyCaptureUiState(
     val nativeLanguageTag: String = "ru",
 ) {
     public val canConfirm: Boolean
-        get() = candidates.any { it.selected } || manualSenses.isNotEmpty()
+        get() = selectedSenses().any { it.isConfirmable() }
+
+    /**
+     * The senses the user has lined up to confirm: each selected AI candidate plus,
+     * per manual entry, its picked assistant suggestions — or the hand-authored
+     * sense when none is picked. Not yet gated or de-duplicated: confirm keeps only
+     * the confirmable ones ([Sense.isConfirmable]) and de-dups by content key, so a
+     * thin manual sense with no example can be added but is not yet confirmable.
+     */
+    public fun selectedSenses(): List<Sense> =
+        candidates.filter { it.selected }.map { it.sense } +
+            manualSenses.flatMap { manual ->
+                val picked = manual.assistantSuggestions.filter { it.selected }
+                if (picked.isEmpty()) listOf(manual.sense) else picked.map { it.sense }
+            }
 }
 
 /**
@@ -123,13 +138,16 @@ public sealed interface VocabularyCaptureAction {
 
     /**
      * Add a hand-authored sense. [translation] is required (native language);
-     * [surfaceForm] (studied form text, parsed structurally downstream) and
-     * [unitType] are optional refinements. None of these require AI.
+     * [surfaceForm] (studied form text, parsed structurally downstream), [unitType],
+     * and [example] (one usage sentence) are optional refinements. None require AI —
+     * but a manual sense needs at least one example (typed here or added by the
+     * assistant) before it is confirmable.
      */
     public data class AddManual(
         val translation: String,
         val surfaceForm: String? = null,
         val unitType: GrammarUnitType? = null,
+        val example: String? = null,
     ) : VocabularyCaptureAction
 
     /** Optionally enrich the manual sense at [manualIndex] via the AI seam. */

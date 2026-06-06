@@ -100,6 +100,7 @@ internal class VocabularyCaptureFormState(
     val term: TextFieldState,
     val manualTranslation: TextFieldState,
     val manualSurfaceForm: TextFieldState,
+    val manualExample: TextFieldState,
 ) {
     var manualUnitType: GrammarUnitType? by mutableStateOf(null)
 
@@ -111,6 +112,7 @@ internal class VocabularyCaptureFormState(
     fun resetManual() {
         manualTranslation.setTextAndPlaceCursorAtEnd("")
         manualSurfaceForm.setTextAndPlaceCursorAtEnd("")
+        manualExample.setTextAndPlaceCursorAtEnd("")
         manualUnitType = null
     }
 }
@@ -120,11 +122,13 @@ internal fun rememberVocabularyCaptureFormState(): VocabularyCaptureFormState {
     val term = rememberTextFieldState()
     val manualTranslation = rememberTextFieldState()
     val manualSurfaceForm = rememberTextFieldState()
-    return remember(term, manualTranslation, manualSurfaceForm) {
+    val manualExample = rememberTextFieldState()
+    return remember(term, manualTranslation, manualSurfaceForm, manualExample) {
         VocabularyCaptureFormState(
             term = term,
             manualTranslation = manualTranslation,
             manualSurfaceForm = manualSurfaceForm,
+            manualExample = manualExample,
         )
     }
 }
@@ -268,6 +272,7 @@ private fun LazyListScope.manualEntryBlock(
     }
     manualTranslationItem(formState, textProvider, layoutMetrics)
     manualSurfaceFormItem(formState, textProvider, layoutMetrics)
+    manualExampleItem(formState, textProvider, layoutMetrics)
     manualUnitTypeItem(uiState, formState, textProvider, layoutMetrics)
     manualAddButtonItem(component, formState, textProvider, layoutMetrics)
 }

@@ -22,6 +22,8 @@ internal object VocabularyCaptureTextKeys {
     val ManualMeaningPlaceholder = TextKey("vocabulary_capture.manual_meaning_placeholder")
     val SurfaceFormLabel = TextKey("vocabulary_capture.surface_form_label")
     val SurfaceFormPlaceholder = TextKey("vocabulary_capture.surface_form_placeholder")
+    val ManualExampleLabel = TextKey("vocabulary_capture.manual_example_label")
+    val ManualExamplePlaceholder = TextKey("vocabulary_capture.manual_example_placeholder")
     val PartOfSpeechLabel = TextKey("vocabulary_capture.part_of_speech_label")
     val PartOfSpeechUnset = TextKey("vocabulary_capture.part_of_speech_unset")
     val AddOwnVariant = TextKey("vocabulary_capture.add_own_variant")
@@ -66,6 +68,8 @@ internal val DefaultVocabularyCaptureTextProvider =
             VocabularyCaptureTextKeys.ManualMeaningPlaceholder to "значение, которого не хватило",
             VocabularyCaptureTextKeys.SurfaceFormLabel to "Форма (необязательно)",
             VocabularyCaptureTextKeys.SurfaceFormPlaceholder to "напр. come across [as]",
+            VocabularyCaptureTextKeys.ManualExampleLabel to "Пример (нужен для сохранения)",
+            VocabularyCaptureTextKeys.ManualExamplePlaceholder to "напр. I came across an old photo.",
             VocabularyCaptureTextKeys.PartOfSpeechLabel to "Часть речи (необязательно)",
             VocabularyCaptureTextKeys.PartOfSpeechUnset to "Не задано",
             VocabularyCaptureTextKeys.AddOwnVariant to "Добавить свой вариант",

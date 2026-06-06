@@ -58,6 +58,15 @@ internal fun ManualSenseBlock(
                 color = colors.textPrimary,
                 style = typography.bodyLarge,
             )
+            // Echo the typed example so the user sees what unlocked confirm (a
+            // hand-authored sense carries at most the single example entered).
+            sense.sense.contextualApplications.firstOrNull()?.let { application ->
+                Text(
+                    text = application.sentence.plainText(),
+                    color = colors.textMuted,
+                    style = typography.bodyMedium,
+                )
+            }
 
             ManualSenseStatusContent(
                 sense = sense,

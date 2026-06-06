@@ -79,38 +79,42 @@ public class CatalogLocalDataSource(
     }
 
     /**
-     * Ingest a Service deck: map each card's `SenseDto` into a Sense, upsert it
-     * (origin = Service, source_ref = card id), and rebuild the deck membership
-     * by sense_id. A card whose sense fails the example/translation invariant is
-     * dropped with a diagnostic rather than entering the deck as a broken card.
+     * Ingest a Service deck in ONE transaction: map each card's `SenseDto` into a
+     * Sense, upsert it (origin = Service, source_ref = card id), materialize its SRS
+     * seat, and rebuild the deck membership by sense_id — and, when [subscribe], flip
+     * the deck's subscribed flag in the same transaction so an adopt commits all of
+     * its durable state or none of it (no orphan sense/SRS rows, no half-subscribed
+     * deck). A card whose sense fails the example/translation invariant is dropped
+     * with a diagnostic rather than entering the deck as a broken card.
      */
-    public suspend fun ingestDeck(deck: DeckDto) {
-        val memberships = mutableListOf<Pair<String, Int>>()
-        deck.cards.forEach { card ->
-            val sense = card.sense.toDomain()
-            if (!sense.isConfirmable()) {
-                logger.warn {
-                    "Service card ${card.id} dropped: no confirmable sense (needs a translation and an example)"
-                }
-                return@forEach
-            }
-            val stored =
-                senseWriteRepository.upsert(
-                    sense = sense,
-                    status = SenseStatus.Confirmed,
-                    origin = SenseOrigin.Service,
-                    sourceRef = card.id,
-                    intent = WriteIntent.ResolveOrMint,
-                )
-            srsStorage.saveCardIfAbsent(SrsCardFactory.newCard(SrsCardId(stored.id.value)))
-            // Position off the kept list, not the source index: a dropped card
-            // must not leave a gap in the deck's membership positions.
-            memberships += stored.id.value to memberships.size
-        }
+    public suspend fun ingestDeck(
+        deck: DeckDto,
+        subscribe: Boolean = false,
+    ) {
         val database = databaseProvider.database()
-        // Membership rebuild is atomic: a partial failure leaves the prior
-        // membership rather than a half-written deck.
         database.transaction {
+            val memberships = mutableListOf<Pair<String, Int>>()
+            deck.cards.forEach { card ->
+                val sense = card.sense.toDomain()
+                if (!sense.isConfirmable()) {
+                    logger.warn {
+                        "Service card ${card.id} dropped: no confirmable sense (needs a translation and an example)"
+                    }
+                    return@forEach
+                }
+                val stored =
+                    senseWriteRepository.upsert(
+                        sense = sense,
+                        status = SenseStatus.Confirmed,
+                        origin = SenseOrigin.Service,
+                        sourceRef = card.id,
+                        intent = WriteIntent.ResolveOrMint,
+                    )
+                srsStorage.saveCardIfAbsent(SrsCardFactory.newCard(SrsCardId(stored.id.value)))
+                // Position off the kept list, not the source index: a dropped card
+                // must not leave a gap in the deck's membership positions.
+                memberships += stored.id.value to memberships.size
+            }
             database.catalogEntityQueries.upsertDeckMeta(
                 deck.id,
                 deck.title,
@@ -124,6 +128,9 @@ public class CatalogLocalDataSource(
                     sense_id = senseId,
                     position = position.toLong(),
                 )
+            }
+            if (subscribe) {
+                database.catalogEntityQueries.setDeckSubscribed(subscribed = 1L, id = deck.id)
             }
         }
     }

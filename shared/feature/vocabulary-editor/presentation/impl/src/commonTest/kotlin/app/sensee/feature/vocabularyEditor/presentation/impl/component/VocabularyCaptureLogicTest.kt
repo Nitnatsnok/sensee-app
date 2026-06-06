@@ -3,6 +3,7 @@ package app.sensee.feature.vocabularyEditor.presentation.impl.component
 import app.sensee.ai.core.contract.AiEnrichmentClient
 import app.sensee.ai.core.contract.EnrichmentAvailability
 import app.sensee.ai.core.contract.EnrichmentResult
+import app.sensee.ai.core.model.EnrichmentExample
 import app.sensee.ai.core.model.EnrichmentSuggestion
 import app.sensee.ai.core.model.GrammarTagHint
 import app.sensee.ai.core.request.EnrichmentRequest
@@ -34,6 +35,7 @@ import app.sensee.lexicon.domain.SimilarSense
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.lexicon.domain.WriteIntent
 import app.sensee.lexicon.domain.deriveLemmaKey
+import app.sensee.lexicon.domain.requireConfirmable
 import app.sensee.verification.core.contract.ExampleCheckRequest
 import app.sensee.verification.core.contract.ExampleCheckResult
 import app.sensee.verification.core.contract.ExampleQualityChecker
@@ -44,6 +46,7 @@ import app.sensee.verification.core.contract.VerifierAvailability
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -77,8 +80,12 @@ class VocabularyCaptureLogicTest {
             )
         }
 
-        override suspend fun confirmAll(senses: List<Sense>): List<StoredSense> =
-            senses.map { upsert(it, SenseStatus.Confirmed, SenseOrigin.Personal) }
+        override suspend fun confirmAll(senses: List<Sense>): List<StoredSense> {
+            // Faithful to the real store: the confirm-gate rejects a non-confirmable
+            // sense, so a regression that lets one through fails here, not silently.
+            senses.forEach { it.requireConfirmable() }
+            return senses.map { upsert(it, SenseStatus.Confirmed, SenseOrigin.Personal) }
+        }
     }
 
     // Records embedded senses; an embedding failure must never fail the confirm.
@@ -154,7 +161,13 @@ class VocabularyCaptureLogicTest {
         FakeAi(
             EnrichmentResult(
                 availability = EnrichmentAvailability.Available,
-                suggestions = translations.map { EnrichmentSuggestion(translation = it) },
+                suggestions =
+                    translations.map {
+                        EnrichmentSuggestion(
+                            translation = it,
+                            examples = listOf(EnrichmentExample(sentence = "I [[$it]] it.")),
+                        )
+                    },
             ),
         )
 
@@ -232,7 +245,7 @@ class VocabularyCaptureLogicTest {
         logic.suggest(term = "come across")
 
         logic.toggleCandidate(logic.candidateContentKey(0))
-        logic.addManual("  свой смысл  ")
+        logic.addManual("  свой смысл  ", example = "I use свой смысл here.")
         logic.confirmSelected()
 
         assertEquals(listOf("наткнуться", "свой смысл"), repo.upserted.map { it.translation })
@@ -247,7 +260,7 @@ class VocabularyCaptureLogicTest {
         logic.toggleCandidate(logic.candidateContentKey(0))
         // Same surface form (capture fallback term) + translation as the
         // candidate → same content key, so confirm must persist it once.
-        logic.addManual(translation = "дубль", surfaceForm = "come across")
+        logic.addManual(translation = "дубль", surfaceForm = "come across", example = "I see дубль here.")
         logic.confirmSelected()
 
         assertEquals(listOf("дубль"), repo.upserted.map { it.translation })
@@ -287,6 +300,7 @@ class VocabularyCaptureLogicTest {
                         listOf(
                             EnrichmentSuggestion(
                                 translation = "кошки",
+                                examples = listOf(EnrichmentExample(sentence = "The [[кошки]] sleep.")),
                                 grammarTags =
                                     listOf(
                                         GrammarTagHint("number", "plural"),
@@ -331,16 +345,17 @@ class VocabularyCaptureLogicTest {
     }
 
     @Test
-    fun `a manual sense still confirms when the assistant is unavailable`() {
+    fun `a manual sense with an example confirms even when the assistant is unavailable`() {
         val repo = FakeSenseWriteRepository()
         val unavailableAi =
             FakeAi(EnrichmentResult(availability = EnrichmentAvailability.Unavailable("no key")))
         val logic = logic(unavailableAi, repo)
         logic.suggest(term = "come across")
 
-        logic.addManual("ручной смысл")
+        logic.addManual("ручной смысл", example = "I use ручной смысл every day.")
         logic.completeManualWithAssistant(manualIndex = 0)
 
+        // The assistant is unavailable, but the typed example keeps the sense confirmable.
         val failed =
             logic.uiState.value.manualSenses
                 .single()
@@ -349,7 +364,20 @@ class VocabularyCaptureLogicTest {
         logic.confirmSelected()
 
         assertEquals(listOf("ручной смысл"), repo.upserted.map { it.translation })
-        assertTrue(repo.upserted.single().surfaceForm == null)
+        assertTrue(repo.upserted.single().surfaceForm == null, "a manual sense given no surface form keeps it null")
+    }
+
+    @Test
+    fun `a manual sense without an example is not confirmable`() {
+        val repo = FakeSenseWriteRepository()
+        val logic = logic(availableAi(), repo)
+        logic.suggest(term = "come across")
+
+        logic.addManual("ручной смысл")
+        logic.confirmSelected()
+
+        assertFalse(logic.uiState.value.canConfirm, "a thin manual sense with no example is not confirmable")
+        assertTrue(repo.upserted.isEmpty(), "the non-confirmable manual sense is held back, not written")
     }
 
     @Test
@@ -373,6 +401,7 @@ class VocabularyCaptureLogicTest {
             translation = "  наткнуться  ",
             surfaceForm = "come across [as]",
             unitType = GrammarUnitType.PhrasalVerb,
+            example = "I [[came across]] it.",
         )
         logic.confirmSelected()
 
@@ -400,11 +429,11 @@ class VocabularyCaptureLogicTest {
     }
 
     @Test
-    fun `a completed manual sense with no suggestion picked confirms the thin draft`() {
+    fun `a completed manual sense with no suggestion picked confirms the manual sense`() {
         val repo = FakeSenseWriteRepository()
         val logic = logic(availableAi("enriched sense"), repo)
         logic.suggest(term = "come across")
-        logic.addManual("мой черновик")
+        logic.addManual("мой черновик", example = "это мой черновик example.")
         logic.completeManualWithAssistant(manualIndex = 0)
 
         logic.confirmSelected()

@@ -26,7 +26,8 @@ import dev.zacsweers.metro.SingleIn
  *
  * [embed] is best-effort and never throws for a provider miss (the client
  * returns `null` rather than throwing); the caller fires it after the sense row
- * has committed, so embedding never blocks or fails a save. [findSimilar] gates
+ * has committed and within a bounded budget, so embedding never fails a save and
+ * never blocks its round-trip. [findSimilar] gates
  * candidates to the query's `(modelRef, dim)` and resolves survivors through the
  * read repository, so an embedding whose sense row is gone is simply skipped.
  */

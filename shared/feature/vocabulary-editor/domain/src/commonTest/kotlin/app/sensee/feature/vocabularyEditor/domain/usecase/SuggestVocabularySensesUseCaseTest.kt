@@ -92,7 +92,13 @@ class SuggestVocabularySensesUseCaseTest {
     private fun available(vararg translations: String) =
         EnrichmentResult(
             availability = EnrichmentAvailability.Available,
-            suggestions = translations.map { EnrichmentSuggestion(translation = it) },
+            suggestions =
+                translations.map {
+                    EnrichmentSuggestion(
+                        translation = it,
+                        examples = listOf(EnrichmentExample(sentence = "I [[$it]] it.")),
+                    )
+                },
         )
 
     private fun useCase(
@@ -117,6 +123,33 @@ class SuggestVocabularySensesUseCaseTest {
                 result.senses.map { it.translation },
             )
             assertEquals(EnrichmentAvailability.Available, result.availability)
+        }
+
+    @Test
+    fun `a suggestion the provider returns with no example is dropped`() =
+        runTest {
+            val ai =
+                FakeAi(
+                    EnrichmentResult(
+                        availability = EnrichmentAvailability.Available,
+                        suggestions =
+                            listOf(
+                                EnrichmentSuggestion(
+                                    translation = "наткнуться",
+                                    examples = listOf(EnrichmentExample(sentence = "I [[came across]] it.")),
+                                ),
+                                EnrichmentSuggestion(translation = "без примера"),
+                            ),
+                    ),
+                )
+
+            val senses = useCase(ai)(term = "come across").senses
+
+            assertEquals(
+                listOf("наткнуться"),
+                senses.map { it.translation },
+                "an example-less suggestion never becomes a selectable candidate",
+            )
         }
 
     @Test

@@ -57,6 +57,25 @@ internal fun LazyListScope.manualSurfaceFormItem(
     }
 }
 
+internal fun LazyListScope.manualExampleItem(
+    formState: VocabularyCaptureFormState,
+    textProvider: TextProvider,
+    layoutMetrics: SenseeAdaptiveLayoutMetrics,
+) {
+    item {
+        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
+            SenseeTextField(
+                state = formState.manualExample,
+                accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.ManualExampleLabel),
+                label = { Text(textProvider.text(VocabularyCaptureTextKeys.ManualExampleLabel)) },
+                placeholder = {
+                    Text(textProvider.text(VocabularyCaptureTextKeys.ManualExamplePlaceholder))
+                },
+            )
+        }
+    }
+}
+
 internal fun LazyListScope.manualUnitTypeItem(
     uiState: VocabularyCaptureUiState,
     formState: VocabularyCaptureFormState,
@@ -92,6 +111,7 @@ internal fun LazyListScope.manualAddButtonItem(
                             translation = formState.manualTranslation.text.toString(),
                             surfaceForm = formState.manualSurfaceForm.text.toString(),
                             unitType = formState.manualUnitType,
+                            example = formState.manualExample.text.toString(),
                         ),
                     )
                     formState.resetManual()

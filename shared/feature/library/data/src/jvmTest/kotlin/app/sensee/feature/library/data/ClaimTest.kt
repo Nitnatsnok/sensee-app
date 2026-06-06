@@ -27,12 +27,14 @@ import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.fsrs.FsrsParameters
 import app.sensee.srs.testKit.InMemorySrsStorage
 import app.sensee.srs.testKit.SrsTestCards
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import java.util.Properties
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -56,11 +58,13 @@ class ClaimTest {
     // path (the caller must swallow the error).
     private class RecordingEmbeddingPort(
         private val failing: Boolean = false,
+        private val delayMs: Long = 0,
     ) : EmbeddingPort {
         val embedded: MutableList<SenseId> = mutableListOf()
 
         override suspend fun embed(stored: StoredSense): EmbeddingVector? {
             if (failing) error("embedding store offline")
+            if (delayMs > 0) delay(delayMs)
             embedded += stored.id
             return EmbeddingVector(floatArrayOf(1f, 0f), "test-model")
         }
@@ -193,5 +197,23 @@ class ClaimTest {
                 fixture.senseRepository.getById(SenseId(claimed.value))?.origin,
                 "the copy is committed even though embedding failed (best-effort, post-commit)",
             )
+        }
+
+    @Test
+    fun `a slow embedding does not block the claim past the eager budget`() =
+        runTest {
+            val fixture = Fixture(RecordingEmbeddingPort(delayMs = EmbeddingPort.EAGER_EMBED_BUDGET_MS * 10))
+            val service = fixture.upsertService("card-x")
+
+            val claimed = fixture.claim.claim(CardId(service.id.value))
+
+            assertEquals(
+                SenseOrigin.Personal,
+                fixture.senseRepository.getById(SenseId(claimed.value))?.origin,
+                "the copy is committed even though the embed overran its budget",
+            )
+            // The embed overran the budget and was abandoned: without the budget it would
+            // have run to completion and recorded the id (so this fails if the budget is dropped).
+            assertTrue(fixture.embedding.embedded.isEmpty(), "the slow embed is abandoned, left for a later backfill")
         }
 }

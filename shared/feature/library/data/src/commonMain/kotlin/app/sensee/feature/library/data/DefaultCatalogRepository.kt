@@ -54,6 +54,15 @@ public class DefaultCatalogRepository(
         }
     }
 
+    /**
+     * Subscribe to a Service deck: fetch it from remote (outside any transaction),
+     * then ingest its senses/SRS/membership and flip the subscribed flag in ONE
+     * transaction, so adopting commits atomically.
+     */
+    public suspend fun subscribeDeck(deckId: DeckId) {
+        localDataSource.ingestDeck(remoteDataSource.getDeck(deckId.value), subscribe = true)
+    }
+
     override suspend fun loadCard(cardId: CardId): Card =
         requireNotNull(localDataSource.selectCard(cardId.value)) {
             "Card $cardId not found in local store"

@@ -19,6 +19,7 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metro.binding
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * The `claim` orchestrator (ADR-002). It spans three owners — a lexicon content
@@ -33,8 +34,9 @@ import dev.zacsweers.metro.binding
  * deck surfaces it; claiming into a named Personal deck is editing-UX (EB-9).
  *
  * Claiming takes ownership, so the copy is embedded best-effort after the
- * transaction commits (ADR-008: embedding follows ownership — a subscribed Service
- * mirror is not embedded). A provider miss never fails the claim.
+ * transaction commits, within a bounded budget (ADR-008: embedding follows
+ * ownership — a subscribed Service mirror is not embedded). A provider miss or
+ * budget overrun never fails or blocks the claim.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(
@@ -74,12 +76,17 @@ public class DefaultClaimRepository(
                 copy
             }
         // Embed the detached copy after the transaction commits and outside it
-        // (EmbeddingPort contract): coverage for the new Personal sense, best-effort
-        // so a provider miss or storage error never fails the claim.
-        runCatchingCancellable { embeddingPort.embed(copy) }
-            .onFailure { failure ->
-                logger.warn(failure) { "Embedding claimed sense ${copy.id} failed; leaving it for a later backfill." }
-            }
+        // (EmbeddingPort contract), within a bounded budget: coverage for the new
+        // Personal sense, best-effort so a provider miss, storage error, or budget
+        // overrun never fails or blocks the claim.
+        withTimeoutOrNull(EmbeddingPort.EAGER_EMBED_BUDGET_MS) {
+            runCatchingCancellable { embeddingPort.embed(copy) }
+                .onFailure { failure ->
+                    logger.warn(failure) {
+                        "Embedding claimed sense ${copy.id} failed; leaving it for a later backfill."
+                    }
+                }
+        }
         return CardId(copy.id.value)
     }
 }
