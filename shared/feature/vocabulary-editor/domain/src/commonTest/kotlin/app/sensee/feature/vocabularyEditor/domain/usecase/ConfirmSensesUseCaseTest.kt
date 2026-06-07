@@ -79,8 +79,23 @@ class ConfirmSensesUseCaseTest {
             val confirmed = useCase(listOf(sense("a"), sense("b")))
 
             assertEquals(listOf("a", "b"), repo.confirmed.map { it.translation })
-            assertEquals(listOf(SenseId("sense-0"), SenseId("sense-1")), embeddingPort.embedded)
+            // Embeds run concurrently, so assert membership, not order.
+            assertEquals(setOf(SenseId("sense-0"), SenseId("sense-1")), embeddingPort.embedded.toSet())
             assertEquals(2, confirmed.size)
+        }
+
+    @Test
+    fun `it embeds the whole batch concurrently within one budget`() =
+        runTest {
+            val repo = FakeSenseWriteRepository()
+            // Each embed takes two thirds of the budget: three sequentially would
+            // overrun and abandon the rest, but one round of parallel calls fits.
+            val embeddingPort = FakeEmbeddingPort(delayMs = EmbeddingPort.EAGER_EMBED_BUDGET_MS * 2 / 3)
+            val useCase = ConfirmSensesUseCase(repo, embeddingPort, noOpAppDiagnostics())
+
+            useCase(listOf(sense("a"), sense("b"), sense("c")))
+
+            assertEquals(3, embeddingPort.embedded.size, "all senses embed when the calls run in parallel")
         }
 
     @Test

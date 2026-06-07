@@ -96,8 +96,10 @@ public interface EmbeddingPort {
         /**
          * Eager-embed-on-save ceiling. A confirm or claim embeds within this budget;
          * past it the sense is left "not embedded" for a later lazy backfill, so the
-         * save's round-trip never blocks on a slow provider.
+         * save's round-trip never blocks on a slow provider. A confirm batch embeds
+         * its senses concurrently, so the budget covers one round of parallel calls,
+         * not a per-sense sum.
          */
-        public const val EAGER_EMBED_BUDGET_MS: Long = 1_500L
+        public const val EAGER_EMBED_BUDGET_MS: Long = 5_000L
     }
 }

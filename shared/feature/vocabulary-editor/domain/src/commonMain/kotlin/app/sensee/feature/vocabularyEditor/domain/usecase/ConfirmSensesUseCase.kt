@@ -7,6 +7,8 @@ import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseWriteRepository
 import app.sensee.lexicon.domain.StoredSense
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
@@ -31,12 +33,21 @@ public class ConfirmSensesUseCase(
         val confirmed = senseWriteRepository.confirmAll(senses)
         // The durable batch is already committed; embed within a bounded budget so a
         // slow provider leaves senses for a later backfill instead of blocking confirm.
+        // Embed concurrently: a batch is N network calls, and one round of parallel
+        // calls fits the budget where a sequential loop would time out on the first
+        // cold request and abandon the rest.
         withTimeoutOrNull(EmbeddingPort.EAGER_EMBED_BUDGET_MS) {
-            confirmed.forEach { stored ->
-                runCatchingCancellable { embeddingPort.embed(stored) }
-                    .onFailure { failure ->
-                        logger.warn(failure) { "Embedding sense ${stored.id} failed; leaving it for a later backfill." }
+            coroutineScope {
+                confirmed.forEach { stored ->
+                    launch {
+                        runCatchingCancellable { embeddingPort.embed(stored) }
+                            .onFailure { failure ->
+                                logger.warn(failure) {
+                                    "Embedding sense ${stored.id} failed; leaving it for a later backfill."
+                                }
+                            }
                     }
+                }
             }
         }
         return confirmed
