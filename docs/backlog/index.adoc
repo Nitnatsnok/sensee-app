@@ -20,6 +20,7 @@
 | link:EB-9-personal-deck-editing-ux.adoc[EB-9] | Экраны создания/правки пользовательских наборов в Library (вкл. `claim` частей сервисного набора) | library
 | link:EB-11-section-scoped-enrichment.adoc[EB-11] | Посекционное обогащение `Sense` по требованию (`EnrichmentScope.Section`) | vocabulary
 | link:EB-12-edit-adopted-service-sense.adoc[EB-12] | Правка подписанного/Service-смысла = `claim` (завладеть) + правка: детач-копия, клон SRS | library
+| link:EB-13-ai-enrichment-latency-profiles.adoc[EB-13] | Профили скорости AI-enrichment: `Fast`/`Balanced`/`Quality`, каскад моделей, кэш и фоновая догрузка | ai
 |===
 
 == Обдумываемое

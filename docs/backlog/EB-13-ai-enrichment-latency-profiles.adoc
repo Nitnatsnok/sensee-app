@@ -1,0 +1,20 @@
+= EB-13: Профили скорости AI-enrichment
+:status: open
+:area: ai
+
+Триггер / что разблокирует::
+Текущий LLM-enrichment выполняется как один полный запрос к выбранной модели: `prompt`/`schema` уже
+ориентированы на качество, а каталог моделей ограничен коротким списком моделей для enrichment.
+Когда задержка ответа станет заметной в потоке захвата или ручного ввода, либо перед включением
+удалённого LLM как основного провайдера, нужно ввести управляемые профили скорости:
+`Fast` (минимальный смысл и один пример), `Balanced` (mini-модель по умолчанию + локальная проверка +
+эскалация на старшую модель только при низком качестве), `Quality` (полная схема и старшая модель).
+В этот же срез входят кэширование по нормализованному запросу и версии `prompt`/`schema`, ограничение
+дорогих секций вроде `contextualApplications.alignment`, а также фоновая догрузка расширенных
+секций после первичного результата.
+
+Связи::
+* Код: `LlmAiEnrichmentClient`, `RoutingAiEnrichmentClient`, `EnrichmentRequest`, `LlmConfig`
+* Код: `LlmModelCatalog` уже ограничивает выбор коротким списком моделей для enrichment
+* Сценарий: `docs/scenarios/vocabulary-capture.feature`, `docs/scenarios/profile.feature`
+* ADR: `docs/adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc`
