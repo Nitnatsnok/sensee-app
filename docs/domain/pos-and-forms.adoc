@@ -86,7 +86,7 @@ NOTE: Сокращения здесь — `lexicographic`-стиль (слова
 .4+|`pronoun_type` +
 (Тип местоимения)|`subjective`|`subj.`|subjective|именительный|`pronoun` — _I_, _he_, _they_
 |`objective`|`obj.`|objective|объектный|`pronoun` — _me_, _him_, _them_
-|`possessive_pronoun`|`poss.`|possessive|притяжательное|`pronoun` — _mine_, _yours_, _his_, _hers_, _ours_, _theirs_ (заменяют существительное; _my_, _your_, _their_ — это determiners, не pronouns)
+|`possessive_pronoun`|`poss.`|possessive|притяжательное|`pronoun` — _mine_, _yours_, _his_, _hers_, _ours_, _theirs_ (заменяют существительное; _my_, _your_, _their_ — это `determiner`, а не `pronoun`)
 |`reflexive`|`refl.`|reflexive|возвратное|`pronoun` — _myself_, _himself_, _themselves_
 
 .5+|`determiner_type` +

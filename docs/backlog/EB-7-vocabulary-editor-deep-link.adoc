@@ -11,7 +11,7 @@ Decompose-навигатора (стек/слот), поэтому секция 
 
 После растворения entry-агрегата (ADR-008) цель ссылки — `lemma_key`-группа слова
 (открыть все смыслы леммы), а не один смысл; не-подключённый `VocabularyEditorConfig.Editor`
-ещё несёт leftover-параметр `entryId`, который при реализации deep-link приводится к `lemma_key`.
+ещё несёт остаточный параметр `entryId`, который при реализации deep-link приводится к `lemma_key`.
 
 Связи::
 * Сценарий: `docs/scenarios/navigation.feature`

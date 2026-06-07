@@ -7,7 +7,7 @@ model {
   // External systems
 
   platform_services = external_system 'Platform Services' {
-    description 'Lifecycle, resources, settings, windowing, SQL drivers и прочие platform-specific capabilities.'
+    description 'Жизненный цикл, ресурсы, настройки, управление окнами, SQL-драйверы и прочие платформенные возможности.'
     technology 'OS / Runtime Services'
     link ../arc42/sections/03_context_and_scope.adoc
   }
