@@ -328,10 +328,10 @@
       "id": "agents_validate_agent_instructions_validationreport_error_count"
     },
     {
-      "label": "int",
+      "label": "Int",
       "file_type": "code",
-      "source_file": "scripts/agents/validate-agent-instructions.py",
-      "source_location": "L57",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L53",
       "community": 66,
       "norm_label": "int",
       "id": "int"
@@ -1790,7 +1790,7 @@
       "file_type": "code",
       "source_file": "apps/desktopApp/src/main/kotlin/app/sensee/desktop/WindowsWindowDecoration.kt",
       "source_location": "L57",
-      "community": 77,
+      "community": 430,
       "norm_label": "composewindow",
       "id": "composewindow"
     },
@@ -1799,7 +1799,7 @@
       "file_type": "code",
       "source_file": "apps/desktopApp/src/main/kotlin/app/sensee/desktop/WindowsWindowDecoration.kt",
       "source_location": "L71",
-      "community": 77,
+      "community": 430,
       "norm_label": "minimizewindow()",
       "id": "desktop_windowswindowdecoration_minimizewindow"
     },
@@ -1808,7 +1808,7 @@
       "file_type": "code",
       "source_file": "apps/desktopApp/src/main/kotlin/app/sensee/desktop/WindowsWindowDecoration.kt",
       "source_location": "L71",
-      "community": 77,
+      "community": 430,
       "norm_label": "windowstate",
       "id": "apps_desktopapp_src_main_kotlin_app_sensee_desktop_windowswindowdecoration_kt_windowstate"
     },
@@ -1943,7 +1943,7 @@
       "file_type": "code",
       "source_file": "apps/desktopApp/src/main/kotlin/app/sensee/desktop/WindowsWindowDecoration.kt",
       "source_location": "L118",
-      "community": 510,
+      "community": 77,
       "norm_label": "windowmargins",
       "id": "desktop_windowswindowdecoration_windowmargins"
     },
@@ -1952,7 +1952,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 510,
+      "community": 77,
       "norm_label": "structure",
       "id": "structure"
     },
@@ -2006,7 +2006,7 @@
       "file_type": "code",
       "source_file": "apps/desktopApp/src/main/kotlin/app/sensee/desktop/WindowsWindowDecoration.kt",
       "source_location": "L193",
-      "community": 510,
+      "community": 77,
       "norm_label": ".enableborderandshadow()",
       "id": "desktop_windowswindowdecoration_windowswindowprocedure_enableborderandshadow"
     },
@@ -2717,7 +2717,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/ComposeMultiplatformPlugin.kt",
       "source_location": "L89",
-      "community": 138,
+      "community": 22,
       "norm_label": "registerwithrootcomposestabilityaggregation()",
       "id": "gradle_composemultiplatformplugin_registerwithrootcomposestabilityaggregation"
     },
@@ -3401,7 +3401,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/dsl/ExtensionsDsl.kt",
       "source_location": "L99",
-      "community": 432,
+      "community": 269,
       "norm_label": "createnestedextension()",
       "id": "dsl_extensionsdsl_createnestedextension"
     },
@@ -3410,7 +3410,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/dsl/ExtensionsDsl.kt",
       "source_location": "L99",
-      "community": 432,
+      "community": 269,
       "norm_label": "string",
       "id": "gradle_plugins_plugin_src_main_kotlin_app_sensee_gradle_dsl_extensionsdsl_kt_string"
     },
@@ -3419,7 +3419,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/dsl/ExtensionsDsl.kt",
       "source_location": "L99",
-      "community": 432,
+      "community": 269,
       "norm_label": "array",
       "id": "gradle_plugins_plugin_src_main_kotlin_app_sensee_gradle_dsl_extensionsdsl_kt_array"
     },
@@ -3428,7 +3428,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/dsl/ExtensionsDsl.kt",
       "source_location": "L99",
-      "community": 432,
+      "community": 269,
       "norm_label": "any",
       "id": "gradle_plugins_plugin_src_main_kotlin_app_sensee_gradle_dsl_extensionsdsl_kt_any"
     },
@@ -3437,7 +3437,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/dsl/ExtensionsDsl.kt",
       "source_location": "L99",
-      "community": 432,
+      "community": 269,
       "norm_label": "t",
       "id": "gradle_plugins_plugin_src_main_kotlin_app_sensee_gradle_dsl_extensionsdsl_kt_t"
     },
@@ -3446,7 +3446,7 @@
       "file_type": "code",
       "source_file": "gradle-plugins/plugin/src/main/kotlin/app/sensee/gradle/dsl/ExtensionsDsl.kt",
       "source_location": "L116",
-      "community": 432,
+      "community": 261,
       "norm_label": "extensionaware",
       "id": "gradle_plugins_plugin_src_main_kotlin_app_sensee_gradle_dsl_extensionsdsl_kt_extensionaware"
     },
@@ -10052,7 +10052,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L53",
-      "community": 45,
+      "community": 244,
       "norm_label": ".observesettings()",
       "id": "integration_routingaienrichmentclienttest_fakesettings_observesettings"
     },
@@ -10061,7 +10061,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L53",
-      "community": 45,
+      "community": 244,
       "norm_label": "usersettingsscope",
       "id": "shared_ai_integration_src_jvmtest_kotlin_app_sensee_ai_integration_routingaienrichmentclienttest_kt_usersettingsscope"
     },
@@ -10070,7 +10070,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L53",
-      "community": 45,
+      "community": 244,
       "norm_label": "flow",
       "id": "shared_ai_integration_src_jvmtest_kotlin_app_sensee_ai_integration_routingaienrichmentclienttest_kt_flow"
     },
@@ -10079,7 +10079,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L53",
-      "community": 45,
+      "community": 244,
       "norm_label": "usersettingssnapshot",
       "id": "shared_ai_integration_src_jvmtest_kotlin_app_sensee_ai_integration_routingaienrichmentclienttest_kt_usersettingssnapshot"
     },
@@ -10088,7 +10088,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L55",
-      "community": 45,
+      "community": 244,
       "norm_label": ".readsettings()",
       "id": "integration_routingaienrichmentclienttest_fakesettings_readsettings"
     },
@@ -10097,7 +10097,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L57",
-      "community": 45,
+      "community": 244,
       "norm_label": ".updatesettings()",
       "id": "integration_routingaienrichmentclienttest_fakesettings_updatesettings"
     },
@@ -10106,7 +10106,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L63",
-      "community": 45,
+      "community": 244,
       "norm_label": "failingsettings",
       "id": "integration_routingaienrichmentclienttest_failingsettings"
     },
@@ -10115,7 +10115,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L64",
-      "community": 45,
+      "community": 244,
       "norm_label": ".observesettings()",
       "id": "integration_routingaienrichmentclienttest_failingsettings_observesettings"
     },
@@ -10124,7 +10124,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L67",
-      "community": 45,
+      "community": 244,
       "norm_label": ".readsettings()",
       "id": "integration_routingaienrichmentclienttest_failingsettings_readsettings"
     },
@@ -10133,7 +10133,7 @@
       "file_type": "code",
       "source_file": "shared/ai/integration/src/jvmTest/kotlin/app/sensee/ai/integration/RoutingAiEnrichmentClientTest.kt",
       "source_location": "L70",
-      "community": 45,
+      "community": 244,
       "norm_label": ".updatesettings()",
       "id": "integration_routingaienrichmentclienttest_failingsettings_updatesettings"
     },
@@ -10556,7 +10556,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L1",
-      "community": 4,
+      "community": 263,
       "norm_label": "llmmodelcatalog.kt",
       "id": "catalog_llmmodelcatalog"
     },
@@ -10565,7 +10565,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L25",
-      "community": 4,
+      "community": 263,
       "norm_label": "llmmodelcatalog",
       "id": "catalog_llmmodelcatalog_llmmodelcatalog"
     },
@@ -10583,7 +10583,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L28",
-      "community": 4,
+      "community": 263,
       "norm_label": ".verifykey()",
       "id": "catalog_llmmodelcatalog_llmmodelcatalog_verifykey"
     },
@@ -10592,7 +10592,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L28",
-      "community": 4,
+      "community": 263,
       "norm_label": "string",
       "id": "shared_ai_llm_src_commonmain_kotlin_app_sensee_ai_llm_catalog_llmmodelcatalog_kt_string"
     },
@@ -10610,7 +10610,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L53",
-      "community": 4,
+      "community": 263,
       "norm_label": ".reasonfor()",
       "id": "catalog_llmmodelcatalog_llmmodelcatalog_reasonfor"
     },
@@ -10628,7 +10628,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L60",
-      "community": 4,
+      "community": 263,
       "norm_label": ".ischatsuitable()",
       "id": "catalog_llmmodelcatalog_llmmodelcatalog_ischatsuitable"
     },
@@ -10637,7 +10637,7 @@
       "file_type": "code",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L60",
-      "community": 4,
+      "community": 263,
       "norm_label": "boolean",
       "id": "shared_ai_llm_src_commonmain_kotlin_app_sensee_ai_llm_catalog_llmmodelcatalog_kt_boolean"
     },
@@ -11356,7 +11356,7 @@
       "label": ".`non-chat models are filtered out of a valid listing`()",
       "file_type": "code",
       "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
-      "source_location": "L62",
+      "source_location": "L76",
       "community": 210,
       "norm_label": ".`non-chat models are filtered out of a valid listing`()",
       "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_non_chat_models_are_filtered_out_of_a_valid_listing"
@@ -11365,7 +11365,7 @@
       "label": ".`dated snapshots and superseded families are dropped while canonical aliases are kept`()",
       "file_type": "code",
       "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
-      "source_location": "L79",
+      "source_location": "L93",
       "community": 210,
       "norm_label": ".`dated snapshots and superseded families are dropped while canonical aliases are kept`()",
       "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_dated_snapshots_and_superseded_families_are_dropped_while_canonical_aliases_are_kept"
@@ -11374,7 +11374,7 @@
       "label": ".`a valid key with no chat model is still valid with an empty list`()",
       "file_type": "code",
       "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
-      "source_location": "L103",
+      "source_location": "L117",
       "community": 210,
       "norm_label": ".`a valid key with no chat model is still valid with an empty list`()",
       "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_with_no_chat_model_is_still_valid_with_an_empty_list"
@@ -11383,7 +11383,7 @@
       "label": ".`a rejected key reports an invalid reason`()",
       "file_type": "code",
       "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
-      "source_location": "L113",
+      "source_location": "L127",
       "community": 210,
       "norm_label": ".`a rejected key reports an invalid reason`()",
       "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_rejected_key_reports_an_invalid_reason"
@@ -11392,7 +11392,7 @@
       "label": ".`an unreachable provider is invalid rather than a crash`()",
       "file_type": "code",
       "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
-      "source_location": "L123",
+      "source_location": "L137",
       "community": 210,
       "norm_label": ".`an unreachable provider is invalid rather than a crash`()",
       "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_an_unreachable_provider_is_invalid_rather_than_a_crash"
@@ -11627,7 +11627,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/androidMain/kotlin/app/sensee/appShell/AndroidPlatformEnvironment.kt",
       "source_location": "L1",
-      "community": 241,
+      "community": 209,
       "norm_label": "androidplatformenvironment.kt",
       "id": "appshell_androidplatformenvironment"
     },
@@ -11636,7 +11636,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/androidMain/kotlin/app/sensee/appShell/AndroidPlatformEnvironment.kt",
       "source_location": "L8",
-      "community": 241,
+      "community": 209,
       "norm_label": "androidplatformenvironment",
       "id": "appshell_androidplatformenvironment_androidplatformenvironment"
     },
@@ -11654,7 +11654,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/androidMain/kotlin/app/sensee/appShell/AndroidPlatformEnvironment.kt",
       "source_location": "L11",
-      "community": 241,
+      "community": 209,
       "norm_label": "platform",
       "id": "shared_app_shell_src_androidmain_kotlin_app_sensee_appshell_androidplatformenvironment_kt_platform"
     },
@@ -11663,7 +11663,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/androidMain/kotlin/app/sensee/appShell/AndroidPlatformEnvironment.kt",
       "source_location": "L12",
-      "community": 241,
+      "community": 209,
       "norm_label": "platformcontext",
       "id": "shared_app_shell_src_androidmain_kotlin_app_sensee_appshell_androidplatformenvironment_kt_platformcontext"
     },
@@ -12392,7 +12392,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 154,
+      "community": 193,
       "norm_label": "navigationdispatcher",
       "id": "navigationdispatcher"
     },
@@ -12401,7 +12401,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 763,
+      "community": 237,
       "norm_label": "webnavigationowner",
       "id": "webnavigationowner"
     },
@@ -13067,7 +13067,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L1",
-      "community": 422,
+      "community": 241,
       "norm_label": "createapproot.kt",
       "id": "root_createapproot"
     },
@@ -13076,7 +13076,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L8",
-      "community": 422,
+      "community": 241,
       "norm_label": "createapproot()",
       "id": "root_createapproot_createapproot"
     },
@@ -13085,7 +13085,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L8",
-      "community": 422,
+      "community": 241,
       "norm_label": "componentcontext",
       "id": "shared_app_shell_src_commonmain_kotlin_app_sensee_appshell_root_createapproot_kt_componentcontext"
     },
@@ -13094,7 +13094,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L8",
-      "community": 422,
+      "community": 241,
       "norm_label": "platformenvironment",
       "id": "shared_app_shell_src_commonmain_kotlin_app_sensee_appshell_root_createapproot_kt_platformenvironment"
     },
@@ -13103,7 +13103,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L8",
-      "community": 422,
+      "community": 241,
       "norm_label": "string",
       "id": "shared_app_shell_src_commonmain_kotlin_app_sensee_appshell_root_createapproot_kt_string"
     },
@@ -13112,7 +13112,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L8",
-      "community": 422,
+      "community": 241,
       "norm_label": "databaseconfig",
       "id": "shared_app_shell_src_commonmain_kotlin_app_sensee_appshell_root_createapproot_kt_databaseconfig"
     },
@@ -13121,7 +13121,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonMain/kotlin/app/sensee/appShell/root/createAppRoot.kt",
       "source_location": "L8",
-      "community": 422,
+      "community": 241,
       "norm_label": "rootcomponent",
       "id": "shared_app_shell_src_commonmain_kotlin_app_sensee_appshell_root_createapproot_kt_rootcomponent"
     },
@@ -13373,7 +13373,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L1",
-      "community": 131,
+      "community": 1,
       "norm_label": "rootthememodetest.kt",
       "id": "root_rootthememodetest"
     },
@@ -13382,7 +13382,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L17",
-      "community": 131,
+      "community": 1,
       "norm_label": "rootthememodetest",
       "id": "root_rootthememodetest_rootthememodetest"
     },
@@ -13391,7 +13391,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L18",
-      "community": 131,
+      "community": 1,
       "norm_label": "fakesettings",
       "id": "root_rootthememodetest_fakesettings"
     },
@@ -13400,7 +13400,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L21",
-      "community": 131,
+      "community": 1,
       "norm_label": ".observesettings()",
       "id": "root_rootthememodetest_fakesettings_observesettings"
     },
@@ -13409,7 +13409,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L21",
-      "community": 131,
+      "community": 1,
       "norm_label": "usersettingsscope",
       "id": "shared_app_shell_src_commontest_kotlin_app_sensee_appshell_root_rootthememodetest_kt_usersettingsscope"
     },
@@ -13418,7 +13418,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L21",
-      "community": 131,
+      "community": 1,
       "norm_label": "flow",
       "id": "shared_app_shell_src_commontest_kotlin_app_sensee_appshell_root_rootthememodetest_kt_flow"
     },
@@ -13427,7 +13427,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L21",
-      "community": 131,
+      "community": 1,
       "norm_label": "usersettingssnapshot",
       "id": "shared_app_shell_src_commontest_kotlin_app_sensee_appshell_root_rootthememodetest_kt_usersettingssnapshot"
     },
@@ -13436,7 +13436,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L23",
-      "community": 131,
+      "community": 1,
       "norm_label": ".readsettings()",
       "id": "root_rootthememodetest_fakesettings_readsettings"
     },
@@ -13445,7 +13445,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L25",
-      "community": 131,
+      "community": 1,
       "norm_label": ".updatesettings()",
       "id": "root_rootthememodetest_fakesettings_updatesettings"
     },
@@ -13454,7 +13454,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L31",
-      "community": 131,
+      "community": 1,
       "norm_label": ".`settings theme mode drives root theme mode`()",
       "id": "root_rootthememodetest_rootthememodetest_settings_theme_mode_drives_root_theme_mode"
     },
@@ -13463,7 +13463,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L48",
-      "community": 131,
+      "community": 1,
       "norm_label": ".`haptic feedback enabled defaults to true`()",
       "id": "root_rootthememodetest_rootthememodetest_haptic_feedback_enabled_defaults_to_true"
     },
@@ -13472,7 +13472,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L56",
-      "community": 131,
+      "community": 1,
       "norm_label": ".`settings haptic preference drives root haptic flag and dedups`()",
       "id": "root_rootthememodetest_rootthememodetest_settings_haptic_preference_drives_root_haptic_flag_and_dedups"
     },
@@ -13481,7 +13481,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L72",
-      "community": 131,
+      "community": 1,
       "norm_label": "snapshot()",
       "id": "root_rootthememodetest_snapshot"
     },
@@ -13490,7 +13490,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L72",
-      "community": 131,
+      "community": 1,
       "norm_label": "appthememode",
       "id": "shared_app_shell_src_commontest_kotlin_app_sensee_appshell_root_rootthememodetest_kt_appthememode"
     },
@@ -13499,7 +13499,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L75",
-      "community": 131,
+      "community": 1,
       "norm_label": "hapticsnapshot()",
       "id": "root_rootthememodetest_hapticsnapshot"
     },
@@ -13508,7 +13508,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/commonTest/kotlin/app/sensee/appShell/root/RootThemeModeTest.kt",
       "source_location": "L75",
-      "community": 131,
+      "community": 1,
       "norm_label": "boolean",
       "id": "shared_app_shell_src_commontest_kotlin_app_sensee_appshell_root_rootthememodetest_kt_boolean"
     },
@@ -13760,7 +13760,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/webMain/kotlin/app/sensee/appShell/WebPlatformEnvironment.kt",
       "source_location": "L1",
-      "community": 209,
+      "community": 348,
       "norm_label": "webplatformenvironment.kt",
       "id": "appshell_webplatformenvironment"
     },
@@ -13769,7 +13769,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/webMain/kotlin/app/sensee/appShell/WebPlatformEnvironment.kt",
       "source_location": "L7",
-      "community": 209,
+      "community": 348,
       "norm_label": "webplatformenvironment",
       "id": "appshell_webplatformenvironment_webplatformenvironment"
     },
@@ -13778,7 +13778,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/webMain/kotlin/app/sensee/appShell/WebPlatformEnvironment.kt",
       "source_location": "L8",
-      "community": 209,
+      "community": 348,
       "norm_label": "platform",
       "id": "shared_app_shell_src_webmain_kotlin_app_sensee_appshell_webplatformenvironment_kt_platform"
     },
@@ -13787,7 +13787,7 @@
       "file_type": "code",
       "source_file": "shared/app-shell/src/webMain/kotlin/app/sensee/appShell/WebPlatformEnvironment.kt",
       "source_location": "L9",
-      "community": 209,
+      "community": 348,
       "norm_label": "platformcontext",
       "id": "shared_app_shell_src_webmain_kotlin_app_sensee_appshell_webplatformenvironment_kt_platformcontext"
     },
@@ -14300,7 +14300,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonMain/kotlin/app/sensee/core/coroutines/RunCatchingCancellable.kt",
       "source_location": "L1",
-      "community": 122,
+      "community": 412,
       "norm_label": "runcatchingcancellable.kt",
       "id": "coroutines_runcatchingcancellable"
     },
@@ -14309,7 +14309,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonMain/kotlin/app/sensee/core/coroutines/RunCatchingCancellable.kt",
       "source_location": "L10",
-      "community": 122,
+      "community": 412,
       "norm_label": "runcatchingcancellable()",
       "id": "coroutines_runcatchingcancellable_runcatchingcancellable"
     },
@@ -14318,7 +14318,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonMain/kotlin/app/sensee/core/coroutines/RunCatchingCancellable.kt",
       "source_location": "L10",
-      "community": 122,
+      "community": 412,
       "norm_label": "result",
       "id": "result"
     },
@@ -14327,7 +14327,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonMain/kotlin/app/sensee/core/coroutines/RunCatchingCancellable.kt",
       "source_location": "L10",
-      "community": 122,
+      "community": 412,
       "norm_label": "t",
       "id": "shared_core_coroutines_src_commonmain_kotlin_app_sensee_core_coroutines_runcatchingcancellable_kt_t"
     },
@@ -14336,7 +14336,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonTest/kotlin/app/sensee/core/coroutines/RunCatchingCancellableTest.kt",
       "source_location": "L1",
-      "community": 122,
+      "community": 412,
       "norm_label": "runcatchingcancellabletest.kt",
       "id": "coroutines_runcatchingcancellabletest"
     },
@@ -14345,7 +14345,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonTest/kotlin/app/sensee/core/coroutines/RunCatchingCancellableTest.kt",
       "source_location": "L9",
-      "community": 122,
+      "community": 412,
       "norm_label": "runcatchingcancellabletest",
       "id": "coroutines_runcatchingcancellabletest_runcatchingcancellabletest"
     },
@@ -14354,7 +14354,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonTest/kotlin/app/sensee/core/coroutines/RunCatchingCancellableTest.kt",
       "source_location": "L10",
-      "community": 122,
+      "community": 412,
       "norm_label": ".`returns success when block completes`()",
       "id": "coroutines_runcatchingcancellabletest_runcatchingcancellabletest_returns_success_when_block_completes"
     },
@@ -14363,7 +14363,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonTest/kotlin/app/sensee/core/coroutines/RunCatchingCancellableTest.kt",
       "source_location": "L17",
-      "community": 122,
+      "community": 412,
       "norm_label": ".`captures non cancellation failure`()",
       "id": "coroutines_runcatchingcancellabletest_runcatchingcancellabletest_captures_non_cancellation_failure"
     },
@@ -14372,7 +14372,7 @@
       "file_type": "code",
       "source_file": "shared/core/coroutines/src/commonTest/kotlin/app/sensee/core/coroutines/RunCatchingCancellableTest.kt",
       "source_location": "L26",
-      "community": 122,
+      "community": 412,
       "norm_label": ".`rethrows cancellation failure`()",
       "id": "coroutines_runcatchingcancellabletest_runcatchingcancellabletest_rethrows_cancellation_failure"
     },
@@ -15416,7 +15416,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/NoOpNavigationDispatcher.kt",
       "source_location": "L1",
-      "community": 499,
+      "community": 193,
       "norm_label": "noopnavigationdispatcher.kt",
       "id": "navigation_noopnavigationdispatcher"
     },
@@ -15425,7 +15425,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/NoOpNavigationDispatcher.kt",
       "source_location": "L3",
-      "community": 499,
+      "community": 193,
       "norm_label": "noopnavigationdispatcher",
       "id": "navigation_noopnavigationdispatcher_noopnavigationdispatcher"
     },
@@ -15434,7 +15434,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/NoOpNavigationDispatcher.kt",
       "source_location": "L4",
-      "community": 499,
+      "community": 193,
       "norm_label": ".open()",
       "id": "navigation_noopnavigationdispatcher_noopnavigationdispatcher_open"
     },
@@ -15443,7 +15443,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/NoOpNavigationDispatcher.kt",
       "source_location": "L4",
-      "community": 499,
+      "community": 193,
       "norm_label": "screenconfig",
       "id": "shared_core_decompose_src_commonmain_kotlin_app_sensee_core_decompose_navigation_noopnavigationdispatcher_kt_screenconfig"
     },
@@ -15452,7 +15452,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/NoOpNavigationDispatcher.kt",
       "source_location": "L4",
-      "community": 499,
+      "community": 193,
       "norm_label": "navigationrequeststatus",
       "id": "shared_core_decompose_src_commonmain_kotlin_app_sensee_core_decompose_navigation_noopnavigationdispatcher_kt_navigationrequeststatus"
     },
@@ -15461,7 +15461,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/NoOpNavigationDispatcher.kt",
       "source_location": "L9",
-      "community": 499,
+      "community": 193,
       "norm_label": ".back()",
       "id": "navigation_noopnavigationdispatcher_noopnavigationdispatcher_back"
     },
@@ -15821,7 +15821,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/StackNavigationExtensions.kt",
       "source_location": "L1",
-      "community": 331,
+      "community": 107,
       "norm_label": "stacknavigationextensions.kt",
       "id": "navigation_stacknavigationextensions"
     },
@@ -15830,7 +15830,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/StackNavigationExtensions.kt",
       "source_location": "L6",
-      "community": 331,
+      "community": 107,
       "norm_label": "pop()",
       "id": "navigation_stacknavigationextensions_pop"
     },
@@ -15839,7 +15839,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/StackNavigationExtensions.kt",
       "source_location": "L12",
-      "community": 331,
+      "community": 107,
       "norm_label": "tonavigationrequeststatus()",
       "id": "navigation_stacknavigationextensions_tonavigationrequeststatus"
     },
@@ -15848,7 +15848,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/navigation/StackNavigationExtensions.kt",
       "source_location": "L12",
-      "community": 331,
+      "community": 107,
       "norm_label": "navigationrequeststatus",
       "id": "shared_core_decompose_src_commonmain_kotlin_app_sensee_core_decompose_navigation_stacknavigationextensions_kt_navigationrequeststatus"
     },
@@ -16055,7 +16055,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/logic/BaseLogicTest.kt",
       "source_location": "L1",
-      "community": 572,
+      "community": 95,
       "norm_label": "baselogictest.kt",
       "id": "logic_baselogictest"
     },
@@ -16064,7 +16064,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/logic/BaseLogicTest.kt",
       "source_location": "L12",
-      "community": 572,
+      "community": 95,
       "norm_label": "baselogictest",
       "id": "logic_baselogictest_baselogictest"
     },
@@ -16073,7 +16073,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/logic/BaseLogicTest.kt",
       "source_location": "L13",
-      "community": 572,
+      "community": 95,
       "norm_label": ".`logic scope uses the main-immediate dispatcher from appdispatchers`()",
       "id": "logic_baselogictest_baselogictest_logic_scope_uses_the_main_immediate_dispatcher_from_appdispatchers"
     },
@@ -16082,7 +16082,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/logic/BaseLogicTest.kt",
       "source_location": "L26",
-      "community": 572,
+      "community": 95,
       "norm_label": "testlogic",
       "id": "logic_baselogictest_testlogic"
     },
@@ -16091,7 +16091,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/logic/BaseLogicTest.kt",
       "source_location": "L29",
-      "community": 572,
+      "community": 95,
       "norm_label": ".scopedispatcher()",
       "id": "logic_baselogictest_testlogic_scopedispatcher"
     },
@@ -16100,7 +16100,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/logic/BaseLogicTest.kt",
       "source_location": "L29",
-      "community": 572,
+      "community": 95,
       "norm_label": "coroutinedispatcher",
       "id": "coroutinedispatcher"
     },
@@ -16127,7 +16127,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/navigation/ChainedNavigationDispatcherTest.kt",
       "source_location": "L9",
-      "community": 119,
+      "community": 154,
       "norm_label": "someconfig",
       "id": "navigation_chainednavigationdispatchertest_someconfig"
     },
@@ -16271,7 +16271,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonTest/kotlin/app/sensee/core/decompose/navigation/NodeConfigTest.kt",
       "source_location": "L77",
-      "community": 215,
+      "community": 261,
       "norm_label": ".`replaceallnodes reuses matching nodes by composite key order`()",
       "id": "navigation_nodeconfigtest_nodeconfigtest_replaceallnodes_reuses_matching_nodes_by_composite_key_order"
     },
@@ -19052,7 +19052,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonMain/kotlin/app/sensee/core/presentation/DataLoadingState.kt",
       "source_location": "L46",
-      "community": 263,
+      "community": 89,
       "norm_label": "merge()",
       "id": "presentation_dataloadingstate_merge"
     },
@@ -19466,7 +19466,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L1",
-      "community": 263,
+      "community": 89,
       "norm_label": "dataloadingstatetest.kt",
       "id": "presentation_dataloadingstatetest"
     },
@@ -19475,7 +19475,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L8",
-      "community": 263,
+      "community": 89,
       "norm_label": "dataloadingstatetest",
       "id": "presentation_dataloadingstatetest_dataloadingstatetest"
     },
@@ -19484,7 +19484,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L9",
-      "community": 263,
+      "community": 89,
       "norm_label": ".`merge returns idle for empty input`()",
       "id": "presentation_dataloadingstatetest_dataloadingstatetest_merge_returns_idle_for_empty_input"
     },
@@ -19493,7 +19493,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L14",
-      "community": 263,
+      "community": 89,
       "norm_label": ".`merge prefers loading over idle`()",
       "id": "presentation_dataloadingstatetest_dataloadingstatetest_merge_prefers_loading_over_idle"
     },
@@ -19502,7 +19502,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L22",
-      "community": 263,
+      "community": 89,
       "norm_label": ".`merge prefers idle over success`()",
       "id": "presentation_dataloadingstatetest_dataloadingstatetest_merge_prefers_idle_over_success"
     },
@@ -19511,7 +19511,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L30",
-      "community": 263,
+      "community": 89,
       "norm_label": ".`merge prefers first error`()",
       "id": "presentation_dataloadingstatetest_dataloadingstatetest_merge_prefers_first_error"
     },
@@ -19520,7 +19520,7 @@
       "file_type": "code",
       "source_file": "shared/core/presentation/src/commonTest/kotlin/app/sensee/core/presentation/DataLoadingStateTest.kt",
       "source_location": "L41",
-      "community": 263,
+      "community": 89,
       "norm_label": ".`isidle returns true only for idle`()",
       "id": "presentation_dataloadingstatetest_dataloadingstatetest_isidle_returns_true_only_for_idle"
     },
@@ -19673,7 +19673,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 41,
+      "community": 168,
       "norm_label": "securestorage",
       "id": "securestorage"
     },
@@ -20060,7 +20060,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L1",
-      "community": 41,
+      "community": 56,
       "norm_label": "ioskeychainsecurestorage.kt",
       "id": "securestorage_ioskeychainsecurestorage"
     },
@@ -20069,7 +20069,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L64",
-      "community": 41,
+      "community": 56,
       "norm_label": "ioskeychainsecurestorage",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage"
     },
@@ -20078,7 +20078,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L68",
-      "community": 41,
+      "community": 56,
       "norm_label": ".read()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_read"
     },
@@ -20087,7 +20087,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L68",
-      "community": 41,
+      "community": 56,
       "norm_label": "securestoragekey",
       "id": "shared_core_secure_storage_src_iosmain_kotlin_app_sensee_core_securestorage_ioskeychainsecurestorage_kt_securestoragekey"
     },
@@ -20096,7 +20096,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L68",
-      "community": 41,
+      "community": 56,
       "norm_label": "string",
       "id": "shared_core_secure_storage_src_iosmain_kotlin_app_sensee_core_securestorage_ioskeychainsecurestorage_kt_string"
     },
@@ -20105,7 +20105,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L70",
-      "community": 41,
+      "community": 56,
       "norm_label": ".write()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_write"
     },
@@ -20114,7 +20114,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L79",
-      "community": 41,
+      "community": 56,
       "norm_label": ".readsync()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_readsync"
     },
@@ -20123,7 +20123,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L106",
-      "community": 41,
+      "community": 56,
       "norm_label": ".writesync()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_writesync"
     },
@@ -20132,7 +20132,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L151",
-      "community": 41,
+      "community": 56,
       "norm_label": ".insertsync()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_insertsync"
     },
@@ -20141,7 +20141,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L151",
-      "community": 41,
+      "community": 56,
       "norm_label": "cftyperef",
       "id": "cftyperef"
     },
@@ -20150,7 +20150,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L172",
-      "community": 41,
+      "community": 56,
       "norm_label": ".deletesync()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_deletesync"
     },
@@ -20159,7 +20159,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L187",
-      "community": 41,
+      "community": 56,
       "norm_label": ".basequery()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_basequery"
     },
@@ -20168,7 +20168,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L187",
-      "community": 41,
+      "community": 56,
       "norm_label": "cfmutabledictionaryref",
       "id": "cfmutabledictionaryref"
     },
@@ -20177,7 +20177,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L219",
-      "community": 41,
+      "community": 56,
       "norm_label": ".cfdatatostring()",
       "id": "securestorage_ioskeychainsecurestorage_ioskeychainsecurestorage_cfdatatostring"
     },
@@ -20186,7 +20186,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/IosKeychainSecureStorage.kt",
       "source_location": "L219",
-      "community": 41,
+      "community": 56,
       "norm_label": "cfdataref",
       "id": "cfdataref"
     },
@@ -20195,7 +20195,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/PlatformSecureStorage.ios.kt",
       "source_location": "L1",
-      "community": 41,
+      "community": 56,
       "norm_label": "platformsecurestorage.ios.kt",
       "id": "securestorage_platformsecurestorage_ios"
     },
@@ -20204,7 +20204,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/PlatformSecureStorage.ios.kt",
       "source_location": "L8",
-      "community": 41,
+      "community": 56,
       "norm_label": "platformsecurestorage()",
       "id": "securestorage_platformsecurestorage_ios_platformsecurestorage"
     },
@@ -20213,7 +20213,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/PlatformSecureStorage.ios.kt",
       "source_location": "L8",
-      "community": 41,
+      "community": 56,
       "norm_label": "platformenvironment",
       "id": "shared_core_secure_storage_src_iosmain_kotlin_app_sensee_core_securestorage_platformsecurestorage_ios_kt_platformenvironment"
     },
@@ -20222,7 +20222,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/PlatformSecureStorage.ios.kt",
       "source_location": "L8",
-      "community": 41,
+      "community": 56,
       "norm_label": "appdispatchers",
       "id": "shared_core_secure_storage_src_iosmain_kotlin_app_sensee_core_securestorage_platformsecurestorage_ios_kt_appdispatchers"
     },
@@ -20231,7 +20231,7 @@
       "file_type": "code",
       "source_file": "shared/core/secure-storage/src/iosMain/kotlin/app/sensee/core/secureStorage/PlatformSecureStorage.ios.kt",
       "source_location": "L8",
-      "community": 41,
+      "community": 56,
       "norm_label": "securestorage",
       "id": "shared_core_secure_storage_src_iosmain_kotlin_app_sensee_core_securestorage_platformsecurestorage_ios_kt_securestorage"
     },
@@ -20753,7 +20753,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L1",
-      "community": 125,
+      "community": 61,
       "norm_label": "logictestharness.kt",
       "id": "testkit_logictestharness"
     },
@@ -20762,7 +20762,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L20",
-      "community": 125,
+      "community": 61,
       "norm_label": "immediatemaindispatcher",
       "id": "testkit_logictestharness_immediatemaindispatcher"
     },
@@ -20771,7 +20771,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 125,
+      "community": 61,
       "norm_label": "maincoroutinedispatcher",
       "id": "maincoroutinedispatcher"
     },
@@ -20780,7 +20780,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L23",
-      "community": 125,
+      "community": 61,
       "norm_label": ".dispatch()",
       "id": "testkit_logictestharness_immediatemaindispatcher_dispatch"
     },
@@ -20789,7 +20789,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L23",
-      "community": 125,
+      "community": 61,
       "norm_label": "coroutinecontext",
       "id": "shared_core_test_kit_src_commonmain_kotlin_app_sensee_core_testkit_logictestharness_kt_coroutinecontext"
     },
@@ -20798,7 +20798,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L23",
-      "community": 125,
+      "community": 61,
       "norm_label": "runnable",
       "id": "runnable"
     },
@@ -20807,7 +20807,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L32",
-      "community": 125,
+      "community": 61,
       "norm_label": "immediateappdispatchers()",
       "id": "testkit_logictestharness_immediateappdispatchers"
     },
@@ -20816,7 +20816,7 @@
       "file_type": "code",
       "source_file": "shared/core/test-kit/src/commonMain/kotlin/app/sensee/core/testKit/LogicTestHarness.kt",
       "source_location": "L32",
-      "community": 125,
+      "community": 61,
       "norm_label": "appdispatchers",
       "id": "shared_core_test_kit_src_commonmain_kotlin_app_sensee_core_testkit_logictestharness_kt_appdispatchers"
     },
@@ -23345,7 +23345,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L1",
-      "community": 288,
+      "community": 193,
       "norm_label": "homesectioncomponent.kt",
       "id": "api_homesectioncomponent"
     },
@@ -23354,7 +23354,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L12",
-      "community": 288,
+      "community": 193,
       "norm_label": "homesectioncomponent",
       "id": "api_homesectioncomponent_homesectioncomponent"
     },
@@ -23363,7 +23363,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L16",
-      "community": 288,
+      "community": 193,
       "norm_label": "value",
       "id": "shared_feature_home_presentation_api_src_commonmain_kotlin_app_sensee_feature_home_presentation_api_homesectioncomponent_kt_value"
     },
@@ -23372,7 +23372,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L16",
-      "community": 288,
+      "community": 193,
       "norm_label": "childstack",
       "id": "shared_feature_home_presentation_api_src_commonmain_kotlin_app_sensee_feature_home_presentation_api_homesectioncomponent_kt_childstack"
     },
@@ -23381,7 +23381,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L16",
-      "community": 288,
+      "community": 193,
       "norm_label": "screenconfig",
       "id": "shared_feature_home_presentation_api_src_commonmain_kotlin_app_sensee_feature_home_presentation_api_homesectioncomponent_kt_screenconfig"
     },
@@ -23390,7 +23390,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L18",
-      "community": 288,
+      "community": 193,
       "norm_label": "factory",
       "id": "api_homesectioncomponent_factory"
     },
@@ -23399,7 +23399,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L19",
-      "community": 288,
+      "community": 193,
       "norm_label": ".create()",
       "id": "api_homesectioncomponent_factory_create"
     },
@@ -23408,7 +23408,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L19",
-      "community": 288,
+      "community": 193,
       "norm_label": "appcomponentcontext",
       "id": "shared_feature_home_presentation_api_src_commonmain_kotlin_app_sensee_feature_home_presentation_api_homesectioncomponent_kt_appcomponentcontext"
     },
@@ -23417,7 +23417,7 @@
       "file_type": "code",
       "source_file": "shared/feature/home/presentation/api/src/commonMain/kotlin/app/sensee/feature/home/presentation/api/HomeSectionComponent.kt",
       "source_location": "L19",
-      "community": 288,
+      "community": 193,
       "norm_label": "homeconfig",
       "id": "homeconfig"
     },
@@ -25316,7 +25316,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 316,
+      "community": 133,
       "norm_label": "senseedatabaseprovider",
       "id": "senseedatabaseprovider"
     },
@@ -28808,7 +28808,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L1",
-      "community": 763,
+      "community": 237,
       "norm_label": "practicesectioncomponent.kt",
       "id": "api_practicesectioncomponent"
     },
@@ -28817,7 +28817,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L14",
-      "community": 763,
+      "community": 237,
       "norm_label": "practicesectioncomponent",
       "id": "api_practicesectioncomponent_practicesectioncomponent"
     },
@@ -28826,7 +28826,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L20",
-      "community": 763,
+      "community": 237,
       "norm_label": "value",
       "id": "shared_feature_practice_presentation_api_src_commonmain_kotlin_app_sensee_feature_practice_presentation_api_practicesectioncomponent_kt_value"
     },
@@ -28835,7 +28835,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L20",
-      "community": 763,
+      "community": 237,
       "norm_label": "childstack",
       "id": "shared_feature_practice_presentation_api_src_commonmain_kotlin_app_sensee_feature_practice_presentation_api_practicesectioncomponent_kt_childstack"
     },
@@ -28844,7 +28844,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L20",
-      "community": 763,
+      "community": 237,
       "norm_label": "screenconfig",
       "id": "shared_feature_practice_presentation_api_src_commonmain_kotlin_app_sensee_feature_practice_presentation_api_practicesectioncomponent_kt_screenconfig"
     },
@@ -28853,7 +28853,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L22",
-      "community": 763,
+      "community": 237,
       "norm_label": "factory",
       "id": "api_practicesectioncomponent_factory"
     },
@@ -28862,7 +28862,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L23",
-      "community": 763,
+      "community": 237,
       "norm_label": ".create()",
       "id": "api_practicesectioncomponent_factory_create"
     },
@@ -28871,7 +28871,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L23",
-      "community": 763,
+      "community": 237,
       "norm_label": "appcomponentcontext",
       "id": "shared_feature_practice_presentation_api_src_commonmain_kotlin_app_sensee_feature_practice_presentation_api_practicesectioncomponent_kt_appcomponentcontext"
     },
@@ -28880,7 +28880,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/api/src/commonMain/kotlin/app/sensee/feature/practice/presentation/api/PracticeSectionComponent.kt",
       "source_location": "L23",
-      "community": 763,
+      "community": 237,
       "norm_label": "practiceconfig",
       "id": "shared_feature_practice_presentation_api_src_commonmain_kotlin_app_sensee_feature_practice_presentation_api_practicesectioncomponent_kt_practiceconfig"
     },
@@ -29042,7 +29042,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContent.kt",
       "source_location": "L316",
-      "community": 283,
+      "community": 68,
       "norm_label": "speakableslottextconstraints()",
       "id": "deck_deckpracticecardcontent_speakableslottextconstraints"
     },
@@ -29051,7 +29051,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContent.kt",
       "source_location": "L316",
-      "community": 283,
+      "community": 68,
       "norm_label": "constraints",
       "id": "constraints"
     },
@@ -29060,7 +29060,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContent.kt",
       "source_location": "L316",
-      "community": 283,
+      "community": 68,
       "norm_label": "int",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticecardcontent_kt_int"
     },
@@ -29348,7 +29348,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L1",
-      "community": 61,
+      "community": 484,
       "norm_label": "deckpracticelogic.kt",
       "id": "deck_deckpracticelogic"
     },
@@ -29366,7 +29366,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L44",
-      "community": 61,
+      "community": 484,
       "norm_label": "factory",
       "id": "deck_deckpracticelogic_factory"
     },
@@ -29375,7 +29375,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L46",
-      "community": 61,
+      "community": 484,
       "norm_label": ".create()",
       "id": "deck_deckpracticelogic_factory_create"
     },
@@ -29384,7 +29384,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L46",
-      "community": 61,
+      "community": 484,
       "norm_label": "string",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticelogic_kt_string"
     },
@@ -29456,7 +29456,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L142",
-      "community": 61,
+      "community": 484,
       "norm_label": ".submitreview()",
       "id": "deck_deckpracticelogic_deckpracticelogic_submitreview"
     },
@@ -29465,7 +29465,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L142",
-      "community": 61,
+      "community": 484,
       "norm_label": "deckpracticeratingaction",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticelogic_kt_deckpracticeratingaction"
     },
@@ -29537,7 +29537,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L238",
-      "community": 61,
+      "community": 484,
       "norm_label": ".reportreviewfailure()",
       "id": "deck_deckpracticelogic_deckpracticelogic_reportreviewfailure"
     },
@@ -29546,7 +29546,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L238",
-      "community": 61,
+      "community": 484,
       "norm_label": "throwable",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticelogic_kt_throwable"
     },
@@ -29564,7 +29564,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L276",
-      "community": 61,
+      "community": 484,
       "norm_label": "toreviewrating()",
       "id": "deck_deckpracticelogic_toreviewrating"
     },
@@ -29573,7 +29573,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L276",
-      "community": 61,
+      "community": 484,
       "norm_label": "reviewrating",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticelogic_kt_reviewrating"
     },
@@ -29582,7 +29582,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L285",
-      "community": 61,
+      "community": 484,
       "norm_label": "initiallabelsstate()",
       "id": "deck_deckpracticelogic_initiallabelsstate"
     },
@@ -29591,7 +29591,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L285",
-      "community": 61,
+      "community": 484,
       "norm_label": "grammarlabels",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticelogic_kt_grammarlabels"
     },
@@ -29600,7 +29600,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeLogic.kt",
       "source_location": "L285",
-      "community": 61,
+      "community": 484,
       "norm_label": "dataloadingstate",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticelogic_kt_dataloadingstate"
     },
@@ -29708,7 +29708,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L1",
-      "community": 104,
+      "community": 101,
       "norm_label": "deckpracticeratingbar.kt",
       "id": "deck_deckpracticeratingbar"
     },
@@ -29717,7 +29717,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L36",
-      "community": 104,
+      "community": 101,
       "norm_label": "practiceratingrow()",
       "id": "deck_deckpracticeratingbar_practiceratingrow"
     },
@@ -29726,7 +29726,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L36",
-      "community": 104,
+      "community": 101,
       "norm_label": "boolean",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticeratingbar_kt_boolean"
     },
@@ -29735,7 +29735,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L36",
-      "community": 104,
+      "community": 101,
       "norm_label": "textprovider",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticeratingbar_kt_textprovider"
     },
@@ -29744,7 +29744,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L36",
-      "community": 104,
+      "community": 101,
       "norm_label": "modifier",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticeratingbar_kt_modifier"
     },
@@ -29753,7 +29753,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L91",
-      "community": 104,
+      "community": 101,
       "norm_label": "revealmeaningbutton()",
       "id": "deck_deckpracticeratingbar_revealmeaningbutton"
     },
@@ -29762,7 +29762,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L119",
-      "community": 104,
+      "community": 101,
       "norm_label": "practicedecksize",
       "id": "deck_deckpracticeratingbar_practicedecksize"
     },
@@ -29771,7 +29771,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L120",
-      "community": 104,
+      "community": 101,
       "norm_label": "float",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticeratingbar_kt_float"
     },
@@ -29780,7 +29780,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L122",
-      "community": 104,
+      "community": 101,
       "norm_label": "dp",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticeratingbar_kt_dp"
     },
@@ -29789,7 +29789,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L132",
-      "community": 104,
+      "community": 101,
       "norm_label": "torating()",
       "id": "deck_deckpracticeratingbar_torating"
     },
@@ -29798,7 +29798,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeRatingBar.kt",
       "source_location": "L132",
-      "community": 104,
+      "community": 101,
       "norm_label": "deckpracticeratingaction",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_deck_deckpracticeratingbar_kt_deckpracticeratingaction"
     },
@@ -31112,7 +31112,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L1",
-      "community": 199,
+      "community": 98,
       "norm_label": "practicehomescreen.kt",
       "id": "home_practicehomescreen"
     },
@@ -31121,7 +31121,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L38",
-      "community": 199,
+      "community": 98,
       "norm_label": "practicehomescreen()",
       "id": "home_practicehomescreen_practicehomescreen"
     },
@@ -31130,7 +31130,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L38",
-      "community": 199,
+      "community": 98,
       "norm_label": "practicehomecomponent",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_home_practicehomescreen_kt_practicehomecomponent"
     },
@@ -31139,7 +31139,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L38",
-      "community": 199,
+      "community": 98,
       "norm_label": "modifier",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_home_practicehomescreen_kt_modifier"
     },
@@ -31148,7 +31148,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L38",
-      "community": 199,
+      "community": 98,
       "norm_label": "textprovider",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_home_practicehomescreen_kt_textprovider"
     },
@@ -31157,7 +31157,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L54",
-      "community": 199,
+      "community": 98,
       "norm_label": "practicehomecontent()",
       "id": "home_practicehomescreen_practicehomecontent"
     },
@@ -31166,7 +31166,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L54",
-      "community": 199,
+      "community": 98,
       "norm_label": "practicehomeuistate",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_home_practicehomescreen_kt_practicehomeuistate"
     },
@@ -31175,7 +31175,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L100",
-      "community": 199,
+      "community": 98,
       "norm_label": "practicehomelist()",
       "id": "home_practicehomescreen_practicehomelist"
     },
@@ -31184,7 +31184,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L100",
-      "community": 199,
+      "community": 98,
       "norm_label": "immutablelist",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_home_practicehomescreen_kt_immutablelist"
     },
@@ -31193,7 +31193,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonMain/kotlin/app/sensee/feature/practice/presentation/impl/home/PracticeHomeScreen.kt",
       "source_location": "L100",
-      "community": 199,
+      "community": 98,
       "norm_label": "decksummaryuistate",
       "id": "shared_feature_practice_presentation_impl_src_commonmain_kotlin_app_sensee_feature_practice_presentation_impl_home_practicehomescreen_kt_decksummaryuistate"
     },
@@ -31499,7 +31499,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonTest/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContentLayoutTest.kt",
       "source_location": "L1",
-      "community": 283,
+      "community": 68,
       "norm_label": "deckpracticecardcontentlayouttest.kt",
       "id": "deck_deckpracticecardcontentlayouttest"
     },
@@ -31508,7 +31508,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonTest/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContentLayoutTest.kt",
       "source_location": "L7",
-      "community": 283,
+      "community": 68,
       "norm_label": "deckpracticecardcontentlayouttest",
       "id": "deck_deckpracticecardcontentlayouttest_deckpracticecardcontentlayouttest"
     },
@@ -31517,7 +31517,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonTest/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContentLayoutTest.kt",
       "source_location": "L8",
-      "community": 283,
+      "community": 68,
       "norm_label": ".`speakable slot clamps text min height to compressed parent`()",
       "id": "deck_deckpracticecardcontentlayouttest_deckpracticecardcontentlayouttest_speakable_slot_clamps_text_min_height_to_compressed_parent"
     },
@@ -31526,7 +31526,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/presentation/impl/src/commonTest/kotlin/app/sensee/feature/practice/presentation/impl/deck/DeckPracticeCardContentLayoutTest.kt",
       "source_location": "L23",
-      "community": 283,
+      "community": 68,
       "norm_label": ".`speakable slot keeps text min height when parent has room`()",
       "id": "deck_deckpracticecardcontentlayouttest_deckpracticecardcontentlayouttest_speakable_slot_keeps_text_min_height_when_parent_has_room"
     },
@@ -33794,7 +33794,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L1",
-      "community": 31,
+      "community": 106,
       "norm_label": "profileaisettingskeycheckfields.kt",
       "id": "aisettings_profileaisettingskeycheckfields"
     },
@@ -33803,7 +33803,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L17",
-      "community": 31,
+      "community": 106,
       "norm_label": "verifyrow()",
       "id": "aisettings_profileaisettingskeycheckfields_verifyrow"
     },
@@ -33812,7 +33812,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L17",
-      "community": 31,
+      "community": 106,
       "norm_label": "keycheckstatus",
       "id": "shared_feature_profile_presentation_impl_src_commonmain_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingskeycheckfields_kt_keycheckstatus"
     },
@@ -33821,7 +33821,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L17",
-      "community": 31,
+      "community": 106,
       "norm_label": "textprovider",
       "id": "shared_feature_profile_presentation_impl_src_commonmain_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingskeycheckfields_kt_textprovider"
     },
@@ -33830,7 +33830,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L40",
-      "community": 31,
+      "community": 106,
       "norm_label": "keycheckmessage()",
       "id": "aisettings_profileaisettingskeycheckfields_keycheckmessage"
     },
@@ -33839,7 +33839,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L66",
-      "community": 31,
+      "community": 106,
       "norm_label": "modelfield()",
       "id": "aisettings_profileaisettingskeycheckfields_modelfield"
     },
@@ -33848,7 +33848,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L66",
-      "community": 31,
+      "community": 106,
       "norm_label": "string",
       "id": "shared_feature_profile_presentation_impl_src_commonmain_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingskeycheckfields_kt_string"
     },
@@ -33857,7 +33857,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L66",
-      "community": 31,
+      "community": 106,
       "norm_label": "immutablelist",
       "id": "shared_feature_profile_presentation_impl_src_commonmain_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingskeycheckfields_kt_immutablelist"
     },
@@ -33866,7 +33866,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L66",
-      "community": 31,
+      "community": 106,
       "norm_label": "textfieldstate",
       "id": "shared_feature_profile_presentation_impl_src_commonmain_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingskeycheckfields_kt_textfieldstate"
     },
@@ -33875,7 +33875,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L95",
-      "community": 31,
+      "community": 106,
       "norm_label": "hasresult()",
       "id": "aisettings_profileaisettingskeycheckfields_hasresult"
     },
@@ -33884,7 +33884,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsKeyCheckFields.kt",
       "source_location": "L95",
-      "community": 31,
+      "community": 106,
       "norm_label": "boolean",
       "id": "shared_feature_profile_presentation_impl_src_commonmain_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingskeycheckfields_kt_boolean"
     },
@@ -35378,7 +35378,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/placeholder/DefaultProfileSettingsPlaceholderComponent.kt",
       "source_location": "L1",
-      "community": 59,
+      "community": 797,
       "norm_label": "defaultprofilesettingsplaceholdercomponent.kt",
       "id": "placeholder_defaultprofilesettingsplaceholdercomponent"
     },
@@ -35387,7 +35387,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonMain/kotlin/app/sensee/feature/profile/presentation/impl/placeholder/DefaultProfileSettingsPlaceholderComponent.kt",
       "source_location": "L7",
-      "community": 59,
+      "community": 797,
       "norm_label": "defaultprofilesettingsplaceholdercomponent",
       "id": "placeholder_defaultprofilesettingsplaceholdercomponent_defaultprofilesettingsplaceholdercomponent"
     },
@@ -36251,7 +36251,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L1",
-      "community": 56,
+      "community": 1,
       "norm_label": "profileappsettingslogictest.kt",
       "id": "appsettings_profileappsettingslogictest"
     },
@@ -36260,7 +36260,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L16",
-      "community": 56,
+      "community": 1,
       "norm_label": "profileappsettingslogictest",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest"
     },
@@ -36269,7 +36269,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L17",
-      "community": 56,
+      "community": 1,
       "norm_label": "fakesettings",
       "id": "appsettings_profileappsettingslogictest_fakesettings"
     },
@@ -36278,7 +36278,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L25",
-      "community": 56,
+      "community": 1,
       "norm_label": ".observesettings()",
       "id": "appsettings_profileappsettingslogictest_fakesettings_observesettings"
     },
@@ -36287,7 +36287,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L25",
-      "community": 56,
+      "community": 1,
       "norm_label": "usersettingsscope",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_appsettings_profileappsettingslogictest_kt_usersettingsscope"
     },
@@ -36296,7 +36296,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L25",
-      "community": 56,
+      "community": 1,
       "norm_label": "flow",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_appsettings_profileappsettingslogictest_kt_flow"
     },
@@ -36305,7 +36305,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L25",
-      "community": 56,
+      "community": 1,
       "norm_label": "usersettingssnapshot",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_appsettings_profileappsettingslogictest_kt_usersettingssnapshot"
     },
@@ -36314,7 +36314,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L27",
-      "community": 56,
+      "community": 1,
       "norm_label": ".readsettings()",
       "id": "appsettings_profileappsettingslogictest_fakesettings_readsettings"
     },
@@ -36323,7 +36323,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L29",
-      "community": 56,
+      "community": 1,
       "norm_label": ".updatesettings()",
       "id": "appsettings_profileappsettingslogictest_fakesettings_updatesettings"
     },
@@ -36332,7 +36332,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L40",
-      "community": 56,
+      "community": 1,
       "norm_label": ".snapshot()",
       "id": "appsettings_profileappsettingslogictest_fakesettings_snapshot"
     },
@@ -36341,7 +36341,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L42",
-      "community": 56,
+      "community": 1,
       "norm_label": ".emitthememode()",
       "id": "appsettings_profileappsettingslogictest_fakesettings_emitthememode"
     },
@@ -36350,7 +36350,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L42",
-      "community": 56,
+      "community": 1,
       "norm_label": "appthememode",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_appsettings_profileappsettingslogictest_kt_appthememode"
     },
@@ -36359,7 +36359,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L46",
-      "community": 56,
+      "community": 1,
       "norm_label": ".emithapticfeedbackenabled()",
       "id": "appsettings_profileappsettingslogictest_fakesettings_emithapticfeedbackenabled"
     },
@@ -36368,7 +36368,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L46",
-      "community": 56,
+      "community": 1,
       "norm_label": "boolean",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_appsettings_profileappsettingslogictest_kt_boolean"
     },
@@ -36377,7 +36377,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L51",
-      "community": 56,
+      "community": 1,
       "norm_label": ".logic()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_logic"
     },
@@ -36386,7 +36386,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L51",
-      "community": 56,
+      "community": 1,
       "norm_label": "profileappsettingslogic",
       "id": "profileappsettingslogic"
     },
@@ -36395,7 +36395,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L58",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`load reflects stored app theme mode`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_load_reflects_stored_app_theme_mode"
     },
@@ -36404,7 +36404,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L70",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`set theme mode persists app settings and updates state`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_set_theme_mode_persists_app_settings_and_updates_state"
     },
@@ -36413,7 +36413,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L81",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`external settings updates stay in sync`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_external_settings_updates_stay_in_sync"
     },
@@ -36422,7 +36422,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L91",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`load reflects stored haptic feedback setting`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_load_reflects_stored_haptic_feedback_setting"
     },
@@ -36431,7 +36431,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L103",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`disabling haptic feedback persists app settings and updates state`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_disabling_haptic_feedback_persists_app_settings_and_updates_state"
     },
@@ -36440,7 +36440,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L114",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`setting the active haptic feedback value does not persist a duplicate update`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_setting_the_active_haptic_feedback_value_does_not_persist_a_duplicate_update"
     },
@@ -36449,7 +36449,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L125",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`external haptic feedback updates stay in sync`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_external_haptic_feedback_updates_stay_in_sync"
     },
@@ -36458,7 +36458,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L135",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`setting the active theme mode does not persist a duplicate update`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_setting_the_active_theme_mode_does_not_persist_a_duplicate_update"
     },
@@ -36467,7 +36467,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/appsettings/ProfileAppSettingsLogicTest.kt",
       "source_location": "L152",
-      "community": 56,
+      "community": 1,
       "norm_label": ".`failed theme mode persistence keeps the observed state unchanged`()",
       "id": "appsettings_profileappsettingslogictest_profileappsettingslogictest_failed_theme_mode_persistence_keeps_the_observed_state_unchanged"
     },
@@ -36710,7 +36710,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/learningsettings/ProfileLearningSettingsLogicTest.kt",
       "source_location": "L42",
-      "community": 187,
+      "community": 126,
       "norm_label": "faketopiccatalog",
       "id": "learningsettings_profilelearningsettingslogictest_faketopiccatalog"
     },
@@ -36719,7 +36719,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/learningsettings/ProfileLearningSettingsLogicTest.kt",
       "source_location": "L45",
-      "community": 187,
+      "community": 126,
       "norm_label": ".topics()",
       "id": "learningsettings_profilelearningsettingslogictest_faketopiccatalog_topics"
     },
@@ -36728,7 +36728,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/learningsettings/ProfileLearningSettingsLogicTest.kt",
       "source_location": "L45",
-      "community": 187,
+      "community": 126,
       "norm_label": "list",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_learningsettings_profilelearningsettingslogictest_kt_list"
     },
@@ -36737,7 +36737,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/learningsettings/ProfileLearningSettingsLogicTest.kt",
       "source_location": "L45",
-      "community": 187,
+      "community": 126,
       "norm_label": "learningtopic",
       "id": "shared_feature_profile_presentation_impl_src_commontest_kotlin_app_sensee_feature_profile_presentation_impl_learningsettings_profilelearningsettingslogictest_kt_learningtopic"
     },
@@ -37835,7 +37835,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L276",
-      "community": 24,
+      "community": 389,
       "norm_label": "ttscatalog",
       "id": "shared_feature_profile_presentation_impl_src_jvmtest_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingsscreenuitest_kt_ttscatalog"
     },
@@ -37862,7 +37862,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L293",
-      "community": 24,
+      "community": 316,
       "norm_label": ".observesettings()",
       "id": "aisettings_profileaisettingsscreenuitest_testusersettingsrepository_observesettings"
     },
@@ -37871,7 +37871,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L293",
-      "community": 24,
+      "community": 316,
       "norm_label": "usersettingsscope",
       "id": "shared_feature_profile_presentation_impl_src_jvmtest_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingsscreenuitest_kt_usersettingsscope"
     },
@@ -37880,7 +37880,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L293",
-      "community": 24,
+      "community": 316,
       "norm_label": "flow",
       "id": "shared_feature_profile_presentation_impl_src_jvmtest_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingsscreenuitest_kt_flow"
     },
@@ -37889,7 +37889,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L293",
-      "community": 24,
+      "community": 316,
       "norm_label": "usersettingssnapshot",
       "id": "shared_feature_profile_presentation_impl_src_jvmtest_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingsscreenuitest_kt_usersettingssnapshot"
     },
@@ -37898,7 +37898,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L295",
-      "community": 24,
+      "community": 316,
       "norm_label": ".readsettings()",
       "id": "aisettings_profileaisettingsscreenuitest_testusersettingsrepository_readsettings"
     },
@@ -37907,7 +37907,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L297",
-      "community": 24,
+      "community": 316,
       "norm_label": ".updatesettings()",
       "id": "aisettings_profileaisettingsscreenuitest_testusersettingsrepository_updatesettings"
     },
@@ -37943,7 +37943,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L312",
-      "community": 24,
+      "community": 389,
       "norm_label": "testttscatalog",
       "id": "aisettings_profileaisettingsscreenuitest_testttscatalog"
     },
@@ -37952,7 +37952,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L315",
-      "community": 24,
+      "community": 389,
       "norm_label": ".verifykey()",
       "id": "aisettings_profileaisettingsscreenuitest_testttscatalog_verifykey"
     },
@@ -37961,7 +37961,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L315",
-      "community": 24,
+      "community": 389,
       "norm_label": "ttskeyverificationrequest",
       "id": "shared_feature_profile_presentation_impl_src_jvmtest_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingsscreenuitest_kt_ttskeyverificationrequest"
     },
@@ -37970,7 +37970,7 @@
       "file_type": "code",
       "source_file": "shared/feature/profile/presentation/impl/src/jvmTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsScreenUiTest.kt",
       "source_location": "L315",
-      "community": 24,
+      "community": 389,
       "norm_label": "ttskeycheck",
       "id": "shared_feature_profile_presentation_impl_src_jvmtest_kotlin_app_sensee_feature_profile_presentation_impl_aisettings_profileaisettingsscreenuitest_kt_ttskeycheck"
     },
@@ -45404,7 +45404,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/SenseIdentity.kt",
       "source_location": "L1",
-      "community": 159,
+      "community": 131,
       "norm_label": "senseidentity.kt",
       "id": "domain_senseidentity"
     },
@@ -45413,7 +45413,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/SenseIdentity.kt",
       "source_location": "L15",
-      "community": 159,
+      "community": 131,
       "norm_label": "derivesensecontentkey()",
       "id": "domain_senseidentity_derivesensecontentkey"
     },
@@ -45422,7 +45422,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/SenseIdentity.kt",
       "source_location": "L15",
-      "community": 159,
+      "community": 131,
       "norm_label": "sense",
       "id": "shared_lexicon_domain_src_commonmain_kotlin_app_sensee_lexicon_domain_senseidentity_kt_sense"
     },
@@ -45431,7 +45431,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/SenseIdentity.kt",
       "source_location": "L15",
-      "community": 159,
+      "community": 131,
       "norm_label": "string",
       "id": "shared_lexicon_domain_src_commonmain_kotlin_app_sensee_lexicon_domain_senseidentity_kt_string"
     },
@@ -45440,7 +45440,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/SenseIdentity.kt",
       "source_location": "L30",
-      "community": 159,
+      "community": 131,
       "norm_label": "stableidpart()",
       "id": "domain_senseidentity_stableidpart"
     },
@@ -47285,7 +47285,7 @@
       "file_type": "code",
       "source_file": "shared/settings/domain/src/commonMain/kotlin/app/sensee/settings/domain/AppSettings.kt",
       "source_location": "L1",
-      "community": 56,
+      "community": 1,
       "norm_label": "appsettings.kt",
       "id": "domain_appsettings"
     },
@@ -47294,7 +47294,7 @@
       "file_type": "code",
       "source_file": "shared/settings/domain/src/commonMain/kotlin/app/sensee/settings/domain/AppSettings.kt",
       "source_location": "L3",
-      "community": 56,
+      "community": 1,
       "norm_label": "appsettings",
       "id": "domain_appsettings_appsettings"
     },
@@ -47303,7 +47303,7 @@
       "file_type": "code",
       "source_file": "shared/settings/domain/src/commonMain/kotlin/app/sensee/settings/domain/AppSettings.kt",
       "source_location": "L9",
-      "community": 56,
+      "community": 1,
       "norm_label": "appthememode",
       "id": "domain_appsettings_appthememode"
     },
@@ -47312,7 +47312,7 @@
       "file_type": "code",
       "source_file": "shared/settings/domain/src/commonMain/kotlin/app/sensee/settings/domain/LearningSettings.kt",
       "source_location": "L1",
-      "community": 187,
+      "community": 78,
       "norm_label": "learningsettings.kt",
       "id": "domain_learningsettings"
     },
@@ -47321,7 +47321,7 @@
       "file_type": "code",
       "source_file": "shared/settings/domain/src/commonMain/kotlin/app/sensee/settings/domain/LearningSettings.kt",
       "source_location": "L3",
-      "community": 187,
+      "community": 78,
       "norm_label": "learningsettings",
       "id": "domain_learningsettings_learningsettings"
     },
@@ -51299,7 +51299,7 @@
       "file_type": "code",
       "source_file": "shared/tts/cache/src/commonMain/kotlin/app/sensee/tts/cache/Clock.kt",
       "source_location": "L1",
-      "community": 158,
+      "community": 331,
       "norm_label": "clock.kt",
       "id": "cache_clock"
     },
@@ -51308,7 +51308,7 @@
       "file_type": "code",
       "source_file": "shared/tts/cache/src/commonMain/kotlin/app/sensee/tts/cache/Clock.kt",
       "source_location": "L5",
-      "community": 158,
+      "community": 331,
       "norm_label": "epochmillisclock",
       "id": "cache_clock_epochmillisclock"
     },
@@ -51317,7 +51317,7 @@
       "file_type": "code",
       "source_file": "shared/tts/cache/src/commonMain/kotlin/app/sensee/tts/cache/Clock.kt",
       "source_location": "L6",
-      "community": 158,
+      "community": 331,
       "norm_label": ".nowepochmillis()",
       "id": "cache_clock_epochmillisclock_nowepochmillis"
     },
@@ -51326,7 +51326,7 @@
       "file_type": "code",
       "source_file": "shared/tts/cache/src/commonMain/kotlin/app/sensee/tts/cache/Clock.kt",
       "source_location": "L6",
-      "community": 158,
+      "community": 331,
       "norm_label": "long",
       "id": "shared_tts_cache_src_commonmain_kotlin_app_sensee_tts_cache_clock_kt_long"
     },
@@ -51335,7 +51335,7 @@
       "file_type": "code",
       "source_file": "shared/tts/cache/src/commonMain/kotlin/app/sensee/tts/cache/Clock.kt",
       "source_location": "L9",
-      "community": 158,
+      "community": 331,
       "norm_label": "systemepochmillisclock",
       "id": "cache_clock_systemepochmillisclock"
     },
@@ -51344,7 +51344,7 @@
       "file_type": "code",
       "source_file": "shared/tts/cache/src/commonMain/kotlin/app/sensee/tts/cache/Clock.kt",
       "source_location": "L10",
-      "community": 158,
+      "community": 331,
       "norm_label": ".nowepochmillis()",
       "id": "cache_clock_systemepochmillisclock_nowepochmillis"
     },
@@ -54494,7 +54494,7 @@
       "file_type": "code",
       "source_file": "shared/tts/integration/src/commonTest/kotlin/app/sensee/tts/integration/RoutingSpeakerTest.kt",
       "source_location": "L127",
-      "community": 47,
+      "community": 342,
       "norm_label": "fakesettings",
       "id": "integration_routingspeakertest_fakesettings"
     },
@@ -54503,7 +54503,7 @@
       "file_type": "code",
       "source_file": "shared/tts/integration/src/commonTest/kotlin/app/sensee/tts/integration/RoutingSpeakerTest.kt",
       "source_location": "L132",
-      "community": 47,
+      "community": 342,
       "norm_label": ".observesettings()",
       "id": "integration_routingspeakertest_fakesettings_observesettings"
     },
@@ -54512,7 +54512,7 @@
       "file_type": "code",
       "source_file": "shared/tts/integration/src/commonTest/kotlin/app/sensee/tts/integration/RoutingSpeakerTest.kt",
       "source_location": "L132",
-      "community": 47,
+      "community": 342,
       "norm_label": "usersettingsscope",
       "id": "shared_tts_integration_src_commontest_kotlin_app_sensee_tts_integration_routingspeakertest_kt_usersettingsscope"
     },
@@ -54521,7 +54521,7 @@
       "file_type": "code",
       "source_file": "shared/tts/integration/src/commonTest/kotlin/app/sensee/tts/integration/RoutingSpeakerTest.kt",
       "source_location": "L132",
-      "community": 47,
+      "community": 342,
       "norm_label": "usersettingssnapshot",
       "id": "shared_tts_integration_src_commontest_kotlin_app_sensee_tts_integration_routingspeakertest_kt_usersettingssnapshot"
     },
@@ -54530,7 +54530,7 @@
       "file_type": "code",
       "source_file": "shared/tts/integration/src/commonTest/kotlin/app/sensee/tts/integration/RoutingSpeakerTest.kt",
       "source_location": "L134",
-      "community": 47,
+      "community": 342,
       "norm_label": ".readsettings()",
       "id": "integration_routingspeakertest_fakesettings_readsettings"
     },
@@ -54539,7 +54539,7 @@
       "file_type": "code",
       "source_file": "shared/tts/integration/src/commonTest/kotlin/app/sensee/tts/integration/RoutingSpeakerTest.kt",
       "source_location": "L136",
-      "community": 47,
+      "community": 342,
       "norm_label": ".updatesettings()",
       "id": "integration_routingspeakertest_fakesettings_updatesettings"
     },
@@ -56537,7 +56537,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L73",
-      "community": 221,
+      "community": 259,
       "norm_label": ".playstream()",
       "id": "playback_jvmaudioplayer_jvmaudioplayer_playstream"
     },
@@ -56546,7 +56546,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L73",
-      "community": 221,
+      "community": 259,
       "norm_label": "flow",
       "id": "shared_tts_playback_src_jvmmain_kotlin_app_sensee_tts_playback_jvmaudioplayer_kt_flow"
     },
@@ -56555,7 +56555,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L73",
-      "community": 221,
+      "community": 259,
       "norm_label": "bytearray",
       "id": "shared_tts_playback_src_jvmmain_kotlin_app_sensee_tts_playback_jvmaudioplayer_kt_bytearray"
     },
@@ -56618,7 +56618,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L170",
-      "community": 221,
+      "community": 259,
       "norm_label": "chunkfeedinputstream",
       "id": "playback_jvmaudioplayer_chunkfeedinputstream"
     },
@@ -56627,7 +56627,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 221,
+      "community": 268,
       "norm_label": "inputstream",
       "id": "inputstream"
     },
@@ -56645,7 +56645,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L183",
-      "community": 221,
+      "community": 259,
       "norm_label": ".feed()",
       "id": "playback_jvmaudioplayer_chunkfeedinputstream_feed"
     },
@@ -56654,7 +56654,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L187",
-      "community": 221,
+      "community": 259,
       "norm_label": ".finish()",
       "id": "playback_jvmaudioplayer_chunkfeedinputstream_finish"
     },
@@ -56672,7 +56672,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L196",
-      "community": 221,
+      "community": 259,
       "norm_label": ".read()",
       "id": "playback_jvmaudioplayer_chunkfeedinputstream_read"
     },
@@ -56681,7 +56681,7 @@
       "file_type": "code",
       "source_file": "shared/tts/playback/src/jvmMain/kotlin/app/sensee/tts/playback/JvmAudioPlayer.kt",
       "source_location": "L196",
-      "community": 221,
+      "community": 259,
       "norm_label": "int",
       "id": "shared_tts_playback_src_jvmmain_kotlin_app_sensee_tts_playback_jvmaudioplayer_kt_int"
     },
@@ -57464,7 +57464,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L1",
-      "community": 367,
+      "community": 283,
       "norm_label": "iossystemspeaker.kt",
       "id": "system_iossystemspeaker"
     },
@@ -57473,7 +57473,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L23",
-      "community": 367,
+      "community": 283,
       "norm_label": "iossystemspeaker",
       "id": "system_iossystemspeaker_iossystemspeaker"
     },
@@ -57482,7 +57482,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L61",
-      "community": 367,
+      "community": 283,
       "norm_label": ".speak()",
       "id": "system_iossystemspeaker_iossystemspeaker_speak"
     },
@@ -57491,7 +57491,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L61",
-      "community": 367,
+      "community": 283,
       "norm_label": "speechrequest",
       "id": "shared_tts_system_src_iosmain_kotlin_app_sensee_tts_system_iossystemspeaker_kt_speechrequest"
     },
@@ -57500,7 +57500,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L61",
-      "community": 367,
+      "community": 283,
       "norm_label": "speechhandle",
       "id": "shared_tts_system_src_iosmain_kotlin_app_sensee_tts_system_iossystemspeaker_kt_speechhandle"
     },
@@ -57509,7 +57509,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L78",
-      "community": 367,
+      "community": 283,
       "norm_label": ".stop()",
       "id": "system_iossystemspeaker_iossystemspeaker_stop"
     },
@@ -57518,7 +57518,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L85",
-      "community": 367,
+      "community": 283,
       "norm_label": "systemspeaker()",
       "id": "system_iossystemspeaker_systemspeaker"
     },
@@ -57527,7 +57527,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L85",
-      "community": 367,
+      "community": 283,
       "norm_label": "platformcontext",
       "id": "shared_tts_system_src_iosmain_kotlin_app_sensee_tts_system_iossystemspeaker_kt_platformcontext"
     },
@@ -57536,7 +57536,7 @@
       "file_type": "code",
       "source_file": "shared/tts/system/src/iosMain/kotlin/app/sensee/tts/system/IosSystemSpeaker.kt",
       "source_location": "L85",
-      "community": 367,
+      "community": 283,
       "norm_label": "coroutinescope",
       "id": "shared_tts_system_src_iosmain_kotlin_app_sensee_tts_system_iossystemspeaker_kt_coroutinescope"
     },
@@ -60443,7 +60443,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/checkbox/SenseeCheckbox.kt",
       "source_location": "L1",
-      "community": 72,
+      "community": 70,
       "norm_label": "senseecheckbox.kt",
       "id": "checkbox_senseecheckbox"
     },
@@ -60452,7 +60452,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/checkbox/SenseeCheckbox.kt",
       "source_location": "L11",
-      "community": 72,
+      "community": 70,
       "norm_label": "senseecheckbox()",
       "id": "checkbox_senseecheckbox_senseecheckbox"
     },
@@ -60461,7 +60461,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/checkbox/SenseeCheckbox.kt",
       "source_location": "L11",
-      "community": 72,
+      "community": 70,
       "norm_label": "boolean",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_checkbox_senseecheckbox_kt_boolean"
     },
@@ -60470,7 +60470,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/checkbox/SenseeCheckbox.kt",
       "source_location": "L11",
-      "community": 72,
+      "community": 70,
       "norm_label": "modifier",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_checkbox_senseecheckbox_kt_modifier"
     },
@@ -60479,7 +60479,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/checkbox/SenseeCheckbox.kt",
       "source_location": "L11",
-      "community": 72,
+      "community": 70,
       "norm_label": "unit",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_checkbox_senseecheckbox_kt_unit"
     },
@@ -60488,7 +60488,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/checkbox/SenseeCheckbox.kt",
       "source_location": "L11",
-      "community": 72,
+      "community": 70,
       "norm_label": "senseecheckboxcolors",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_checkbox_senseecheckbox_kt_senseecheckboxcolors"
     },
@@ -61658,7 +61658,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L1",
-      "community": 124,
+      "community": 29,
       "norm_label": "senseelearningcardside.kt",
       "id": "learningcard_senseelearningcardside"
     },
@@ -61667,7 +61667,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L19",
-      "community": 124,
+      "community": 29,
       "norm_label": "senseelearningcardside()",
       "id": "learningcard_senseelearningcardside_senseelearningcardside"
     },
@@ -61676,7 +61676,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L19",
-      "community": 124,
+      "community": 29,
       "norm_label": "color",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_learningcard_senseelearningcardside_kt_color"
     },
@@ -61685,7 +61685,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L19",
-      "community": 124,
+      "community": 29,
       "norm_label": "dp",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_learningcard_senseelearningcardside_kt_dp"
     },
@@ -61694,7 +61694,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L19",
-      "community": 124,
+      "community": 29,
       "norm_label": "shape",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_learningcard_senseelearningcardside_kt_shape"
     },
@@ -61703,7 +61703,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L19",
-      "community": 124,
+      "community": 29,
       "norm_label": "paddingvalues",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_learningcard_senseelearningcardside_kt_paddingvalues"
     },
@@ -61712,7 +61712,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/learningCard/SenseeLearningCardSide.kt",
       "source_location": "L19",
-      "community": 124,
+      "community": 29,
       "norm_label": "modifier",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_learningcard_senseelearningcardside_kt_modifier"
     },
@@ -62540,7 +62540,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L1",
-      "community": 31,
+      "community": 315,
       "norm_label": "senseeselectfield.kt",
       "id": "selectfield_senseeselectfield"
     },
@@ -62549,7 +62549,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L50",
-      "community": 31,
+      "community": 315,
       "norm_label": "senseeselectfield()",
       "id": "selectfield_senseeselectfield_senseeselectfield"
     },
@@ -62558,7 +62558,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L50",
-      "community": 31,
+      "community": 315,
       "norm_label": "string",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_selectfield_senseeselectfield_kt_string"
     },
@@ -62567,7 +62567,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L50",
-      "community": 31,
+      "community": 315,
       "norm_label": "t",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_selectfield_senseeselectfield_kt_t"
     },
@@ -62576,7 +62576,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L50",
-      "community": 31,
+      "community": 315,
       "norm_label": "immutablelist",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_selectfield_senseeselectfield_kt_immutablelist"
     },
@@ -62585,7 +62585,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L50",
-      "community": 31,
+      "community": 315,
       "norm_label": "modifier",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_selectfield_senseeselectfield_kt_modifier"
     },
@@ -62594,7 +62594,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/selectField/SenseeSelectField.kt",
       "source_location": "L50",
-      "community": 31,
+      "community": 315,
       "norm_label": "senseeselectfieldcolors",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_selectfield_senseeselectfield_kt_senseeselectfieldcolors"
     },
@@ -62774,7 +62774,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L1",
-      "community": 106,
+      "community": 107,
       "norm_label": "senseesentencetext.kt",
       "id": "sentence_senseesentencetext"
     },
@@ -62828,7 +62828,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L45",
-      "community": 106,
+      "community": 107,
       "norm_label": "senseesentencetextstyles",
       "id": "senseesentencetextstyles"
     },
@@ -62855,7 +62855,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L45",
-      "community": 106,
+      "community": 107,
       "norm_label": "int",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_sentence_senseesentencetext_kt_int"
     },
@@ -62891,7 +62891,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L148",
-      "community": 106,
+      "community": 107,
       "norm_label": "buildsenseesentenceannotatedstring()",
       "id": "sentence_senseesentencetext_buildsenseesentenceannotatedstring"
     },
@@ -62900,7 +62900,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L148",
-      "community": 106,
+      "community": 107,
       "norm_label": "annotatedstring",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_sentence_senseesentencetext_kt_annotatedstring"
     },
@@ -62909,7 +62909,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L170",
-      "community": 106,
+      "community": 107,
       "norm_label": "appendsentenceword()",
       "id": "sentence_senseesentencetext_appendsentenceword"
     },
@@ -62918,7 +62918,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L170",
-      "community": 106,
+      "community": 107,
       "norm_label": "senseesentencepart",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_sentence_senseesentencetext_kt_senseesentencepart"
     },
@@ -62927,7 +62927,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L193",
-      "community": 106,
+      "community": 107,
       "norm_label": "addsentencehighlights()",
       "id": "sentence_senseesentencetext_addsentencehighlights"
     },
@@ -62936,7 +62936,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L193",
-      "community": 106,
+      "community": 107,
       "norm_label": "list",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_sentence_senseesentencetext_kt_list"
     },
@@ -62945,7 +62945,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L193",
-      "community": 106,
+      "community": 107,
       "norm_label": "senseetextrangehighlight",
       "id": "senseetextrangehighlight"
     },
@@ -62954,7 +62954,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L213",
-      "community": 106,
+      "community": 107,
       "norm_label": "appendsentenceplaceholder()",
       "id": "sentence_senseesentencetext_appendsentenceplaceholder"
     },
@@ -62981,7 +62981,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L225",
-      "community": 106,
+      "community": 107,
       "norm_label": "string",
       "id": "shared_ui_design_system_src_commonmain_kotlin_app_sensee_ui_designsystem_component_sentence_senseesentencetext_kt_string"
     },
@@ -63044,7 +63044,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L359",
-      "community": 106,
+      "community": 107,
       "norm_label": "inlinecontentid()",
       "id": "sentence_senseesentencetext_inlinecontentid"
     },
@@ -63053,7 +63053,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L361",
-      "community": 106,
+      "community": 107,
       "norm_label": "fallbacktext()",
       "id": "sentence_senseesentencetext_fallbacktext"
     },
@@ -63062,7 +63062,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L365",
-      "community": 106,
+      "community": 107,
       "norm_label": "tospanstyle()",
       "id": "sentence_senseesentencetext_tospanstyle"
     },
@@ -63071,7 +63071,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L365",
-      "community": 244,
+      "community": 107,
       "norm_label": "spanstyle",
       "id": "spanstyle"
     },
@@ -63107,7 +63107,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L452",
-      "community": 106,
+      "community": 107,
       "norm_label": "sentenceannotation",
       "id": "sentence_senseesentencetext_sentenceannotation"
     },
@@ -63116,7 +63116,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L457",
-      "community": 106,
+      "community": 107,
       "norm_label": "sentenceplaceholderannotationpayload",
       "id": "sentence_senseesentencetext_sentenceplaceholderannotationpayload"
     },
@@ -63125,7 +63125,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L465",
-      "community": 106,
+      "community": 107,
       "norm_label": "encode()",
       "id": "sentence_senseesentencetext_encode"
     },
@@ -63134,7 +63134,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceText.kt",
       "source_location": "L472",
-      "community": 106,
+      "community": 107,
       "norm_label": "decode()",
       "id": "sentence_senseesentencetext_decode"
     },
@@ -63152,7 +63152,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L1",
-      "community": 244,
+      "community": 107,
       "norm_label": "senseesentencetextcolors.kt",
       "id": "sentence_senseesentencetextcolors"
     },
@@ -63161,7 +63161,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L13",
-      "community": 244,
+      "community": 107,
       "norm_label": "senseesentencetextcolors",
       "id": "sentence_senseesentencetextcolors_senseesentencetextcolors"
     },
@@ -63170,7 +63170,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L40",
-      "community": 244,
+      "community": 107,
       "norm_label": "senseesentencetextstyles",
       "id": "sentence_senseesentencetextcolors_senseesentencetextstyles"
     },
@@ -63179,7 +63179,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L61",
-      "community": 244,
+      "community": 107,
       "norm_label": "senseesentenceplaceholdermetrics",
       "id": "sentence_senseesentencetextcolors_senseesentenceplaceholdermetrics"
     },
@@ -63188,7 +63188,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L79",
-      "community": 244,
+      "community": 107,
       "norm_label": "senseesentencetextdefaults",
       "id": "sentence_senseesentencetextcolors_senseesentencetextdefaults"
     },
@@ -63197,7 +63197,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L80",
-      "community": 244,
+      "community": 107,
       "norm_label": ".colors()",
       "id": "sentence_senseesentencetextcolors_senseesentencetextdefaults_colors"
     },
@@ -63206,7 +63206,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L113",
-      "community": 244,
+      "community": 107,
       "norm_label": ".textstyles()",
       "id": "sentence_senseesentencetextcolors_senseesentencetextdefaults_textstyles"
     },
@@ -63215,7 +63215,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/component/sentence/SenseeSentenceTextColors.kt",
       "source_location": "L165",
-      "community": 244,
+      "community": 107,
       "norm_label": ".placeholdermetrics()",
       "id": "sentence_senseesentencetextcolors_senseesentencetextdefaults_placeholdermetrics"
     },
@@ -64331,7 +64331,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/preview/SenseeCheckboxPreview.kt",
       "source_location": "L1",
-      "community": 72,
+      "community": 70,
       "norm_label": "senseecheckboxpreview.kt",
       "id": "preview_senseecheckboxpreview"
     },
@@ -64340,7 +64340,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/preview/SenseeCheckboxPreview.kt",
       "source_location": "L21",
-      "community": 72,
+      "community": 70,
       "norm_label": "senseecheckboxdarkpreview()",
       "id": "preview_senseecheckboxpreview_senseecheckboxdarkpreview"
     },
@@ -64493,7 +64493,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/preview/SenseeStatusBlockPreview.kt",
       "source_location": "L1",
-      "community": 29,
+      "community": 423,
       "norm_label": "senseestatusblockpreview.kt",
       "id": "preview_senseestatusblockpreview"
     },
@@ -64502,7 +64502,7 @@
       "file_type": "code",
       "source_file": "shared/ui/design-system/src/commonMain/kotlin/app/sensee/ui/designSystem/preview/SenseeStatusBlockPreview.kt",
       "source_location": "L37",
-      "community": 29,
+      "community": 423,
       "norm_label": "senseeerrorstatepreview()",
       "id": "preview_senseestatusblockpreview_senseeerrorstatepreview"
     },
@@ -65087,7 +65087,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L1",
-      "community": 279,
+      "community": 124,
       "norm_label": "flippablelearningcard.kt",
       "id": "learningdeck_flippablelearningcard"
     },
@@ -65096,7 +65096,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L29",
-      "community": 279,
+      "community": 124,
       "norm_label": "flippablelearningcard()",
       "id": "learningdeck_flippablelearningcard_flippablelearningcard"
     },
@@ -65105,7 +65105,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L29",
-      "community": 279,
+      "community": 124,
       "norm_label": "learningcardflipstate",
       "id": "learningcardflipstate"
     },
@@ -65114,7 +65114,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L29",
-      "community": 279,
+      "community": 124,
       "norm_label": "modifier",
       "id": "shared_ui_learning_deck_src_commonmain_kotlin_app_sensee_ui_learningdeck_flippablelearningcard_kt_modifier"
     },
@@ -65123,7 +65123,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L29",
-      "community": 279,
+      "community": 124,
       "norm_label": "boolean",
       "id": "shared_ui_learning_deck_src_commonmain_kotlin_app_sensee_ui_learningdeck_flippablelearningcard_kt_boolean"
     },
@@ -65132,7 +65132,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L29",
-      "community": 279,
+      "community": 124,
       "norm_label": "finiteanimationspec",
       "id": "shared_ui_learning_deck_src_commonmain_kotlin_app_sensee_ui_learningdeck_flippablelearningcard_kt_finiteanimationspec"
     },
@@ -65141,7 +65141,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L29",
-      "community": 279,
+      "community": 124,
       "norm_label": "float",
       "id": "shared_ui_learning_deck_src_commonmain_kotlin_app_sensee_ui_learningdeck_flippablelearningcard_kt_float"
     },
@@ -65150,7 +65150,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/FlippableLearningCard.kt",
       "source_location": "L102",
-      "community": 279,
+      "community": 124,
       "norm_label": "learningcardface()",
       "id": "learningdeck_flippablelearningcard_learningcardface"
     },
@@ -65501,7 +65501,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/LearningDeckState.kt",
       "source_location": "L192",
-      "community": 315,
+      "community": 58,
       "norm_label": ".animateback()",
       "id": "learningdeck_learningdeckstate_learningdeckstate_animateback"
     },
@@ -65510,7 +65510,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/LearningDeckState.kt",
       "source_location": "L192",
-      "community": 315,
+      "community": 58,
       "norm_label": "animationspec",
       "id": "animationspec"
     },
@@ -65519,7 +65519,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/LearningDeckState.kt",
       "source_location": "L192",
-      "community": 315,
+      "community": 58,
       "norm_label": "offset",
       "id": "shared_ui_learning_deck_src_commonmain_kotlin_app_sensee_ui_learningdeck_learningdeckstate_kt_offset"
     },
@@ -65528,7 +65528,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/LearningDeckState.kt",
       "source_location": "L199",
-      "community": 315,
+      "community": 58,
       "norm_label": ".animateout()",
       "id": "learningdeck_learningdeckstate_learningdeckstate_animateout"
     },
@@ -65537,7 +65537,7 @@
       "file_type": "code",
       "source_file": "shared/ui/learning-deck/src/commonMain/kotlin/app/sensee/ui/learningDeck/LearningDeckState.kt",
       "source_location": "L209",
-      "community": 315,
+      "community": 58,
       "norm_label": ".animateoffsetto()",
       "id": "learningdeck_learningdeckstate_learningdeckstate_animateoffsetto"
     },
@@ -69857,7 +69857,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L68",
-      "community": 42,
+      "community": 104,
       "norm_label": "routinglexicalverifier",
       "id": "integration_routinglexicalverifier_routinglexicalverifier"
     },
@@ -69866,7 +69866,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L75",
-      "community": 42,
+      "community": 104,
       "norm_label": "map",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_map"
     },
@@ -69875,7 +69875,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L75",
-      "community": 38,
+      "community": 104,
       "norm_label": "string",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_string"
     },
@@ -69884,7 +69884,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L75",
-      "community": 38,
+      "community": 104,
       "norm_label": "lexicalsource",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_lexicalsource"
     },
@@ -69911,7 +69911,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L77",
-      "community": 38,
+      "community": 118,
       "norm_label": "lexicalverificationreport",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_lexicalverificationreport"
     },
@@ -69983,7 +69983,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L182",
-      "community": 178,
+      "community": 38,
       "norm_label": "triple",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_triple"
     },
@@ -70154,7 +70154,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L242",
-      "community": 38,
+      "community": 104,
       "norm_label": ".mergereports()",
       "id": "integration_routinglexicalverifier_routinglexicalverifier_mergereports"
     },
@@ -70163,7 +70163,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L242",
-      "community": 38,
+      "community": 104,
       "norm_label": "adaptercontributions",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_adaptercontributions"
     },
@@ -70172,7 +70172,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L286",
-      "community": 38,
+      "community": 104,
       "norm_label": ".mergesources()",
       "id": "integration_routinglexicalverifier_routinglexicalverifier_mergesources"
     },
@@ -70181,7 +70181,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L316",
-      "community": 38,
+      "community": 104,
       "norm_label": ".unregisteredsource()",
       "id": "integration_routinglexicalverifier_routinglexicalverifier_unregisteredsource"
     },
@@ -70307,7 +70307,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L457",
-      "community": 178,
+      "community": 38,
       "norm_label": "mergesensemapping()",
       "id": "integration_routinglexicalverifier_mergesensemapping"
     },
@@ -70316,7 +70316,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L457",
-      "community": 178,
+      "community": 38,
       "norm_label": "sensemapping",
       "id": "sensemapping"
     },
@@ -70343,7 +70343,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L514",
-      "community": 38,
+      "community": 104,
       "norm_label": "toexistenceobservation()",
       "id": "integration_routinglexicalverifier_toexistenceobservation"
     },
@@ -70352,7 +70352,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L514",
-      "community": 38,
+      "community": 104,
       "norm_label": "observation",
       "id": "observation"
     },
@@ -70361,7 +70361,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L514",
-      "community": 38,
+      "community": 104,
       "norm_label": "lexicalexistence",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_lexicalexistence"
     },
@@ -70388,7 +70388,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L527",
-      "community": 38,
+      "community": 104,
       "norm_label": "toentrytypeobservation()",
       "id": "integration_routinglexicalverifier_toentrytypeobservation"
     },
@@ -70397,7 +70397,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L527",
-      "community": 38,
+      "community": 104,
       "norm_label": "lexicalentrytypehint",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_lexicalentrytypehint"
     },
@@ -70406,7 +70406,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L534",
-      "community": 38,
+      "community": 104,
       "norm_label": "tofrequencyobservation()",
       "id": "integration_routinglexicalverifier_tofrequencyobservation"
     },
@@ -70415,7 +70415,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L534",
-      "community": 38,
+      "community": 104,
       "norm_label": "frequencyscore",
       "id": "frequencyscore"
     },
@@ -70424,7 +70424,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L541",
-      "community": 38,
+      "community": 104,
       "norm_label": "tocefrobservation()",
       "id": "integration_routinglexicalverifier_tocefrobservation"
     },
@@ -70433,7 +70433,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L541",
-      "community": 38,
+      "community": 104,
       "norm_label": "cefrlevel",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_cefrlevel"
     },
@@ -70442,7 +70442,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L548",
-      "community": 38,
+      "community": 104,
       "norm_label": "topronunciationobservation()",
       "id": "integration_routinglexicalverifier_topronunciationobservation"
     },
@@ -70451,7 +70451,7 @@
       "file_type": "code",
       "source_file": "shared/verification/integration/src/commonMain/kotlin/app/sensee/verification/integration/RoutingLexicalVerifier.kt",
       "source_location": "L548",
-      "community": 38,
+      "community": 104,
       "norm_label": "pronunciationinfo",
       "id": "shared_verification_integration_src_commonmain_kotlin_app_sensee_verification_integration_routinglexicalverifier_kt_pronunciationinfo"
     },
@@ -76301,7 +76301,7 @@
       "file_type": "code",
       "source_file": "shared/core/decompose/src/commonMain/kotlin/app/sensee/core/decompose/context/AppChildPanels.kt",
       "source_location": "L64",
-      "community": 178,
+      "community": 38,
       "norm_label": "triple",
       "id": "triple"
     },
@@ -76841,7 +76841,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/ClaimTest.kt",
       "source_location": "L50",
-      "community": 316,
+      "community": 133,
       "norm_label": "fakedbprovider",
       "id": "data_claimtest_fakedbprovider"
     },
@@ -76850,7 +76850,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/ClaimTest.kt",
       "source_location": "L53",
-      "community": 316,
+      "community": 133,
       "norm_label": ".database()",
       "id": "data_claimtest_fakedbprovider_database"
     },
@@ -76859,7 +76859,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/ClaimTest.kt",
       "source_location": "L53",
-      "community": 316,
+      "community": 133,
       "norm_label": "senseedatabase",
       "id": "shared_feature_library_data_src_jvmtest_kotlin_app_sensee_feature_library_data_claimtest_kt_senseedatabase"
     },
@@ -77039,7 +77039,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 159,
+      "community": 14,
       "norm_label": "sensereadrepository",
       "id": "sensereadrepository"
     },
@@ -77048,7 +77048,7 @@
       "file_type": "code",
       "source_file": "",
       "source_location": "",
-      "community": 159,
+      "community": 14,
       "norm_label": "sensewriterepository",
       "id": "sensewriterepository"
     },
@@ -77291,7 +77291,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/local/CatalogProjectionIntegrationTest.kt",
       "source_location": "L54",
-      "community": 316,
+      "community": 146,
       "norm_label": "fakedbprovider",
       "id": "local_catalogprojectionintegrationtest_fakedbprovider"
     },
@@ -77300,7 +77300,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/local/CatalogProjectionIntegrationTest.kt",
       "source_location": "L57",
-      "community": 316,
+      "community": 146,
       "norm_label": ".database()",
       "id": "local_catalogprojectionintegrationtest_fakedbprovider_database"
     },
@@ -77309,7 +77309,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/local/CatalogProjectionIntegrationTest.kt",
       "source_location": "L57",
-      "community": 316,
+      "community": 146,
       "norm_label": "senseedatabase",
       "id": "shared_feature_library_data_src_jvmtest_kotlin_app_sensee_feature_library_data_local_catalogprojectionintegrationtest_kt_senseedatabase"
     },
@@ -77534,7 +77534,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L1",
-      "community": 182,
+      "community": 61,
       "norm_label": "defaultduepracticerepositorytest.kt",
       "id": "data_defaultduepracticerepositorytest"
     },
@@ -77543,7 +77543,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L19",
-      "community": 182,
+      "community": 61,
       "norm_label": "defaultduepracticerepositorytest",
       "id": "data_defaultduepracticerepositorytest_defaultduepracticerepositorytest"
     },
@@ -77552,7 +77552,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L20",
-      "community": 182,
+      "community": 61,
       "norm_label": "fakedbprovider",
       "id": "data_defaultduepracticerepositorytest_fakedbprovider"
     },
@@ -77561,7 +77561,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L23",
-      "community": 182,
+      "community": 61,
       "norm_label": ".database()",
       "id": "data_defaultduepracticerepositorytest_fakedbprovider_database"
     },
@@ -77570,7 +77570,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L23",
-      "community": 182,
+      "community": 61,
       "norm_label": "senseedatabase",
       "id": "shared_feature_practice_data_src_jvmtest_kotlin_app_sensee_feature_practice_data_defaultduepracticerepositorytest_kt_senseedatabase"
     },
@@ -77579,7 +77579,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L26",
-      "community": 182,
+      "community": 61,
       "norm_label": ".newdb()",
       "id": "data_defaultduepracticerepositorytest_defaultduepracticerepositorytest_newdb"
     },
@@ -77588,7 +77588,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L35",
-      "community": 182,
+      "community": 61,
       "norm_label": ".insertcard()",
       "id": "data_defaultduepracticerepositorytest_defaultduepracticerepositorytest_insertcard"
     },
@@ -77597,7 +77597,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L35",
-      "community": 182,
+      "community": 61,
       "norm_label": "string",
       "id": "shared_feature_practice_data_src_jvmtest_kotlin_app_sensee_feature_practice_data_defaultduepracticerepositorytest_kt_string"
     },
@@ -77606,7 +77606,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L35",
-      "community": 182,
+      "community": 61,
       "norm_label": "long",
       "id": "shared_feature_practice_data_src_jvmtest_kotlin_app_sensee_feature_practice_data_defaultduepracticerepositorytest_kt_long"
     },
@@ -77615,7 +77615,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L57",
-      "community": 182,
+      "community": 61,
       "norm_label": ".`countdue counts only non-suspended cards due at or before now`()",
       "id": "data_defaultduepracticerepositorytest_defaultduepracticerepositorytest_countdue_counts_only_non_suspended_cards_due_at_or_before_now"
     },
@@ -77624,7 +77624,7 @@
       "file_type": "code",
       "source_file": "shared/feature/practice/data/src/jvmTest/kotlin/app/sensee/feature/practice/data/DefaultDuePracticeRepositoryTest.kt",
       "source_location": "L71",
-      "community": 182,
+      "community": 61,
       "norm_label": ".`observeduecount emits the current due count`()",
       "id": "data_defaultduepracticerepositorytest_defaultduepracticerepositorytest_observeduecount_emits_the_current_due_count"
     },
@@ -77975,7 +77975,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/ConfirmSensesUseCase.kt",
       "source_location": "L30",
-      "community": 342,
+      "community": 412,
       "norm_label": ".invoke()",
       "id": "usecase_confirmsensesusecase_confirmsensesusecase_invoke"
     },
@@ -77984,7 +77984,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/ConfirmSensesUseCase.kt",
       "source_location": "L30",
-      "community": 342,
+      "community": 412,
       "norm_label": "list",
       "id": "shared_feature_vocabulary_editor_domain_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_domain_usecase_confirmsensesusecase_kt_list"
     },
@@ -77993,7 +77993,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/ConfirmSensesUseCase.kt",
       "source_location": "L30",
-      "community": 342,
+      "community": 412,
       "norm_label": "sense",
       "id": "shared_feature_vocabulary_editor_domain_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_domain_usecase_confirmsensesusecase_kt_sense"
     },
@@ -78002,7 +78002,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/ConfirmSensesUseCase.kt",
       "source_location": "L30",
-      "community": 342,
+      "community": 412,
       "norm_label": "storedsense",
       "id": "shared_feature_vocabulary_editor_domain_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_domain_usecase_confirmsensesusecase_kt_storedsense"
     },
@@ -78569,7 +78569,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/SuggestVocabularySensesUseCaseTest.kt",
       "source_location": "L43",
-      "community": 85,
+      "community": 422,
       "norm_label": ".check()",
       "id": "usecase_suggestvocabularysensesusecasetest_noopexamplequalitychecker_check"
     },
@@ -78578,7 +78578,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/SuggestVocabularySensesUseCaseTest.kt",
       "source_location": "L43",
-      "community": 85,
+      "community": 422,
       "norm_label": "examplecheckrequest",
       "id": "shared_feature_vocabulary_editor_domain_src_commontest_kotlin_app_sensee_feature_vocabularyeditor_domain_usecase_suggestvocabularysensesusecasetest_kt_examplecheckrequest"
     },
@@ -78587,7 +78587,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/SuggestVocabularySensesUseCaseTest.kt",
       "source_location": "L43",
-      "community": 85,
+      "community": 422,
       "norm_label": "examplecheckresult",
       "id": "shared_feature_vocabulary_editor_domain_src_commontest_kotlin_app_sensee_feature_vocabularyeditor_domain_usecase_suggestvocabularysensesusecasetest_kt_examplecheckresult"
     },
@@ -78605,7 +78605,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/domain/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/domain/usecase/SuggestVocabularySensesUseCaseTest.kt",
       "source_location": "L50",
-      "community": 85,
+      "community": 422,
       "norm_label": ".check()",
       "id": "usecase_suggestvocabularysensesusecasetest_flaggingexamplechecker_check"
     },
@@ -79703,7 +79703,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L1",
-      "community": 171,
+      "community": 288,
       "norm_label": "vocabularycapturemanualsenseblock.kt",
       "id": "screen_vocabularycapturemanualsenseblock"
     },
@@ -79712,7 +79712,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L23",
-      "community": 171,
+      "community": 288,
       "norm_label": "manualsenseblock()",
       "id": "screen_vocabularycapturemanualsenseblock_manualsenseblock"
     },
@@ -79721,7 +79721,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L23",
-      "community": 171,
+      "community": 288,
       "norm_label": "capturesense",
       "id": "shared_feature_vocabulary_editor_presentation_impl_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_presentation_impl_screen_vocabularycapturemanualsenseblock_kt_capturesense"
     },
@@ -79730,7 +79730,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L23",
-      "community": 171,
+      "community": 288,
       "norm_label": "grammarlabels",
       "id": "shared_feature_vocabulary_editor_presentation_impl_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_presentation_impl_screen_vocabularycapturemanualsenseblock_kt_grammarlabels"
     },
@@ -79739,7 +79739,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L23",
-      "community": 171,
+      "community": 288,
       "norm_label": "string",
       "id": "shared_feature_vocabulary_editor_presentation_impl_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_presentation_impl_screen_vocabularycapturemanualsenseblock_kt_string"
     },
@@ -79748,7 +79748,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L23",
-      "community": 171,
+      "community": 288,
       "norm_label": "textprovider",
       "id": "shared_feature_vocabulary_editor_presentation_impl_src_commonmain_kotlin_app_sensee_feature_vocabularyeditor_presentation_impl_screen_vocabularycapturemanualsenseblock_kt_textprovider"
     },
@@ -79757,7 +79757,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L83",
-      "community": 171,
+      "community": 288,
       "norm_label": "manualsensestatuscontent()",
       "id": "screen_vocabularycapturemanualsenseblock_manualsensestatuscontent"
     },
@@ -79766,7 +79766,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonMain/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/screen/VocabularyCaptureManualSenseBlock.kt",
       "source_location": "L136",
-      "community": 171,
+      "community": 288,
       "norm_label": "completewithassistantbutton()",
       "id": "screen_vocabularycapturemanualsenseblock_completewithassistantbutton"
     },
@@ -80090,7 +80090,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/component/VocabularyCaptureLogicTest.kt",
       "source_location": "L1",
-      "community": 43,
+      "community": 593,
       "norm_label": "vocabularycapturelogictest.kt",
       "id": "component_vocabularycapturelogictest"
     },
@@ -80306,7 +80306,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/component/VocabularyCaptureLogicTest.kt",
       "source_location": "L116",
-      "community": 152,
+      "community": 593,
       "norm_label": "unavailableverifier",
       "id": "component_vocabularycapturelogictest_unavailableverifier"
     },
@@ -80315,7 +80315,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/component/VocabularyCaptureLogicTest.kt",
       "source_location": "L117",
-      "community": 152,
+      "community": 593,
       "norm_label": ".verify()",
       "id": "component_vocabularycapturelogictest_unavailableverifier_verify"
     },
@@ -80324,7 +80324,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/component/VocabularyCaptureLogicTest.kt",
       "source_location": "L117",
-      "community": 152,
+      "community": 593,
       "norm_label": "lexicalverificationquery",
       "id": "shared_feature_vocabulary_editor_presentation_impl_src_commontest_kotlin_app_sensee_feature_vocabularyeditor_presentation_impl_component_vocabularycapturelogictest_kt_lexicalverificationquery"
     },
@@ -80333,7 +80333,7 @@
       "file_type": "code",
       "source_file": "shared/feature/vocabulary-editor/presentation/impl/src/commonTest/kotlin/app/sensee/feature/vocabularyEditor/presentation/impl/component/VocabularyCaptureLogicTest.kt",
       "source_location": "L117",
-      "community": 152,
+      "community": 593,
       "norm_label": "lexicalverificationreport",
       "id": "shared_feature_vocabulary_editor_presentation_impl_src_commontest_kotlin_app_sensee_feature_vocabularyeditor_presentation_impl_component_vocabularycapturelogictest_kt_lexicalverificationreport"
     },
@@ -81935,7 +81935,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/DefaultSenseRepositoryTest.kt",
       "source_location": "L34",
-      "community": 60,
+      "community": 351,
       "norm_label": "mutableclock",
       "id": "data_defaultsenserepositorytest_mutableclock"
     },
@@ -81944,7 +81944,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/DefaultSenseRepositoryTest.kt",
       "source_location": "L37",
-      "community": 60,
+      "community": 351,
       "norm_label": ".now()",
       "id": "data_defaultsenserepositorytest_mutableclock_now"
     },
@@ -81953,7 +81953,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/DefaultSenseRepositoryTest.kt",
       "source_location": "L37",
-      "community": 60,
+      "community": 351,
       "norm_label": "instant",
       "id": "shared_lexicon_data_src_jvmtest_kotlin_app_sensee_lexicon_data_defaultsenserepositorytest_kt_instant"
     },
@@ -82457,7 +82457,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L33",
-      "community": 94,
+      "community": 351,
       "norm_label": "mutableclock",
       "id": "data_sensesearchtest_mutableclock"
     },
@@ -82466,7 +82466,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L36",
-      "community": 94,
+      "community": 351,
       "norm_label": ".now()",
       "id": "data_sensesearchtest_mutableclock_now"
     },
@@ -82475,7 +82475,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L36",
-      "community": 94,
+      "community": 351,
       "norm_label": "instant",
       "id": "shared_lexicon_data_src_jvmtest_kotlin_app_sensee_lexicon_data_sensesearchtest_kt_instant"
     },
@@ -82511,7 +82511,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L45",
-      "community": 94,
+      "community": 501,
       "norm_label": "sequentialsenseidfactory",
       "id": "data_sensesearchtest_sequentialsenseidfactory"
     },
@@ -82520,7 +82520,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L48",
-      "community": 94,
+      "community": 501,
       "norm_label": ".mintpersonal()",
       "id": "data_sensesearchtest_sequentialsenseidfactory_mintpersonal"
     },
@@ -82529,7 +82529,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L48",
-      "community": 94,
+      "community": 501,
       "norm_label": "senseid",
       "id": "shared_lexicon_data_src_jvmtest_kotlin_app_sensee_lexicon_data_sensesearchtest_kt_senseid"
     },
@@ -82538,7 +82538,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/data/src/jvmTest/kotlin/app/sensee/lexicon/data/SenseSearchTest.kt",
       "source_location": "L50",
-      "community": 94,
+      "community": 501,
       "norm_label": ".forservicesource()",
       "id": "data_sensesearchtest_sequentialsenseidfactory_forservicesource"
     },
@@ -82799,7 +82799,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/LemmaKey.kt",
       "source_location": "L1",
-      "community": 159,
+      "community": 279,
       "norm_label": "lemmakey.kt",
       "id": "domain_lemmakey"
     },
@@ -82808,7 +82808,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/LemmaKey.kt",
       "source_location": "L12",
-      "community": 159,
+      "community": 279,
       "norm_label": "derivelemmakey()",
       "id": "domain_lemmakey_derivelemmakey"
     },
@@ -82817,7 +82817,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/LemmaKey.kt",
       "source_location": "L12",
-      "community": 159,
+      "community": 279,
       "norm_label": "sense",
       "id": "shared_lexicon_domain_src_commonmain_kotlin_app_sensee_lexicon_domain_lemmakey_kt_sense"
     },
@@ -82826,7 +82826,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonMain/kotlin/app/sensee/lexicon/domain/LemmaKey.kt",
       "source_location": "L12",
-      "community": 159,
+      "community": 279,
       "norm_label": "string",
       "id": "shared_lexicon_domain_src_commonmain_kotlin_app_sensee_lexicon_domain_lemmakey_kt_string"
     },
@@ -83429,7 +83429,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/LemmaKeyTest.kt",
       "source_location": "L1",
-      "community": 159,
+      "community": 279,
       "norm_label": "lemmakeytest.kt",
       "id": "domain_lemmakeytest"
     },
@@ -83438,7 +83438,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/LemmaKeyTest.kt",
       "source_location": "L7",
-      "community": 159,
+      "community": 279,
       "norm_label": "lemmakeytest",
       "id": "domain_lemmakeytest_lemmakeytest"
     },
@@ -83447,7 +83447,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/LemmaKeyTest.kt",
       "source_location": "L8",
-      "community": 159,
+      "community": 279,
       "norm_label": ".`the head lemma wins and is lowercased`()",
       "id": "domain_lemmakeytest_lemmakeytest_the_head_lemma_wins_and_is_lowercased"
     },
@@ -83456,7 +83456,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/LemmaKeyTest.kt",
       "source_location": "L15",
-      "community": 159,
+      "community": 279,
       "norm_label": ".`it falls back to the surface form when no lemma is resolved`()",
       "id": "domain_lemmakeytest_lemmakeytest_it_falls_back_to_the_surface_form_when_no_lemma_is_resolved"
     },
@@ -83465,7 +83465,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/LemmaKeyTest.kt",
       "source_location": "L22",
-      "community": 159,
+      "community": 279,
       "norm_label": ".`it falls back to the translation for a bare draft`()",
       "id": "domain_lemmakeytest_lemmakeytest_it_falls_back_to_the_translation_for_a_bare_draft"
     },
@@ -83654,7 +83654,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/SenseIdentityTest.kt",
       "source_location": "L1",
-      "community": 159,
+      "community": 131,
       "norm_label": "senseidentitytest.kt",
       "id": "domain_senseidentitytest"
     },
@@ -83663,7 +83663,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/SenseIdentityTest.kt",
       "source_location": "L8",
-      "community": 159,
+      "community": 131,
       "norm_label": "senseidentitytest",
       "id": "domain_senseidentitytest_senseidentitytest"
     },
@@ -83672,7 +83672,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/SenseIdentityTest.kt",
       "source_location": "L16",
-      "community": 159,
+      "community": 131,
       "norm_label": ".`content key ignores cefr`()",
       "id": "domain_senseidentitytest_senseidentitytest_content_key_ignores_cefr"
     },
@@ -83681,7 +83681,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/SenseIdentityTest.kt",
       "source_location": "L24",
-      "community": 159,
+      "community": 131,
       "norm_label": ".`content key is case insensitive on surface form and translation`()",
       "id": "domain_senseidentitytest_senseidentitytest_content_key_is_case_insensitive_on_surface_form_and_translation"
     },
@@ -83690,7 +83690,7 @@
       "file_type": "code",
       "source_file": "shared/lexicon/domain/src/commonTest/kotlin/app/sensee/lexicon/domain/SenseIdentityTest.kt",
       "source_location": "L30",
-      "community": 159,
+      "community": 131,
       "norm_label": ".`content key separates senses by translation`()",
       "id": "domain_senseidentitytest_senseidentitytest_content_key_separates_senses_by_translation"
     },
@@ -85704,8 +85704,8 @@
     {
       "label": "List",
       "file_type": "code",
-      "source_file": "shared/core/observability/src/commonMain/kotlin/app/sensee/core/observability/logging/KermitLogSink.kt",
-      "source_location": "L45",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L71",
       "community": 200,
       "norm_label": "list",
       "id": "list"
@@ -85985,7 +85985,7 @@
       "file_type": "code",
       "source_file": "shared/feature/library/data/src/jvmTest/kotlin/app/sensee/feature/library/data/local/CatalogLocalDataSourceTest.kt",
       "source_location": "L78",
-      "community": 167,
+      "community": 14,
       "norm_label": "sense",
       "id": "sense"
     },
@@ -86195,6 +86195,87 @@
       "community": 65,
       "norm_label": "jsonarray",
       "id": "jsonarray"
+    },
+    {
+      "label": "AiKeyCheck",
+      "file_type": "code",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L28",
+      "community": 263,
+      "norm_label": "aikeycheck",
+      "id": "aikeycheck"
+    },
+    {
+      "label": ".displayModels()",
+      "file_type": "code",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L71",
+      "community": 263,
+      "norm_label": ".displaymodels()",
+      "id": "catalog_llmmodelcatalog_llmmodelcatalog_displaymodels"
+    },
+    {
+      "label": "MockEngine",
+      "file_type": "code",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L24",
+      "community": 210,
+      "norm_label": "mockengine",
+      "id": "mockengine"
+    },
+    {
+      "label": ".`a valid key returns chat-suitable fallback models when no curated model is present`()",
+      "file_type": "code",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L52",
+      "community": 210,
+      "norm_label": ".`a valid key returns chat-suitable fallback models when no curated model is present`()",
+      "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_chat_suitable_fallback_models_when_no_curated_model_is_present"
+    },
+    {
+      "label": ".`a valid key returns the curated enrichment shortlist when preferred models are present`()",
+      "file_type": "code",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L62",
+      "community": 210,
+      "norm_label": ".`a valid key returns the curated enrichment shortlist when preferred models are present`()",
+      "id": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_the_curated_enrichment_shortlist_when_preferred_models_are_present"
+    },
+    {
+      "label": "AiProviderTest.kt",
+      "file_type": "code",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L1",
+      "community": 413,
+      "norm_label": "aiprovidertest.kt",
+      "id": "domain_aiprovidertest"
+    },
+    {
+      "label": "AiProviderTest",
+      "file_type": "code",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L7",
+      "community": 413,
+      "norm_label": "aiprovidertest",
+      "id": "domain_aiprovidertest_aiprovidertest"
+    },
+    {
+      "label": ".`OpenAI structured output model detection includes dotted GPT 5 families`()",
+      "file_type": "code",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L8",
+      "community": 413,
+      "norm_label": ".`openai structured output model detection includes dotted gpt 5 families`()",
+      "id": "domain_aiprovidertest_aiprovidertest_openai_structured_output_model_detection_includes_dotted_gpt_5_families"
+    },
+    {
+      "label": ".`OpenRouter stays on plain json mode for OpenAI-compatible models`()",
+      "file_type": "code",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L16",
+      "community": 413,
+      "norm_label": ".`openrouter stays on plain json mode for openai-compatible models`()",
+      "id": "domain_aiprovidertest_aiprovidertest_openrouter_stays_on_plain_json_mode_for_openai_compatible_models"
     }
   ],
   "links": [
@@ -87564,6 +87645,17 @@
       "confidence_score": 1.0,
       "source": "int",
       "target": "agents_validate_agent_instructions_validationreport_warning_count"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L53",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "int",
+      "target": "catalog_llmmodelcatalog_llmmodelcatalog_reasonfor"
     },
     {
       "relation": "references",
@@ -111096,6 +111188,16 @@
       "target": "catalog_llmmodelcatalog_llmmodelcatalog_verifykey"
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalog_llmmodelcatalog",
+      "target": "catalog_llmmodelcatalog_llmmodelcatalog_displaymodels"
+    },
+    {
       "relation": "implements",
       "confidence": "EXTRACTED",
       "source_file": "shared/feature/profile/presentation/impl/src/commonTest/kotlin/app/sensee/feature/profile/presentation/impl/aisettings/ProfileAiSettingsLogicTest.kt",
@@ -111164,6 +111266,28 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L28",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalog_llmmodelcatalog_verifykey",
+      "target": "aikeycheck"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalog_llmmodelcatalog_verifykey",
+      "target": "catalog_llmmodelcatalog_llmmodelcatalog_displaymodels"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
       "source_location": "L60",
       "weight": 1.0,
       "context": "parameter_type",
@@ -111181,6 +111305,17 @@
       "confidence_score": 1.0,
       "source": "shared_ai_llm_src_commonmain_kotlin_app_sensee_ai_llm_catalog_llmmodelcatalog_kt_string",
       "target": "catalog_llmmodelcatalog_llmmodelcatalog_reasonfor"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L71",
+      "weight": 1.0,
+      "context": "generic_arg",
+      "confidence_score": 1.0,
+      "source": "shared_ai_llm_src_commonmain_kotlin_app_sensee_ai_llm_catalog_llmmodelcatalog_kt_string",
+      "target": "catalog_llmmodelcatalog_llmmodelcatalog_displaymodels"
     },
     {
       "relation": "references",
@@ -112323,6 +112458,26 @@
       "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_non_chat_models_are_filtered_out_of_a_valid_listing"
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest",
+      "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_chat_suitable_fallback_models_when_no_curated_model_is_present"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest",
+      "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_the_curated_enrichment_shortlist_when_preferred_models_are_present"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -112409,6 +112564,39 @@
       "confidence_score": 1.0,
       "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_catalog",
       "target": "shared_ai_llm_src_jvmtest_kotlin_app_sensee_ai_llm_catalog_llmmodelcatalogtest_kt_mockengine"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L57",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_catalog",
+      "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_chat_suitable_fallback_models_when_no_curated_model_is_present"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_catalog",
+      "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_the_curated_enrichment_shortlist_when_preferred_models_are_present"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_catalog",
+      "target": "mockengine"
     },
     {
       "relation": "calls",
@@ -112508,6 +112696,72 @@
       "confidence_score": 1.0,
       "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_jsonok",
       "target": "shared_ai_llm_src_jvmtest_kotlin_app_sensee_ai_llm_catalog_llmmodelcatalogtest_kt_string"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L28",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_jsonok",
+      "target": "mockengine"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_jsonok",
+      "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_chat_suitable_fallback_models_when_no_curated_model_is_present"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_jsonok",
+      "target": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_valid_key_returns_the_curated_enrichment_shortlist_when_preferred_models_are_present"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_blank_key_is_invalid_without_calling_the_provider",
+      "target": "mockengine"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L130",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_a_rejected_key_reports_an_invalid_reason",
+      "target": "mockengine"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/jvmTest/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalogTest.kt",
+      "source_location": "L140",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "catalog_llmmodelcatalogtest_llmmodelcatalogtest_an_unreachable_provider_is_invalid_rather_than_a_crash",
+      "target": "mockengine"
     },
     {
       "relation": "contains",
@@ -258291,6 +258545,17 @@
       "target": "logging_kermitlogsinktest_kermitlogsinktest_a_short_message_stays_a_single_unlabeled_chunk"
     },
     {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/ai/llm/src/commonMain/kotlin/app/sensee/ai/llm/catalog/LlmModelCatalog.kt",
+      "source_location": "L71",
+      "weight": 1.0,
+      "context": "return_type",
+      "confidence_score": 1.0,
+      "source": "list",
+      "target": "catalog_llmmodelcatalog_llmmodelcatalog_displaymodels"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "shared/core/observability/src/commonTest/kotlin/app/sensee/core/observability/logging/KermitLogSinkTest.kt",
@@ -258500,6 +258765,36 @@
       "confidence_score": 1.0,
       "source": "request_builtinenrichmentrequestmodifiers_finalqualitycheckmodifier",
       "target": "request_builtinenrichmentrequestmodifiers_finalqualitycheckmodifier_contribute"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "domain_aiprovidertest",
+      "target": "domain_aiprovidertest_aiprovidertest"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "domain_aiprovidertest_aiprovidertest",
+      "target": "domain_aiprovidertest_aiprovidertest_openai_structured_output_model_detection_includes_dotted_gpt_5_families"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "shared/settings/domain/src/commonTest/kotlin/app/sensee/settings/domain/AiProviderTest.kt",
+      "source_location": "L16",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "domain_aiprovidertest_aiprovidertest",
+      "target": "domain_aiprovidertest_aiprovidertest_openrouter_stays_on_plain_json_mode_for_openai_compatible_models"
     }
   ]
 }

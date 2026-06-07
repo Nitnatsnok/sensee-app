@@ -50,13 +50,27 @@ class LlmModelCatalogTest {
         }
 
     @Test
-    fun `a valid key returns the chat-suitable models`() =
+    fun `a valid key returns chat-suitable fallback models when no curated model is present`() =
         runBlocking {
             val engine = jsonOk("""{"data":[{"id":"gpt-4o"},{"id":"o3-mini"}]}""")
 
             val result = catalog(engine).verifyKey("https://api.openai.com/", "sk-test")
 
             assertEquals(AiKeyCheck.Valid(listOf("gpt-4o", "o3-mini")), result)
+        }
+
+    @Test
+    fun `a valid key returns the curated enrichment shortlist when preferred models are present`() =
+        runBlocking {
+            val engine =
+                jsonOk(
+                    """{"data":[{"id":"gpt-4o"},{"id":"gpt-5.4-mini"},""" +
+                        """{"id":"gpt-5.5"},{"id":"gpt-4.1-mini"},{"id":"o3-mini"}]}""",
+                )
+
+            val result = catalog(engine).verifyKey("https://api.openai.com/", "sk-test")
+
+            assertEquals(AiKeyCheck.Valid(listOf("gpt-5.5", "gpt-5.4-mini", "gpt-4.1-mini")), result)
         }
 
     @Test
@@ -73,7 +87,7 @@ class LlmModelCatalogTest {
 
             val result = catalog(engine).verifyKey("https://api.openai.com/", "sk-test")
 
-            assertEquals(AiKeyCheck.Valid(listOf("gpt-4o", "o3-mini", "openai/gpt-4o-mini")), result)
+            assertEquals(AiKeyCheck.Valid(listOf("openai/gpt-4o-mini")), result)
         }
 
     @Test
@@ -94,7 +108,7 @@ class LlmModelCatalogTest {
 
             assertEquals(
                 AiKeyCheck.Valid(
-                    listOf("gpt-4o", "gpt-4o-mini", "o3-mini", "openai/gpt-4o-mini", "anthropic/claude-3.5-sonnet"),
+                    listOf("openai/gpt-4o-mini", "anthropic/claude-3.5-sonnet"),
                 ),
                 result,
             )

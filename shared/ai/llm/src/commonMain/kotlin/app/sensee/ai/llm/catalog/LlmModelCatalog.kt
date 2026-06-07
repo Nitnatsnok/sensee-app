@@ -15,12 +15,12 @@ import io.ktor.client.plugins.ResponseException
  * image, moderation and base models that cannot do the lexicographer
  * chat-completion task; on top of that it carries dated snapshots
  * (`gpt-4o-2024-05-13`, `-1106-preview`, …) and superseded families
- * (`gpt-3.5`, `-instruct`, `vision-preview`). Both are filtered out so the
- * picker stays short and offers only canonical, current chat aliases. This is
- * a heuristic, not a hardcoded allowlist — it stays provider-agnostic
- * (OpenRouter `vendor/model` ids survive) and needs no upkeep when new models
- * ship. An empty result is still [AiKeyCheck.Valid] (the key works, the
- * provider just exposes no usable chat model — the UI then offers manual entry).
+ * (`gpt-3.5`, `-instruct`, `vision-preview`). Both are filtered out, then the
+ * picker is narrowed to the curated enrichment shortlist when those models are
+ * present. If a compatible provider exposes none of the curated ids, the first
+ * few chat-suitable aliases survive as a bounded fallback; an empty result is
+ * still [AiKeyCheck.Valid] (the key works, the provider just exposes no usable
+ * chat model — the UI then offers manual entry).
  */
 public class LlmModelCatalog internal constructor(
     private val api: LlmModelsApi,
@@ -34,7 +34,7 @@ public class LlmModelCatalog internal constructor(
         }
         return runCatchingCancellable {
             when (val fetch = api.fetchModelIds(apiKey, baseUrl)) {
-                is ModelsFetch.Ok -> AiKeyCheck.Valid(fetch.ids.filter(::isChatSuitable))
+                is ModelsFetch.Ok -> AiKeyCheck.Valid(displayModels(fetch.ids))
                 is ModelsFetch.Rejected ->
                     AiKeyCheck.Invalid(reasonFor(fetch.statusCode))
             }
@@ -68,7 +68,27 @@ public class LlmModelCatalog internal constructor(
         return CHAT_PREFIXES.any { normalized.startsWith(it) } || normalized.contains('/')
     }
 
+    private fun displayModels(ids: List<String>): List<String> {
+        val chatSuitable = ids.filter(::isChatSuitable)
+        val preferred = PREFERRED_CHAT_MODELS.filter { it in chatSuitable }
+        return preferred.ifEmpty { chatSuitable.take(MAX_DISPLAY_MODELS) }
+    }
+
     private companion object {
+        private const val MAX_DISPLAY_MODELS = 8
+
+        private val PREFERRED_CHAT_MODELS =
+            listOf(
+                "gpt-5.5",
+                "gpt-5.4-mini",
+                "gpt-4.1-mini",
+                "openai/gpt-5.5",
+                "openai/gpt-5.4-mini",
+                "openai/gpt-4.1-mini",
+                "openai/gpt-4o-mini",
+                "anthropic/claude-3.5-sonnet",
+            )
+
         // Non-chat OpenAI-compatible families: embeddings, audio, image,
         // moderation, legacy base/completion models, and codex (a separate
         // /v1/responses code-only line, not chat completions).

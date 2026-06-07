@@ -16,13 +16,13 @@ public enum class AiProvider(
         id = "openai",
         displayName = "OpenAI",
         baseUrl = "https://api.openai.com/",
-        knownModels = listOf("gpt-4o-mini", "gpt-4o", "gpt-4.1-mini"),
+        knownModels = listOf("gpt-5.5", "gpt-5.4-mini", "gpt-4.1-mini"),
     ),
     OpenRouter(
         id = "openrouter",
         displayName = "OpenRouter",
         baseUrl = "https://openrouter.ai/api/",
-        knownModels = listOf("openai/gpt-4o-mini", "anthropic/claude-3.5-sonnet"),
+        knownModels = listOf("openai/gpt-5.5", "openai/gpt-5.4-mini", "openai/gpt-4.1-mini"),
     ),
     ;
 
@@ -55,6 +55,6 @@ private val OpenAiStructuredOutputModelPrefixes =
 private fun String.isOpenAiStructuredOutputModel(): Boolean {
     val normalized = trim().lowercase()
     return OpenAiStructuredOutputModelPrefixes.any { prefix ->
-        normalized == prefix || normalized.startsWith("$prefix-")
+        normalized == prefix || normalized.startsWith("$prefix-") || normalized.startsWith("$prefix.")
     }
 }
