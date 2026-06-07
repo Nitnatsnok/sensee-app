@@ -14,11 +14,13 @@ public val DefaultEnrichmentRequestModifiers: Set<EnrichmentRequestModifier> =
         FormatModifier,
         SenseSplittingModifier,
         LanguageModifier,
+        LexicographicDecisionRulesModifier,
         SenseCoverageModifier,
         GroundingModifier,
         PolysemyHintsModifier,
         PreferredTopicsModifier,
         PhrasalVerbCoverageModifier,
+        FinalQualityCheckModifier,
     )
 
 /** "You are a lexicographer." — provider role assertion. */
@@ -106,6 +108,57 @@ public object LanguageModifier : EnrichmentRequestModifier {
                 "and 'usage_note' are in ${request.nativeLanguageTag} (the learner " +
                 "picks senses by them); 'examples' are in ${request.studyLanguageTag} " +
                 "with the studied unit in [[ ]]."
+        return PromptContribution(systemFragments = listOf(fragment))
+    }
+}
+
+/** Focused lexical classification rules that prevent common LLM over/under-splitting. */
+public object LexicographicDecisionRulesModifier : EnrichmentRequestModifier {
+    override val id: String = "lexicographic-decision-rules"
+    override val phase: PromptPhase = PromptPhase.CrossCutting
+
+    override fun contribute(context: EnrichmentRequestContext): PromptContribution =
+        PromptContribution(
+            systemFragments =
+                listOf(
+                    "Lexicographic decision rules: adjective/noun/verb + governed " +
+                        "preposition stays classified by the lexical head, not as a " +
+                        "phrase/phrasal_verb (interested in → adjective with " +
+                        "preposition_government in; reason for → noun with " +
+                        "preposition_government for; depend on → verb with " +
+                        "preposition_government on). A fixed to before a following verb " +
+                        "is part of the surface form and the complement after it is " +
+                        "bare_infinitive: in order to <verb>, so as to <verb>. For " +
+                        "idioms and fixed expressions return the lexicalized idiomatic " +
+                        "sense; add a transparent literal sense only when it is a common " +
+                        "dictionary sense of the whole entered unit or the user note asks " +
+                        "for literal use. For Russian input, surface_form/base_lemma stay " +
+                        "English and translation stays Russian — never put English " +
+                        "options like \"to come across\" in translation.",
+                ),
+        )
+}
+
+/** Final prompt-side guardrail before the model emits JSON. */
+public object FinalQualityCheckModifier : EnrichmentRequestModifier {
+    override val id: String = "quality-check"
+    override val phase: PromptPhase = PromptPhase.Preferences
+
+    override fun contribute(context: EnrichmentRequestContext): PromptContribution {
+        val request = context.request
+        val fragment =
+            "Final quality check before JSON: every item must be a real candidate " +
+                "sense, not a restatement of the prompt or user note. " +
+                "`translation`, `explanation` and `usage_note` must be " +
+                "${request.nativeLanguageTag}-only; never put ${request.studyLanguageTag} " +
+                "infinitive glosses or lemmas there. `surface_form`, `base_lemma`, " +
+                "`head_lemma`, `examples.sentence`, `synonyms`, `antonyms`, `collocations`, " +
+                "`word_family` and `components` must stay ${request.studyLanguageTag}-only. " +
+                "Every example sentence must contain [[ ]] around the studied occurrence; " +
+                "every example translation must be the full native-language sentence; " +
+                "every alignment chunk must have both source and target, and " +
+                "alignment.source has no [[ ]] markers. If an optional field is " +
+                "uncertain, omit it rather than guessing."
         return PromptContribution(systemFragments = listOf(fragment))
     }
 }

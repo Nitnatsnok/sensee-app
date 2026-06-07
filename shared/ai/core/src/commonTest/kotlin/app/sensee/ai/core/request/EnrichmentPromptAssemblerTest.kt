@@ -89,6 +89,27 @@ class EnrichmentPromptAssemblerTest {
     }
 
     @Test
+    fun `lexicographic decision rules modifier carries prompt fixes for common false splits`() {
+        val text = LexicographicDecisionRulesModifier.contribute(emptyContext).systemFragments.single()
+
+        assertTrue(text.contains("interested in"))
+        assertTrue(text.contains("preposition_government in"))
+        assertTrue(text.contains("in order to <verb>"))
+        assertTrue(text.contains("bare_infinitive"))
+        assertTrue(text.contains("translation stays Russian"))
+    }
+
+    @Test
+    fun `final quality check modifier carries language and example guardrails`() {
+        val text = FinalQualityCheckModifier.contribute(emptyContext).systemFragments.single()
+
+        assertTrue(text.contains("must be ru-only"))
+        assertTrue(text.contains("must stay en-only"))
+        assertTrue(text.contains("alignment.source has no [[ ]] markers"))
+        assertTrue(text.contains("omit it rather than guessing"))
+    }
+
+    @Test
     fun `sense coverage modifier returns the rule matching the configured coverage`() {
         val minimal = coverageFragment(SenseCoverage.Minimal)
         val common = coverageFragment(SenseCoverage.Common)

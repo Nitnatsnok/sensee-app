@@ -80,6 +80,16 @@ class EnrichmentSchemaTest {
         assertEquals(EnrichmentSchema.fields.map { it.serialName }.toSet(), itemProps.keys)
         val translation = itemProps.obj("translation")
         assertTrue(translation.str("description").contains("native-language equivalent"))
+        assertTrue(translation.str("description").contains("not an infinitive gloss"))
+        val examples = itemProps.obj("examples")
+        assertTrue(examples.str("description").contains("whole study-language sentence"))
+        assertTrue(examples.str("description").contains("without [[ ]] markers"))
+        val components = itemProps.obj("components")
+        assertTrue(components.str("description").contains("never include angle-bracket argument slots"))
+        val wordFamily = itemProps.obj("word_family")
+        assertTrue(wordFamily.str("description").contains("not synonyms, translations"))
+        val prepositionGovernment = itemProps.obj("preposition_government")
+        assertTrue(prepositionGovernment.str("description").contains("bare prepositions only"))
     }
 
     @Test

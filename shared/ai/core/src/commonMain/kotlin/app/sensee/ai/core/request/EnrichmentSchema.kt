@@ -67,7 +67,12 @@ public object EnrichmentSchema {
     /** Order matches [EnrichmentItemV1] so [jsonSkeleton] stays stable. */
     public val fields: List<Field> =
         listOf(
-            text("translation", "short native-language equivalent of this sense"),
+            text(
+                "translation",
+                "short native-language equivalent of this sense; not the " +
+                    "study-language lemma, not an infinitive gloss, not a " +
+                    "comma-separated list of study-language options",
+            ),
             text(
                 "surface_form",
                 "the unit as written for THIS sense: fixed parts as plain words " +
@@ -110,7 +115,10 @@ public object EnrichmentSchema {
                         "(a fixed grammatical filler, e.g. the in `kick the bucket`). " +
                         "Example: `come across` → [{text:come, role:head, " +
                         "salience:primary}, {text:across, role:particle, " +
-                        "salience:secondary}]. Omit for single-word units",
+                        "salience:secondary}]. Include optional fixed words as plain " +
+                        "text without brackets when they are part of the lexical " +
+                        "pattern; never include angle-bracket argument slots like " +
+                        "<someone> or <verb>. Omit for single-word units",
             ),
             text(
                 "explanation",
@@ -149,8 +157,14 @@ public object EnrichmentSchema {
                         "occurrence into several spans. `translation` is the " +
                         "native-language rendering of the same sentence. `alignment` is " +
                         "the pre-segmented phrase-pair list mapping study-language chunks " +
-                        "to their native-language counterparts; chunks should be " +
-                        "contiguous and cover the full sentence",
+                        "to their native-language counterparts. It is not a target-only " +
+                        "gloss: provide natural phrase chunks in reading order, usually " +
+                        "3-8 chunks for a normal sentence; together they should cover the " +
+                        "whole study-language sentence and the whole native-language " +
+                        "translation. Include the chunk containing the studied unit; " +
+                        "alignment.source keeps the surface words without [[ ]] markers. " +
+                        "Do not return a single alignment chunk unless the sentence is " +
+                        "genuinely one phrase",
             ),
             Field(
                 serialName = "synonyms",
@@ -183,7 +197,8 @@ public object EnrichmentSchema {
                     ),
                 guidance =
                     "derivational family of base_lemma: dictionary words built from the " +
-                        "same root, each {lemma, unit_type} (e.g. for decide: " +
+                        "same root, each {lemma, unit_type}; not synonyms, translations " +
+                        "or inflected forms (e.g. for decide: " +
                         "{decision, noun}, {decisive, adjective}, {decisively, adverb}). " +
                         "This is the lemma→derivative link the app shows. Omit for " +
                         "multi-word units (phrasal verbs, idioms, phrases) and when no " +
@@ -203,7 +218,8 @@ public object EnrichmentSchema {
                 guidance =
                     "ONLY governed, meaning-preserving prepositions: group ones " +
                         "interchangeable for THIS sense (e.g. different from/to/than) " +
-                        "with an optional example. A preposition/particle that CHANGES " +
+                        "with an optional example. Alternatives are bare prepositions " +
+                        "only, not full phrases or translated glosses. A preposition/particle that CHANGES " +
                         "the meaning (look at vs look after vs look for) is a separate " +
                         "sense item, not an alternative; a fixed part of the unit " +
                         "(look down on) goes in surface_form, not here",
