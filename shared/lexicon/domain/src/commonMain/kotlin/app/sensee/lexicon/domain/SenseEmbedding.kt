@@ -70,11 +70,11 @@ public interface EmbeddingPort {
     /**
      * Embed [stored] and persist its vector, best-effort. Returns the vector, or
      * `null` when no provider answered (no key / offline / error) — the sense row
-     * is left "not embedded" for a later lazy backfill. Never throws for a
+     * is left "not embedded" (no `sense_embedding` row). Never throws for a
      * provider miss. Callers run it *after* the sense row has committed, outside
      * the write transaction and within a bounded budget ([EAGER_EMBED_BUDGET_MS]),
-     * so a miss or overrun leaves the sense for a later backfill and never fails
-     * or blocks a save.
+     * so a miss or overrun never fails or blocks a save. A missing row marks the
+     * sense for a future re-embed; the backfill trigger itself is not built yet.
      */
     public suspend fun embed(stored: StoredSense): EmbeddingVector?
 

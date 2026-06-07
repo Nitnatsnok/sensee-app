@@ -41,6 +41,19 @@ internal object SenseCatalogProjection {
     /** The owning sense_id of a card id, stripping a trailing form slot. */
     fun senseIdOf(cardId: CardId): SenseId = SenseId(cardId.value.substringBefore(FORM_INFIX))
 
+    /**
+     * Re-base a card id onto another sense, preserving any trailing form slot, so
+     * SRS cloning (claim) routes through the one place that owns the form-key scheme
+     * instead of re-deriving it with string surgery.
+     */
+    fun rebaseCardId(
+        cardId: CardId,
+        to: SenseId,
+    ): SrsCardId {
+        val slot = cardId.value.substringAfter(FORM_INFIX, missingDelimiterValue = "")
+        return SrsCardId(if (slot.isEmpty()) to.value else to.value + FORM_INFIX + slot)
+    }
+
     fun capturedDeck(senses: List<StoredSense>): DeckWithCards? {
         val cards = cardsFrom(senses)
         if (cards.isEmpty()) return null

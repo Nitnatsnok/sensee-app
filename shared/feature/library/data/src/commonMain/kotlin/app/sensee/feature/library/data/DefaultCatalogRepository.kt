@@ -59,7 +59,7 @@ public class DefaultCatalogRepository(
      * then ingest its senses/SRS/membership and flip the subscribed flag in ONE
      * transaction, so adopting commits atomically.
      */
-    public suspend fun subscribeDeck(deckId: DeckId) {
+    internal suspend fun subscribeDeck(deckId: DeckId) {
         localDataSource.ingestDeck(remoteDataSource.getDeck(deckId.value), subscribe = true)
     }
 

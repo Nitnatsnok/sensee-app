@@ -13,6 +13,6 @@ copy-on-write-fork как механизма нет — это та же ядр�
 UX-аффорданс «править подписанный → предложить Завладеть» поверх ядровой механики `claim`.
 
 Связи::
-* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§2 subscribe/claim, §4 service sync)
+* ADR: `docs/adr/0001-sense-first-lexical-model.adoc` (subscribe/claim), `docs/adr/0002-feature-owned-schema-with-aggregated-database.adoc` (claim-оркестратор)
 * Код: `CatalogAdoptionRepository`/`ClaimRepository` (subscribe/claim), `sense.origin`, SRS-клон по `sense_id`
 * Сценарий: `docs/scenarios/library.feature`

@@ -20,6 +20,7 @@ import app.sensee.ai.llm.api.LlmEnrichmentApi
 import app.sensee.ai.llm.config.AiCredentialsProvider
 import app.sensee.ai.llm.config.LlmConfig
 import app.sensee.ai.llm.config.LlmConfigProvider
+import app.sensee.ai.llm.config.validApiKey
 import app.sensee.ai.llm.dto.ChatMessageDto
 import app.sensee.ai.llm.dto.JsonObjectResponseFormat
 import app.sensee.ai.llm.dto.jsonSchemaResponseFormat
@@ -56,7 +57,7 @@ public class LlmAiEnrichmentClient internal constructor(
     override suspend fun enrich(request: EnrichmentRequest): EnrichmentResult {
         return runCatchingCancellable {
             val apiKey =
-                credentials.apiKey()?.takeIf { it.isNotBlank() }
+                credentials.validApiKey()
                     ?: return EnrichmentResult.unavailable("AI provider is not configured")
             val config = configProvider.config()
             val invariants = taxonomyInvariantsProvider.invariants() ?: TaxonomyInvariants.EMPTY

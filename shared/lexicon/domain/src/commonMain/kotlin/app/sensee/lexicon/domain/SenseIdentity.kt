@@ -23,8 +23,22 @@ public fun deriveSenseContentKey(sense: Sense): String {
     return listOf(
         surfaceForm,
         sense.unitType?.id.orEmpty(),
-        sense.translation.trim().lowercase(),
+        normalizeTranslation(sense.translation),
     ).joinToString(separator = "|", transform = ::stableIdPart)
 }
+
+// The translation is free text, so fold trivial variants of one sense to a single
+// key: lowercase, collapse internal whitespace runs, and drop surrounding
+// whitespace/punctuation — without merging genuinely different translations. The
+// surface form is already normalized by display(); CEFR/lemma are not identity.
+private fun normalizeTranslation(value: String): String =
+    value
+        .lowercase()
+        .replace(WHITESPACE_RUN, " ")
+        .trim { it.isWhitespace() || it in TRANSLATION_EDGE_PUNCTUATION }
+
+private val WHITESPACE_RUN = Regex("\\s+")
+
+private const val TRANSLATION_EDGE_PUNCTUATION = ".,;:!?\"'«»…"
 
 private fun stableIdPart(value: String): String = "${value.length}:$value"

@@ -8,6 +8,7 @@ import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.core.database.CatalogEntityQueries
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.observability.logging.AppLogger
+import app.sensee.database.DatabaseTransactionRunner
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.data.SenseCatalogProjection
 import app.sensee.feature.library.data.remote.DeckDto
@@ -53,6 +54,7 @@ import kotlinx.coroutines.flow.map
 @Inject
 public class CatalogLocalDataSource(
     private val databaseProvider: SenseeDatabaseProvider,
+    private val transactionRunner: DatabaseTransactionRunner,
     private val senseReadRepository: SenseReadRepository,
     private val senseWriteRepository: SenseWriteRepository,
     private val srsStorage: SrsStorage<FsrsParameters>,
@@ -92,7 +94,7 @@ public class CatalogLocalDataSource(
         subscribe: Boolean = false,
     ) {
         val database = databaseProvider.database()
-        database.transaction {
+        transactionRunner.transaction {
             val memberships = mutableListOf<Pair<String, Int>>()
             deck.cards.forEach { card ->
                 val sense = card.sense.toDomain()
@@ -177,14 +179,18 @@ public class CatalogLocalDataSource(
     public suspend fun selectDeckWithCards(deckId: String): DeckWithCards? {
         val database = databaseProvider.database()
         val deckRow = database.catalogEntityQueries.selectDeckById(deckId).awaitAsOneOrNull() ?: return null
-        val stored =
+        // Bulk-load member senses in one query, then restore the membership order
+        // (and drop any sense that is gone) — no per-card round-trip.
+        val ids =
             database.catalogEntityQueries
                 .selectMembershipByDeck(deckId)
                 .awaitAsList()
-                .mapNotNull { senseReadRepository.getById(SenseId(it.sense_id)) }
+                .map { SenseId(it.sense_id) }
+        val byId = senseReadRepository.getByIds(ids).associateBy { it.id }
+        val stored = ids.mapNotNull { byId[it] }
         return DeckWithCards(
             deck = deck(deckRow.id, deckRow.title, deckRow.description, deckRow.subscribed, deckRow.card_count),
-            cards = SenseCatalogProjection.cardsFrom(stored).map { materialize(it) },
+            cards = materializeAll(SenseCatalogProjection.cardsFrom(stored)),
         )
     }
 
@@ -193,13 +199,13 @@ public class CatalogLocalDataSource(
             SenseCatalogProjection.capturedDeck(
                 senseReadRepository.listByStatus(SenseStatus.Confirmed).personalConfirmed(),
             )
-        return deck?.copy(cards = deck.cards.map { materialize(it) })
+        return deck?.copy(cards = materializeAll(deck.cards))
     }
 
     public suspend fun selectCard(cardId: String): Card? {
         val stored = senseReadRepository.getById(SenseCatalogProjection.senseIdOf(CardId(cardId))) ?: return null
         val card = SenseCatalogProjection.cardsFor(stored).firstOrNull { it.id.value == cardId } ?: return null
-        return materialize(card)
+        return materializeAll(listOf(card)).firstOrNull()
     }
 
     public suspend fun selectLemma(lemmaId: String): Lemma? {
@@ -208,13 +214,20 @@ public class CatalogLocalDataSource(
         return SenseCatalogProjection.lemma(stored, LemmaId(lemmaId))
     }
 
-    // Captured cards are re-derived each read (ADR-001 projection), but their
-    // review state is durable: materialize the first SRS row before Practice can
-    // submit a review, then overlay stored progress on later reads.
-    private suspend fun materialize(card: Card): Card {
-        val cardId = SrsCardId(card.id.value)
-        val stored = srsStorage.getCard(cardId)
-        return if (stored != null) card.copy(srs = stored) else card.copy(srs = srsStorage.saveCardIfAbsent(card.srs))
+    // A projected card carries a fresh New SRS snapshot; overlay the durable one
+    // when it exists. The durable seat MUST exist before Practice can review (the
+    // SRS engine throws on a missing card) and a captured Personal sense has no
+    // ingest step to create it, so the first read of an un-practiced card
+    // materializes the seat — a deliberate, idempotent atomic insert-if-absent, not
+    // an incidental write. Bulk to avoid an N+1 over a deck. (Materializing instead
+    // at confirm would pull the SRS engine + persistence into vocabulary-editor's
+    // domain module, a worse boundary than this localized seam.)
+    private suspend fun materializeAll(cards: List<Card>): List<Card> {
+        if (cards.isEmpty()) return cards
+        val stored = srsStorage.getCards(cards.map { SrsCardId(it.id.value) })
+        return cards.map { card ->
+            card.copy(srs = stored[SrsCardId(card.id.value)] ?: srsStorage.saveCardIfAbsent(card.srs))
+        }
     }
 }
 

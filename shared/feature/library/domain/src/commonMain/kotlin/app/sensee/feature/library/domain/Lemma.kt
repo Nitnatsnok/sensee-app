@@ -28,10 +28,10 @@ public data class LemmaDerivative(
 
 /**
  * Flattens `wordFamily` across [senses] into a deduplicated [LemmaDerivative]
- * list. Trim + case-fold for dedup, drop blanks. Single source of truth (I7):
- * both the captured-derivation path (`CapturedCatalogDerivation`) and the
- * service-catalog read path (`CatalogLocalDataSource`) call this, so the
- * lemma-page word family stays identical no matter which side produces it.
+ * list. Trim + case-fold for dedup, drop blanks. Single source of truth: the
+ * catalog lemma projection calls this for both the captured (Personal) and the
+ * subscribed (Service) lemma pages, so the word family stays identical no matter
+ * which senses produce it.
  */
 public fun derivativesOfSenses(senses: Sequence<Sense>): List<LemmaDerivative> {
     val seen = mutableSetOf<String>()

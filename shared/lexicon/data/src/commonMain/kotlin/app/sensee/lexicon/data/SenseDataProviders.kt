@@ -26,7 +26,7 @@ public interface SenseDataProviders {
     public fun provideSenseWriteRepository(repository: DefaultSenseRepository): SenseWriteRepository = repository
 
     @Provides
-    public fun provideSearchPort(repository: DefaultSenseRepository): SearchPort = repository
+    public fun provideSearchPort(search: DefaultSenseSearch): SearchPort = search
 
     @Provides
     public fun provideLexicalGraphReader(reader: DefaultLexicalGraphReader): LexicalGraphReader = reader

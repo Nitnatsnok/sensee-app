@@ -16,11 +16,13 @@
 | link:EB-3-sampled-practice-session.adoc[EB-3] | Сессия повторения по запросу или подмножеству вместо только готового `Deck` | practice
 | link:EB-5-card-transcription-field.adoc[EB-5] | Поле транскрипции в модели карты | practice
 | link:EB-6-abandoned-draft-cleanup.adoc[EB-6] | Уборка брошенных `Draft` по таймстемпу | vocabulary
-| link:EB-7-vocabulary-editor-deep-link.adoc[EB-7] | Прямая ссылка на `VocabularyEditorConfig.Editor(entryId)` через web-навигацию | navigation
+| link:EB-7-vocabulary-editor-deep-link.adoc[EB-7] | Прямая ссылка на редактор слова через web-навигацию | navigation
 | link:EB-9-personal-deck-editing-ux.adoc[EB-9] | Экраны создания/правки пользовательских наборов в Library (вкл. `claim` частей сервисного набора) | library
 | link:EB-11-section-scoped-enrichment.adoc[EB-11] | Посекционное обогащение `Sense` по требованию (`EnrichmentScope.Section`) | vocabulary
 | link:EB-12-edit-adopted-service-sense.adoc[EB-12] | Правка подписанного/Service-смысла = `claim` (завладеть) + правка: детач-копия, клон SRS | library
 | link:EB-13-ai-enrichment-latency-profiles.adoc[EB-13] | Профили скорости AI-enrichment: `Fast`/`Balanced`/`Quality`, каскад моделей, кэш и фоновая догрузка | ai
+| link:EB-14-embedding-backfill-and-cleanup.adoc[EB-14] | Бэкфилл пропущенных эмбеддингов и уборка orphan-строк `sense_embedding` | lexicon
+| link:EB-15-similar-sense-user-choice.adoc[EB-15] | Выбор пользователя при похожем смысле (near-dup): диалог reuse/создать новую, dismissed-pairs | lexicon
 |===
 
 == Обдумываемое
@@ -32,6 +34,9 @@
 |ID|Идея|Область
 | link:EB-8-extended-capture-wizard.adoc[EB-8] | Пошаговый ввод (wizard) поверх одностраничного захвата | vocabulary
 | link:EB-10-language-pair-expansion.adoc[EB-10] | Проработка расширения языковых пар (поле на `Sense`, влияние на `content_key`/поиск) | lexicon
+| link:EB-16-auto-translate-prefill.adoc[EB-16] | Авто-предзаполнение `translation` до обогащения | vocabulary
+| link:EB-17-example-sourcing-via-verifier.adoc[EB-17] | Источник примеров из verifier (не только валидатор) | verification
+| link:EB-18-lexicon-read-projection-ui.adoc[EB-18] | UI над готовыми проекциями лексикона: очередь черновиков, поиск, лемма-граф | library
 |===
 
 == Как вести backlog

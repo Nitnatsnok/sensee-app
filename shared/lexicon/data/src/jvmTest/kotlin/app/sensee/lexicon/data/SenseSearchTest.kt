@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
+import app.sensee.database.DefaultDatabaseTransactionRunner
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.grammar.domain.StudiedSentence
@@ -57,8 +58,10 @@ class SenseSearchTest {
                 Properties(),
                 SenseeDatabase.Schema.synchronous(),
             )
+        val provider = FakeDbProvider(SenseeDatabase(driver))
         return DefaultSenseRepository(
-            databaseProvider = FakeDbProvider(SenseeDatabase(driver)),
+            databaseProvider = provider,
+            transactionRunner = DefaultDatabaseTransactionRunner(provider),
             dispatchers = immediateAppDispatchers(),
             json = Json,
             clock = clock,
@@ -82,7 +85,7 @@ class SenseSearchTest {
         )
 
     private suspend fun DefaultSenseRepository.surfacesFor(query: SenseQuery): List<String?> =
-        search(query).map { it.sense.surfaceForm?.display() }
+        DefaultSenseSearch(this).search(query).map { it.sense.surfaceForm?.display() }
 
     @Test
     fun `search matches surface form and translation case-insensitively`() =
@@ -138,7 +141,7 @@ class SenseSearchTest {
                 SenseOrigin.Personal,
             )
 
-            assertEquals(1, repo.search(SenseQuery(text = "наткну")).size)
+            assertEquals(1, DefaultSenseSearch(repo).search(SenseQuery(text = "наткну")).size)
         }
 
     @Test
@@ -151,8 +154,8 @@ class SenseSearchTest {
                 SenseOrigin.Personal,
             )
 
-            assertEquals(1, repo.search(SenseQuery(text = "come across")).size)
-            assertEquals(0, repo.search(SenseQuery(text = "something")).size)
+            assertEquals(1, DefaultSenseSearch(repo).search(SenseQuery(text = "come across")).size)
+            assertEquals(0, DefaultSenseSearch(repo).search(SenseQuery(text = "something")).size)
         }
 
     @Test
@@ -178,7 +181,7 @@ class SenseSearchTest {
             val repo = newRepo()
             repo.upsert(sense("наткнуться", "come across"), SenseStatus.Confirmed, SenseOrigin.Personal)
 
-            assertEquals(0, repo.search(SenseQuery(text = "come", limit = 0)).size)
+            assertEquals(0, DefaultSenseSearch(repo).search(SenseQuery(text = "come", limit = 0)).size)
             assertFailsWith<IllegalArgumentException> { SenseQuery(text = "come", limit = -1) }
         }
 
@@ -188,6 +191,6 @@ class SenseSearchTest {
             val repo = newRepo()
             repo.upsert(sense("наткнуться", "come across"), SenseStatus.Confirmed, SenseOrigin.Personal)
 
-            assertEquals(0, repo.search(SenseQuery(text = "   ")).size)
+            assertEquals(0, DefaultSenseSearch(repo).search(SenseQuery(text = "   ")).size)
         }
 }

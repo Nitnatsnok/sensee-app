@@ -9,6 +9,9 @@ public fun interface AiCredentialsProvider {
     public suspend fun apiKey(): String?
 }
 
+/** The configured key, or `null` when absent or blank — the seam's "not configured" state. */
+public suspend fun AiCredentialsProvider.validApiKey(): String? = apiKey()?.takeIf { it.isNotBlank() }
+
 public class StaticAiCredentialsProvider(
     private val apiKey: String?,
 ) : AiCredentialsProvider {

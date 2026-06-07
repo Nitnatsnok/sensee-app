@@ -71,8 +71,10 @@ public class DefaultClaimRepository(
                 // so review progress carries over to the detached copy. One card per sense
                 // today; the loop stays general for future per-form cards.
                 SenseCatalogProjection.cardsFor(source).forEach { card ->
-                    val target = copy.id.value + card.id.value.removePrefix(source.id.value)
-                    srsStorage.copySnapshot(SrsCardId(card.id.value), SrsCardId(target))
+                    srsStorage.copySnapshot(
+                        SrsCardId(card.id.value),
+                        SenseCatalogProjection.rebaseCardId(card.id, copy.id),
+                    )
                 }
                 copy
             }

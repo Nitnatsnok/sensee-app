@@ -1,0 +1,15 @@
+= EB-16: Авто-предзаполнение перевода до обогащения
+:status: considering
+:area: vocabulary
+
+Триггер / что разблокирует::
+При ручном вводе `translation` обязателен для confirm-gate, и пустой draft живёт до правки.
+Авто-переводчик мог бы предзаполнять `translation` **до** AI-enrichment — сжимая окно пустого
+draft и давая enrichment лучший контекст. Это отдельный провайдер/шов перевода; на инвариант
+контекстного примера и на идентичность смысла не влияет (перевод — контент, не identity, в
+`content_key` участвует нормализованно). Вводить под реальную фичу, не заранее.
+
+Связи::
+* ADR: `docs/adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc` (шов обогащения)
+* Код: `EnrichmentRequest`, `SuggestVocabularySensesUseCase`, `SenseConfirmation` (confirm-gate), `deriveSenseContentKey`
+* Сценарий: `docs/scenarios/vocabulary-capture.feature`

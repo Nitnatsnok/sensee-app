@@ -1,0 +1,16 @@
+= EB-17: Источник примеров из verifier (не только валидатор)
+:status: considering
+:area: verification
+
+Триггер / что разблокирует::
+Сейчас verifier играет две узкие роли — pre-AI grounding и post-AI тихий example-quality
+фильтр (ADR-007). Когда у смысла мало или нет примеров, checker (например, корпус
+`languagetool` или curated-источник) мог бы **поставлять** примеры, а не только отсеивать
+слабые — расширение роли example-quality до источника. Сохранить инвариант «≥1 контекстный
+пример» и правило «тихий фильтр никогда не опустошает список». Вводить под реальную
+потребность, не заранее.
+
+Связи::
+* ADR: `docs/adr/0007-lexical-verification-seam-with-license-aware-aggregator.adoc` (две роли verifier)
+* Код: `ExampleQualityChecker`, `SuggestVocabularySensesUseCase` (`filterWeakExamples`), `shared/verification/languagetool`
+* Сценарий: `docs/scenarios/vocabulary-capture.feature`

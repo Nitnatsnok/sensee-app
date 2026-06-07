@@ -1,0 +1,21 @@
+= EB-14: Бэкфилл и уборка эмбеддингов смыслов
+:status: open
+:area: lexicon
+
+Триггер / что разблокирует::
+`EmbeddingPort.embed()` — best-effort на save: при офлайне, таймауте или сбое
+провайдера смысл остаётся без вектора (нет строки в `sense_embedding`), а
+`findSimilar` молча пропускает такие смыслы. Сейчас отсутствуют две вещи: (1)
+планировщик бэкфилла (background backfill), который догоняет пропущенные векторы —
+проход «найти неэмбеднутые смыслы» (`sense` без строки в `sense_embedding`); (2)
+уборка осиротевших строк `sense_embedding` — FK `ON DELETE CASCADE` объявлен, но
+enforcement внешних ключей в SQLite выключен, поэтому удаление смысла оставляет
+orphan-вектор (его `findSimilar` отсекает резолвом `getById`, но строка копится).
+Разблокирует: фоновый бэкфилл по запросу/расписанию и периодическая уборка
+orphan-эмбеддингов.
+
+Связи::
+* Код: `EmbeddingPort.embed`/`findSimilar` (`shared/lexicon/domain`,
+  `shared/lexicon/data/DefaultEmbeddingPort`), `SenseEmbedding.sq`
+* ADR: `docs/adr/0001-sense-first-lexical-model.adoc`, `docs/adr/0002-feature-owned-schema-with-aggregated-database.adoc` (`sense_embedding` как навесное за портом)
+* Связанные пункты: EB-15 (выбор пользователя на near-dup)

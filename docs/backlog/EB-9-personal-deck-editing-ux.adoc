@@ -5,8 +5,8 @@
 Триггер / что разблокирует::
 Модель наборов (`deck` + `deck_membership` поверх канонических `sense_id`; subscribe/claim уже
 в `CatalogAdoptionRepository`/`ClaimRepository`, Personal-deck CRUD — новый код этой фичи,
-Service — read-only) закладывается в ядре
-(см. `docs/engineering/sense-pipeline-consolidation-plan.md`, Фаза 5). Сам
+Service — read-only) заложена в ядре
+(deck-модель и subscribe/claim, ADR-001/ADR-002). Сам
 пользовательский UX — экраны создания/переименования/наполнения/переупорядочивания/
 удаления Personal-наборов в Library — это фича сверх ядра и поставляется отдельно.
 Членство по стабильному `sense_id`: правка смысла набор не ломает; смысл может быть в
@@ -18,6 +18,6 @@ Service — read-only) закладывается в ядре
 Service-зеркало, наоборот, показывает заявленный сервисный счёт и ре-синкается.
 
 Связи::
-* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§4 «Наборы», Фаза 5)
+* ADR: `docs/adr/0001-sense-first-lexical-model.adoc` (subscribe/claim), `docs/adr/0002-feature-owned-schema-with-aggregated-database.adoc` (`deck`/`deck_membership`, claim-оркестратор)
 * Код: `deck`/`deck_membership`, `CatalogAdoptionRepository`/`ClaimRepository` (subscribe/claim есть), Personal-deck CRUD — новый
 * Сценарий: `docs/scenarios/library.feature`

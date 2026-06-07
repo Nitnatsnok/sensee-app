@@ -51,6 +51,6 @@ internal fun FloatArray.l2Normalized(): FloatArray? {
     var norm = 0.0
     for (value in this) norm += value.toDouble() * value
     if (norm == 0.0) return null
-    val inverse = (1.0 / sqrt(norm)).toFloat()
-    return FloatArray(size) { this[it] * inverse }
+    val inverse = 1.0 / sqrt(norm)
+    return FloatArray(size) { (this[it] * inverse).toFloat() }
 }

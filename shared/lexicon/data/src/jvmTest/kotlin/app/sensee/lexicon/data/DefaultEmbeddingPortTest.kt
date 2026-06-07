@@ -8,6 +8,7 @@ import app.sensee.ai.core.contract.AiEmbeddingClient
 import app.sensee.ai.core.contract.Embedding
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
+import app.sensee.database.DefaultDatabaseTransactionRunner
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.grammar.domain.StudiedSentence
@@ -84,6 +85,7 @@ class DefaultEmbeddingPortTest {
         val repo =
             DefaultSenseRepository(
                 databaseProvider = provider,
+                transactionRunner = DefaultDatabaseTransactionRunner(provider),
                 dispatchers = immediateAppDispatchers(),
                 json = Json,
                 clock = FixedClock(),

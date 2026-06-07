@@ -12,5 +12,5 @@
 или per-pair). Преждевременно вводить до продуктового решения о поддержке пар.
 
 Связи::
-* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§4 promoted-колонки, §10)
+* ADR/доки: `docs/adr/0001-sense-first-lexical-model.adoc`, `docs/domain/information-model.adoc` (модель `Sense`; promoted-колонки заводятся под реальный фильтр)
 * Код: `EnrichmentRequest.studyLanguageTag`/`nativeLanguageTag`, `deriveSenseContentKey`, `SenseQuery`

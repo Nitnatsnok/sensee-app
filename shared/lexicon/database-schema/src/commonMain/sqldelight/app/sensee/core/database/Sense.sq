@@ -39,6 +39,11 @@ SELECT *
 FROM sense
 WHERE sense_id = ?;
 
+selectByIds:
+SELECT *
+FROM sense
+WHERE sense_id IN ?;
+
 selectByStatus:
 SELECT *
 FROM sense

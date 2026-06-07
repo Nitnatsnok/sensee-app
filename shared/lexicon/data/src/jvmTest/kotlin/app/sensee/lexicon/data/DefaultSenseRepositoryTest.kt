@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
+import app.sensee.database.DefaultDatabaseTransactionRunner
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.grammar.domain.StudiedSentence
@@ -58,8 +59,10 @@ class DefaultSenseRepositoryTest {
                 Properties(),
                 SenseeDatabase.Schema.synchronous(),
             )
+        val provider = FakeDbProvider(SenseeDatabase(driver))
         return DefaultSenseRepository(
-            databaseProvider = FakeDbProvider(SenseeDatabase(driver)),
+            databaseProvider = provider,
+            transactionRunner = DefaultDatabaseTransactionRunner(provider),
             dispatchers = immediateAppDispatchers(),
             json = Json,
             clock = clock,

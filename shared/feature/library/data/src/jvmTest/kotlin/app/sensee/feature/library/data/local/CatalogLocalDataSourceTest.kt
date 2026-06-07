@@ -4,6 +4,7 @@ import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
+import app.sensee.database.DefaultDatabaseTransactionRunner
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.data.remote.CatalogMockFixtures
@@ -61,6 +62,8 @@ class CatalogLocalDataSourceTest {
 
         override suspend fun getById(id: SenseId): StoredSense? = rows[id.value]
 
+        override suspend fun getByIds(ids: Collection<SenseId>): List<StoredSense> = ids.mapNotNull { rows[it.value] }
+
         override fun observe(): Flow<List<StoredSense>> = updates
 
         override suspend fun listByStatus(status: SenseStatus): List<StoredSense> =
@@ -108,8 +111,10 @@ class CatalogLocalDataSourceTest {
 
     private fun newSource(store: InMemorySenseStore = InMemorySenseStore()): CatalogLocalDataSource {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, Properties(), SenseeDatabase.Schema.synchronous())
+        val provider = FakeDbProvider(SenseeDatabase(driver))
         return CatalogLocalDataSource(
-            databaseProvider = FakeDbProvider(SenseeDatabase(driver)),
+            databaseProvider = provider,
+            transactionRunner = DefaultDatabaseTransactionRunner(provider),
             senseReadRepository = store,
             senseWriteRepository = store,
             srsStorage = InMemorySrsStorage(initialParameters = FsrsParameters.defaultV6()),

@@ -10,6 +10,6 @@
 UI — заранее не закладываем, чтобы не плодить неиспользуемый контракт.
 
 Связи::
-* План: `docs/engineering/sense-pipeline-consolidation-plan.md` (§2 ручной ввод, Фаза 1)
+* ADR: `docs/adr/0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc` (шов обогащения)
 * Код: `EnrichmentRequest`, `SuggestVocabularySensesUseCase` (`completeManualSense`)
 * Сценарий: `docs/scenarios/vocabulary-capture.feature`

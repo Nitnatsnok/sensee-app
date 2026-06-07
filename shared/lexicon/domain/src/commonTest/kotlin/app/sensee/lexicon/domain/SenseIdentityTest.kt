@@ -32,4 +32,12 @@ class SenseIdentityTest {
         val other = base.copy(translation = "произвести впечатление")
         assertEquals(false, deriveSenseContentKey(base) == deriveSenseContentKey(other))
     }
+
+    @Test
+    fun `content key folds whitespace and surrounding punctuation in the translation`() {
+        assertEquals(
+            deriveSenseContentKey(base.copy(translation = "произвести впечатление")),
+            deriveSenseContentKey(base.copy(translation = "  Произвести  впечатление!  ")),
+        )
+    }
 }

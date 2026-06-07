@@ -87,6 +87,7 @@ class ClaimTest {
         val senseRepository =
             DefaultSenseRepository(
                 provider,
+                DefaultDatabaseTransactionRunner(provider),
                 immediateAppDispatchers(),
                 Json,
                 FixedClock,

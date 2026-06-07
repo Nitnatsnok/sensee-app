@@ -2,6 +2,7 @@ package app.sensee.ai.llm.catalog
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpResponse
@@ -27,6 +28,14 @@ internal class LlmModelsApi(
         val base = baseUrl.trimEnd('/')
         val response: HttpResponse =
             httpClient.get("$base/v1/models") {
+                // The shared client budgets a full slow generation (up to minutes); a
+                // model-list / key check is a quick request, so override the timeout per
+                // request to fail fast instead of hanging the AI-settings screen when the
+                // provider is unreachable.
+                timeout {
+                    requestTimeoutMillis = KEY_CHECK_TIMEOUT_MILLIS
+                    socketTimeoutMillis = KEY_CHECK_TIMEOUT_MILLIS
+                }
                 headers { append(HttpHeaders.Authorization, "Bearer $apiKey") }
             }
         if (!response.status.isSuccess()) {
@@ -34,6 +43,10 @@ internal class LlmModelsApi(
         }
         val dto: ModelsResponseDto = response.body()
         return ModelsFetch.Ok(dto.data.mapNotNull { it.id?.takeIf { id -> id.isNotBlank() } })
+    }
+
+    private companion object {
+        const val KEY_CHECK_TIMEOUT_MILLIS = 10_000L
     }
 }
 

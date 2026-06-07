@@ -159,7 +159,7 @@
 * `shared/feature/practice/database-schema`
 
 Ответственность::
-Применять SRS-review, хранить review state/log и отдавать presentation layer правила session behavior. `practice/domain` — лист над `srs.core`: `PracticeReviewRepository.submitReview` возвращает practice-owned `ReviewOutcome` (не `library.domain.Card`), а `DuePracticeRepository` отдаёт due-count по `sense_id`; ребро `practice/domain → library/domain` снято (`PracticeDomainLeafKonsistTest`). Контент deck загружается через `CatalogRepository`, принадлежащий `Library`. Feature-owned SQLDelight schema остаётся в `shared/feature/practice/database-schema`, а runtime-агрегация схемы и platform drivers живут в `shared/database`.
+Применять SRS-review, хранить review state/log и отдавать presentation layer правила session behavior. `practice/domain` — лист над `srs.core`: `PracticeReviewRepository.submitReview` возвращает practice-owned `ReviewOutcome` (не `library.domain.Card`), а `DuePracticeRepository` отдаёт due-count по `sense_id`; ребро `practice/domain → library/domain` снято (общее `FeatureLayeringKonsistTest`). Контент deck загружается через `CatalogRepository`, принадлежащий `Library`. Feature-owned SQLDelight schema остаётся в `shared/feature/practice/database-schema`, а runtime-агрегация схемы и platform drivers живут в `shared/database`.
 
 NOTE: Каталог записей и колоды принадлежат `Library`: `CatalogRepository`/`Deck`/`DeckWithCards` в `shared/feature/library/domain` (реализация — `library/data`); practice — read-only потребитель курируемых Library колод, captured-материал — проекция Personal Confirmed смыслов (`SenseCatalogProjection`). Решение — ADR-001.
 

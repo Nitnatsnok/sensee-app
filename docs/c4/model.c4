@@ -190,7 +190,7 @@ model {
       }
 
       lexical_data = component 'Sense Store' {
-        description 'Единственный durable-store `Sense`: `DefaultSenseRepository` (read/write/search контракты) + `DefaultLexicalGraphReader` (derive-on-read граф) + `DefaultEmbeddingPort` (similar-sense: `sense_embedding`, brute-force cosine, отдельный класс), `DefaultSenseIdFactory` (Personal `Uuid` / Service `svc-`+FNV-1a), origin-scoped `resolveOrMint`, id-preserving правка.'
+        description 'Единственный durable-store `Sense`: `DefaultSenseRepository` (read/write контракты) + `DefaultSenseSearch` (in-memory `SearchPort`, отдельный класс) + `DefaultLexicalGraphReader` (derive-on-read граф) + `DefaultEmbeddingPort` (similar-sense: `sense_embedding`, brute-force cosine, отдельный класс), `DefaultSenseIdFactory` (Personal `Uuid` / Service `svc-`+FNV-1a), origin-scoped `resolveOrMint`, id-preserving правка.'
         technology 'shared/lexicon/data'
       }
 

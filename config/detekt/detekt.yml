@@ -87,7 +87,10 @@ sensee:
     allowedFunctionParameters: 5
     allowedProviderFunctionParameters: 6
     allowedComposableFunctionParameters: 10
-    allowedConstructorParameters: 6
+    # Data-layer impls inject their infra collaborators through the constructor; 7
+    # fits that DI reality without loosening ordinary functions (still 5) or
+    # provider functions (6), so genuine over-injection (8+) is still flagged.
+    allowedConstructorParameters: 7
     allowedLogicConstructorParameters: 8
     allowedDecomposeComponentConstructorParameters: 8
     allowedDataClassConstructorParameters: 10

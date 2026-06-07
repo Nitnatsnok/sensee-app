@@ -67,6 +67,9 @@ INSERT OR IGNORE INTO practice_srs_card(
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+-- "Due" predicate: not suspended, has a due time, and it has arrived. Kept in
+-- sync with countDue below — SQLite has no parameterized view to share a WHERE,
+-- so a change to one of these clauses must be mirrored in the other.
 selectDuePracticeSrsCards:
 SELECT *
 FROM practice_srs_card
@@ -76,6 +79,8 @@ WHERE state != 'Suspended'
 ORDER BY due_at_epoch_ms ASC
 LIMIT ?;
 
+-- Count of the same "due" set as selectDuePracticeSrsCards above; keep the two
+-- WHERE clauses identical.
 countDue:
 SELECT COUNT(*)
 FROM practice_srs_card

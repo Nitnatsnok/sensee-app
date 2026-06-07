@@ -276,4 +276,43 @@ class FeatureLayeringKonsistTest {
 
         assertNoViolations(violations)
     }
+
+    /**
+     * A feature's `domain` must not reach into another feature — shared concepts
+     * live in `shared` modules, not in a sibling feature. This generalizes the
+     * one specific `practice/domain` leaf guard (ADR-004) into the invariant the
+     * layer rules above do not cover: they forbid domain→data/presentation, but
+     * not domain→another feature's domain.
+     */
+    @Test
+    fun `feature domain should not depend on other feature packages`() {
+        val violations =
+            KonsistTestSupport.featureScope.files
+                .filter { file ->
+                    val path = file.normalizedProjectPath()
+                    path.contains("/domain/src/") && path.isProductionSourcePath()
+                }.flatMap { file ->
+                    val ownerFeature = file.featurePackageName() ?: return@flatMap emptyList()
+                    file.imports.mapNotNull { importDeclaration ->
+                        val importedPath = importDeclaration.importedPath()
+                        val importedFeature =
+                            KonsistTestSupport.featurePackageRegex
+                                .find(importedPath)
+                                ?.groupValues
+                                ?.get(1)
+
+                        when {
+                            importedFeature == null -> null
+                            importedFeature == ownerFeature -> null
+                            else ->
+                                violation(
+                                    subject = file.normalizedProjectPath(),
+                                    message = "depends on other feature package '$importedPath'",
+                                )
+                        }
+                    }
+                }
+
+        assertNoViolations(violations)
+    }
 }

@@ -10,6 +10,13 @@ import kotlinx.coroutines.flow.Flow
 public interface SenseReadRepository {
     public suspend fun getById(id: SenseId): StoredSense?
 
+    /**
+     * Bulk [getById] — missing ids are omitted and the order is unspecified, so a
+     * caller that needs a specific order re-orders by its own id list. Lets a deck
+     * load every member sense in one query instead of one round-trip per card.
+     */
+    public suspend fun getByIds(ids: Collection<SenseId>): List<StoredSense>
+
     public fun observe(): Flow<List<StoredSense>>
 
     public suspend fun listByStatus(status: SenseStatus): List<StoredSense>

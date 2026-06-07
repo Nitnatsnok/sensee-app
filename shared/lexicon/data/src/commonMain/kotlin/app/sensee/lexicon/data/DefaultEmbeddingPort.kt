@@ -10,6 +10,7 @@ import app.sensee.lexicon.domain.EmbeddingVector
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseId
 import app.sensee.lexicon.domain.SenseReadRepository
+import app.sensee.lexicon.domain.SenseStatus
 import app.sensee.lexicon.domain.SimilarSense
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.lexicon.domain.cosineSimilarity
@@ -42,6 +43,10 @@ public class DefaultEmbeddingPort(
     private val logger: AppLogger = appDiagnostics.logger.tag("DefaultEmbeddingPort")
 
     override suspend fun embed(stored: StoredSense): EmbeddingVector? {
+        // Embedding covers practiceable material; a Draft has no place in the
+        // similar-sense index. Today's callers only pass Confirmed — this guards the
+        // contract should a future one not.
+        if (stored.status != SenseStatus.Confirmed) return null
         val text = stored.sense.embeddingText()
         if (text.isBlank()) return null
         val embedding = embeddingClient.embed(text) ?: return null

@@ -1,0 +1,16 @@
+= EB-18: UI над готовыми read-проекциями лексикона (очередь черновиков, поиск, граф)
+:status: considering
+:area: library
+
+Триггер / что разблокирует::
+Ядро уже отдаёт три read-проекции/порта, поверх которых нет пользовательского UI: (1)
+**очередь черновиков** — `status=Draft` (read-only, без SRS) в Library (`SenseReadRepository`
+по статусу есть); (2) **поиск** — `SearchPort`/`SenseQuery` (in-memory impl есть, авторитетный
+FTS/семантика — backend за тем же портом); (3) **навигация по лемма-графу** — `LexicalGraphReader`
+(рёбра деривятся из blob + `lemma_key` на чтении, impl есть). Каждый — отдельный экран/виджет
+сверх готового порта; ввести под реальную UX-потребность.
+
+Связи::
+* ADR: `docs/adr/0001-sense-first-lexical-model.adoc` (Library — проекция: Confirmed-практика + Draft-очередь)
+* Код: `SenseReadRepository.listByStatus` (черновики), `SearchPort`/`SenseQuery` + `DefaultSenseRepository.search`, `LexicalGraphReader`/`DefaultLexicalGraphReader`
+* Сценарий: `docs/scenarios/library.feature`

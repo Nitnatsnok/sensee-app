@@ -5,6 +5,7 @@ import app.sensee.ai.core.contract.Embedding
 import app.sensee.ai.llm.api.LlmEmbeddingApi
 import app.sensee.ai.llm.config.AiCredentialsProvider
 import app.sensee.ai.llm.config.LlmConfigProvider
+import app.sensee.ai.llm.config.validApiKey
 import app.sensee.core.coroutines.runCatchingCancellable
 
 /**
@@ -29,7 +30,7 @@ public class LlmAiEmbeddingClient internal constructor(
     override suspend fun embed(text: String): Embedding? {
         if (text.isBlank()) return null
         return runCatchingCancellable {
-            val key = credentials.apiKey()?.takeIf { it.isNotBlank() } ?: return@runCatchingCancellable null
+            val key = credentials.validApiKey() ?: return@runCatchingCancellable null
             api
                 .embed(
                     apiKey = key,
