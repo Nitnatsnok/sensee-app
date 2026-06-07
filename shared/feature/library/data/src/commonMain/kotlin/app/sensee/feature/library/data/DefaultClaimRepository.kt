@@ -67,8 +67,9 @@ public class DefaultClaimRepository(
                         origin = SenseOrigin.Personal,
                         intent = WriteIntent.ForceMint,
                     )
-                // Clone SRS for the base sense and every form card onto the new sense_id,
-                // so review progress carries over to the detached copy.
+                // Clone SRS for every projected card of the source onto the new sense_id,
+                // so review progress carries over to the detached copy. One card per sense
+                // today; the loop stays general for future per-form cards.
                 SenseCatalogProjection.cardsFor(source).forEach { card ->
                     val target = copy.id.value + card.id.value.removePrefix(source.id.value)
                     srsStorage.copySnapshot(SrsCardId(card.id.value), SrsCardId(target))

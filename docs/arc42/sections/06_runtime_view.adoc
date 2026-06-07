@@ -46,7 +46,7 @@
 
 == Основной продуктовый сценарий. Внесение слова или выражения и разделение смыслов
 
-Статус:: реализованный срез (capture, captured deck projection, lemma grouping и irregular form cards); verification-seam реализован, DI-bound и подключён к живому capture в двух узких ролях (pre-AI grounding в prompt, silent post-AI фильтр качества примеров); planned — UI-навигация по family/detail и курирование
+Статус:: реализованный срез (capture, captured deck projection, lemma grouping); verification-seam реализован, DI-bound и подключён к живому capture в двух узких ролях (pre-AI grounding в prompt, silent post-AI фильтр качества примеров); planned — UI-навигация по family/detail, курирование и выбор form cards при добавлении
 
 На уровне продуктового приоритета Sensee в первую очередь строится не вокруг review, а вокруг внесения и структурирования лексического материала. Раздел `Vocabulary Editor` реализует capture-вертикаль: `DefaultVocabularyEditorSectionComponent` содержит `VocabularyCaptureComponent`/`VocabularyCaptureScreen`, а не заглушку.
 
@@ -59,7 +59,7 @@
 * поток одностраничный: пользователь мультивыбором отмечает смыслы, которые хочет добавить, и/или добавляет свой смысл вручную;
 * опциональное действие «дополнить ассистентом» не меняет правило подтверждения: выбранный пользователем смысл становится подтверждённым;
 * подтверждённые `Sense` сохраняются через `SenseWriteRepository` (`WriteIntent`) в единственную таблицу `sense` (`lexicon`); статус — per-sense `Draft`/`Confirmed`, идентичность — стабильный `sense_id`; `library` читает наружу через `SenseReadRepository`;
-* `SenseCatalogProjection` проецирует Confirmed Personal смыслы в captured deck, группирует siblings по `lemma_key` и создаёт form-variant cards (`${sense_id}:form:…`) для неправильных глаголов;
+* `SenseCatalogProjection` проецирует Confirmed Personal смыслы в captured deck (одна карта на смысл) и группирует siblings по `lemma_key`; авто-генерация form-variant cards для неправильных глаголов убрана — это станет явным выбором пользователя при добавлении (схема id `${sense_id}:form:…` зарезервирована под них);
 * после confirm каждый сохранённый смысл best-effort индексируется для «похоже»: `ConfirmSensesUseCase` зовёт `EmbeddingPort.embed` (вектор от `AiEmbeddingClient`, OpenAI `/v1/embeddings` своим путём — не на enrichment-wire), вектор пишется в `sense_embedding` после коммита смысла, вне write-транзакции; сбой, офлайн или отсутствие ключа не блокируют подтверждение (similar-sense выбор пользователя — навесное). Покрытие следует владению: `claim` тоже индексирует свою копию, а подписанные Service-зеркала — нет (см. Библиотеку каталога ниже).
 
 Планируемое: UI-навигация по семье леммы, полноценные detail-экраны и курирование derived cards. Решение — ADR-001; граница AI-интеграции — ADR-005; граница lexical verification — ADR-007. Пошаговое поведение — `docs/scenarios/vocabulary-capture.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`); схемы — `docs/c4/`; доменные типы — `shared/lexicon/domain` и `shared/feature/vocabulary-editor/domain`.

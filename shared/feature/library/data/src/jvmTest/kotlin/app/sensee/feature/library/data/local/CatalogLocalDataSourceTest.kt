@@ -208,7 +208,7 @@ class CatalogLocalDataSourceTest {
         }
 
     @Test
-    fun `a form card id resolves back to its owning sense`() =
+    fun `an irregular-verb sense projects a single card with no auto-generated form cards`() =
         runTest {
             val store = InMemorySenseStore()
             val source = newSource(store)
@@ -219,10 +219,13 @@ class CatalogLocalDataSourceTest {
                     SenseOrigin.Personal,
                 )
 
-            val formCard = source.capturedDeck()!!.cards.first { it.id.value.contains(":form:") }
-            assertTrue(formCard.id.value.startsWith("${stored.id.value}:form:"))
+            val captured = source.capturedDeck()
 
-            val resolved = source.selectCard(formCard.id.value)
-            assertEquals(formCard.id, resolved?.id, "the form card resolves through its sense_id prefix")
+            assertNotNull(captured)
+            assertEquals(
+                listOf(stored.id.value),
+                captured.cards.map { it.id.value },
+                "irregular_forms no longer auto-generates form cards — one card per sense",
+            )
         }
 }

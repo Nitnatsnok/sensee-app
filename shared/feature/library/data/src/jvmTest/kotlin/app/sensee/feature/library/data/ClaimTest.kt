@@ -8,7 +8,6 @@ import app.sensee.database.DefaultDatabaseTransactionRunner
 import app.sensee.database.SenseeDatabase
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.library.domain.CardId
-import app.sensee.grammar.domain.GrammarForm
 import app.sensee.grammar.domain.IrregularForms
 import app.sensee.grammar.domain.StudiedSentence
 import app.sensee.grammar.domain.SurfaceForm
@@ -40,8 +39,8 @@ import kotlin.time.Instant
 
 /**
  * `claim` takes a detached Personal copy of a Service sense: a fresh sense_id, the
- * content copied, and SRS cloned onto the new id for the sense and its form cards —
- * all while the source sense and its SRS are left untouched.
+ * content copied, and SRS cloned onto the new id for every projected card of the
+ * sense — all while the source sense and its SRS are left untouched.
  */
 class ClaimTest {
     private object FixedClock : Clock {
@@ -120,7 +119,7 @@ class ClaimTest {
     }
 
     @Test
-    fun `claim mints a detached personal copy and clones SRS for the sense and its forms`() =
+    fun `claim mints a detached personal copy and clones the sense SRS onto the new id`() =
         runTest {
             val fixture = Fixture()
             val service =
@@ -139,9 +138,7 @@ class ClaimTest {
                     origin = SenseOrigin.Service,
                     sourceRef = "card-x",
                 )
-            val formSuffix = ":form:${GrammarForm.PastTense.id}"
             fixture.srs.saveCard(SrsTestCards.newCard(service.id.value).copy(reviewCount = 7))
-            fixture.srs.saveCard(SrsTestCards.newCard("${service.id.value}$formSuffix").copy(reviewCount = 3))
 
             val claimed = fixture.claim.claim(CardId(service.id.value))
 
@@ -153,12 +150,7 @@ class ClaimTest {
             assertEquals(
                 7,
                 fixture.srs.getCard(SrsCardId(claimed.value))?.reviewCount,
-                "base SRS cloned onto the new id",
-            )
-            assertEquals(
-                3,
-                fixture.srs.getCard(SrsCardId("${claimed.value}$formSuffix"))?.reviewCount,
-                "form SRS cloned onto the new id",
+                "the sense SRS is cloned onto the new id",
             )
 
             assertEquals(7, fixture.srs.getCard(SrsCardId(service.id.value))?.reviewCount, "source SRS untouched")

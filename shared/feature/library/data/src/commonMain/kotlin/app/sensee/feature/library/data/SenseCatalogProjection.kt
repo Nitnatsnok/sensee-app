@@ -10,12 +10,7 @@ import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
 import app.sensee.feature.library.domain.LemmaId
 import app.sensee.feature.library.domain.derivativesOfSenses
-import app.sensee.grammar.domain.GrammarCategory
-import app.sensee.grammar.domain.GrammarForm
-import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
-import app.sensee.grammar.domain.IrregularForms
-import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseId
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.srs.core.id.SrsCardId
@@ -24,8 +19,10 @@ import app.sensee.srs.engine.factory.SrsCardFactory
 /**
  * Projects canonical [StoredSense]s into the catalog's read models — practice
  * [Card]s and [Lemma] pages. A card id IS the stable `sense_id` (so SRS state
- * survives any content edit); a form card appends the grammatical slot
- * (`${sense_id}:form:${slot}`), parseable because a [SenseId] never contains `:`.
+ * survives any content edit). The id scheme reserves a `${sense_id}:form:${slot}`
+ * shape for per-form cards (parseable because a [SenseId] never contains `:`), but
+ * those are not auto-generated — irregular-verb form cards become an explicit user
+ * choice at capture time.
  *
  * Family grouping is by [StoredSense.lemmaKey] (the head-lemma key the store
  * already derived), so `come`, `come across` and `come up` share one [LemmaId].
@@ -114,34 +111,9 @@ internal object SenseCatalogProjection {
                 sense = sense,
                 srs = SrsCardFactory.newCard(SrsCardId(stored.id.value)),
             )
-        val forms = sense.irregularForms ?: return listOf(senseCard)
-        return listOf(senseCard) + formCards(stored.id, lemmaId, sense, forms, example)
+        // One card per sense. Irregular-verb form cards (took/taken) are no longer
+        // auto-generated from `irregular_forms`; they will become an explicit user
+        // choice at capture time. The `:form:` id scheme below stays reserved for them.
+        return listOf(senseCard)
     }
-
-    private fun formCards(
-        senseId: SenseId,
-        lemmaId: LemmaId,
-        sense: Sense,
-        forms: IrregularForms,
-        example: String,
-    ): List<Card> =
-        listOf(
-            GrammarForm.PastTense to forms.past,
-            GrammarForm.PastParticiple to forms.pastParticiple,
-        ).map { (form, word) ->
-            val variantId = "${senseId.value}$FORM_INFIX${form.id}"
-            Card(
-                id = CardId(variantId),
-                lemmaId = lemmaId,
-                headword = word,
-                translation = sense.translation,
-                contextSentence = example,
-                unitType = GrammarUnitType.IrregularVerb,
-                grammarTags = listOf(GrammarTag(GrammarCategory.VerbIrregular, form)),
-                senseSummary = "${forms.base} / ${forms.past} / ${forms.pastParticiple}",
-                explanation = sense.explanation.orEmpty(),
-                sense = sense,
-                srs = SrsCardFactory.newCard(SrsCardId(variantId)),
-            )
-        }
 }
