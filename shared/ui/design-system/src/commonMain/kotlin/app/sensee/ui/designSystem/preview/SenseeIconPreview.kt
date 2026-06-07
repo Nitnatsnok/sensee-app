@@ -60,6 +60,8 @@ import app.sensee.ui.designSystem.icons.SwipeRight24px
 import app.sensee.ui.designSystem.icons.SwipeUp24px
 import app.sensee.ui.designSystem.icons.Tag
 import app.sensee.ui.designSystem.icons.Undo24px
+import app.sensee.ui.designSystem.icons.Visibility
+import app.sensee.ui.designSystem.icons.VisibilityOff
 import app.sensee.ui.designSystem.icons.WandStars24px
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import app.sensee.ui.designSystem.theme.SenseeThemeMode
@@ -150,5 +152,7 @@ private val SenseeIconCatalogEntries: List<Pair<String, ImageVector>> =
         "SwipeUp" to SwipeUp24px,
         "Tag" to Tag,
         "Undo" to Undo24px,
+        "Visibility" to Visibility,
+        "VisibilityOff" to VisibilityOff,
         "WandStars" to WandStars24px,
     )

@@ -2,7 +2,6 @@ package app.sensee.ui.designSystem.component.textField
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,14 +31,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
-import app.sensee.ui.designSystem.component.LocalSenseeMinTouchTargetSize
-import app.sensee.ui.designSystem.component.senseeMinTouchTargetSize
+import app.sensee.ui.designSystem.component.SenseeIcon
+import app.sensee.ui.designSystem.component.button.SenseeIconButton
+import app.sensee.ui.designSystem.component.button.SenseeIconButtonDefaults
+import app.sensee.ui.designSystem.icons.Visibility
+import app.sensee.ui.designSystem.icons.VisibilityOff
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import com.composeunstyled.ProvideContentColor
-import com.composeunstyled.Text
 import com.composeunstyled.TextFieldScope
 import com.composeunstyled.TextInput
 import com.composeunstyled.UnstyledTextField
@@ -50,6 +53,10 @@ import sensee.shared.ui.design_system.generated.resources.text_field_reveal_show
  * Sensee design-system text field. Wraps `UnstyledTextField` and builds the
  * field container (shape, fill, border, padding) plus label / supporting text /
  * leading / trailing slots around the inner `TextInput`.
+ *
+ * @param contentPadding horizontal padding insets the whole input row; vertical
+ * padding insets only the central text, so leading/trailing controls (e.g. the
+ * secure reveal toggle) stay centered within `MinHeight` instead of enlarging the field.
  */
 @Composable
 public fun SenseeTextField(
@@ -77,7 +84,6 @@ public fun SenseeTextField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
-    val minTouchTargetSize = LocalSenseeMinTouchTargetSize.current
 
     // Secure mode: obscured by default with a built-in reveal toggle, so screens
     // never hand-roll key masking (profile.feature).
@@ -97,15 +103,27 @@ public fun SenseeTextField(
     val effectiveTrailing: (@Composable () -> Unit)? =
         trailing ?: if (secure) {
             {
-                Text(
-                    text = revealToggleLabel,
-                    modifier =
-                        Modifier
-                            .senseeMinTouchTargetSize(minTouchTargetSize)
-                            .clickable(
-                                enabled = enabled,
-                                role = Role.Button,
-                            ) { revealed = !revealed },
+                // Icon button centers its content and carries its own touch
+                // target, so the toggle stays vertically centered regardless of
+                // field height instead of drifting to the top. It takes the
+                // field's trailing/disabled colors so caller overrides still
+                // apply, but stays neutral on error (an action affordance, not an
+                // error indicator), so it skips the error tint.
+                SenseeIconButton(
+                    onClick = { revealed = !revealed },
+                    icon = {
+                        SenseeIcon(
+                            imageVector = if (revealed) VisibilityOff else Visibility,
+                            contentDescription = null,
+                        )
+                    },
+                    enabled = enabled,
+                    colors =
+                        SenseeIconButtonDefaults.colors(
+                            content = colors.trailingIcon,
+                            disabledContent = colors.disabledContent,
+                        ),
+                    accessibilityLabel = revealToggleLabel,
                 )
             }
         } else {
@@ -217,6 +235,23 @@ private fun TextFieldScope.SenseeTextFieldInputRow(
     contentPadding: PaddingValues,
 ) {
     val spacing = SenseeTheme.spacing
+    val layoutDirection = LocalLayoutDirection.current
+
+    // Keep horizontal padding on the row, but move vertical padding onto the
+    // input column only. Otherwise a min-touch-target trailing control (the
+    // secure reveal toggle is 48dp) stacks on top of the vertical padding and
+    // pushes the field past MinHeight; isolating vertical padding lets such a
+    // control sit centered within MinHeight while keeping its full tap area.
+    val rowPadding =
+        PaddingValues(
+            start = contentPadding.calculateStartPadding(layoutDirection),
+            end = contentPadding.calculateEndPadding(layoutDirection),
+        )
+    val inputPadding =
+        PaddingValues(
+            top = contentPadding.calculateTopPadding(),
+            bottom = contentPadding.calculateBottomPadding(),
+        )
 
     Row(
         modifier =
@@ -229,7 +264,7 @@ private fun TextFieldScope.SenseeTextFieldInputRow(
                     width = resolvedStyle.borderWidth,
                     color = resolvedStyle.border,
                     shape = shape,
-                ).padding(contentPadding),
+                ).padding(rowPadding),
         horizontalArrangement = Arrangement.spacedBy(spacing.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -239,7 +274,7 @@ private fun TextFieldScope.SenseeTextFieldInputRow(
             }
         }
 
-        Box(modifier = Modifier.weight(1f)) {
+        Box(modifier = Modifier.weight(1f).padding(inputPadding)) {
             TextInput(
                 modifier = Modifier.fillMaxWidth(),
                 placeholder =
