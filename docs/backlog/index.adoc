@@ -23,6 +23,7 @@
 | link:EB-13-ai-enrichment-latency-profiles.adoc[EB-13] | Профили скорости AI-enrichment: `Fast`/`Balanced`/`Quality`, каскад моделей, кэш и фоновая догрузка | ai
 | link:EB-14-embedding-backfill-and-cleanup.adoc[EB-14] | Бэкфилл пропущенных эмбеддингов и уборка orphan-строк `sense_embedding` | lexicon
 | link:EB-15-similar-sense-user-choice.adoc[EB-15] | Выбор пользователя при похожем смысле (near-dup): диалог reuse/создать новую, dismissed-pairs | lexicon
+| link:EB-19-wasm-incremental-compilation-workaround.adoc[EB-19] | Снять обход KT-85270 (`kotlin.incremental.wasm=false`) после перехода на Kotlin `>= 2.4.20` | build
 |===
 
 == Обдумываемое
