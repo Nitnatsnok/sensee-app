@@ -11,6 +11,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
@@ -20,6 +21,7 @@ public object NetworkHttpClientFactory {
         json: Json,
         headersProvider: NetworkHeadersProvider = EmptyNetworkHeadersProvider,
         logger: NetworkLogger = NoOpNetworkLogger,
+        logBodies: Boolean = false,
     ): HttpClient =
         HttpClient {
             applyNetworkDefaults(
@@ -27,6 +29,7 @@ public object NetworkHttpClientFactory {
                 json = json,
                 headersProvider = headersProvider,
                 logger = logger,
+                logBodies = logBodies,
             )
         }
 
@@ -36,6 +39,7 @@ public object NetworkHttpClientFactory {
         json: Json,
         headersProvider: NetworkHeadersProvider = EmptyNetworkHeadersProvider,
         logger: NetworkLogger = NoOpNetworkLogger,
+        logBodies: Boolean = false,
     ): HttpClient =
         HttpClient(engineFactory) {
             applyNetworkDefaults(
@@ -43,6 +47,7 @@ public object NetworkHttpClientFactory {
                 json = json,
                 headersProvider = headersProvider,
                 logger = logger,
+                logBodies = logBodies,
             )
         }
 
@@ -52,6 +57,7 @@ public object NetworkHttpClientFactory {
         json: Json,
         headersProvider: NetworkHeadersProvider = EmptyNetworkHeadersProvider,
         logger: NetworkLogger = NoOpNetworkLogger,
+        logBodies: Boolean = false,
     ): HttpClient =
         HttpClient(engine) {
             applyNetworkDefaults(
@@ -59,6 +65,7 @@ public object NetworkHttpClientFactory {
                 json = json,
                 headersProvider = headersProvider,
                 logger = logger,
+                logBodies = logBodies,
             )
         }
 }
@@ -68,6 +75,7 @@ private fun <T : HttpClientEngineConfig> HttpClientConfig<T>.applyNetworkDefault
     json: Json,
     headersProvider: NetworkHeadersProvider,
     logger: NetworkLogger,
+    logBodies: Boolean,
 ) {
     expectSuccess = true
 
@@ -92,6 +100,10 @@ private fun <T : HttpClientEngineConfig> HttpClientConfig<T>.applyNetworkDefault
 
     install(Logging) {
         this.logger = KtorNetworkLogger(logger)
-        level = LogLevel.INFO
+        // Default INFO logs the request line and status only; [logBodies] opts into
+        // full request/response bodies (e.g. LLM prompt debugging).
+        level = if (logBodies) LogLevel.BODY else LogLevel.INFO
+        // Never let a bearer token reach the logs, even at BODY level.
+        sanitizeHeader { header -> header.equals(HttpHeaders.Authorization, ignoreCase = true) }
     }
 }

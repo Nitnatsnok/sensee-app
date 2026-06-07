@@ -3,6 +3,12 @@ package app.sensee.core.platform
 public interface PlatformEnvironment {
     public val platform: Platform
     public val context: PlatformContext
+
+    /**
+     * True on a debug build of the app. Gates verbose dev-only behavior — e.g.
+     * logging full LLM request/response bodies — so it never runs in release.
+     */
+    public val isDebug: Boolean
 }
 
 public enum class Platform {

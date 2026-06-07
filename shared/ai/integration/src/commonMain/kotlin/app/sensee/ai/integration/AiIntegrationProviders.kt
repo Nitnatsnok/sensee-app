@@ -14,6 +14,8 @@ import app.sensee.ai.llm.client.LlmAiEmbeddingClientFactory
 import app.sensee.ai.llm.client.LlmAiEnrichmentClient
 import app.sensee.ai.llm.client.LlmAiEnrichmentClientFactory
 import app.sensee.core.network.createRealHttpClientEngine
+import app.sensee.core.observability.logging.AppLogger
+import app.sensee.core.platform.PlatformEnvironment
 import app.sensee.grammar.domain.TaxonomyInvariantsProvider
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesTo
@@ -32,8 +34,23 @@ public interface AiIntegrationProviders {
     @LlmHttpClient
     @SingleIn(AppScope::class)
     @Provides
-    public fun provideLlmHttpClient(json: Json): HttpClient =
-        LlmHttpClientFactory.create(engine = createRealHttpClientEngine(), json = json)
+    public fun provideLlmHttpClient(
+        json: Json,
+        logger: AppLogger,
+        platformEnvironment: PlatformEnvironment,
+    ): HttpClient {
+        // Route Ktor's body logging into the app logger so the prompt sent and the
+        // raw answer received (enrichment, embeddings, model catalog) surface in the
+        // normal debug stream under one tag. Bodies carry user input, so they are
+        // logged only on a debug build; the bearer token is redacted upstream anyway.
+        val httpLogger = logger.tag("LlmHttp")
+        return LlmHttpClientFactory.create(
+            engine = createRealHttpClientEngine(),
+            json = json,
+            logger = { message -> httpLogger.debug { message } },
+            logBodies = platformEnvironment.isDebug,
+        )
+    }
 
     /**
      * One real-network LLM client for the app lifetime (Ktor best practice):

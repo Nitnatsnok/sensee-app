@@ -11,6 +11,7 @@ kotlin {
                 api(projects.shared.ai.curatedEnrichment)
                 api(projects.shared.ai.llm)
                 implementation(projects.shared.core.coroutines)
+                implementation(projects.shared.core.platform)
                 implementation(projects.shared.settings.domain)
                 implementation(projects.shared.core.network)
                 implementation(projects.shared.core.observability)
