@@ -1,4 +1,4 @@
-= ADR-003: Navigation target configs stay separate from component-hosting API — navigation entry contracts живут в отдельном `presentation/navigation-api`
+= ADR-003: Конфиги целевых экранов навигации отделены от component-hosting API — navigation entry contracts живут в отдельном `presentation/navigation-api`
 :revdate: 2026-05-12
 
 Статус:: Accepted

@@ -3,32 +3,32 @@
 
 == Известные риски
 
-TR-1. Documentation drift against code::
+TR-1. Расхождение документации с кодом::
 _Влияние: высокое · Вероятность: средняя._ Если arc42 и LikeC4 будут описывать целевую архитектуру вместо фактической, документация быстро перестанет быть полезной для ревью и дальнейшей разработки. _Снижение:_ doc-first правило `docs/AGENTS.md` и обновление docs в одной задаче с кодом; статус — активно контролируется.
 
-TR-2. Web target maturity::
+TR-2. Зрелость web-таргета::
 _Влияние: среднее · Вероятность: средняя._ Compose Multiplatform Web остаётся менее зрелым направлением, чем Mobile и Desktop; возможны platform-specific ограничения для части пользовательских сценариев. _Снижение:_ shared-логика в `commonMain`, web-специфика изолирована в `jsMain`/`wasmJsMain`; статус — принятый риск, отслеживается при обновлении Compose.
 
-TR-3. Implemented slice perceived as completed service::
+TR-3. Реализованный срез принимают за готовый сервис::
 _Влияние: среднее · Вероятность: высокая._ Наличие practice-сценария на фикстурах может создать ложное впечатление, что уже есть live backend, production sync и готовая AI-оркестрация всего сервиса. _Снижение:_ явная маркировка implemented/prepared/planned в arc42, LikeC4 (теги `#prepared`/`#future`) и сценариях; статус — под контролем.
 
 TR-4. Смешивание смыслов из-за AI-подсказок::
 _Влияние: высокое · Вероятность: низкая._ Если AI-подсказки, объяснения и сгенерированные примеры начнут храниться как тот же текст, что `front`/`back`/example, приложение потеряет управляемость учебной модели и SRS-состояния. _Снижение:_ candidate-слой отделён от confirmed, anti-corruption mapping на границе шва (ADR-005); статус — структурно закрыт в реализованном срезе.
 
-TR-5. Drift between canonical views and arc42 text::
+TR-5. Расхождение канонических view и текста arc42::
 _Влияние: среднее · Вероятность: средняя._ Если `containers`, `database_aggregation` и `deployment` в `LikeC4` перестанут совпадать с текстом arc42, документация снова станет перегруженной и менее надёжной для чтения. _Снижение:_ LikeC4-исходники считаются каноническими, arc42 синхронизируется с ними; статус — активно контролируется.
 
-TR-6. Accessibility coverage gap::
+TR-6. Пробел в покрытии доступности (accessibility)::
 _Влияние: среднее · Вероятность: средняя._ Пока клиент покрывает только часть продуктового контура, accessibility (screen-reader семантика, фокус-навигация на Desktop/Web) проверена не на всех экранах. _Снижение:_ переиспользуемый `shared/ui/design-system` как единая точка для семантики; статус — частичное покрытие, не завершено.
 
-TR-7. External observability backend gap::
+TR-7. Нет внешнего backend наблюдаемости (observability)::
 _Влияние: среднее · Вероятность: средняя._ `shared/core/observability` уже подключён как runtime diagnostics boundary (`AppDiagnostics`, logger, crash reporter, analytics tracker), но внешние telemetry backend-интеграции и полноценный incident pipeline пока не реализованы. _Снижение:_ feature logic и shared runtime уже завязаны на единый boundary с no-op/local/platform defaults; подключение backend-интеграций остаётся заменой implementation, а не рефакторингом мест вызова. Статус — boundary подключён, внешние backend-интеграции planned.
 
-TR-8. Security hardening and e2e coverage gap::
+TR-8. Пробел в усилении безопасности и e2e-покрытии::
 _Влияние: высокое · Вероятность: средняя._ Production security hardening (за пределами device-scoped хранения ключей) и end-to-end тестовое покрытие сквозных пользовательских сценариев ещё ограничены, потому что live backend и auth — планируемая эволюция. _Снижение:_ секреты device-scoped и вводятся скрытым полем (ADR-005), границы клиента не размываются; статус — растёт вместе с подключением live-контура.
 
-TR-9. Backend taxonomy drift::
-_Влияние: низкое · Вероятность: средняя._ Бэкенд может расширить грамматическую/usage/complement-таксономию раньше клиента (новый `unit_type`, новая `(category, form)`-пара, новая `(axis, value)`). Без структурной дисциплины такой `id` молча отбросится маппером и значение не дойдёт до UI. _Снижение:_ sealed-типы `shared/grammar/domain` с веткой `Unknown(id)` (компилятор требует `is Unknown` во всех `when`-сайтах), `TaxonomyInvariants` времени выполнения вместо compile-time enum-сетов, режим пропуска без проверки в anti-corruption-маппере (значение доходит до UI как сырой `id`), telemetry-сигнал `AppDiagnostics.warnUnknownTaxonomyValue` (ADR-006); статус — структурно закрыт.
+TR-9. Расхождение backend-таксономии::
+_Влияние: низкое · Вероятность: средняя._ Backend может расширить грамматическую/usage/complement-таксономию раньше клиента (новый `unit_type`, новая `(category, form)`-пара, новая `(axis, value)`). Без структурной дисциплины такой `id` молча отбросится маппером и значение не дойдёт до UI. _Снижение:_ sealed-типы `shared/grammar/domain` с веткой `Unknown(id)` (компилятор требует `is Unknown` во всех `when`-сайтах), `TaxonomyInvariants` времени выполнения вместо compile-time enum-сетов, режим пропуска без проверки в anti-corruption-маппере (значение доходит до UI как сырой `id`), telemetry-сигнал `AppDiagnostics.warnUnknownTaxonomyValue` (ADR-006); статус — структурно закрыт.
 
 == Намеренные временные послабления (early-stage)
 

@@ -12,15 +12,15 @@ ADR используются для решений, которые:
 [options="header",cols="1,3,1"]
 |===
 |ID|Решение|Статус
-| link:0001-sense-first-lexical-model.adoc[ADR-001] | Sense-first capture model — короткий ввод, разделение смыслов, отдельные производные карточки под выбор пользователя (объединяет прежние ADR продуктовой модели) | Accepted
-| link:0002-feature-owned-schema-with-aggregated-database.adoc[ADR-002] | Feature-owned schema with aggregated shared database | Accepted
-| link:0003-navigation-target-configs-stay-separate-from-component-api.adoc[ADR-003] | Navigation target configs stay separate from component-hosting API | Accepted
+| link:0001-sense-first-lexical-model.adoc[ADR-001] | Sense-first модель capture — короткий ввод, разделение смыслов, отдельные производные карточки под выбор пользователя (объединяет прежние ADR продуктовой модели) | Accepted
+| link:0002-feature-owned-schema-with-aggregated-database.adoc[ADR-002] | Feature-owned схема с агрегирующей общей БД | Accepted
+| link:0003-navigation-target-configs-stay-separate-from-component-api.adoc[ADR-003] | Конфиги целевых экранов навигации отделены от component-hosting API | Accepted
 | link:0004-fsrs-is-single-scheduling-source-of-truth.adoc[ADR-004] | FSRS — единственный источник расписания; возврат карточки в сессию как presentation-проекция | Accepted
 | link:0005-ai-enrichment-seam-is-an-explicit-boundary-contract.adoc[ADR-005] | Граница AI-enrichment — явный versioned contract с anti-corruption mapping | Accepted
-| link:0006-ai-enrichment-backend-driven-and-forward-compat.adoc[ADR-006] | AI enrichment — backend-driven schema, forward-compatible domain, request/response extension points | Accepted
-| link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] | Граница лексической верификации — license-aware агрегатор источников | Accepted
+| link:0006-ai-enrichment-backend-driven-and-forward-compat.adoc[ADR-006] | AI-enrichment — backend-driven схема, forward-compatible домен, точки расширения request/response | Accepted
+| link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] | Граница лексической верификации — агрегатор источников с учётом лицензий | Accepted
 | link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] | Идентичность смысла и дедуп capture-материала — стабильный `sense_id` поверх единого sense-store | Accepted
-| link:0009-verification-cache-two-layer-license-gated.adoc[ADR-009] | Двухуровневый кэш верификации — L1 в памяти + SQLDelight L2 с license-gating | Accepted
+| link:0009-verification-cache-two-layer-license-gated.adoc[ADR-009] | Двухуровневый кэш верификации — L1 в памяти + SQLDelight L2 с лицензионным барьером | Accepted
 |===
 
 == Соглашения по ведению ADR

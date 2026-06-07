@@ -24,7 +24,7 @@
 
 == Ключевые сценарии качества
 
-=== Usage scenarios
+=== Сценарии использования (usage)
 
 [options="header",cols="1,2,2"]
 |===
@@ -34,7 +34,7 @@
 |US-3|Пользователь проходит practice deck через tap, swipe, keyboard input и undo|Интерактивное поведение остаётся последовательным и не требует platform-specific реализации в самой feature-логике
 |===
 
-=== Change scenarios
+=== Сценарии изменений (change)
 
 [options="header",cols="1,2,2"]
 |===
@@ -44,7 +44,7 @@
 |CS-3|Нужно расширить локальное хранилище новой feature-owned SQLDelight схемой или заменить источник на фикстурах реальным backend|Новая схема добавляется в собственный `database-schema` модуль и агрегируется через `shared/database`; live data layer подключается поверх существующих feature/domain/data/network границ без переписывания app shell и навигации
 |===
 
-=== Fault scenarios
+=== Сценарии отказов (fault)
 
 [options="header",cols="1,2,2"]
 |===

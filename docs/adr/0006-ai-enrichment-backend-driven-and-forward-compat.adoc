@@ -1,4 +1,4 @@
-= ADR-006: AI enrichment — backend-driven schema, forward-compatible domain, request/response extension points
+= ADR-006: AI-enrichment — backend-driven схема, forward-compatible домен, точки расширения request/response
 :revdate: 2026-06-06
 
 Статус:: Accepted
