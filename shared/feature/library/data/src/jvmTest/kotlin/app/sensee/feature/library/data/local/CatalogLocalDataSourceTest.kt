@@ -24,8 +24,6 @@ import app.sensee.lexicon.domain.SenseWriteRepository
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.lexicon.domain.WriteIntent
 import app.sensee.lexicon.domain.deriveLemmaKey
-import app.sensee.srs.fsrs.FsrsParameters
-import app.sensee.srs.testKit.InMemorySrsStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -39,8 +37,8 @@ import kotlin.test.assertTrue
 /**
  * Catalog projection over the canonical sense store: deck subscription is a flag
  * flip that survives re-sync, Service ingest mirrors senses keyed by source_ref,
- * and the captured deck plus card/lemma reads project from sense_id (so a form
- * card id resolves back to its owning sense).
+ * and the captured deck plus card/lemma reads project from sense_id. Form-card
+ * ids are reserved for a future explicit capture choice, not auto-generated here.
  */
 class CatalogLocalDataSourceTest {
     private val json = Json { ignoreUnknownKeys = true }
@@ -117,7 +115,6 @@ class CatalogLocalDataSourceTest {
             transactionRunner = DefaultDatabaseTransactionRunner(provider),
             senseReadRepository = store,
             senseWriteRepository = store,
-            srsStorage = InMemorySrsStorage(initialParameters = FsrsParameters.defaultV6()),
             dispatchers = immediateAppDispatchers(),
             appDiagnostics = noOpAppDiagnostics(),
         )

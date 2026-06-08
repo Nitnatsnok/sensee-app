@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
  * Subscribing mirrors a Service deck into the user's practiced material: ingest
  * the deck's senses (origin = Service, keyed by source_ref) and flip the deck's
  * `subscribed` flag — both in one transaction. It is not a copy: a re-sync
- * overwrites mirrored content, and SRS state on the shared sense_id stays intact.
+ * overwrites mirrored content, and review state keyed by the shared sense_id stays intact.
  * The derived captured deck has no deck row and is always owned, so it is neither
  * subscribable nor unsubscribable.
  */

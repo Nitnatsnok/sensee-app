@@ -11,7 +11,7 @@ kotlin {
                 api(libs.decompose)
                 api(projects.shared.core.presentation)
                 api(projects.shared.core.decompose)
-                api(projects.shared.feature.library.domain)
+                api(projects.shared.grammar.domain)
                 api(projects.shared.feature.practice.domain)
                 implementation(projects.shared.feature.practice.presentation.navigationApi)
             }

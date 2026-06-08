@@ -30,10 +30,6 @@ import app.sensee.lexicon.domain.StoredSense
 import app.sensee.lexicon.domain.WriteIntent
 import app.sensee.lexicon.domain.isConfirmable
 import app.sensee.lexicon.serialization.toDomain
-import app.sensee.srs.core.id.SrsCardId
-import app.sensee.srs.engine.factory.SrsCardFactory
-import app.sensee.srs.engine.storage.SrsStorage
-import app.sensee.srs.fsrs.FsrsParameters
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -47,8 +43,8 @@ import kotlinx.coroutines.flow.map
  * Catalog-side local store. Deck structure (deck / deck_membership) is owned here;
  * sense content comes from the canonical [SenseReadRepository] and service ingest
  * writes through [SenseWriteRepository] (origin = Service, keyed by the catalog
- * card id as source_ref). The per-card SRS snapshot is fetched through the
- * [SrsStorage] contract (owned by Practice), keyed by the stable sense_id.
+ * card id as source_ref). Catalog projections do not create SRS state; Practice
+ * materializes the SRS seat when a card is actually reviewed.
  */
 @SingleIn(AppScope::class)
 @Inject
@@ -57,7 +53,6 @@ public class CatalogLocalDataSource(
     private val transactionRunner: DatabaseTransactionRunner,
     private val senseReadRepository: SenseReadRepository,
     private val senseWriteRepository: SenseWriteRepository,
-    private val srsStorage: SrsStorage<FsrsParameters>,
     private val dispatchers: AppDispatchers,
     appDiagnostics: AppDiagnostics,
 ) {
@@ -82,10 +77,10 @@ public class CatalogLocalDataSource(
 
     /**
      * Ingest a Service deck in ONE transaction: map each card's `SenseDto` into a
-     * Sense, upsert it (origin = Service, source_ref = card id), materialize its SRS
-     * seat, and rebuild the deck membership by sense_id — and, when [subscribe], flip
+     * Sense, upsert it (origin = Service, source_ref = card id), and rebuild the
+     * deck membership by sense_id — and, when [subscribe], flip
      * the deck's subscribed flag in the same transaction so an adopt commits all of
-     * its durable state or none of it (no orphan sense/SRS rows, no half-subscribed
+     * its durable state or none of it (no orphan sense rows, no half-subscribed
      * deck). A card whose sense fails the example/translation invariant is dropped
      * with a diagnostic rather than entering the deck as a broken card.
      */
@@ -112,7 +107,6 @@ public class CatalogLocalDataSource(
                         sourceRef = card.id,
                         intent = WriteIntent.ResolveOrMint,
                     )
-                srsStorage.saveCardIfAbsent(SrsCardFactory.newCard(SrsCardId(stored.id.value)))
                 // Position off the kept list, not the source index: a dropped card
                 // must not leave a gap in the deck's membership positions.
                 memberships += stored.id.value to memberships.size
@@ -142,6 +136,14 @@ public class CatalogLocalDataSource(
             .database()
             .catalogEntityQueries
             .selectAllDecks()
+            .awaitAsList()
+            .map { deck(it.id, it.title, it.description, it.subscribed, it.card_count) }
+
+    public suspend fun selectSubscribedDecks(): List<Deck> =
+        databaseProvider
+            .database()
+            .catalogEntityQueries
+            .selectSubscribedDecks()
             .awaitAsList()
             .map { deck(it.id, it.title, it.description, it.subscribed, it.card_count) }
 
@@ -190,44 +192,24 @@ public class CatalogLocalDataSource(
         val stored = ids.mapNotNull { byId[it] }
         return DeckWithCards(
             deck = deck(deckRow.id, deckRow.title, deckRow.description, deckRow.subscribed, deckRow.card_count),
-            cards = materializeAll(SenseCatalogProjection.cardsFrom(stored)),
+            cards = SenseCatalogProjection.cardsFrom(stored),
         )
     }
 
-    public suspend fun capturedDeck(): DeckWithCards? {
-        val deck =
-            SenseCatalogProjection.capturedDeck(
-                senseReadRepository.listByStatus(SenseStatus.Confirmed).personalConfirmed(),
-            )
-        return deck?.copy(cards = materializeAll(deck.cards))
-    }
+    public suspend fun capturedDeck(): DeckWithCards? =
+        SenseCatalogProjection.capturedDeck(
+            senseReadRepository.listByStatus(SenseStatus.Confirmed).personalConfirmed(),
+        )
 
     public suspend fun selectCard(cardId: String): Card? {
         val stored = senseReadRepository.getById(SenseCatalogProjection.senseIdOf(CardId(cardId))) ?: return null
-        val card = SenseCatalogProjection.cardsFor(stored).firstOrNull { it.id.value == cardId } ?: return null
-        return materializeAll(listOf(card)).firstOrNull()
+        return SenseCatalogProjection.cardsFor(stored).firstOrNull { it.id.value == cardId }
     }
 
     public suspend fun selectLemma(lemmaId: String): Lemma? {
         val key = SenseCatalogProjection.lemmaKeyOf(LemmaId(lemmaId))
         val stored = senseReadRepository.listByLemmaKey(key).filter { it.status == SenseStatus.Confirmed }
         return SenseCatalogProjection.lemma(stored, LemmaId(lemmaId))
-    }
-
-    // A projected card carries a fresh New SRS snapshot; overlay the durable one
-    // when it exists. The durable seat MUST exist before Practice can review (the
-    // SRS engine throws on a missing card) and a captured Personal sense has no
-    // ingest step to create it, so the first read of an un-practiced card
-    // materializes the seat — a deliberate, idempotent atomic insert-if-absent, not
-    // an incidental write. Bulk to avoid an N+1 over a deck. (Materializing instead
-    // at confirm would pull the SRS engine + persistence into vocabulary-editor's
-    // domain module, a worse boundary than this localized seam.)
-    private suspend fun materializeAll(cards: List<Card>): List<Card> {
-        if (cards.isEmpty()) return cards
-        val stored = srsStorage.getCards(cards.map { SrsCardId(it.id.value) })
-        return cards.map { card ->
-            card.copy(srs = stored[SrsCardId(card.id.value)] ?: srsStorage.saveCardIfAbsent(card.srs))
-        }
     }
 }
 

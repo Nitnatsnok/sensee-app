@@ -4,7 +4,6 @@ import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.grammar.domain.UnitComponent
 import app.sensee.lexicon.domain.Sense
-import app.sensee.srs.core.model.SrsCardSnapshot
 
 /**
  * A practice card carries a single sense of a [headword].
@@ -30,5 +29,4 @@ public data class Card(
     // rich detail (examples, synonyms, word family, …) for the card/lemma
     // detail view.
     val sense: Sense? = null,
-    val srs: SrsCardSnapshot,
 )

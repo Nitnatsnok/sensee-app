@@ -6,7 +6,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(projects.shared.srs.core)
                 api(projects.shared.grammar.domain)
                 api(projects.shared.lexicon.domain)
                 api(libs.kotlinx.coroutines.core)

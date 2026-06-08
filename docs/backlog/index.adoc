@@ -38,6 +38,7 @@
 | link:EB-16-auto-translate-prefill.adoc[EB-16] | Авто-предзаполнение `translation` до обогащения | vocabulary
 | link:EB-17-example-sourcing-via-verifier.adoc[EB-17] | Источник примеров из verifier (не только валидатор) | verification
 | link:EB-18-lexicon-read-projection-ui.adoc[EB-18] | UI над готовыми проекциями лексикона: очередь черновиков, поиск, лемма-граф | library
+| link:EB-20-incremental-subscribed-deck-sync.adoc[EB-20] | Инкрементальный синк контента подписанных наборов: версия/`ETag` и условный запрос вместо полной перекачки | library
 |===
 
 == Как вести backlog

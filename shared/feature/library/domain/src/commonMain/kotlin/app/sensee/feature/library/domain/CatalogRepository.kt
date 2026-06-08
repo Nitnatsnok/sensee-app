@@ -16,9 +16,10 @@ public interface CatalogRepository {
     public fun observeOwnedMaterial(): Flow<List<Deck>>
 
     /**
-     * Sync the Service catalog from the remote source into the local cache. Library calls this
-     * on screen open / Retry; emissions from [observeOwnedMaterial] and from the adoption
-     * repository's streams reflect the refreshed local state automatically.
+     * Sync the Service catalog from the remote source into the local cache, including details
+     * for already-adopted Service decks. Library and Practice call this on screen open / Retry;
+     * emissions from [observeOwnedMaterial] and from the adoption repository's streams reflect
+     * the refreshed local state automatically.
      */
     public suspend fun refreshFromRemote()
 

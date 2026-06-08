@@ -1,0 +1,24 @@
+= EB-20: Инкрементальный синк контента подписанных наборов
+:status: considering
+:area: library
+
+Триггер / что разблокирует::
+`CatalogRepository.refreshFromRemote` синхронизирует контент подписанных наборов
+(decks) жадно: на каждое открытие `Practice Home` / `Library` он тянет полный
+`DeckDto` по каждому подписанному набору (`getDeck` на набор — параллельно, с
+изоляцией сбоя по набору) и переписывает зеркальные смыслы целиком, даже если
+ничего не изменилось. Жадный синк выбран намеренно — чтобы `loadDeck` стал
+локальным чтением без write-on-read и набор открывался офлайн. Пока сервис —
+mock-backend на фикстурах и подписок мало, полная перекачка приемлема. С живым
+бэкендом нужен инкрементальный синк: версия или `ETag` на набор и условный запрос
+(`If-None-Match`), чтобы не перекачивать и не переписывать неизменившиеся наборы.
+Разблокирует: дешёвый фоновый refresh при росте числа подписок и при ограниченном
+трафике.
+
+Связи::
+* Код: `DefaultCatalogRepository.syncSubscribedDeckContent`,
+  `CatalogRemoteDataSource.getDeck`, `CatalogRemoteDataSource.listDecks`
+  (`shared/feature/library/data`)
+* Сценарий: `docs/scenarios/practice-deck.feature` (refresh каталога при открытии
+  `Practice Home`)
+* Зависит от: живого catalog-бэкенда (сейчас mock-backend на фикстурах)

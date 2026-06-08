@@ -14,7 +14,6 @@ import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.lexicon.domain.SenseId
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.srs.core.id.SrsCardId
-import app.sensee.srs.engine.factory.SrsCardFactory
 
 /**
  * Projects canonical [StoredSense]s into the catalog's read models — practice
@@ -26,8 +25,6 @@ import app.sensee.srs.engine.factory.SrsCardFactory
  *
  * Family grouping is by [StoredSense.lemmaKey] (the head-lemma key the store
  * already derived), so `come`, `come across` and `come up` share one [LemmaId].
- * A fresh New SRS snapshot rides each projected card; the repository overlays the
- * stored snapshot on read.
  */
 internal object SenseCatalogProjection {
     val CAPTURED_DECK_ID: DeckId = DeckId("captured")
@@ -122,7 +119,6 @@ internal object SenseCatalogProjection {
                 senseSummary = sense.explanation ?: sense.translation,
                 explanation = sense.explanation.orEmpty(),
                 sense = sense,
-                srs = SrsCardFactory.newCard(SrsCardId(stored.id.value)),
             )
         // One card per sense. Irregular-verb form cards (took/taken) are no longer
         // auto-generated from `irregular_forms`; they will become an explicit user

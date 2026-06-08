@@ -20,9 +20,12 @@ import app.sensee.lexicon.domain.ContextualApplication
 import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseOrigin
 import app.sensee.lexicon.domain.SenseStatus
+import app.sensee.lexicon.domain.SenseWriteRepository
+import app.sensee.lexicon.domain.StoredSense
+import app.sensee.lexicon.domain.WriteIntent
 import app.sensee.srs.core.id.SrsCardId
-import app.sensee.srs.core.model.SrsCardSnapshot
 import app.sensee.srs.core.model.SrsCardState
+import app.sensee.srs.engine.factory.SrsCardFactory
 import app.sensee.srs.engine.storage.SrsStorage
 import app.sensee.srs.fsrs.FsrsParameters
 import app.sensee.srs.testKit.InMemorySrsStorage
@@ -59,7 +62,7 @@ class CatalogProjectionIntegrationTest {
     }
 
     private class Fixture(
-        failingSrs: Boolean = false,
+        failSenseWriteOnCall: Int? = null,
     ) {
         val db =
             SenseeDatabase(
@@ -68,7 +71,6 @@ class CatalogProjectionIntegrationTest {
         private val provider = FakeDbProvider(db)
         val srs: SrsStorage<FsrsParameters> =
             InMemorySrsStorage(initialParameters = FsrsParameters.defaultV6())
-                .let { if (failingSrs) FailingSrsStorage(it) else it }
         val senseRepository =
             DefaultSenseRepository(
                 databaseProvider = provider,
@@ -79,24 +81,40 @@ class CatalogProjectionIntegrationTest {
                 senseIdFactory = DefaultSenseIdFactory(),
                 appDiagnostics = noOpAppDiagnostics(),
             )
+        private val writeRepository: SenseWriteRepository =
+            failSenseWriteOnCall
+                ?.let { FailingOnNthUpsert(senseRepository, failOnCall = it) }
+                ?: senseRepository
         val source =
             CatalogLocalDataSource(
                 databaseProvider = provider,
                 transactionRunner = DefaultDatabaseTransactionRunner(provider),
                 senseReadRepository = senseRepository,
-                senseWriteRepository = senseRepository,
-                srsStorage = srs,
+                senseWriteRepository = writeRepository,
                 dispatchers = immediateAppDispatchers(),
                 appDiagnostics = noOpAppDiagnostics(),
             )
     }
 
-    // Fails the one SRS write ingest makes per card, so a sense upsert lands first
-    // and the failed transaction must roll it back.
-    private class FailingSrsStorage(
-        private val delegate: SrsStorage<FsrsParameters>,
-    ) : SrsStorage<FsrsParameters> by delegate {
-        override suspend fun saveCardIfAbsent(card: SrsCardSnapshot): SrsCardSnapshot = error("srs storage offline")
+    // Fails the Nth sense upsert so an earlier card's sense lands inside the ingest
+    // transaction first; the thrown failure must then roll that write back together
+    // with the deck membership and the subscribe flip (all-or-nothing adopt).
+    private class FailingOnNthUpsert(
+        private val delegate: SenseWriteRepository,
+        private val failOnCall: Int,
+    ) : SenseWriteRepository by delegate {
+        private var calls = 0
+
+        override suspend fun upsert(
+            sense: Sense,
+            status: SenseStatus,
+            origin: SenseOrigin,
+            sourceRef: String?,
+            intent: WriteIntent,
+        ): StoredSense {
+            if (++calls == failOnCall) error("sense store offline")
+            return delegate.upsert(sense, status, origin, sourceRef, intent)
+        }
     }
 
     private fun confirmable(
@@ -120,10 +138,14 @@ class CatalogProjectionIntegrationTest {
                     SenseStatus.Confirmed,
                     SenseOrigin.Personal,
                 )
-            // Project once → materializes the New SRS row, then simulate progress.
-            fixture.source.capturedDeck()
             val cardId = SrsCardId(first.id.value)
-            fixture.srs.saveCard(fixture.srs.getCard(cardId)!!.copy(state = SrsCardState.Review, reviewCount = 3))
+            // Practice owns SRS materialization; catalog projection only keeps the
+            // stable card id that lets this progress survive re-capture.
+            fixture.srs.saveCard(
+                SrsCardFactory
+                    .newCard(cardId)
+                    .copy(state = SrsCardState.Review, reviewCount = 3),
+            )
 
             // A re-capture of identical content must reuse the sense_id (ResolveOrMint).
             val second =
@@ -145,6 +167,23 @@ class CatalogProjectionIntegrationTest {
             val afterRecapture = fixture.srs.getCard(cardId)
             assertEquals(3, afterRecapture?.reviewCount, "re-capture must not orphan or reset SRS")
             assertEquals(SrsCardState.Review, afterRecapture?.state)
+        }
+
+    @Test
+    fun `captured deck projection does not materialize SRS on read`() =
+        runTest {
+            val fixture = Fixture()
+            val stored =
+                fixture.senseRepository.upsert(
+                    confirmable("наткнуться", "come across"),
+                    SenseStatus.Confirmed,
+                    SenseOrigin.Personal,
+                )
+
+            val captured = fixture.source.capturedDeck()
+
+            assertNotNull(captured)
+            assertEquals(listOf(stored.id.value), captured.cards.map { it.id.value })
         }
 
     @Test
@@ -187,7 +226,7 @@ class CatalogProjectionIntegrationTest {
     @Test
     fun `a failure mid-ingest rolls back senses, membership and the subscription`() =
         runTest {
-            val fixture = Fixture(failingSrs = true)
+            val fixture = Fixture(failSenseWriteOnCall = 2)
             val deck =
                 json.decodeFromString<DeckDto>(
                     CatalogMockFixtures().fixtures.getValue("practice/decks/phrasal-verbs-come"),

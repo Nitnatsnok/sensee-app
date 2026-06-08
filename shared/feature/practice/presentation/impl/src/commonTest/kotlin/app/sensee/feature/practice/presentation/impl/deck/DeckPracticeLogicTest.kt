@@ -242,7 +242,6 @@ class DeckPracticeLogicTest {
                 grammarTags = emptyList(),
                 senseSummary = "sense $id",
                 explanation = "explanation $id",
-                srs = SrsTestCards.newCard(id),
             )
 
         fun learning(intervalMinutes: Int): SrsCardSnapshot =
