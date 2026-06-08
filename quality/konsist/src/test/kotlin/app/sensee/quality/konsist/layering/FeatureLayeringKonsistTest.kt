@@ -265,6 +265,7 @@ class FeatureLayeringKonsistTest {
                         when {
                             importedFeature == null -> null
                             importedFeature == ownerFeature -> null
+                            isAllowedPresentationImplFeatureDependency(ownerFeature, importedPath) -> null
                             else ->
                                 violation(
                                     subject = file.normalizedProjectPath(),
@@ -315,4 +316,17 @@ class FeatureLayeringKonsistTest {
 
         assertNoViolations(violations)
     }
+}
+
+private fun isAllowedPresentationImplFeatureDependency(
+    ownerFeature: String,
+    importedPath: String,
+): Boolean {
+    // Practice UI consumes Library's catalog read contract to load decks/cards;
+    // review writes still go through Practice domain/data and SRS.
+    return ownerFeature == "practice" &&
+        (
+            importedPath == "app.sensee.feature.library.domain" ||
+                importedPath.startsWith("app.sensee.feature.library.domain.")
+        )
 }

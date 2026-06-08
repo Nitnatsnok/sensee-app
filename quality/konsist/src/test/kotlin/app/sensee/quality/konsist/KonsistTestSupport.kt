@@ -69,7 +69,7 @@ internal object KonsistTestSupport {
             .toSet()
 
     val featurePackageRegex =
-        Regex("""app\.sensee\.feature\.(.+?)\.presentation\.""")
+        Regex("""app\.sensee\.feature\.([^.]+)\.""")
 }
 
 internal fun assertNoViolations(violations: List<String>) {
@@ -106,7 +106,7 @@ internal fun String.kebabToCamel(): String =
         }.joinToString("")
 
 internal fun KoFileDeclaration.featurePackageName(): String? =
-    KonsistTestSupport.featurePresentationSourceRegex
+    KonsistTestSupport.featureSourceRegex
         .find(normalizedProjectPath())
         ?.groupValues
         ?.get(1)
