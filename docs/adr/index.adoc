@@ -21,6 +21,7 @@ ADR используются для решений, которые:
 | link:0007-lexical-verification-seam-with-license-aware-aggregator.adoc[ADR-007] | Граница лексической верификации — агрегатор источников с учётом лицензий | Accepted
 | link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] | Идентичность смысла и дедуп capture-материала — стабильный `sense_id` поверх единого sense-store | Accepted
 | link:0009-verification-cache-two-layer-license-gated.adoc[ADR-009] | Двухуровневый кэш верификации — L1 в памяти + SQLDelight L2 с лицензионным барьером | Accepted
+| link:0010-form-cards-are-explicit-authoring-choice.adoc[ADR-010] | Form cards создаются явным authoring-выбором, а не автогенерацией из грамматических форм | Accepted
 |===
 
 == Соглашения по ведению ADR

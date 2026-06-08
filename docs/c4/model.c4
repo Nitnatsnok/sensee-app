@@ -118,7 +118,7 @@ model {
       }
 
       card_derivation = capability 'Card Derivation' {
-        description 'Реализованная projection-логика `SenseCatalogProjection`: Confirmed Personal смыслы проецируются в captured deck, группируются по `lemma_key` и порождают form-variant cards (id `sense_id:form:slot`) для irregular verbs. UI-навигация по family остаётся planned.'
+        description 'Реализованная projection-логика `SenseCatalogProjection`: Confirmed Personal смыслы проецируются в captured deck как одна карточка на `sense_id` и группируются по `lemma_key`. Form-card схема id `sense_id:form:slot` зарезервирована, но сами form cards больше не автогенерируются из `irregularForms`; это planned явный выбор при добавлении.'
         technology 'shared/feature/library/data'
         link ../domain/information-model.adoc
       }
@@ -440,7 +440,7 @@ model {
     feature_library.library_catalog -[flows]-> core.mock_backend 'contributes catalog fixtures'
     feature_library.library_catalog -[flows]-> lexicon.lexical_model 'reads/writes senses via Sense*Repository'
     feature_library.library_catalog -[depends]-> lexicon.sense_serialization 'maps the service SenseDto wire to Sense'
-    feature_library.library_catalog -[depends]-> srs.srs_engine 'materializes SRS card state via SrsStorage'
+    feature_library.library_catalog -[depends]-> srs.srs_engine 'copies SRS snapshot during claim only'
     feature_library.library_catalog -[flows]-> persistence 'stores deck/membership state' { technology 'SQLDelight' }
     feature_library.library_catalog -[depends]-> feature_library.library_schema 'owns deck tables'
     lexicon.lexical_model -[flows]-> feature_library.card_derivation 'projects confirmed senses into captured cards'

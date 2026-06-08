@@ -284,12 +284,12 @@ views 'Sensee Client' {
     client.lexicon.lexical_data -> client.persistence 'durable в таблицу sense'
     client.lexicon.lexical_data -> client.ai.ai_embedding 'после коммита: best-effort embedding (EmbeddingPort → AiEmbeddingClient, свой путь)'
     client.ai.ai_embedding -> provider_apis 'вызывает /v1/embeddings; вектор в sense_embedding (сбой/офлайн не блокируют save)'
-    client.lexicon.lexical_model -> client.feature_library.card_derivation 'проецирует Confirmed Personal смыслы в captured deck (SenseCatalogProjection): группировка по lemma_key и form cards'
+    client.lexicon.lexical_model -> client.feature_library.card_derivation 'проецирует Confirmed Personal смыслы в captured deck (SenseCatalogProjection): одна карта на sense_id, группировка по lemma_key'
   }
 
   dynamic view card_derivation_flow {
     title 'Поведение / Деривация карточек'
-    description 'Реализованная projection-логика: Confirmed Personal смыслы проецируются в captured deck, sibling grouping по lemma_key и form-variant cards (id sense_id:form:slot) для irregular verbs. Planned остаётся UI-навигация по family/detail.'
+    description 'Реализованная projection-логика: Confirmed Personal смыслы проецируются в captured deck как одна карточка на sense_id, siblings группируются по lemma_key. Form-card id scheme sense_id:form:slot зарезервирована, но form cards больше не автогенерируются из irregularForms; это planned явный выбор при добавлении.'
 
     learner -> client.feature_vocabulary.vocabulary_ui 'подтверждает lexical material'
     client.feature_vocabulary.vocabulary_ui -> client.feature_vocabulary.vocabulary_capture 'завершает authoring flow'

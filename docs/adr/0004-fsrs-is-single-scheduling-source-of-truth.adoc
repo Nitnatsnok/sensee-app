@@ -30,4 +30,5 @@ FSRS (`FsrsScheduler`) — единственный источник распи�
 * Любой новый тип сессии (due-сессия Home, подмножество Library) переиспользует тот же единственный планировщик без дублирования логики поверх SRS по `sense_id`.
 
 Связанные ADR::
-* link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] (consumes) — SRS ключуется по стабильному `sense_id` (формы `${sense_id}:form:${formId}`); `copySnapshot` клонирует FSRS-снимок для `claim`.
+* link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] (consumes) — SRS ключуется по стабильному `sense_id`; `copySnapshot` клонирует FSRS-снимок для `claim`.
+* link:0010-form-cards-are-explicit-authoring-choice.adoc[ADR-010] (refines) — form-card id scheme `${sense_id}:form:${formId}` зарезервирована, но такие карточки создаются только явным authoring-выбором.

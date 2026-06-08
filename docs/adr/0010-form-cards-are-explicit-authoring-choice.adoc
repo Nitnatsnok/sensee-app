@@ -1,0 +1,41 @@
+= ADR-010: Form cards создаются явным authoring-выбором, а не автогенерацией из грамматических форм
+:revdate: 2026-06-07
+
+Статус:: Accepted
+Дата:: 2026-06-07
+Ответственные:: Konstantin Apukhtin
+Драйверы решения:: Functional Suitability (QG-1, CS-1: новые упражнения не должны менять исходную модель смысла), Usability (QG-2: пользователь не получает скрытую пачку вторичных карточек), Maintainability (QG-3: projection, authoring и SRS lifecycle остаются раздельными)
+
+Контекст::
+ADR-008 закрепил стабильный `sense_id` как идентичность смысла и зарезервировал form-key схему `${sense_id}:form:${formId}`. Прежняя реализация пыталась выводить form-variant карточки напрямую из `irregularForms`: наличие грамматической формы становилось скрытым триггером новых карточек. Это смешивало два разных факта: «у смысла известны формы» и «пользователь хочет отдельно тренировать форму». Для текущего client slice продуктовая политика form cards ещё не определена: нужно решить, какие формы показывать, как объяснять их появление, как они выбираются при capture/claim и как выглядят в UI.
+
+Решение::
+Form cards не автогенерируются из `irregularForms`, `GrammarTag` или другого грамматического metadata. Текущая `SenseCatalogProjection` создаёт одну базовую карточку на подтверждённый `sense_id` и группирует siblings по `lemma_key`.
++
+Схема id `${sense_id}:form:${slot}` остаётся зарезервированной для будущих form cards: она стабильна, парсится через colon-free `SenseId` и пригодна для `copySnapshot`/claim. Но сам факт появления form card должен быть явным authoring-выбором пользователя или будущей продуктовой команды, а не побочным эффектом чтения или наличия metadata.
++
+SRS seat для form card создаётся только в явном write-сценарии создания/claim/review соответствующей карточки. Каталожная projection остаётся read-side моделью без write-on-read.
+
+Альтернативы::
+
+* Автогенерировать form cards из `irregularForms`. Отклонено: metadata становится скрытым продуктовым решением, увеличивает объём практики без явного выбора пользователя и требует UI/копирайта, которого нет в текущем срезе.
+* Удалить зарезервированную form-key схему полностью. Отклонено: стабильная схема `${sense_id}:form:${slot}` уже решает важную часть будущей задачи — связь form card с owning sense и перенос SRS при claim.
+* Моделировать каждую форму как отдельный `Sense`. Отклонено: форма слова не является отдельным значением; это учебный артефакт над тем же смыслом, а не новая строка канона.
+
+Последствия (реализованные)::
+
+* `SenseCatalogProjection` проецирует Confirmed Personal material в captured deck как одну карточку на `sense_id`; `:form:` остаётся только reserved id scheme.
+* Каталожные read API (`capturedDeck`, `selectDeckWithCards`, `selectCard`) не создают SRS rows при чтении. Missing SRS seat создаётся в явном write path практики перед `submitReview`.
+* LikeC4, arc42, доменная информационная модель и глоссарий описывают form cards как planned authoring choice, а не реализованную auto-projection.
+
+Последствия (ожидаемые)::
+
+* Будущая реализация form cards должна сначала определить UX и product policy: где пользователь выбирает формы, как они объясняются, как удаляются/скрываются и как соотносятся с базовой карточкой смысла.
+* Tests для будущих form cards должны проверять не только id stability, но и отсутствие скрытой генерации при простом чтении каталога.
+* `SenseId` должен оставаться colon-free, иначе parse/rebase формы `${sense_id}:form:${slot}` потеряет однозначность.
+
+Связанные ADR::
+
+* link:0001-sense-first-lexical-model.adoc[ADR-001] (refines) — карточки остаются производными артефактами над подтверждённым смыслом.
+* link:0004-fsrs-is-single-scheduling-source-of-truth.adoc[ADR-004] (consumes) — SRS state относится к учебному артефакту и создаётся в явном write path.
+* link:0008-lexical-hierarchy-and-capture-dedup.adoc[ADR-008] (refines) — сохраняет стабильный `sense_id` и reserved form-key схему, но снимает auto-generation policy.
