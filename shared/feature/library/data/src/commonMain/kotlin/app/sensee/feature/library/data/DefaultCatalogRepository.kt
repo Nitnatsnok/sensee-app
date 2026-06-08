@@ -6,6 +6,7 @@ import app.sensee.feature.library.data.local.CatalogLocalDataSource
 import app.sensee.feature.library.data.remote.CatalogRemoteDataSource
 import app.sensee.feature.library.domain.Card
 import app.sensee.feature.library.domain.CardId
+import app.sensee.feature.library.domain.CatalogOrigin
 import app.sensee.feature.library.domain.CatalogRepository
 import app.sensee.feature.library.domain.Deck
 import app.sensee.feature.library.domain.DeckId
@@ -61,6 +62,24 @@ public class DefaultCatalogRepository(
         }
         return requireNotNull(localDataSource.selectDeckWithCards(deckId.value)) {
             "Deck $deckId not found in local catalog cache"
+        }
+    }
+
+    override suspend fun previewDeck(deckId: DeckId): DeckWithCards {
+        if (deckId == SenseCatalogProjection.CAPTURED_DECK_ID) {
+            return requireNotNull(localDataSource.capturedDeck()) {
+                "Captured deck requested but no confirmed senses exist"
+            }
+        }
+        // A subscribed deck (CatalogOrigin.Personal) is already synced locally, so read it there.
+        // A passive Service suggestion has a local meta row but no membership, so a local read
+        // would be empty — project it from the remote source instead, in memory, never ingested.
+        // Adopting the deck (subscribe) is the only thing that writes.
+        val local = localDataSource.selectDeckWithCards(deckId.value)
+        return if (local != null && local.deck.origin == CatalogOrigin.Personal) {
+            local
+        } else {
+            remoteDataSource.getDeck(deckId.value).toPreviewDeckWithCards()
         }
     }
 

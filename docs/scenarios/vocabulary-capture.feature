@@ -51,7 +51,7 @@
     единый источник `docs/domain/pos-and-forms.adoc` (принцип в ADR-001)
   - `shared/feature/vocabulary-editor/presentation/*`:
     `VocabularyEditorConfig.QuickCapture`, `VocabularyCaptureComponent`/`Screen`,
-    `CaptureSense` (editor-state в `presentation/api`), `SenseSelectionCard`
+    `CaptureSense` (editor-state в `presentation/api`), `shared/ui/sense-card` `SenseCard`
     (реализованный add-path); edit UI / deep-link в редактор (EB-7) остаётся
     планируемым
   - граница лексической верификации `shared/verification/*` (ADR-007) —

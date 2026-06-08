@@ -33,14 +33,6 @@ internal object VocabularyCaptureTextKeys {
     val CompleteWithAssistant = TextKey("vocabulary_capture.complete_with_assistant")
     val Completing = TextKey("vocabulary_capture.completing")
     val PickAssistantVersion = TextKey("vocabulary_capture.pick_assistant_version")
-    val DetailToggleHide = TextKey("vocabulary_capture.detail_toggle_hide")
-    val DetailToggleShow = TextKey("vocabulary_capture.detail_toggle_show")
-    val DetailPrepositions = TextKey("vocabulary_capture.detail_prepositions")
-    val DetailComplementation = TextKey("vocabulary_capture.detail_complementation")
-    val DetailGrammar = TextKey("vocabulary_capture.detail_grammar")
-    val DetailUsage = TextKey("vocabulary_capture.detail_usage")
-    val DetailForms = TextKey("vocabulary_capture.detail_forms")
-    val DetailNote = TextKey("vocabulary_capture.detail_note")
     val GrammarLabelsLoading = TextKey("vocabulary_capture.grammar_labels.loading")
     val GrammarLabelsError = TextKey("vocabulary_capture.grammar_labels.error")
     val GrammarLabelsRetry = TextKey("vocabulary_capture.grammar_labels.retry")
@@ -81,14 +73,6 @@ internal val DefaultVocabularyCaptureTextProvider =
             VocabularyCaptureTextKeys.Completing to "Дополнение…",
             VocabularyCaptureTextKeys.PickAssistantVersion to
                 "Выберите версию ассистента (заменит вашу):",
-            VocabularyCaptureTextKeys.DetailToggleHide to "Свернуть",
-            VocabularyCaptureTextKeys.DetailToggleShow to "Подробнее",
-            VocabularyCaptureTextKeys.DetailPrepositions to "Предлоги",
-            VocabularyCaptureTextKeys.DetailComplementation to "Дополнение",
-            VocabularyCaptureTextKeys.DetailGrammar to "Грамматика",
-            VocabularyCaptureTextKeys.DetailUsage to "Употребление",
-            VocabularyCaptureTextKeys.DetailForms to "Формы",
-            VocabularyCaptureTextKeys.DetailNote to "Примечание",
             VocabularyCaptureTextKeys.GrammarLabelsLoading to "Загрузка обозначений…",
             VocabularyCaptureTextKeys.GrammarLabelsError to "Обозначения не загружены — карточка показывает сырые id",
             VocabularyCaptureTextKeys.GrammarLabelsRetry to "Повторить",

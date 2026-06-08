@@ -206,6 +206,8 @@ class DeckPracticeLogicTest {
 
         override suspend fun loadDeck(deckId: DeckId): DeckWithCards = deck
 
+        override suspend fun previewDeck(deckId: DeckId): DeckWithCards = deck
+
         override suspend fun loadCard(cardId: CardId): Card = deck.cards.first { it.id == cardId }
 
         override suspend fun loadLemma(lemmaId: LemmaId): Lemma = Lemma(lemmaId, lemmaId.value, emptyList())

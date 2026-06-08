@@ -66,22 +66,25 @@
 
 == Реализованный срез и планируемое курирование. Библиотека каталога
 
-Статус:: реализованный срез (`Library` Home: каталог + подписка на сервисный набор); planned — курирование, `LemmaDetail`/`DeckDetail`, claim части набора
+Статус:: реализованный срез (`Library` Home: каталог + подписка на сервисный набор; read-only `DeckDetail`: просмотр карточек собственного и сервисного набора без записи, с явным добавлением сервисного набора с экрана); planned — курирование колод, `LemmaDetail`, claim части набора
 
 Library — владелец каталога лексического материала и колод (`CatalogRepository`/`CatalogAdoptionRepository`/`ClaimRepository` в `shared/feature/library/domain`, реализация — `library/data`); practice выступает read-only потребителем курируемых Library колод (ADR-001). Пошаговое поведение зафиксировано в `docs/scenarios/library.feature` (реализованные сценарии помечены `@implemented`, планируемые — `@planned`).
 
-Реализовано (`LibraryHomeLogic`/`DefaultLibraryHomeComponent`/`LibrarySectionScreen`):
+Реализовано (`LibraryHomeLogic`/`DefaultLibraryHomeComponent`/`LibrarySectionScreen`, `LibraryDeckDetailLogic`/`DefaultLibraryDeckDetailComponent`/`LibraryDeckDetailScreen`):
 
 1. Пользователь открывает раздел `Library`; `LibraryHomeLogic` загружает связанный (отфильтрованный до собственного материала) каталог и список сервисных наборов для подписки.
 2. Пользователь подписывается на сервисный набор целиком: смыслы приходят как зеркало (`origin=Service`), практикуются по `sense_id` и обновляются ре-синком по `source_ref`. Подписку можно отменить (unsubscribe). Производная captured-колода Personal-смыслов принадлежит пользователю. `claim` отдельного смысла в детачнутую Personal-копию реализован репозиторием (`ClaimRepository` + `copySnapshot`), его UI — planned; копия индексируется для «похоже» через `EmbeddingPort.embed` после коммита (best-effort). Подписанные Service-зеркала **не** эмбеддятся: similar-sense сравнивает собственный материал пользователя, поэтому покрытие следует владению (`claim`), а не членству (subscribe) — ADR-008.
+3. Пользователь открывает набор из списка (`LibraryConfig.DeckDetail`): `LibraryDeckDetailLogic` через `CatalogRepository.previewDeck` проецирует карточки read-only, не записывая ничего — собственный/captured набор читается локально, сервисный проецируется из remote без `ingestDeck` (`toPreviewDeckWithCards`). Карточки рендерятся общим design-system `SenseeSenseCard`. Для сервисного набора показано явное действие «Добавить набор» (`adopt`/subscribe) — единственный путь, который пишет в хранилище.
+4. Список колод и `DeckDetail` живут в адаптивном двухпанельном layout: секция — Decompose `ChildPanels` (`appChildPanels`), экран — `AppChildPanels` из `shared/ui/adaptive`. На широком экране (list-detail) обе панели рядом, выбранная колода подсвечена; на компактном — по одной с переходом и системным back, закрывающим деталь. Режим (`SINGLE`/`DUAL`/`TRIPLE`) ведётся от `contentPresentation` — тот же паттерн, что в Profile. Третья панель деталей карточки — planned.
 
 Планируется:
 
-3. Drill: `LemmaDetail(lemmaKey)` показывает сегрегированные `Sense` семьи леммы с переводами, `ContextualApplication`, структурными grammar cues и производными карточками (entry-агрегат растворён — пивот идёт по `lemma_key`-группе).
-4. Правка своей карточки открывает прямую ссылку в `Vocabulary Editor` на экран правки соответствующего смысла/`lemma_key`-группы (тот же поток уточнения, что и ввод; цель ссылки — EB-7). Та же точка входа доступна из карточки practice.
-5. Удаление карточки убирает её из каталога и всех колод, но сохраняет confirmed `Sense` в сторе.
-6. В `DeckDetail(deckId)` пользователь курирует колоды: одна карточка может входить в несколько колод (many-to-many); удаление из одной колоды не затрагивает другие и каталог.
-7. Частичное добавление сервисного набора; запуск practice из курируемой колоды/подмножества открывает `PracticeConfig.DeckPractice`; курирование остаётся в Library, practice его не владеет.
+5. Третья панель деталей карточки поверх двухпанельного layout (supporting-pane на широком экране, overlay/sheet на компактном) — `appChildPanels`/`AppChildPanels` уже поддерживают 3-pane.
+6. Drill: `LemmaDetail(lemmaKey)` показывает сегрегированные `Sense` семьи леммы с переводами, `ContextualApplication`, структурными grammar cues и производными карточками (entry-агрегат растворён — пивот идёт по `lemma_key`-группе).
+7. Правка своей карточки открывает прямую ссылку в `Vocabulary Editor` на экран правки соответствующего смысла/`lemma_key`-группы (тот же поток уточнения, что и ввод; цель ссылки — EB-7). Та же точка входа доступна из карточки practice.
+8. Удаление карточки убирает её из каталога и всех колод, но сохраняет confirmed `Sense` в сторе.
+9. В `DeckDetail(deckId)` пользователь курирует колоды: одна карточка может входить в несколько колод (many-to-many); удаление из одной колоды не затрагивает другие и каталог.
+10. Частичное добавление сервисного набора; запуск practice из курируемой колоды/подмножества открывает `PracticeConfig.DeckPractice`; курирование остаётся в Library, practice его не владеет.
 
 == Планируемый сценарий. Доработка practice: наполнение карты, detail и локальные настройки
 

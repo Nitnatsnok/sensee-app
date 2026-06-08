@@ -27,11 +27,13 @@ import app.sensee.feature.library.presentation.api.LibraryHomeAction
 import app.sensee.feature.library.presentation.api.LibraryHomeComponent
 import app.sensee.feature.library.presentation.api.LibraryHomeUiState
 import app.sensee.feature.library.presentation.api.LibrarySectionComponent
+import app.sensee.ui.adaptive.AppChildPanels
 import app.sensee.ui.designSystem.component.SenseeIcon
 import app.sensee.ui.designSystem.component.button.SenseeButton
 import app.sensee.ui.designSystem.component.button.SenseeIconButton
 import app.sensee.ui.designSystem.component.button.SenseeIconButtonDefaults
 import app.sensee.ui.designSystem.component.deckEntryCard.SenseeDeckEntryCard
+import app.sensee.ui.designSystem.component.deckEntryCard.SenseeDeckEntryCardDefaults
 import app.sensee.ui.designSystem.component.layout.SenseeErrorState
 import app.sensee.ui.designSystem.component.layout.SenseeLoadingState
 import app.sensee.ui.designSystem.component.layout.SenseeScreenContent
@@ -42,10 +44,11 @@ import app.sensee.ui.designSystem.theme.LocalSenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import app.sensee.ui.designSystem.theme.senseeCompactLayoutMetrics
-import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.composeunstyled.Text
 import kotlinx.collections.immutable.PersistentList
 
+@OptIn(ExperimentalDecomposeApi::class)
 @Composable
 public fun LibrarySectionScreen(
     component: LibrarySectionComponent,
@@ -53,21 +56,26 @@ public fun LibrarySectionScreen(
     textProvider: TextProvider = rememberLibraryTextProvider(),
 ) {
     CompositionLocalProvider(LocalTextProvider provides textProvider) {
-        Children(
-            stack = component.stack,
+        AppChildPanels(
+            panels = component.panels,
             modifier = modifier,
-        ) { child ->
-            when (val instance = child.instance) {
-                is LibraryHomeComponent ->
-                    LibraryHomeScreen(
-                        component = instance,
-                        modifier = Modifier,
-                        textProvider = textProvider,
-                    )
-
-                else -> error("Unknown library child: ${instance::class}")
-            }
-        }
+            main = { mainChild, detailChild ->
+                LibraryHomeScreen(
+                    component = mainChild.instance,
+                    selectedDeckId = detailChild?.configuration?.deckId,
+                    modifier = Modifier.fillMaxSize(),
+                    textProvider = textProvider,
+                )
+            },
+            detail = { detailChild, compact ->
+                LibraryDeckDetailScreen(
+                    component = detailChild.instance,
+                    compact = compact,
+                    modifier = Modifier.fillMaxSize(),
+                    textProvider = textProvider,
+                )
+            },
+        )
     }
 }
 
@@ -75,6 +83,7 @@ public fun LibrarySectionScreen(
 public fun LibraryHomeScreen(
     component: LibraryHomeComponent,
     modifier: Modifier = Modifier,
+    selectedDeckId: String? = null,
     textProvider: TextProvider = rememberLibraryTextProvider(),
 ) {
     val uiState by component.uiState.collectAsState()
@@ -83,6 +92,7 @@ public fun LibraryHomeScreen(
         uiState = uiState,
         onAction = component::onAction,
         modifier = modifier.fillMaxSize(),
+        selectedDeckId = selectedDeckId,
         textProvider = textProvider,
     )
 }
@@ -93,6 +103,7 @@ internal fun LibraryHomeContent(
     onAction: (LibraryHomeAction) -> Unit,
     textProvider: TextProvider,
     modifier: Modifier = Modifier,
+    selectedDeckId: String? = null,
 ) {
     val colors = SenseeTheme.colors
 
@@ -127,6 +138,7 @@ internal fun LibraryHomeContent(
                 LibraryHomeList(
                     uiState = uiState,
                     onAction = onAction,
+                    selectedDeckId = selectedDeckId,
                     textProvider = textProvider,
                 )
         }
@@ -134,7 +146,7 @@ internal fun LibraryHomeContent(
 }
 
 @Composable
-private fun rememberLibraryTextProvider(): TextProvider {
+internal fun rememberLibraryTextProvider(): TextProvider {
     val parent = LocalTextProvider.current
     return remember(parent) { DefaultLibraryTextProvider.withFallback(parent) }
 }
@@ -143,6 +155,7 @@ private fun rememberLibraryTextProvider(): TextProvider {
 private fun LibraryHomeList(
     uiState: LibraryHomeUiState,
     onAction: (LibraryHomeAction) -> Unit,
+    selectedDeckId: String?,
     textProvider: TextProvider,
 ) {
     val spacing = SenseeTheme.spacing
@@ -163,14 +176,16 @@ private fun LibraryHomeList(
         libraryOwnedSection(
             decks = uiState.owned,
             layoutMetrics = layoutMetrics,
+            selectedDeckId = selectedDeckId,
             textProvider = textProvider,
-            onUnAdopt = { id -> onAction(LibraryHomeAction.UnAdopt(id)) },
+            onAction = onAction,
         )
         librarySuggestedSection(
             decks = uiState.suggested,
             layoutMetrics = layoutMetrics,
+            selectedDeckId = selectedDeckId,
             textProvider = textProvider,
-            onAdopt = { id -> onAction(LibraryHomeAction.Adopt(id)) },
+            onAction = onAction,
         )
     }
 }
@@ -202,8 +217,9 @@ private fun LazyListScope.libraryHomeHeader(
 private fun LazyListScope.libraryOwnedSection(
     decks: PersistentList<LibraryDeckUiState>,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
+    selectedDeckId: String?,
     textProvider: TextProvider,
-    onUnAdopt: (deckId: String) -> Unit,
+    onAction: (LibraryHomeAction) -> Unit,
 ) {
     librarySection(
         spec = LibrarySectionSpec(LibraryTextKeys.OwnedSection, LibraryTextKeys.OwnedEmpty),
@@ -211,29 +227,37 @@ private fun LazyListScope.libraryOwnedSection(
         layoutMetrics = layoutMetrics,
         textProvider = textProvider,
     ) { deck ->
-        if (deck.canUnAdopt) {
-            {
-                SenseeIconButton(
-                    onClick = { onUnAdopt(deck.id) },
-                    icon = {
-                        SenseeIcon(
-                            imageVector = Delete24px,
-                            contentDescription = textProvider.text(LibraryTextKeys.UnAdopt),
+        LibraryDeckCard(
+            deck = deck,
+            textProvider = textProvider,
+            selected = deck.id == selectedDeckId,
+            onClick = { onAction(LibraryHomeAction.OpenDeck(deck.id)) },
+            action =
+                if (deck.canUnAdopt) {
+                    {
+                        SenseeIconButton(
+                            onClick = { onAction(LibraryHomeAction.UnAdopt(deck.id)) },
+                            icon = {
+                                SenseeIcon(
+                                    imageVector = Delete24px,
+                                    contentDescription = textProvider.text(LibraryTextKeys.UnAdopt),
+                                )
+                            },
                         )
-                    },
-                )
-            }
-        } else {
-            null
-        }
+                    }
+                } else {
+                    null
+                },
+        )
     }
 }
 
 private fun LazyListScope.librarySuggestedSection(
     decks: PersistentList<LibraryDeckUiState>,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
+    selectedDeckId: String?,
     textProvider: TextProvider,
-    onAdopt: (deckId: String) -> Unit,
+    onAction: (LibraryHomeAction) -> Unit,
 ) {
     librarySection(
         spec = LibrarySectionSpec(LibraryTextKeys.SuggestedSection, LibraryTextKeys.SuggestedEmpty),
@@ -241,18 +265,24 @@ private fun LazyListScope.librarySuggestedSection(
         layoutMetrics = layoutMetrics,
         textProvider = textProvider,
     ) { deck ->
-        {
-            SenseeIconButton(
-                onClick = { onAdopt(deck.id) },
-                icon = {
-                    SenseeIcon(
-                        imageVector = Add24px,
-                        contentDescription = textProvider.text(LibraryTextKeys.Adopt),
-                    )
-                },
-                colors = SenseeIconButtonDefaults.filledColors(),
-            )
-        }
+        LibraryDeckCard(
+            deck = deck,
+            textProvider = textProvider,
+            selected = deck.id == selectedDeckId,
+            onClick = { onAction(LibraryHomeAction.OpenDeck(deck.id)) },
+            action = {
+                SenseeIconButton(
+                    onClick = { onAction(LibraryHomeAction.Adopt(deck.id)) },
+                    icon = {
+                        SenseeIcon(
+                            imageVector = Add24px,
+                            contentDescription = textProvider.text(LibraryTextKeys.Adopt),
+                        )
+                    },
+                    colors = SenseeIconButtonDefaults.filledColors(),
+                )
+            },
+        )
     }
 }
 
@@ -261,7 +291,7 @@ private fun LazyListScope.librarySection(
     decks: PersistentList<LibraryDeckUiState>,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
     textProvider: TextProvider,
-    deckAction: (LibraryDeckUiState) -> (@Composable () -> Unit)?,
+    card: @Composable (LibraryDeckUiState) -> Unit,
 ) {
     item {
         LibrarySectionHeading(text = textProvider.text(spec.heading), layoutMetrics = layoutMetrics)
@@ -273,7 +303,7 @@ private fun LazyListScope.librarySection(
     }
     items(items = decks, key = { "${spec.heading.value}-${it.id}" }) { deck ->
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            LibraryDeckCard(deck = deck, textProvider = textProvider, action = deckAction(deck))
+            card(deck)
         }
     }
 }
@@ -301,7 +331,7 @@ private fun LibrarySectionHeading(
 }
 
 @Composable
-private fun LibraryEmptyMessage(
+internal fun LibraryEmptyMessage(
     text: String,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
@@ -321,11 +351,24 @@ private fun LibraryEmptyMessage(
 private fun LibraryDeckCard(
     deck: LibraryDeckUiState,
     textProvider: TextProvider,
+    selected: Boolean,
+    onClick: () -> Unit,
     action: (@Composable () -> Unit)?,
 ) {
     val typography = SenseeTheme.typography
+    val colors = SenseeTheme.colors
 
     SenseeDeckEntryCard(
+        onClick = onClick,
+        colors =
+            if (selected) {
+                SenseeDeckEntryCardDefaults.colors(
+                    container = colors.surfaceContainerHighest,
+                    border = colors.accent,
+                )
+            } else {
+                SenseeDeckEntryCardDefaults.colors()
+            },
         title = {
             Text(text = deck.title, style = typography.titleMedium)
         },

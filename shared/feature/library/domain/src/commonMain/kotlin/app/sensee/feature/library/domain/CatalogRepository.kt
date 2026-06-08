@@ -25,6 +25,18 @@ public interface CatalogRepository {
 
     public suspend fun loadDeck(deckId: DeckId): DeckWithCards
 
+    /**
+     * Read-only projection of a deck's cards for browsing in Library, writing nothing.
+     * Owned (subscribed) and captured decks are read from the local cache; a not-yet-owned
+     * Service suggestion (no local membership) is projected straight from the remote source,
+     * never ingested.
+     *
+     * Distinct from [loadDeck], a pure local read that assumes the deck's content is already
+     * cached (an unsubscribed Service deck reads as empty there). Adopting a Service deck stays
+     * a separate, explicit action — previewing it must not silently add it.
+     */
+    public suspend fun previewDeck(deckId: DeckId): DeckWithCards
+
     public suspend fun loadCard(cardId: CardId): Card
 
     public suspend fun loadLemma(lemmaId: LemmaId): Lemma

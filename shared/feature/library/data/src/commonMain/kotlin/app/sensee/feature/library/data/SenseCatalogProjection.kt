@@ -11,6 +11,7 @@ import app.sensee.feature.library.domain.Lemma
 import app.sensee.feature.library.domain.LemmaId
 import app.sensee.feature.library.domain.derivativesOfSenses
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.lexicon.domain.Sense
 import app.sensee.lexicon.domain.SenseId
 import app.sensee.lexicon.domain.StoredSense
 import app.sensee.srs.core.id.SrsCardId
@@ -97,8 +98,24 @@ internal object SenseCatalogProjection {
     }
 
     fun cardsFor(stored: StoredSense): List<Card> {
-        val sense = stored.sense
-        val lemmaId = lemmaId(stored.lemmaKey)
+        // One card per sense. Irregular-verb form cards (took/taken) are no longer
+        // auto-generated from `irregular_forms`; they will become an explicit user
+        // choice at capture time. The `:form:` id scheme stays reserved for them.
+        return listOf(cardFromSense(stored.sense, CardId(stored.id.value), lemmaId(stored.lemmaKey)))
+    }
+
+    /**
+     * Build the lean practice [Card] read model from a rich [sense] under an explicit
+     * [cardId]/[lemmaId]. Shared by the stored-sense projection ([cardsFor]) and the
+     * read-only Service-deck preview (which projects straight from the remote DTO, so it
+     * has no [StoredSense]). Catalog projections carry no SRS state; Practice materializes
+     * the SRS seat when a card is actually reviewed.
+     */
+    fun cardFromSense(
+        sense: Sense,
+        cardId: CardId,
+        lemmaId: LemmaId,
+    ): Card {
         // Marked transport ([[target]]); practice parses it structurally for cloze.
         val example =
             sense.contextualApplications
@@ -106,23 +123,18 @@ internal object SenseCatalogProjection {
                 ?.sentence
                 ?.marked()
                 .orEmpty()
-        val senseCard =
-            Card(
-                id = CardId(stored.id.value),
-                lemmaId = lemmaId,
-                headword = sense.surfaceForm?.display() ?: sense.translation,
-                translation = sense.translation,
-                contextSentence = example,
-                unitType = sense.unitType ?: GrammarUnitType.Phrase,
-                grammarTags = sense.grammarTags,
-                components = sense.components,
-                senseSummary = sense.explanation ?: sense.translation,
-                explanation = sense.explanation.orEmpty(),
-                sense = sense,
-            )
-        // One card per sense. Irregular-verb form cards (took/taken) are no longer
-        // auto-generated from `irregular_forms`; they will become an explicit user
-        // choice at capture time. The `:form:` id scheme below stays reserved for them.
-        return listOf(senseCard)
+        return Card(
+            id = cardId,
+            lemmaId = lemmaId,
+            headword = sense.surfaceForm?.display() ?: sense.translation,
+            translation = sense.translation,
+            contextSentence = example,
+            unitType = sense.unitType ?: GrammarUnitType.Phrase,
+            grammarTags = sense.grammarTags,
+            components = sense.components,
+            senseSummary = sense.explanation ?: sense.translation,
+            explanation = sense.explanation.orEmpty(),
+            sense = sense,
+        )
     }
 }

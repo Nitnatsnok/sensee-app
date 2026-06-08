@@ -107,6 +107,9 @@ class LibraryHomeLogicTest {
         override suspend fun loadDeck(deckId: DeckId): DeckWithCards =
             DeckWithCards(deck(deckId.value, CatalogOrigin.Personal), emptyList())
 
+        override suspend fun previewDeck(deckId: DeckId): DeckWithCards =
+            DeckWithCards(deck(deckId.value, CatalogOrigin.Personal), emptyList())
+
         override suspend fun loadCard(cardId: CardId): Card = error("unused")
 
         override suspend fun loadLemma(lemmaId: LemmaId): Lemma = error("unused")

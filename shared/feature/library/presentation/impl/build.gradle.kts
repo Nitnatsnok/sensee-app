@@ -19,6 +19,8 @@ kotlin {
                 implementation(projects.shared.feature.library.presentation.api)
                 implementation(projects.shared.feature.library.presentation.navigationApi)
                 implementation(projects.shared.ui.designSystem)
+                implementation(projects.shared.ui.adaptive)
+                implementation(projects.shared.ui.senseCard)
             }
         }
 

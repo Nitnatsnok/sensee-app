@@ -107,7 +107,7 @@ model {
       link ../arc42/sections/06_runtime_view.adoc
 
       library_ui = component 'Library Section' {
-        description 'LibrarySectionComponent. Реализовано: Home (отфильтрованный каталог собственного материала + подписка на сервисный набор целиком, обратимо). Планируется: курирование колод (many-to-many), `LemmaDetail`/`DeckDetail`, правка/удаление, claim части набора.'
+        description 'LibrarySectionComponent. Реализовано: Home (отфильтрованный каталог собственного материала + подписка на сервисный набор целиком, обратимо), read-only DeckDetail (просмотр карточек собственного и сервисного набора без записи через previewDeck; общий design-system SenseeSenseCard; явное добавление сервисного набора с экрана). Список и DeckDetail — адаптивный двухпанельный list-detail (Decompose ChildPanels + AppChildPanels, режим от contentPresentation, как Profile). Планируется: третья панель деталей карточки, курирование колод (many-to-many), LemmaDetail, правка/удаление, claim части набора.'
         technology 'shared/feature/library/presentation/{api,impl}'
       }
 
@@ -351,6 +351,11 @@ model {
         description 'Reusable swipeable card deck с flip, keyboard support, programmatic swipe и undo.'
         technology 'shared/ui/learning-deck'
       }
+
+      sense_card = component 'Sense Card' {
+        description 'Общая богатая карточка смысла: проецирует Sense (+ GrammarLabels) в нейтральную оболочку SenseeSenseCard. Единственный domain-aware UI-модуль; используется захватом и Library.'
+        technology 'shared/ui/sense-card'
+      }
     }
 
     // Core runtime & foundations
@@ -509,9 +514,17 @@ model {
     feature_practice.practice_ui -[depends]-> ui.design_system 'renders with design system'
     feature_practice.practice_ui -[depends]-> ui.adaptive 'uses adaptive layout'
     feature_library.library_ui -[depends]-> ui.design_system 'renders with design system'
+    feature_library.library_ui -[depends]-> ui.adaptive 'uses adaptive list-detail layout'
     feature_vocabulary.vocabulary_ui -[depends]-> ui.design_system 'renders with design system'
     feature_profile.profile_ui -[depends]-> ui.design_system 'renders with design system'
     feature_profile.profile_ui -[depends]-> ui.adaptive 'uses adaptive layout'
+
+    // Shared rich sense card (capture + Library) over the neutral design-system shell
+    feature_vocabulary.vocabulary_ui -[depends]-> ui.sense_card 'renders a sense via the shared sense card'
+    feature_library.library_ui -[depends]-> ui.sense_card 'renders a sense via the shared sense card'
+    ui.sense_card -[depends]-> ui.design_system 'targets the neutral SenseeSenseCard shell'
+    ui.sense_card -[depends]-> lexicon.lexical_model 'maps the Sense domain model'
+    ui.sense_card -[depends]-> grammar.grammar_taxonomy 'resolves grammar labels for badges'
 
     // Persistence aggregation (shared/database collects feature/seam schema)
     persistence -[depends]-> feature_practice.practice_schema 'aggregates feature schema'

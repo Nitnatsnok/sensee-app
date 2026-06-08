@@ -13,9 +13,14 @@
 
   Реализовано: экран `Home` со списком сервисных наборов и собственного
   материала, подписка на набор целиком, отмена подписки, фильтрация Practice
-  по собственному материалу. Планируется: `LemmaDetail`,
-  `Collections`, `DeckDetail`, claim части набора, запуск practice из
-  библиотеки, фильтры и режим списка карточек.
+  по собственному материалу, просмотр карточек набора (`DeckDetail`, read-only)
+  для собственных и сервисных наборов с явным добавлением сервисного набора с
+  этого экрана. Список колод и `DeckDetail` показываются адаптивно (двухпанельный
+  list-detail): на широком экране — рядом, с подсветкой выбранной колоды; на
+  компактном — по одной панели. Планируется: третья панель деталей карточки,
+  `LemmaDetail`, `Collections`, курирование набора (правка состава и порядка
+  карточек), claim части набора, запуск practice из библиотеки, фильтры и режим
+  списка всех карточек.
 
   Связанные `LikeC4 view` в `docs/c4/`:
   - `planned_library_curation_flow`
@@ -24,18 +29,25 @@
   Источники реализации:
   - `shared/feature/library/presentation/impl`: `LibraryHomeLogic`,
     `LibrarySectionScreen` (`LibraryHomeScreen`/`LibraryHomeContent`),
-    `DefaultLibraryHomeComponent`
-  - `shared/feature/library/domain`: `CatalogRepository`,
-    `CatalogAdoptionRepository`, `Deck` с типизированным `CatalogOrigin`
-    (`Personal` — материал пользователя; `Service` — сервисные наборы)
+    `DefaultLibraryHomeComponent`, `LibraryDeckDetailLogic`,
+    `LibraryDeckDetailScreen`, `DefaultLibraryDeckDetailComponent`
+  - `shared/feature/library/presentation/navigation-api`: `LibraryConfig.DeckDetail(deckId)`
+  - `shared/ui/sense-card`: `SenseCard` (богатая карточка смысла — форма с частью
+    речи, перевод, пояснение, пример и раскрываемая грамматика), общая с экраном
+    захвата; поверх нейтральной оболочки `shared/ui/design-system`: `SenseeSenseCard`
+  - `shared/feature/library/domain`: `CatalogRepository` (`previewDeck` — read-only
+    проекция набора, не пишет в хранилище), `CatalogAdoptionRepository`, `Deck` с
+    типизированным `CatalogOrigin` (`Personal` — материал пользователя; `Service` —
+    сервисные наборы)
   - `shared/feature/library/data`: `DefaultCatalogRepository` (фильтрует Practice
-    до собственного и подписанного материала), `DefaultCatalogAdoptionRepository`,
+    до собственного и подписанного материала; `previewDeck` читает собственный набор
+    локально, а сервисный проецирует из remote через `toPreviewDeckWithCards` без
+    `ingestDeck`), `DefaultCatalogAdoptionRepository`,
     `DefaultClaimRepository`, `SenseCatalogProjection`,
     `CatalogMockFixtures` (сервисный каталог: 3 набора по 10 карточек,
     4 карточки общие между наборами), флаг `deck.subscribed`
   - Источники (планируемые): `LibraryConfig` -> `LemmaDetail(lemmaKey)`,
-    `Collections`, `DeckDetail(deckId)`;
-    backend-compatible boundary для сервисных наборов
+    `Collections`; backend-compatible boundary для сервисных наборов
 
   Предыстория:
     Допустим пользователь открыл раздел `Library`
@@ -72,6 +84,20 @@
   Сценарий: Производную колоду захваченных слов нельзя убрать
     Допустим в собственном материале есть колода захваченных слов
     Тогда для неё не предлагается действие «убрать» (она выводится из capture, а не добавлена)
+
+  @implemented
+  Сценарий: Просмотр карточек набора без изменения материала
+    Допустим пользователь видит набор в списке (собственный или сервисный)
+    Когда пользователь открывает набор
+    Тогда показывается список карточек набора, каждая с полной деталью смысла как при захвате (форма с частью речи, перевод, пояснение, пример и раскрываемые грамматические детали)
+    И просмотр сервисного набора не добавляет его в собственный материал и в Practice
+
+  @implemented
+  Сценарий: Добавление сервисного набора с экрана просмотра
+    Допустим пользователь открыл сервисный набор и просматривает его карточки
+    Когда пользователь подтверждает добавление набора
+    Тогда набор становится собственным материалом (`CatalogOrigin.Personal`) и доступен в Practice
+    И действие добавления больше не предлагается для этого набора
 
   @planned
   Сценарий: Обзор всех записей и карточек со статусами

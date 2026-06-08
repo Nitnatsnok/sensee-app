@@ -36,7 +36,7 @@
 |Practice Domain/Data|`shared/feature/practice/domain` (лист над `srs.core`: `PracticeReviewRepository`→`ReviewOutcome`, `DuePracticeRepository`) и `shared/feature/practice/data` задают repository boundary, domain-модель карточек и поток данных на фикстурах
 |Practice Database Schema|`shared/feature/practice/database-schema` хранит SQLDelight-схему practice-карточек и SRS-состояния
 |Shared Settings|`shared/settings/domain`, `shared/settings/data` и `shared/settings/database-schema` задают типизированное хранилище пользовательских настроек по категориям
-|Reusable UI|`shared/ui/design-system`, `shared/ui/adaptive` и `shared/ui/learning-deck` поставляют переиспользуемые UI-примитивы
+|Reusable UI|`shared/ui/design-system`, `shared/ui/adaptive` и `shared/ui/learning-deck` поставляют нейтральные UI-примитивы; `shared/ui/sense-card` — общая богатая карточка смысла (зависит от `lexicon`/`grammar` domain), используемая разделами `Vocabulary Editor` и `Library`
 |Core Runtime|`shared/core/decompose` задаёт инфраструктуру компонентов и навигации, `shared/core/presentation` — общие presentation states, `shared/core/compose` — переиспользуемые Compose-утилиты; DI собирается Metro-графом `AppGraph` в `shared/app-shell`
 |Client Integration Foundations|`shared/database`, `shared/core/network`, `shared/core/mock-backend` и `shared/core/observability` предоставляют хранение, `HttpClient` boundary, транспорт на фикстурах и границу runtime diagnostics для текущих сценариев
 |SRS Libraries|`shared/srs/*` содержат domain/engine/FSRS библиотеки, которые используются practice data flow для планирования повторений
@@ -129,10 +129,10 @@
 * `DefaultPracticeSectionComponent`, `DefaultPracticeHomeComponent`, `DefaultDeckPracticeComponent`, `DefaultCardDetailComponent`
 * `PracticeHomeLogic` / `DeckPracticeLogic` / `CardDetailLogic`
 * `PracticeHomeScreen` / `DeckPracticeScreen` / `CardDetailScreen`
-* `DefaultLibrarySectionComponent`, `DefaultLibraryHomeComponent`, `LibraryHomeLogic`, `LibrarySectionScreen`
+* `DefaultLibrarySectionComponent`, `DefaultLibraryHomeComponent`, `LibraryHomeLogic`, `LibrarySectionScreen`, `DefaultLibraryDeckDetailComponent`, `LibraryDeckDetailLogic`, `LibraryDeckDetailScreen`
 * `DefaultProfileSectionComponent` (двухпанельная навигация по категориям), `DefaultProfileHomeComponent` / `ProfileHomeScreen` (меню категорий), `ProfileAiSettingsLogic` / `ProfileAiSettingsScreen` (категория `Ai`), `ProfileSettingsPlaceholderScreen` (заглушка остальных категорий)
 * `DefaultVocabularyEditorSectionComponent` (содержит реализованный `VocabularyCaptureComponent`)
-* `DefaultVocabularyCaptureComponent` / `VocabularyCaptureLogic` / `VocabularyCaptureScreen` / `SenseSelectionCard`
+* `DefaultVocabularyCaptureComponent` / `VocabularyCaptureLogic` / `VocabularyCaptureScreen` / `SenseCard`
 * `DefaultHomeSectionComponent` / `DefaultHomeComponent` (раздел `Home` пока отображает `UnimplementedScreen`)
 
 Ответственность::
@@ -226,12 +226,14 @@ NOTE: Каталог записей и колоды принадлежат `Libr
 * `shared/ui/design-system`
 * `shared/ui/adaptive`
 * `shared/ui/learning-deck`
+* `shared/ui/sense-card`
 * `LearningSwipeDeck`
 * `LearningDeckState`
 * `FlippableLearningCard`
+* `SenseCard`
 
 Ответственность::
-Переиспользоваться между feature-модулями и платформами без привязки к текущему practice screen.
+Переиспользоваться между feature-модулями и платформами без привязки к текущему practice screen. `shared/ui/sense-card` — единственный пока domain-aware UI-модуль: он проецирует `Sense` (+ `GrammarLabels`) в нейтральную оболочку `SenseeSenseCard`, чтобы смысл выглядел одинаково при захвате и в просмотре каталога.
 
 === Белый ящик: Core Runtime и Client Integration Foundations
 

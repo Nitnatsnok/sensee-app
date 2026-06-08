@@ -9,12 +9,12 @@ import androidx.compose.ui.Modifier
 import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.vocabularyEditor.presentation.api.CaptureSense
 import app.sensee.feature.vocabularyEditor.presentation.api.CaptureSenseStatus
-import app.sensee.feature.vocabularyEditor.presentation.impl.card.SenseSelectionCard
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.ui.designSystem.component.button.SenseeButton
 import app.sensee.ui.designSystem.component.button.SenseeButtonColors
 import app.sensee.ui.designSystem.component.layout.SenseeSurface
 import app.sensee.ui.designSystem.theme.SenseeTheme
+import app.sensee.ui.senseCard.SenseCard
 import com.composeunstyled.Text
 
 // The hand-authored sense is not itself a candidate (no select toggle — it is
@@ -120,13 +120,12 @@ private fun ManualSenseStatusContent(
                     style = typography.bodySmall,
                 )
                 sense.assistantSuggestions.forEach { suggestion ->
-                    SenseSelectionCard(
-                        candidate = suggestion.sense,
+                    SenseCard(
+                        sense = suggestion.sense,
                         labels = labels,
                         studyLanguageTag = studyLanguageTag,
-                        textProvider = textProvider,
                         selected = suggestion.selected,
-                        onToggle = { onToggleSuggestion(suggestion.contentKey) },
+                        onClick = { onToggleSuggestion(suggestion.contentKey) },
                     )
                 }
             }

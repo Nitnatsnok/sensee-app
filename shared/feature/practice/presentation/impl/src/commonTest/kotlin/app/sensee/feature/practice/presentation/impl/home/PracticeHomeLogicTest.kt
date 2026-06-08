@@ -62,6 +62,8 @@ class PracticeHomeLogicTest {
 
         override suspend fun loadDeck(deckId: DeckId): DeckWithCards = error("unused")
 
+        override suspend fun previewDeck(deckId: DeckId): DeckWithCards = error("unused")
+
         override suspend fun loadCard(cardId: CardId): Card = error("unused")
 
         override suspend fun loadLemma(lemmaId: LemmaId): Lemma = error("unused")

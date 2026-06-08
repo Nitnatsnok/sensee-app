@@ -6,6 +6,7 @@ import app.sensee.core.decompose.logic.getOrCreateLogic
 import app.sensee.feature.library.presentation.api.LibraryHomeAction
 import app.sensee.feature.library.presentation.api.LibraryHomeComponent
 import app.sensee.feature.library.presentation.api.LibraryHomeUiState
+import app.sensee.feature.library.presentation.navigationApi.LibraryConfig
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
@@ -32,6 +33,7 @@ public class DefaultLibraryHomeComponent(
             LibraryHomeAction.Retry -> logic.retry()
             is LibraryHomeAction.Adopt -> logic.adopt(action.deckId)
             is LibraryHomeAction.UnAdopt -> logic.unAdopt(action.deckId)
+            is LibraryHomeAction.OpenDeck -> navigation.open(LibraryConfig.DeckDetail(action.deckId))
         }
     }
 

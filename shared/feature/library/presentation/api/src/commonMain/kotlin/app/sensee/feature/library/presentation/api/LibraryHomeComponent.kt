@@ -42,4 +42,8 @@ public sealed interface LibraryHomeAction {
     public data class UnAdopt(
         val deckId: String,
     ) : LibraryHomeAction
+
+    public data class OpenDeck(
+        val deckId: String,
+    ) : LibraryHomeAction
 }

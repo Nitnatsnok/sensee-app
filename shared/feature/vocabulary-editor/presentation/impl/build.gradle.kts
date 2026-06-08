@@ -21,6 +21,7 @@ kotlin {
                 implementation(projects.shared.feature.vocabularyEditor.presentation.api)
                 implementation(projects.shared.feature.vocabularyEditor.presentation.navigationApi)
                 implementation(projects.shared.ui.designSystem)
+                implementation(projects.shared.ui.senseCard)
             }
         }
 

@@ -10,6 +10,8 @@ kotlin {
                 api(libs.kotlinx.collections.immutable)
                 api(projects.shared.core.presentation)
                 api(projects.shared.core.decompose)
+                api(projects.shared.lexicon.domain)
+                api(projects.shared.grammar.domain)
                 implementation(projects.shared.feature.library.presentation.navigationApi)
             }
         }

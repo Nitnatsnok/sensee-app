@@ -1,4 +1,4 @@
-package app.sensee.feature.vocabularyEditor.presentation.impl.card
+package app.sensee.ui.senseCard
 
 import app.sensee.grammar.domain.ComplementType
 import app.sensee.grammar.domain.GrammarCategory
@@ -13,11 +13,10 @@ import app.sensee.lexicon.domain.ContextualApplication
 import app.sensee.lexicon.domain.Sense
 
 /**
- * Sample [Sense]s for [SenseSelectionCard] previews — a rich phrasal verb (every
- * detail field populated), an irregular verb, and a minimal sense with no
- * secondary detail.
+ * Sample [Sense]s for [SenseCard] previews — a rich phrasal verb (every detail field
+ * populated), an irregular verb, and a minimal sense with no secondary detail.
  */
-internal object SenseSelectionCardPreviewData {
+internal object SenseCardPreviewData {
     val richPhrasalVerb: Sense =
         Sense(
             translation = "производить впечатление",

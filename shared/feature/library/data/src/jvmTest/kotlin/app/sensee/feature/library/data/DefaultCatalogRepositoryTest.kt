@@ -165,6 +165,57 @@ class DefaultCatalogRepositoryTest {
             )
         }
 
+    @Test
+    fun `preview reads a subscribed deck from the local cache without fetching remote`() =
+        runBlocking {
+            val fixture = Fixture()
+            val deckId = "phrasal-verbs-come"
+            val deck = json.decodeFromString<DeckDto>(fixtures.getValue("practice/decks/$deckId"))
+            fixture.localDataSource.ingestDeck(deck, subscribe = true)
+            val repository =
+                DefaultCatalogRepository(
+                    localDataSource = fixture.localDataSource,
+                    remoteDataSource =
+                        remoteDataSource(
+                            contentForPath = { path -> error("previewDeck must not fetch remote path $path") },
+                        ),
+                    appDiagnostics = noOpAppDiagnostics(),
+                )
+
+            val preview = repository.previewDeck(DeckId(deckId))
+
+            assertEquals(deckId, preview.deck.id.value)
+            assertEquals(deck.cards.size, preview.cards.size)
+        }
+
+    @Test
+    fun `preview projects an unsubscribed service deck from remote without ingesting it`() =
+        runBlocking {
+            val fixture = Fixture()
+            val deckId = "phrasal-verbs-come"
+            val summary =
+                json
+                    .decodeFromString<DeckListDto>(fixtures.getValue("practice/decks"))
+                    .decks
+                    .first { it.id == deckId }
+            fixture.localDataSource.upsertDeckSummaries(listOf(summary))
+            val repository =
+                DefaultCatalogRepository(
+                    localDataSource = fixture.localDataSource,
+                    remoteDataSource = remoteDataSource(fixtures::getValue),
+                    appDiagnostics = noOpAppDiagnostics(),
+                )
+
+            val preview = repository.previewDeck(DeckId(deckId))
+
+            assertEquals(10, preview.cards.size, "an unadopted service deck is browsable from remote")
+            assertEquals(
+                0,
+                repository.loadDeck(DeckId(deckId)).cards.size,
+                "previewing did not ingest the deck — its local content stays empty until adoption",
+            )
+        }
+
     private fun remoteDataSource(
         contentForPath: (String) -> String,
         failPath: String? = null,

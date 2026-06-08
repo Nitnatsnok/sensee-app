@@ -17,6 +17,13 @@ internal object LibraryTextKeys {
     val CardCount = QuantityTextKey("library.home.card_count")
     val Adopt = TextKey("library.home.adopt")
     val UnAdopt = TextKey("library.home.unadopt")
+    val DeckBack = TextKey("library.deck.back")
+    val DeckLoading = TextKey("library.deck.loading")
+    val DeckLoadError = TextKey("library.deck.load_error")
+    val DeckEmpty = TextKey("library.deck.empty")
+    val DeckAdopt = TextKey("library.deck.adopt")
+    val DeckAdoptError = TextKey("library.deck.adopt_error")
+    val DeckClose = TextKey("library.deck.close")
 }
 
 internal val DefaultLibraryTextProvider =
@@ -32,6 +39,13 @@ internal val DefaultLibraryTextProvider =
             LibraryTextKeys.OwnedEmpty to "Пока нет своих наборов.",
             LibraryTextKeys.Adopt to "Добавить",
             LibraryTextKeys.UnAdopt to "Убрать",
+            LibraryTextKeys.DeckBack to "Назад",
+            LibraryTextKeys.DeckLoading to "Загрузка набора...",
+            LibraryTextKeys.DeckLoadError to "Не удалось загрузить набор",
+            LibraryTextKeys.DeckEmpty to "В этом наборе пока нет карточек.",
+            LibraryTextKeys.DeckAdopt to "Добавить набор",
+            LibraryTextKeys.DeckAdoptError to "Не удалось добавить набор",
+            LibraryTextKeys.DeckClose to "Закрыть набор",
         ),
         quantities =
             mapOf(

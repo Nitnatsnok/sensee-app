@@ -28,7 +28,6 @@ import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureAction
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureComponent
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureUiState
-import app.sensee.feature.vocabularyEditor.presentation.impl.card.SenseSelectionCard
 import app.sensee.feature.vocabularyEditor.presentation.impl.component.grammarLabelsLoadStatusItem
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.ui.designSystem.component.button.SenseeButton
@@ -38,6 +37,7 @@ import app.sensee.ui.designSystem.theme.LocalSenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeAdaptiveLayoutMetrics
 import app.sensee.ui.designSystem.theme.SenseeTheme
 import app.sensee.ui.designSystem.theme.senseeCompactLayoutMetrics
+import app.sensee.ui.senseCard.SenseCard
 import com.composeunstyled.Text
 
 // Grammar/usage labels still come native from GrammarLabels; only the UI chrome
@@ -79,7 +79,7 @@ public fun VocabularyCaptureScreen(
                 confirmedTermBlock(component, formState, confirmedTerm, textProvider, layoutMetrics)
             } else {
                 termInputBlock(component, uiState, formState, textProvider, layoutMetrics)
-                candidateList(component, uiState, textProvider, layoutMetrics)
+                candidateList(component, uiState, layoutMetrics)
                 if (uiState.isPostSuggestionPhase) {
                     manualEntryBlock(component, uiState, formState, textProvider, layoutMetrics)
                     manualSenseList(component, uiState, textProvider, layoutMetrics)
@@ -239,18 +239,16 @@ private fun LazyListScope.termInputBlock(
 private fun LazyListScope.candidateList(
     component: VocabularyCaptureComponent,
     uiState: VocabularyCaptureUiState,
-    textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
     items(uiState.candidates, key = { it.contentKey }) { candidate ->
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseSelectionCard(
-                candidate = candidate.sense,
+            SenseCard(
+                sense = candidate.sense,
                 labels = uiState.grammarLabels,
                 studyLanguageTag = uiState.studyLanguageTag,
-                textProvider = textProvider,
                 selected = candidate.selected,
-                onToggle = {
+                onClick = {
                     component.onAction(VocabularyCaptureAction.ToggleCandidate(candidate.contentKey))
                 },
             )
