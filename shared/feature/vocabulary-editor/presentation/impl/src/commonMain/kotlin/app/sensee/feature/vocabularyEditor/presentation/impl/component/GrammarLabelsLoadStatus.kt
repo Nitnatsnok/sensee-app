@@ -8,6 +8,7 @@ import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureAction
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureComponent
 import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureUiState
+import app.sensee.feature.vocabularyEditor.presentation.impl.screen.VocabularyCaptureListItem
 import app.sensee.feature.vocabularyEditor.presentation.impl.screen.VocabularyCaptureTextKeys
 import app.sensee.ui.designSystem.component.button.SenseeButton
 import app.sensee.ui.designSystem.component.layout.SenseeInlineStatus
@@ -53,7 +54,10 @@ internal fun LazyListScope.grammarLabelsLoadStatusItem(
 ) {
     val state = uiState.grammarLabelsState
     if (state == DataLoadingState.Idle || state == DataLoadingState.Success) return
-    item {
+    item(
+        key = VocabularyCaptureListItem.GrammarLabelsLoadStatus,
+        contentType = VocabularyCaptureListItem.GrammarLabelsLoadStatus.contentType,
+    ) {
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
             GrammarLabelsLoadStatus(
                 state = state,

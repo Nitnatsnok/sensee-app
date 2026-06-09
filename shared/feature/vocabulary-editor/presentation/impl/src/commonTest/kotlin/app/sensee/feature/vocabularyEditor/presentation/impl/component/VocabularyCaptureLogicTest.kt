@@ -252,6 +252,18 @@ class VocabularyCaptureLogicTest {
     }
 
     @Test
+    fun `repeated manual variants keep distinct presentation keys`() {
+        val logic = logic(availableAi())
+
+        logic.addManual("ручной смысл", example = "I use ручной смысл here.")
+        logic.addManual("ручной смысл", example = "I use ручной смысл here.")
+
+        val manualSenses = logic.uiState.value.manualSenses
+        assertEquals(1, manualSenses.map { it.contentKey }.toSet().size)
+        assertEquals(2, manualSenses.map { it.presentationKey }.toSet().size)
+    }
+
+    @Test
     fun `confirm dedups a selected candidate and a manual sense sharing a content key`() {
         val repo = FakeSenseWriteRepository()
         val logic = logic(availableAi("дубль"), repo)

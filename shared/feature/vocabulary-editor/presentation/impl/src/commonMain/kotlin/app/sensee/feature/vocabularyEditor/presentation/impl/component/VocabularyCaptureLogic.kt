@@ -58,6 +58,7 @@ public class VocabularyCaptureLogic(
     // Guards a re-entrant confirm: a second tap before the first confirmAll
     // round-trip resolves would write the same senses twice.
     private var confirming = false
+    private var manualPresentationKeySequence = 0
 
     init {
         loadGrammarLabels()
@@ -149,16 +150,18 @@ public class VocabularyCaptureLogic(
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { listOf(ContextualApplication(StudiedSentence.parse(it))) }
                 .orEmpty()
+        val sense =
+            Sense(
+                translation = trimmed,
+                surfaceForm = form,
+                unitType = unitType,
+                contextualApplications = applications,
+            )
         val manual =
             CaptureSense(
-                sense =
-                    Sense(
-                        translation = trimmed,
-                        surfaceForm = form,
-                        unitType = unitType,
-                        contextualApplications = applications,
-                    ),
+                sense = sense,
                 source = CaptureSenseSource.Manual,
+                presentationKey = nextManualPresentationKey(),
             )
         mutableUiState.update { it.copy(manualSenses = it.manualSenses + manual) }
     }
@@ -271,6 +274,10 @@ public class VocabularyCaptureLogic(
             )
         }
     }
+
+    // A monotonic counter, not the content key: repeated manual entries can share a
+    // content key, so the list needs a position-independent unique identity.
+    private fun nextManualPresentationKey(): String = "manual-${manualPresentationKeySequence++}"
 }
 
 private fun List<CaptureSense>.toggleSelection(contentKey: String): List<CaptureSense> =

@@ -10,7 +10,6 @@ import app.sensee.feature.vocabularyEditor.presentation.api.VocabularyCaptureUiS
 import app.sensee.grammar.domain.GrammarUnitType
 import app.sensee.ui.designSystem.component.button.SenseeButton
 import app.sensee.ui.designSystem.component.button.SenseeButtonColors
-import app.sensee.ui.designSystem.component.layout.SenseeScreenContentFrame
 import app.sensee.ui.designSystem.component.selectField.SenseeSelectField
 import app.sensee.ui.designSystem.component.textField.SenseeTextField
 import app.sensee.ui.designSystem.theme.SenseeAdaptiveLayoutMetrics
@@ -24,17 +23,18 @@ internal fun LazyListScope.manualTranslationItem(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeTextField(
-                state = formState.manualTranslation,
-                accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.ManualMeaningLabel),
-                label = { Text(textProvider.text(VocabularyCaptureTextKeys.ManualMeaningLabel)) },
-                placeholder = {
-                    Text(textProvider.text(VocabularyCaptureTextKeys.ManualMeaningPlaceholder))
-                },
-            )
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ManualTranslation,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeTextField(
+            state = formState.manualTranslation,
+            accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.ManualMeaningLabel),
+            label = { Text(textProvider.text(VocabularyCaptureTextKeys.ManualMeaningLabel)) },
+            placeholder = {
+                Text(textProvider.text(VocabularyCaptureTextKeys.ManualMeaningPlaceholder))
+            },
+        )
     }
 }
 
@@ -43,17 +43,18 @@ internal fun LazyListScope.manualSurfaceFormItem(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeTextField(
-                state = formState.manualSurfaceForm,
-                accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.SurfaceFormLabel),
-                label = { Text(textProvider.text(VocabularyCaptureTextKeys.SurfaceFormLabel)) },
-                placeholder = {
-                    Text(textProvider.text(VocabularyCaptureTextKeys.SurfaceFormPlaceholder))
-                },
-            )
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ManualSurfaceForm,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeTextField(
+            state = formState.manualSurfaceForm,
+            accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.SurfaceFormLabel),
+            label = { Text(textProvider.text(VocabularyCaptureTextKeys.SurfaceFormLabel)) },
+            placeholder = {
+                Text(textProvider.text(VocabularyCaptureTextKeys.SurfaceFormPlaceholder))
+            },
+        )
     }
 }
 
@@ -62,17 +63,18 @@ internal fun LazyListScope.manualExampleItem(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeTextField(
-                state = formState.manualExample,
-                accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.ManualExampleLabel),
-                label = { Text(textProvider.text(VocabularyCaptureTextKeys.ManualExampleLabel)) },
-                placeholder = {
-                    Text(textProvider.text(VocabularyCaptureTextKeys.ManualExamplePlaceholder))
-                },
-            )
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ManualExample,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeTextField(
+            state = formState.manualExample,
+            accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.ManualExampleLabel),
+            label = { Text(textProvider.text(VocabularyCaptureTextKeys.ManualExampleLabel)) },
+            placeholder = {
+                Text(textProvider.text(VocabularyCaptureTextKeys.ManualExamplePlaceholder))
+            },
+        )
     }
 }
 
@@ -82,17 +84,18 @@ internal fun LazyListScope.manualUnitTypeItem(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeSelectField(
-                label = textProvider.text(VocabularyCaptureTextKeys.PartOfSpeechLabel),
-                selected = formState.manualUnitType,
-                options = ManualUnitTypeOptions,
-                optionLabel = { uiState.grammarLabels.unitType(it, uiState.nativeLanguageTag) ?: it.id },
-                onSelect = { formState.manualUnitType = it },
-                placeholder = textProvider.text(VocabularyCaptureTextKeys.PartOfSpeechUnset),
-            )
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ManualUnitType,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeSelectField(
+            label = textProvider.text(VocabularyCaptureTextKeys.PartOfSpeechLabel),
+            selected = formState.manualUnitType,
+            options = ManualUnitTypeOptions,
+            optionLabel = { uiState.grammarLabels.unitType(it, uiState.nativeLanguageTag) ?: it.id },
+            onSelect = { formState.manualUnitType = it },
+            placeholder = textProvider.text(VocabularyCaptureTextKeys.PartOfSpeechUnset),
+        )
     }
 }
 
@@ -102,25 +105,26 @@ internal fun LazyListScope.manualAddButtonItem(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeButton(
-                onClick = {
-                    component.onAction(
-                        VocabularyCaptureAction.AddManual(
-                            translation = formState.manualTranslation.text.toString(),
-                            surfaceForm = formState.manualSurfaceForm.text.toString(),
-                            unitType = formState.manualUnitType,
-                            example = formState.manualExample.text.toString(),
-                        ),
-                    )
-                    formState.resetManual()
-                },
-                colors = SenseeButtonColors.tonal(),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(textProvider.text(VocabularyCaptureTextKeys.AddOwnVariant))
-            }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ManualAddButton,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeButton(
+            onClick = {
+                component.onAction(
+                    VocabularyCaptureAction.AddManual(
+                        translation = formState.manualTranslation.text.toString(),
+                        surfaceForm = formState.manualSurfaceForm.text.toString(),
+                        unitType = formState.manualUnitType,
+                        example = formState.manualExample.text.toString(),
+                    ),
+                )
+                formState.resetManual()
+            },
+            colors = SenseeButtonColors.tonal(),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(textProvider.text(VocabularyCaptureTextKeys.AddOwnVariant))
         }
     }
 }

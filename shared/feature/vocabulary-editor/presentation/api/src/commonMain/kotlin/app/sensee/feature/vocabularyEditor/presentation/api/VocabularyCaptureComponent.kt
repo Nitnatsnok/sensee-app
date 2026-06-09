@@ -88,6 +88,15 @@ public data class CaptureSense(
     val status: CaptureSenseStatus = CaptureSenseStatus.Ready,
     val selected: Boolean = false,
     val assistantSuggestions: List<CaptureSense> = emptyList(),
+    /**
+     * UI identity for lazy-list state, distinct from the semantic [contentKey] used
+     * for selection and confirm-time de-duplication: repeated manual entries can
+     * share a [contentKey] yet still need separate list items and remembered UI
+     * state. Only hand-authored senses get a generated key; for AI candidates this
+     * defaults to [contentKey] and is not used as a list key (that list keys by
+     * [contentKey]).
+     */
+    val presentationKey: String = deriveSenseContentKey(sense),
 ) {
     public val contentKey: String get() = deriveSenseContentKey(sense)
 }

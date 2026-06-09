@@ -142,13 +142,14 @@ private fun LazyListScope.captureIntro(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            IntroHeader(
-                title = textProvider.text(VocabularyCaptureTextKeys.Title),
-                intro = textProvider.text(VocabularyCaptureTextKeys.Intro),
-            )
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.Intro,
+        layoutMetrics = layoutMetrics,
+    ) {
+        IntroHeader(
+            title = textProvider.text(VocabularyCaptureTextKeys.Title),
+            intro = textProvider.text(VocabularyCaptureTextKeys.Intro),
+        )
     }
 }
 
@@ -159,24 +160,26 @@ private fun LazyListScope.confirmedTermBlock(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            ConfirmedTermText(
-                text = textProvider.text(VocabularyCaptureTextKeys.Saved, confirmedTerm),
-            )
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ConfirmedTerm,
+        layoutMetrics = layoutMetrics,
+    ) {
+        ConfirmedTermText(
+            text = textProvider.text(VocabularyCaptureTextKeys.Saved, confirmedTerm),
+        )
     }
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeButton(
-                onClick = {
-                    formState.resetAll()
-                    component.onAction(VocabularyCaptureAction.Reset)
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(textProvider.text(VocabularyCaptureTextKeys.CaptureAnother))
-            }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.CaptureAnother,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeButton(
+            onClick = {
+                formState.resetAll()
+                component.onAction(VocabularyCaptureAction.Reset)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(textProvider.text(VocabularyCaptureTextKeys.CaptureAnother))
         }
     }
 }
@@ -188,50 +191,63 @@ private fun LazyListScope.termInputBlock(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeTextField(
-                state = formState.term,
-                accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.TermLabel),
-                label = { Text(textProvider.text(VocabularyCaptureTextKeys.TermLabel)) },
-                placeholder = { Text(textProvider.text(VocabularyCaptureTextKeys.TermPlaceholder)) },
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.TermInput,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeTextField(
+            state = formState.term,
+            accessibilityLabel = textProvider.text(VocabularyCaptureTextKeys.TermLabel),
+            label = { Text(textProvider.text(VocabularyCaptureTextKeys.TermLabel)) },
+            placeholder = { Text(textProvider.text(VocabularyCaptureTextKeys.TermPlaceholder)) },
+        )
+    }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.SuggestButton,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeButton(
+            onClick = {
+                component.onAction(VocabularyCaptureAction.Suggest(formState.term.text.toString()))
+            },
+            enabled = uiState.loadingState != DataLoadingState.Loading,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                textProvider.text(
+                    if (uiState.loadingState == DataLoadingState.Loading) {
+                        VocabularyCaptureTextKeys.Working
+                    } else {
+                        VocabularyCaptureTextKeys.GetSuggestions
+                    },
+                ),
             )
         }
     }
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeButton(
-                onClick = {
-                    component.onAction(VocabularyCaptureAction.Suggest(formState.term.text.toString()))
-                },
-                enabled = uiState.loadingState != DataLoadingState.Loading,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    textProvider.text(
-                        if (uiState.loadingState == DataLoadingState.Loading) {
-                            VocabularyCaptureTextKeys.Working
-                        } else {
-                            VocabularyCaptureTextKeys.GetSuggestions
-                        },
-                    ),
-                )
-            }
-        }
-    }
+    termFeedbackItems(component, uiState, textProvider, layoutMetrics)
+}
+
+private fun LazyListScope.termFeedbackItems(
+    component: VocabularyCaptureComponent,
+    uiState: VocabularyCaptureUiState,
+    textProvider: TextProvider,
+    layoutMetrics: SenseeAdaptiveLayoutMetrics,
+) {
     grammarLabelsLoadStatusItem(uiState, component, textProvider, layoutMetrics)
     uiState.statusNote?.let { note ->
-        item {
-            SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-                BodyMutedText(textProvider.statusNoteText(note))
-            }
+        captureFrameItem(
+            listItem = VocabularyCaptureListItem.StatusNote,
+            layoutMetrics = layoutMetrics,
+        ) {
+            BodyMutedText(textProvider.statusNoteText(note))
         }
     }
     if (uiState.loadingState is DataLoadingState.Error) {
-        item {
-            SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-                BodyMutedText(textProvider.text(VocabularyCaptureTextKeys.SuggestError))
-            }
+        captureFrameItem(
+            listItem = VocabularyCaptureListItem.SuggestError,
+            layoutMetrics = layoutMetrics,
+        ) {
+            BodyMutedText(textProvider.text(VocabularyCaptureTextKeys.SuggestError))
         }
     }
 }
@@ -241,7 +257,11 @@ private fun LazyListScope.candidateList(
     uiState: VocabularyCaptureUiState,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    items(uiState.candidates, key = { it.contentKey }) { candidate ->
+    items(
+        items = uiState.candidates,
+        key = { it.contentKey },
+        contentType = { VocabularyCaptureListContentType.SenseCard },
+    ) { candidate ->
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
             SenseCard(
                 sense = candidate.sense,
@@ -263,10 +283,11 @@ private fun LazyListScope.manualEntryBlock(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SectionTitle(textProvider.text(VocabularyCaptureTextKeys.MissedSense))
-        }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.MissedSense,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SectionTitle(textProvider.text(VocabularyCaptureTextKeys.MissedSense))
     }
     manualTranslationItem(formState, textProvider, layoutMetrics)
     manualSurfaceFormItem(formState, textProvider, layoutMetrics)
@@ -281,7 +302,11 @@ private fun LazyListScope.manualSenseList(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    itemsIndexed(uiState.manualSenses) { manualIndex, sense ->
+    itemsIndexed(
+        items = uiState.manualSenses,
+        key = { _, sense -> sense.presentationKey },
+        contentType = { _, _ -> VocabularyCaptureListContentType.ManualSense },
+    ) { manualIndex, sense ->
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
             ManualSenseBlock(
                 sense = sense,
@@ -311,15 +336,16 @@ private fun LazyListScope.confirmButton(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    item {
-        SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-            SenseeButton(
-                onClick = { component.onAction(VocabularyCaptureAction.ConfirmSelected) },
-                enabled = uiState.canConfirm,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(textProvider.text(VocabularyCaptureTextKeys.AddSelected))
-            }
+    captureFrameItem(
+        listItem = VocabularyCaptureListItem.ConfirmButton,
+        layoutMetrics = layoutMetrics,
+    ) {
+        SenseeButton(
+            onClick = { component.onAction(VocabularyCaptureAction.ConfirmSelected) },
+            enabled = uiState.canConfirm,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(textProvider.text(VocabularyCaptureTextKeys.AddSelected))
         }
     }
 }
