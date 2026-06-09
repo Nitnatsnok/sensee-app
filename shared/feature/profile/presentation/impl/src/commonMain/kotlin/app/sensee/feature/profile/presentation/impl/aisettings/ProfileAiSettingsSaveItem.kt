@@ -16,7 +16,10 @@ internal fun LazyListScope.saveItem(
     val textProvider = context.textProvider
     val layoutMetrics = context.layoutMetrics
 
-    item {
+    item(
+        key = ProfileAiSettingsListItem.Save,
+        contentType = ProfileAiSettingsListItem.Save.contentType,
+    ) {
         SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
             SenseeButton(
                 onClick = { component.onAction(ProfileAiSettingsAction.Save) },

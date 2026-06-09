@@ -22,7 +22,6 @@ import app.sensee.feature.profile.presentation.api.ProfileAiSettingsUiState
 import app.sensee.settings.domain.AiProvider
 import app.sensee.settings.domain.TtsProvider
 import app.sensee.ui.designSystem.component.button.SenseeButton
-import app.sensee.ui.designSystem.component.layout.SenseeScreenContentFrame
 import app.sensee.ui.designSystem.component.selectField.SenseeSelectField
 import app.sensee.ui.designSystem.component.textField.SenseeTextField
 import app.sensee.ui.designSystem.theme.LocalSenseeAdaptiveLayoutMetrics
@@ -90,13 +89,13 @@ private fun LazyListScope.aiSection(context: ProfileAiSettingsListContext) {
     val textProvider = context.textProvider
     val layoutMetrics = context.layoutMetrics
 
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.AiSection, layoutMetrics) {
         SectionHeader(
             title = textProvider.text(ProfileAiSettingsTextKeys.SectionAi),
             hint = textProvider.text(ProfileAiSettingsTextKeys.AiHint),
         )
     }
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.AiProvider, layoutMetrics) {
         SenseeSelectField(
             label = textProvider.text(ProfileAiSettingsTextKeys.AiProvider),
             selected = uiState.draftSnapshot.aiProvider,
@@ -106,7 +105,7 @@ private fun LazyListScope.aiSection(context: ProfileAiSettingsListContext) {
             modifier = Modifier.fillMaxWidth(),
         )
     }
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.AiApiKey, layoutMetrics) {
         SenseeTextField(
             state = formState.aiApiKey,
             accessibilityLabel = textProvider.text(ProfileAiSettingsTextKeys.AiApiKey),
@@ -114,7 +113,7 @@ private fun LazyListScope.aiSection(context: ProfileAiSettingsListContext) {
             secure = true,
         )
     }
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.AiVerify, layoutMetrics) {
         VerifyRow(
             status = uiState.effectiveAiKeyCheck(),
             textProvider = textProvider,
@@ -132,10 +131,10 @@ private fun LazyListScope.aiResultItems(context: ProfileAiSettingsListContext) {
 
     val aiCheck = uiState.effectiveAiKeyCheck()
     if (aiCheck.hasResult()) {
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.AiKeyCheckMessage, layoutMetrics) {
             KeyCheckMessage(aiCheck, textProvider)
         }
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.AiModel, layoutMetrics) {
             ModelField(
                 status = aiCheck,
                 label = textProvider.text(ProfileAiSettingsTextKeys.AiModel),
@@ -153,10 +152,10 @@ private fun LazyListScope.ttsSection(context: ProfileAiSettingsListContext) {
     val textProvider = context.textProvider
     val layoutMetrics = context.layoutMetrics
 
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.TtsSection, layoutMetrics) {
         SectionHeader(title = textProvider.text(ProfileAiSettingsTextKeys.SectionTts))
     }
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.TtsProvider, layoutMetrics) {
         SenseeSelectField(
             label = textProvider.text(ProfileAiSettingsTextKeys.TtsProvider),
             selected = uiState.draftSnapshot.ttsProvider,
@@ -184,7 +183,7 @@ private fun LazyListScope.ttsResultItems(context: ProfileAiSettingsListContext) 
 
     val ttsCheck = uiState.effectiveTtsKeyCheck()
     if (ttsCheck.hasResult()) {
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.TtsModel, layoutMetrics) {
             ModelField(
                 status = ttsCheck,
                 label = textProvider.text(ProfileAiSettingsTextKeys.TtsModel),
@@ -192,7 +191,7 @@ private fun LazyListScope.ttsResultItems(context: ProfileAiSettingsListContext) 
                 state = formState.ttsModel,
             )
         }
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.TtsVoice, layoutMetrics) {
             ModelField(
                 status = ttsCheck,
                 label = textProvider.text(ProfileAiSettingsTextKeys.TtsVoice),
@@ -217,16 +216,16 @@ private fun LazyListScope.ttsInheritedKeyBlock(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.TtsInheritedKeyHint, layoutMetrics) {
         BodyMutedText(textProvider.text(ProfileAiSettingsTextKeys.TtsUsesAiKey))
     }
     val aiCheck = uiState.effectiveAiKeyCheck()
     if (aiCheck.hasResult()) {
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.TtsInheritedAiKeyCheckMessage, layoutMetrics) {
             KeyCheckMessage(aiCheck, textProvider)
         }
     }
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.TtsUseSeparateKey, layoutMetrics) {
         SenseeButton(
             onClick = { component.onAction(ProfileAiSettingsAction.SetTtsSeparateKey(true)) },
             modifier = Modifier.fillMaxWidth(),
@@ -243,7 +242,7 @@ private fun LazyListScope.ttsSeparateKeyBlock(
     textProvider: TextProvider,
     layoutMetrics: SenseeAdaptiveLayoutMetrics,
 ) {
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.TtsApiKey, layoutMetrics) {
         SenseeTextField(
             state = formState.ttsApiKey,
             accessibilityLabel = textProvider.text(ProfileAiSettingsTextKeys.TtsApiKey),
@@ -251,7 +250,7 @@ private fun LazyListScope.ttsSeparateKeyBlock(
             secure = true,
         )
     }
-    frameItem(layoutMetrics) {
+    frameItem(ProfileAiSettingsListItem.TtsVerify, layoutMetrics) {
         VerifyRow(
             status = uiState.effectiveTtsKeyCheck(),
             textProvider = textProvider,
@@ -260,13 +259,13 @@ private fun LazyListScope.ttsSeparateKeyBlock(
     }
     val ttsCheck = uiState.effectiveTtsKeyCheck()
     if (ttsCheck.hasResult()) {
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.TtsKeyCheckMessage, layoutMetrics) {
             KeyCheckMessage(ttsCheck, textProvider)
         }
     }
     val draft = uiState.draftSnapshot
     if (draft.ttsProvider == TtsProvider.OpenAi && draft.aiProvider == AiProvider.OpenAi) {
-        frameItem(layoutMetrics) {
+        frameItem(ProfileAiSettingsListItem.TtsUseAiKey, layoutMetrics) {
             SenseeButton(
                 onClick = { component.onAction(ProfileAiSettingsAction.SetTtsSeparateKey(false)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -274,15 +273,6 @@ private fun LazyListScope.ttsSeparateKeyBlock(
                 Text(textProvider.text(ProfileAiSettingsTextKeys.TtsUseAiKey))
             }
         }
-    }
-}
-
-private fun LazyListScope.frameItem(
-    layoutMetrics: SenseeAdaptiveLayoutMetrics,
-    content: @Composable () -> Unit,
-) = item {
-    SenseeScreenContentFrame(layoutMetrics = layoutMetrics) {
-        content()
     }
 }
 
