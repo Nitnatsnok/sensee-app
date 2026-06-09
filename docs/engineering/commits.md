@@ -114,7 +114,7 @@ Do not split the test and implementation for one regression when they form one r
 ## Before Committing
 
 - Check `git diff` and `git status` for accidental files.
-- Ensure generated output from `build/`, `.gradle/`, `.kotlin/`, `kotlin-js-store/`, local properties, and secrets are not included.
+- Ensure generated output from `build/`, `.gradle/`, `.kotlin/`, local properties, and secrets are not included. The committed `kotlin-js-store/yarn.lock` and `kotlin-js-store/wasm/yarn.lock` are the exception: regenerate them with `kotlinUpgradeYarnLock` (never by hand) so `:kotlinStoreYarnLock` stays green in CI, and keep the rest of `kotlin-js-store/` out.
 - Check whether docs, ADRs, and LikeC4 need updates for architecture or user-visible behavior changes.
 - Record verification that actually ran. Do not claim a command passed unless it was executed.
 

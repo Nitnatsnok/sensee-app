@@ -63,6 +63,13 @@ while IFS= read -r file_path; do
     esac
 
     case "$normalized_path" in
+        kotlin-js-store/yarn.lock|kotlin-js-store/wasm/yarn.lock)
+            # Committed yarn lockfiles: intentionally tracked so JS/Wasm builds
+            # pin npm dependencies, and validated by :kotlinStoreYarnLock in CI.
+            # Regenerate them with the kotlinUpgradeYarnLock Gradle task, never by
+            # hand. They fall through to the text guards below.
+            :
+            ;;
         .idea/*|*/.idea/*|.gradle/*|*/.gradle/*|.kotlin/*|*/.kotlin/*|kotlin-js-store/*)
             print_error "pre-commit: staged file '$normalized_path' is generated or machine-local and must not be committed."
             continue
