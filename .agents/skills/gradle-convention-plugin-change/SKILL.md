@@ -35,6 +35,12 @@ Implementation support. Keep changes narrow and verify build-logic behavior befo
 - Generated output stays under `build/`.
 - LikeC4 or CI command wiring uses existing package manager/Gradle conventions.
 
+## Gotchas
+
+- Convention plugin ids (`app.sensee.gradle.*`) and their responsibilities live in `gradle-plugins/AGENTS.md` and root `AGENTS.md`; read those instead of re-deriving the inventory.
+- Wasm incremental compilation is intentionally disabled (`kotlin.incremental.wasm=false` in `gradle.properties`) as a KT-85270 workaround; do not re-enable it to "clean up" (tracked in `docs/backlog/`, EB-19).
+- `composeStabilityReport` emits compiler reports only when the task is invoked by name (it inspects `startParameter.taskNames`); a normal compile deliberately skips them, so stability reports are not a build side-effect.
+
 ## Verification
 
 - Build logic:

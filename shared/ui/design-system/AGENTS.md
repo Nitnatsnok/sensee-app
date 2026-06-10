@@ -16,7 +16,7 @@ Applies to:
 
 - Use `composeunstyled`, not Material. Do not introduce `androidx.compose.material*` or `MaterialTheme`.
 - Read colors, spacing, typography, shapes, layout, and disabled alpha through `SenseeTheme`/design-system defaults; avoid raw hex/dp/sp styling in features.
-- Keep the design system independent from `shared/ui/adaptive`; it consumes `LocalSenseeLayoutSizeClass` provided by app composition.
+- Keep the design system independent from `shared/ui/adaptive`; it consumes its own `LocalSenseeAdaptiveLayoutMetrics` (defaulting to compact) provided by app composition.
 - Use the right header primitive for the context: `SenseePaneHeader` for wide detail panes, `SenseeSheetHeader` for modal sheets, and `SenseeTopBar` for full-screen stack navigation.
 - Components should be stateless/slot-based where practical and expose styling through theme tokens plus `*Defaults`/`*Colors`.
 - `*Colors` holders should stay explicit `@Immutable data class` values of `Color`.

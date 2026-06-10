@@ -1,0 +1,15 @@
+{
+  "skill_name": "decompose-navigation-review",
+  "evals": [
+    {
+      "id": "persisted-config-registration",
+      "prompt": "Review a new persisted child-stack config I added for the library section.",
+      "expected_output": "Checks the config is @Serializable and registered through a ScreenConfigSerializersProvider aggregated under shared/core/decompose (ADR 0003); verifies state restoration and back handling; keeps business logic out of the config."
+    },
+    {
+      "id": "navigation-api-extraction",
+      "prompt": "Should I extract a navigation-api module so another feature can open this screen?",
+      "expected_output": "Extracts navigation-api only when another module actually needs the entry contract; otherwise keeps the config with its host; warns against presentation/impl depending on another feature's implementation."
+    }
+  ]
+}

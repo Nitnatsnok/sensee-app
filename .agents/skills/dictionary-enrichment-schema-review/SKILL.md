@@ -26,16 +26,25 @@ Review/support. Check schema and evidence boundaries before recommending prompt,
 ## Check
 
 - One returned item represents one distinct sense.
-- Phrasal verbs, idioms, fixed phrases, and single words are not collapsed into one generic meaning.
+- Phrasal verbs, idioms, fixed phrases, and single words are not collapsed into one generic meaning (ADR 0008).
 - `shared/ai/core` remains provider-agnostic and feature-agnostic.
-- The AI response schema remains versioned and mapped through anti-corruption code.
+- The AI response schema remains versioned and mapped through anti-corruption code (ADR 0005, ADR 0006).
 - Prompt text does not duplicate per-field schema semantics unnecessarily.
 - AI output validation is explicit.
 - Dictionary/API verification is separated from AI generation.
-- License flags from verification sources are respected before using or storing evidence.
+- License flags from verification sources are respected before using or storing evidence (ADR 0007, ADR 0009).
 - Unknown grammar/taxonomy ids remain forward-compatible.
 - Fallback behavior is clear when verification is unavailable or inconclusive.
 - LikeC4/docs are updated for significant AI/enrichment/verification boundary changes.
+
+## Verification
+
+- This is a logical seam across `shared/ai/*`, `shared/verification/*`, and `shared/lexicon/*`; there is no single module task. Run `check` for each touched module, e.g.:
+  ```shell
+  .\gradlew.bat :shared:ai:core:check
+  .\gradlew.bat :shared:verification:core:check
+  .\gradlew.bat :shared:lexicon:domain:check
+  ```
 
 ## Output
 

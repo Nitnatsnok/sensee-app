@@ -1,0 +1,15 @@
+{
+  "skill_name": "sqldelight-schema-aggregation-review",
+  "evals": [
+    {
+      "id": "feature-owns-schema",
+      "prompt": "Review a new table I added directly in shared/database for the practice feature.",
+      "expected_output": "Recommends a feature-owned *:database-schema module aggregated by shared/database rather than putting feature schema in the aggregator (ADR 0002); checks ownership and that cross-feature access goes through a contract."
+    },
+    {
+      "id": "drift-dev-reset-not-sqm",
+      "prompt": "I changed a column in a .sq file. Do I need to write a .sqm migration?",
+      "expected_output": "Notes the current dev-reset workflow on schema drift with a single versioned snapshot and no .sqm yet (shared/database/AGENTS.md); regenerate the snapshot via the documented generate task, never hand-edit it; add .sqm only when a production migration path is needed."
+    }
+  ]
+}

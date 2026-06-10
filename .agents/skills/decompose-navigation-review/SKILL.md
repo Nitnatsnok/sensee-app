@@ -25,14 +25,22 @@ Review/support. Map ownership and risks before proposing navigation changes.
 
 ## Check
 
-- Persisted root or section-stack configs are serializable and registered through the common serializer assembly under `shared/core/decompose`.
+- Persisted root or section-stack configs are `@Serializable` and registered through a `ScreenConfigSerializersProvider` aggregated under `shared/core/decompose` (ADR 0003).
 - Feature APIs do not depend on other feature implementations.
 - `navigation-api` is separated only when external modules need entry contracts.
 - Root, section, host, and leaf responsibilities are not mixed.
 - State restoration remains valid.
-- Back handling and predictive-back risks are considered.
+- Back handling is correct; treat predictive-back gesture/animation as out of scope unless the change explicitly adds it.
 - Child stack updates happen through established Decompose/navigation abstractions.
 - URL/deep-link projection does not duplicate business navigation logic.
+
+## Verification
+
+- Module-scoped checks:
+  ```shell
+  .\gradlew.bat :shared:core:decompose:check
+  .\gradlew.bat :shared:app-shell:check
+  ```
 
 ## Output
 
@@ -42,3 +50,7 @@ Review/support. Map ownership and risks before proposing navigation changes.
 - Back stack/state restoration risks
 - LikeC4/docs impact
 - Minimal change recommendation
+
+## Related skills
+
+Components are state holders: use `compose-state-holder-ui-split` (state-holder/UI split) and `kotlin-flow-state-event-modeling` (component state and one-shot events) when available in the running agent.

@@ -33,9 +33,29 @@ Review/support. Prefer moving behavior to the narrowest valid source set before 
 - SQLDelight, Ktor, serialization, and Compose dependencies match target capabilities.
 - Platform context does not leak into domain models.
 
+## Gotchas
+
+- `webMain` is the shared JS + Wasm intermediate source set; put code shared by both web targets there instead of duplicating it across `jsMain` and `wasmJsMain`. `nativeMain` similarly groups the iOS targets.
+- `-Xexpect-actual-classes` is enabled by the KMP convention plugin, so `expect`/`actual` *classes* (not only functions) are supported.
+- Wasm incremental compilation is intentionally disabled as a KT-85270 workaround (EB-19) — don't re-enable it; `wasmJsBrowserTest` still runs the browser suite.
+
+## Verification
+
+- Prefer the narrowest module check, plus the affected target's test task:
+  ```shell
+  .\gradlew.bat :shared:<module>:check
+  .\gradlew.bat jvmTest
+  .\gradlew.bat jsBrowserTest
+  .\gradlew.bat wasmJsBrowserTest
+  ```
+
 ## Output
 
 - Source-set issues
 - Platform leakage
 - Dependency placement suggestions
 - Expected verification tasks
+
+## Related skills
+
+For expect/actual boundary design, use `kotlin-multiplatform-expect-actual` when available in the running agent.

@@ -40,6 +40,7 @@ Planning support. Produce slices and verification strategy; do not implement unl
 - Keep AI/TTS/verification composition in the matching `integration` module; app shell should depend on integration, not impl modules directly.
 - Treat FSRS/SRS scheduling changes as their own slice with tests.
 - Treat SQLDelight schema ownership/migration changes as their own slice.
+- Treat web (JS + Wasm) work as one slice through the shared `webMain` seam rather than parallel `jsMain`/`wasmJsMain` slices.
 - Treat Gradle convention plugin changes as their own slice verified with `.\gradlew.bat -p gradle-plugins :plugin:check`.
 - Treat LikeC4 and architecture docs sync as a required slice when architecture changes.
 

@@ -63,3 +63,7 @@ When the scope justifies escalation, also check:
 - Nice to have
 - Questions
 - Suggested verification
+
+## Related skills
+
+When a finding warrants a deep dive, use the stack methodology skills when available in the running agent — e.g. `compose-stability-diagnostics`/`compose-recomposition-performance`, `compose-state-holder-ui-split`, `kotlin-flow-state-event-modeling`, `kotlin-coroutines-structured-concurrency`, `kotlin-multiplatform-expect-actual`.

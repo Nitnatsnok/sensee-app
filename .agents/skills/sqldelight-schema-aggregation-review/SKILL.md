@@ -26,14 +26,22 @@ Review/support. Check ownership and migration implications before recommending S
 ## Check
 
 - Table and schema ownership is explicit.
-- `shared/database` aggregates runtime database access without becoming feature domain.
+- `shared/database` aggregates runtime database access without becoming feature domain (ADR 0002).
 - Features do not access another feature's tables directly without a contract.
 - `.sq` edits match the current dev workflow; `.sqm` migrations appear only when production migration path is needed.
 - Generated snapshots under `shared/database/src/commonMain/sqldelight/databases/` are regenerated, never hand-edited.
 - Queries do not create hidden cross-feature coupling.
-- Transaction boundaries are clear.
+- Transaction boundaries are clear; multi-statement writes run inside one `transaction`/`transactionWithResult`.
+- Reactive reads are exposed as Flows (`asFlow()` from `coroutines-extensions`) and generated row types are mapped to domain models, not returned across module boundaries.
 - Migration/query tests are updated when behavior changes.
 - LikeC4/docs are updated for significant persistence ownership changes.
+
+## Verification
+
+- Module-scoped check; the schema generate/verify task names are documented in `shared/database/AGENTS.md`:
+  ```shell
+  .\gradlew.bat :shared:database:check
+  ```
 
 ## Output
 
@@ -43,3 +51,7 @@ Review/support. Check ownership and migration implications before recommending S
 - LikeC4/docs impact
 - Test gaps
 - Recommended minimal fix
+
+## Related skills
+
+For repository Flow and coroutine shape, use `kotlin-flow-state-event-modeling` and `kotlin-coroutines-structured-concurrency` when available in the running agent.

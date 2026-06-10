@@ -1,0 +1,15 @@
+{
+  "skill_name": "compose-multiplatform-ui-review",
+  "evals": [
+    {
+      "id": "adaptive-not-raw-width",
+      "prompt": "Review a screen that branches its layout on a manually computed window width.",
+      "expected_output": "Recommends reading LocalAdaptiveInfo/AppAdaptiveInfo (shared/ui/adaptive) or LocalSenseeAdaptiveLayoutMetrics in the design system instead of ad-hoc width math; flags raw colors/dp in favour of SenseeTheme tokens; does not introduce Material."
+    },
+    {
+      "id": "web-a11y-not-a-bug",
+      "prompt": "On the web build the screen has no accessibility semantics. Should I turn them on in this UI change?",
+      "expected_output": "Notes IS_WEB_ACCESSIBILITY_ENABLED=false is a deliberate Compose Multiplatform workaround, not a defect to fix here; keeps focus/roles/touch-target review for supported targets; suggests the design-system/app-shell module checks."
+    }
+  ]
+}

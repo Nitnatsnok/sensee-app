@@ -1,0 +1,15 @@
+{
+  "skill_name": "dictionary-enrichment-schema-review",
+  "evals": [
+    {
+      "id": "one-sense-per-item",
+      "prompt": "Review an enrichment change that merges a phrasal verb and its base verb into one returned item.",
+      "expected_output": "Flags collapsing distinct senses; one returned item must be one distinct sense, and phrasal verbs/idioms/fixed phrases stay separate (ADR 0008); suggests edge-case tests before broad prompt or schema changes."
+    },
+    {
+      "id": "license-before-store",
+      "prompt": "Review code that stores dictionary verification evidence and reuses it as LLM context.",
+      "expected_output": "Requires honoring verification license flags before storing or using evidence (ADR 0007, ADR 0009); separates dictionary verification from AI generation; keeps shared/ai/core provider- and feature-agnostic."
+    }
+  ]
+}

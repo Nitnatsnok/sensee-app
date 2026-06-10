@@ -1,0 +1,15 @@
+{
+  "skill_name": "observability-logging-review",
+  "evals": [
+    {
+      "id": "no-sensitive-logging",
+      "prompt": "Review logging I added around the vocabulary enrichment request and response.",
+      "expected_output": "Flags logging user vocabulary, provider payloads, API keys, or secrets; routes diagnostics through AppDiagnostics/AppLogger with scoped tags; keeps crash and breadcrumb context free of private content."
+    },
+    {
+      "id": "backend-availability",
+      "prompt": "My analytics event isn't showing up on iOS. Why?",
+      "expected_output": "Notes analytics is a no-op tracker and crash reporting is wired only on androidMain (Firebase Crashlytics), so events do not reach a backend off Android; domain code depends on the common contract, not a concrete backend."
+    }
+  ]
+}

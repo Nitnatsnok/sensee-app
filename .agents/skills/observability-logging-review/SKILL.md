@@ -5,7 +5,7 @@ description: Use this skill when Sensee work touches AppDiagnostics, logger fact
 
 # Observability Logging Review
 
-Status: active; external telemetry backends are still planned.
+Status: active. Crash reporting is wired on `androidMain` (Firebase Crashlytics); analytics and non-Android crash reporters are no-op/planned.
 
 ## Operating mode
 
@@ -34,6 +34,18 @@ Review/support. Treat diagnostics as privacy-sensitive and cross-platform.
 - Analytics event names are stable and meaningful.
 - Feature logic receives diagnostics through existing component/DI boundaries.
 - LikeC4/docs are updated if observability becomes a documented subsystem change.
+
+## Gotchas
+
+- All diagnostics flow through `AppDiagnostics` (`AppLogger`/`AppLoggerFactory`, with a Kermit sink); inject it via DI rather than adding a parallel logging facade or calling platform loggers directly.
+- A concrete crash backend exists only on `androidMain`; off Android, crash reporting and analytics are no-op, so do not assume events reach a backend.
+
+## Verification
+
+- Module-scoped check:
+  ```shell
+  .\gradlew.bat :shared:core:observability:check
+  ```
 
 ## Output
 
