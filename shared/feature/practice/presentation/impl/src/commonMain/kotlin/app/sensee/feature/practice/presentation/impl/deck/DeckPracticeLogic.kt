@@ -6,11 +6,15 @@ import app.sensee.core.decompose.logic.BaseLogic
 import app.sensee.core.observability.diagnostics.AppDiagnostics
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.library.domain.Card
+import app.sensee.feature.library.domain.CardId
 import app.sensee.feature.library.domain.CatalogRepository
 import app.sensee.feature.library.domain.DeckId
 import app.sensee.feature.practice.domain.CardReview
+import app.sensee.feature.practice.domain.DuePracticeRepository
 import app.sensee.feature.practice.domain.PracticeReviewRepository
 import app.sensee.feature.practice.domain.PracticeSessionPolicy
+import app.sensee.feature.practice.domain.PracticeSessionSource
+import app.sensee.feature.practice.domain.key
 import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeCardUiState
 import app.sensee.feature.practice.presentation.api.DeckPracticeRatingAction
@@ -31,19 +35,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
 
 @AssistedInject
 public class DeckPracticeLogic(
-    @Assisted private val deckId: String,
+    @Assisted private val source: PracticeSessionSource,
     private val catalogRepository: CatalogRepository,
     private val reviewRepository: PracticeReviewRepository,
+    private val duePracticeRepository: DuePracticeRepository,
     private val grammarLabelsProvider: GrammarLabelsProvider,
+    private val clock: Clock,
     appDispatchers: AppDispatchers,
     appDiagnostics: AppDiagnostics,
 ) : BaseLogic(appDispatchers, appDiagnostics) {
     @AssistedFactory
     public fun interface Factory {
-        public fun create(deckId: String): DeckPracticeLogic
+        public fun create(source: PracticeSessionSource): DeckPracticeLogic
     }
 
     private val mutableUiState =
@@ -117,27 +124,51 @@ public class DeckPracticeLogic(
     private fun load() {
         logicScope.launch {
             mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading) }
-            runCatchingCancellable { catalogRepository.loadDeck(DeckId(deckId)) }
-                .onSuccess { deckWithCards ->
+            runCatchingCancellable { loadSession() }
+                .onSuccess { session ->
                     presentationCounts.clear()
-                    deckWithCards.cards.forEach { presentationCounts[it.id.value] = 0 }
+                    session.cards.forEach { presentationCounts[it.id.value] = 0 }
                     mutableUiState.update {
                         it.copy(
                             loadingState = DataLoadingState.Success,
-                            deckTitle = deckWithCards.deck.title,
+                            deckTitle = session.title,
                             cards =
-                                deckWithCards.cards
+                                session.cards
                                     .map { card -> card.toPresentation(presentationIndex = 0) }
                                     .toPersistentList(),
                             completedCount = 0,
                         )
                     }
                 }.onFailure { throwable ->
-                    logger.error(throwable) { "Failed to load deck $deckId" }
+                    logger.error(throwable) { "Failed to load practice session ${source.key}" }
                     mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }
         }
     }
+
+    // The only source-specific step: where the initial card list comes from. The
+    // queue projection, reinjection and FSRS scheduling below are identical for any
+    // source. A Due source with nothing due loads an empty session (Success, not Error).
+    private suspend fun loadSession(): LoadedSession =
+        when (source) {
+            is PracticeSessionSource.Deck -> {
+                val deckWithCards = catalogRepository.loadDeck(DeckId(source.deckId))
+                LoadedSession(title = deckWithCards.deck.title, cards = deckWithCards.cards)
+            }
+
+            PracticeSessionSource.Due -> {
+                // Cap the batch (PracticeSessionPolicy.DUE_SESSION_LIMIT); the Home widget caps its
+                // count to the same limit, so the two stay consistent even on a large backlog.
+                val dueIds = duePracticeRepository.dueCardIds(clock.now(), PracticeSessionPolicy.DUE_SESSION_LIMIT)
+                // No deck title for a due session — the screen's top bar is icon-only.
+                LoadedSession(title = "", cards = catalogRepository.loadCards(dueIds.map { CardId(it.value) }))
+            }
+        }
+
+    private data class LoadedSession(
+        val title: String,
+        val cards: List<Card>,
+    )
 
     private fun submitReview(
         cardId: String,
@@ -246,7 +277,7 @@ public class DeckPracticeLogic(
                 mapOf(
                     "area" to "practice",
                     "operation" to "submit_review",
-                    "deck_id" to deckId,
+                    "session" to source.key,
                     "card_id" to cardId,
                     "rating" to rating.name,
                 ),

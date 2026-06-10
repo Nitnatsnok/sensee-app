@@ -1,32 +1,37 @@
 package app.sensee.feature.home.presentation.impl
 
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import app.sensee.core.compose.text.LocalTextProvider
+import app.sensee.core.presentation.text.TextProvider
 import app.sensee.feature.home.presentation.api.HomeComponent
 import app.sensee.feature.home.presentation.api.HomeSectionComponent
-import app.sensee.ui.designSystem.component.UnimplementedScreen
+import app.sensee.feature.home.presentation.impl.text.rememberHomeTextProvider
 import com.arkivanov.decompose.extensions.compose.stack.Children
 
 @Composable
 public fun HomeSectionScreen(
     component: HomeSectionComponent,
     modifier: Modifier = Modifier,
+    textProvider: TextProvider = rememberHomeTextProvider(),
 ) {
-    Children(
-        stack = component.stack,
-        modifier = modifier,
-    ) { child ->
-        when (child.instance) {
-            is HomeComponent -> HomeScreen(modifier = Modifier)
-            else -> error("Unknown home child: ${child.instance::class}")
+    CompositionLocalProvider(LocalTextProvider provides textProvider) {
+        Children(
+            stack = component.stack,
+            modifier = modifier.navigationBarsPadding(),
+        ) { child ->
+            when (val instance = child.instance) {
+                is HomeComponent ->
+                    HomeScreen(
+                        component = instance,
+                        modifier = Modifier,
+                        textProvider = textProvider,
+                    )
+
+                else -> error("Unknown home child: ${instance::class}")
+            }
         }
     }
-}
-
-@Composable
-public fun HomeScreen(modifier: Modifier = Modifier) {
-    UnimplementedScreen(
-        title = "Главная",
-        modifier = modifier,
-    )
 }

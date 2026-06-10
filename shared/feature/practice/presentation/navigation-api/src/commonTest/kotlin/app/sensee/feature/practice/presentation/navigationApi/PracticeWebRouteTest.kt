@@ -37,6 +37,13 @@ class PracticeWebRouteTest {
     }
 
     @Test
+    fun `DuePractice round-trips through its path`() {
+        assertEquals("due", PracticeWebRoute.pathFor(PracticeConfig.DuePractice))
+        assertNull(PracticeWebRoute.parametersFor(PracticeConfig.DuePractice))
+        assertEquals(PracticeConfig.DuePractice, PracticeWebRoute.parse(listOf("due"), emptyMap()))
+    }
+
+    @Test
     fun `CardDetail round-trips through path`() {
         val config = PracticeConfig.CardDetail(cardId = "c2")
 
@@ -49,5 +56,6 @@ class PracticeWebRouteTest {
         assertNull(PracticeWebRoute.parse(emptyList(), emptyMap()))
         assertNull(PracticeWebRoute.parse(listOf("bogus"), emptyMap()))
         assertNull(PracticeWebRoute.parse(listOf("deck"), emptyMap()))
+        assertNull(PracticeWebRoute.parse(listOf("due", "x"), emptyMap()))
     }
 }

@@ -9,6 +9,7 @@ import app.sensee.core.decompose.logic.getOrCreateLogic
 import app.sensee.core.decompose.navigation.NavigationDispatcher
 import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
+import app.sensee.feature.practice.domain.key
 import app.sensee.feature.practice.presentation.api.CardDetailComponent
 import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeChildPanels
@@ -54,8 +55,8 @@ public class DefaultDeckPracticeComponent(
     private val speechController = DeckPracticeSpeechController(speaker)
 
     private val logic =
-        getOrCreateLogic(LogicKey("DeckPracticeLogic:${args.deckId}")) {
-            deckPracticeLogicFactory.create(deckId = args.deckId)
+        getOrCreateLogic(LogicKey("DeckPracticeLogic:${args.source.key}")) {
+            deckPracticeLogicFactory.create(source = args.source)
         }
 
     init {
@@ -85,7 +86,9 @@ public class DefaultDeckPracticeComponent(
             serializers = null,
             initialPanels = {
                 Panels(
-                    main = DeckPracticePanelConfig.Deck(args.deckId),
+                    // The main panel host is a stub; its id is never rendered (only CardDetail is).
+                    // Keying it by the session keeps deck and due hosts distinct.
+                    main = DeckPracticePanelConfig.Deck(args.source.key),
                     details = args.focusedCardId?.let(DeckPracticePanelConfig::CardDetail),
                     mode = ChildPanelsMode.DUAL,
                 )

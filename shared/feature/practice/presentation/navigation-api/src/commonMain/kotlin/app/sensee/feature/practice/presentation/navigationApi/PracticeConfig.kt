@@ -14,6 +14,10 @@ public sealed interface PracticeConfig : ScreenConfig {
         val focusedCardId: String? = null,
     ) : PracticeConfig
 
+    /** Ad-hoc review session over the cards due now (Home's «Стоит повторить» CTA). */
+    @Serializable
+    public data object DuePractice : PracticeConfig
+
     @Serializable
     public data class CardDetail(
         val cardId: String,

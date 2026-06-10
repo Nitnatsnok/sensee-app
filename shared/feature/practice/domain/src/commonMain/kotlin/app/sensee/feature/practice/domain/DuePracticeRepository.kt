@@ -1,5 +1,6 @@
 package app.sensee.feature.practice.domain
 
+import app.sensee.srs.core.id.SrsCardId
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 
@@ -13,4 +14,15 @@ public interface DuePracticeRepository {
     public suspend fun countDue(now: Instant): Int
 
     public fun observeDueCount(now: Instant): Flow<Int>
+
+    /**
+     * The ids of the cards due at or before [now], ordered by due date ascending and
+     * capped at [limit]. Same "due" predicate as [countDue]; a non-positive [limit]
+     * yields an empty list. Returns [SrsCardId] (not Library cards) so a due-session
+     * builder stays free of the catalog projection — the caller resolves content.
+     */
+    public suspend fun dueCardIds(
+        now: Instant,
+        limit: Int,
+    ): List<SrsCardId>
 }

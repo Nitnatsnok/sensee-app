@@ -120,9 +120,12 @@ public class DefaultCatalogRepository(
     }
 
     override suspend fun loadCard(cardId: CardId): Card =
-        requireNotNull(localDataSource.selectCard(cardId.value)) {
+        requireNotNull(localDataSource.selectCards(listOf(cardId.value)).firstOrNull()) {
             "Card $cardId not found in local store"
         }
+
+    override suspend fun loadCards(cardIds: List<CardId>): List<Card> =
+        localDataSource.selectCards(cardIds.map { it.value })
 
     override suspend fun loadLemma(lemmaId: LemmaId): Lemma =
         requireNotNull(localDataSource.selectLemma(lemmaId.value)) {

@@ -39,5 +39,12 @@ public interface CatalogRepository {
 
     public suspend fun loadCard(cardId: CardId): Card
 
+    /**
+     * Bulk read of cards by id for an ad-hoc session (e.g. Home's due subset). The result
+     * follows the input order and omits ids with no confirmed sense — the caller's order
+     * (such as due-date ascending) is preserved, mirroring [app.sensee.lexicon.domain.SenseReadRepository.getByIds].
+     */
+    public suspend fun loadCards(cardIds: List<CardId>): List<Card>
+
     public suspend fun loadLemma(lemmaId: LemmaId): Lemma
 }

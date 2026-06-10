@@ -1,11 +1,13 @@
 package app.sensee.feature.practice.data
 
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOne
 import app.sensee.core.coroutines.AppDispatchers
 import app.sensee.database.SenseeDatabaseProvider
 import app.sensee.feature.practice.domain.DuePracticeRepository
+import app.sensee.srs.core.id.SrsCardId
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -51,4 +53,19 @@ public class DefaultDuePracticeRepository(
                     .map { it.toInt() },
             )
         }
+
+    override suspend fun dueCardIds(
+        now: Instant,
+        limit: Int,
+    ): List<SrsCardId> {
+        if (limit <= 0) return emptyList()
+        return databaseProvider
+            .database()
+            .practiceSrsEntityQueries
+            .selectDuePracticeSrsCards(
+                due_at_epoch_ms = now.toEpochMilliseconds(),
+                value_ = limit.toLong(),
+            ).awaitAsList()
+            .map { SrsCardId(it.card_id) }
+    }
 }

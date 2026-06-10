@@ -6,7 +6,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.kotlinx.coroutines.core)
                 implementation(projects.shared.core.decompose)
+                api(projects.shared.core.presentation)
                 implementation(projects.shared.feature.home.presentation.navigationApi)
             }
         }

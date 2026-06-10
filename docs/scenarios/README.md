@@ -18,7 +18,7 @@
 | `vocabulary-capture.feature` | `@implemented` (+ `@planned`) | Внесение слова, lexical verification, AI/curated-подсказки, единая модель ответа, мультивыбор смыслов, ручной смысл, устойчивое подтверждение, captured deck projection, lemma grouping и карточки форм; планируется UI-навигация по семье и расширенное курирование |
 | `library.feature` | `@implemented` (+ `@planned`) | `Home`: обзор сервисных наборов и собственного материала, подписка/отписка набора, Practice видит только собственный материал; планируется курирование, `LemmaDetail`, claim части набора |
 | `profile.feature` | `@implemented` (+ `@planned`) | Меню `Profile`, wide/compact раскладка категорий, `App` themeMode + тактильная отдача, `Learning` выбор тем, `Ai`/TTS-провайдеры и ключи, заглушки `Practice`/`Experimental`; планируются языки, полный `Practice`, `About`, Account/синхронизация |
-| `home.feature` | `@planned` | Дашборд: повторить сегодня (due-сессия), незавершённый ввод, быстрый ввод; агрегатор без своего домена |
+| `home.feature` | `@implemented` (+ `@planned`) | Виджет «Стоит повторить»: счётчик due-карточек и дневная цель, CTA в due-сессию (`PracticeConfig.DuePractice`), пустой день, агрегатор без своего домена; планируются незавершённый и быстрый ввод |
 
 ## Соглашения
 

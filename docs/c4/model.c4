@@ -65,8 +65,7 @@ model {
       link ../arc42/sections/06_runtime_view.adoc
 
       home = component 'Home Section' {
-        #prepared
-        description 'Пока placeholder UI (`UnimplementedScreen`). Планируемый бережный дашборд-агрегатор (3 блока: повторить сегодня → due-сессия, незавершённый capture, быстрый ввод); не владеет доменом, уводит в другие разделы через NavigationDispatcher.'
+        description 'Дашборд-агрегатор: реализован виджет «Стоит повторить» (due-счётчик + дневная цель, CTA в due-сессию); не владеет доменом, уводит в другие разделы через NavigationDispatcher. Планируемые блоки: незавершённый capture, быстрый ввод.'
         technology 'HomeSectionComponent'
       }
     }
@@ -541,9 +540,10 @@ model {
     feature_library.library_ui -[navigates]-> feature_practice.practice_ui 'launches practice on a curated deck'
     feature_practice.practice_ui -[navigates]-> feature_library.library_ui 'curates related cards into a deck' { #prepared }
     feature_practice.practice_ui -[flows]-> settings.settings_domain 'reads practice-scoped settings (subset)' { #prepared }
-    feature_home.home -[navigates]-> feature_practice.practice_ui 'opens a due session' { #future }
+    feature_home.home -[navigates]-> feature_practice.practice_ui 'opens a due session (PracticeConfig.DuePractice)'
     feature_home.home -[navigates]-> feature_vocabulary.vocabulary_ui 'resumes / quick capture' { #future }
-    feature_home.home -[depends]-> feature_practice.practice_domain 'reads due-count via DuePracticeRepository (no library dep)' { #future }
+    feature_home.home -[depends]-> feature_practice.practice_domain 'reads due count + ids via DuePracticeRepository (no library dep)'
+    feature_home.home -[depends]-> settings.settings_domain 'reads daily goal via UserSettingsRepository'
   }
 
   // Actor entry

@@ -4,6 +4,7 @@ import app.sensee.core.decompose.AppComponent
 import app.sensee.core.decompose.context.AppComponentContext
 import app.sensee.core.presentation.DataLoadingState
 import app.sensee.feature.practice.domain.PracticeCardFront
+import app.sensee.feature.practice.domain.PracticeSessionSource
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarTag
 import app.sensee.grammar.domain.GrammarUnitType
@@ -34,7 +35,7 @@ public interface DeckPracticeComponent : AppComponent {
     public fun onAction(action: DeckPracticeAction)
 
     public data class Args(
-        val deckId: String,
+        val source: PracticeSessionSource,
         val focusedCardId: String? = null,
     )
 

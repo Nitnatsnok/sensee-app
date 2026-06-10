@@ -9,6 +9,7 @@ package app.sensee.feature.practice.presentation.navigationApi
  */
 public object PracticeWebRoute {
     private const val DECK = "deck"
+    private const val DUE = "due"
     private const val CARD = "card"
     private const val FOCUS_PARAM = "focus"
 
@@ -16,6 +17,7 @@ public object PracticeWebRoute {
         when (config) {
             PracticeConfig.Home -> null
             is PracticeConfig.DeckPractice -> "$DECK/${config.deckId}"
+            PracticeConfig.DuePractice -> DUE
             is PracticeConfig.CardDetail -> "$CARD/${config.cardId}"
         }
 
@@ -24,7 +26,7 @@ public object PracticeWebRoute {
             is PracticeConfig.DeckPractice ->
                 config.focusedCardId?.let { mapOf(FOCUS_PARAM to it) }
 
-            PracticeConfig.Home, is PracticeConfig.CardDetail -> null
+            PracticeConfig.Home, PracticeConfig.DuePractice, is PracticeConfig.CardDetail -> null
         }
 
     public fun parse(
@@ -37,6 +39,8 @@ public object PracticeWebRoute {
                     deckId = segments[1],
                     focusedCardId = parameters[FOCUS_PARAM],
                 )
+
+            segments.size == 1 && segments[0] == DUE -> PracticeConfig.DuePractice
 
             segments.size == 2 && segments[0] == CARD ->
                 PracticeConfig.CardDetail(cardId = segments[1])

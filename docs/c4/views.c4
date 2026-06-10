@@ -199,9 +199,6 @@ views 'Sensee Client' {
     include client.feature_profile.profile_ui
     autoLayout LeftRight 230 150
 
-    style client.feature_home.home {
-      border dashed
-    }
   }
 
   // Cross-feature navigation (implemented + planned in one place)
@@ -218,7 +215,7 @@ views 'Sensee Client' {
     include future_backend
     autoLayout LeftRight 230 150
 
-    style client.feature_home.home, client.feature_library.service_catalog, future_backend {
+    style client.feature_library.service_catalog, future_backend {
       color muted
     }
   }

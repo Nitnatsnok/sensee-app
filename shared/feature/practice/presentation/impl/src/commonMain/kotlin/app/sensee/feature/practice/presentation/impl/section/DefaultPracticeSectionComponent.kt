@@ -6,6 +6,7 @@ import app.sensee.core.decompose.context.appChildStack
 import app.sensee.core.decompose.navigation.NavigationRequestStatus
 import app.sensee.core.decompose.navigation.ScreenConfig
 import app.sensee.core.decompose.navigation.pop
+import app.sensee.feature.practice.domain.PracticeSessionSource
 import app.sensee.feature.practice.presentation.api.CardDetailComponent
 import app.sensee.feature.practice.presentation.api.DeckPracticeComponent
 import app.sensee.feature.practice.presentation.api.PracticeHomeComponent
@@ -118,9 +119,15 @@ public class DefaultPracticeSectionComponent(
                     componentContext = componentContext,
                     args =
                         DeckPracticeComponent.Args(
-                            deckId = config.deckId,
+                            source = PracticeSessionSource.Deck(config.deckId),
                             focusedCardId = config.focusedCardId,
                         ),
+                )
+
+            PracticeConfig.DuePractice ->
+                deckPracticeComponentFactory.create(
+                    componentContext = componentContext,
+                    args = DeckPracticeComponent.Args(source = PracticeSessionSource.Due),
                 )
 
             is PracticeConfig.CardDetail ->
@@ -156,5 +163,6 @@ private val PracticeConfig.showsBottomBar: Boolean
         when (this) {
             PracticeConfig.Home -> true
             is PracticeConfig.DeckPractice -> false
+            PracticeConfig.DuePractice -> false
             is PracticeConfig.CardDetail -> false
         }

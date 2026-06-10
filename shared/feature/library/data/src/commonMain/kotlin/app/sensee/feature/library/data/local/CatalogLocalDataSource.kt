@@ -201,9 +201,14 @@ public class CatalogLocalDataSource(
             senseReadRepository.listByStatus(SenseStatus.Confirmed).personalConfirmed(),
         )
 
-    public suspend fun selectCard(cardId: String): Card? {
-        val stored = senseReadRepository.getById(SenseCatalogProjection.senseIdOf(CardId(cardId))) ?: return null
-        return SenseCatalogProjection.cardsFor(stored).firstOrNull { it.id.value == cardId }
+    public suspend fun selectCards(cardIds: List<String>): List<Card> {
+        val orderedIds = cardIds.distinct()
+        if (orderedIds.isEmpty()) return emptyList()
+        // Bulk-load the owning senses in one query, then restore the caller's id order
+        // (and drop any sense that is gone) — getByIds gives no order guarantee.
+        val stored = senseReadRepository.getByIds(orderedIds.map { SenseCatalogProjection.senseIdOf(CardId(it)) })
+        val byId = SenseCatalogProjection.cardsFrom(stored).associateBy { it.id.value }
+        return orderedIds.mapNotNull { byId[it] }
     }
 
     public suspend fun selectLemma(lemmaId: String): Lemma? {

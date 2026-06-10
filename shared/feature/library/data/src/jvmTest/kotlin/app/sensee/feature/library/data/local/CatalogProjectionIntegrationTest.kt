@@ -127,6 +127,12 @@ class CatalogProjectionIntegrationTest {
             contextualApplications = listOf(ContextualApplication(StudiedSentence.parse("I [[$surface]] it."))),
         )
 
+    private suspend fun Fixture.personalSense(
+        translation: String,
+        surface: String,
+    ): StoredSense =
+        senseRepository.upsert(confirmable(translation, surface), SenseStatus.Confirmed, SenseOrigin.Personal)
+
     @Test
     fun `re-capturing a sense keeps its captured card id and accumulated SRS`() =
         runTest {
@@ -184,6 +190,45 @@ class CatalogProjectionIntegrationTest {
 
             assertNotNull(captured)
             assertEquals(listOf(stored.id.value), captured.cards.map { it.id.value })
+        }
+
+    @Test
+    fun `loadCards returns cards in the requested id order`() =
+        runTest {
+            val fixture = Fixture()
+            val a = fixture.personalSense("один", "one")
+            val b = fixture.personalSense("два", "two")
+            val c = fixture.personalSense("три", "three")
+
+            val cards = fixture.source.selectCards(listOf(c.id.value, a.id.value, b.id.value))
+
+            assertEquals(
+                listOf(c.id.value, a.id.value, b.id.value),
+                cards.map { it.id.value },
+                "selectCards preserves the caller's id order (e.g. due-date ascending)",
+            )
+        }
+
+    @Test
+    fun `loadCards omits ids with no confirmed sense`() =
+        runTest {
+            val fixture = Fixture()
+            val a = fixture.personalSense("один", "one")
+
+            val cards = fixture.source.selectCards(listOf("missing-sense", a.id.value))
+
+            assertEquals(listOf(a.id.value), cards.map { it.id.value })
+        }
+
+    @Test
+    fun `loadCards de-dups a repeated id`() =
+        runTest {
+            val fixture = Fixture()
+            val a = fixture.personalSense("один", "one")
+
+            val cards = fixture.source.selectCards(listOf(a.id.value, a.id.value))
+
+            assertEquals(listOf(a.id.value), cards.map { it.id.value })
         }
 
     @Test

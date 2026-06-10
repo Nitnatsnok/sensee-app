@@ -1,19 +1,19 @@
-= EB-3: Сессия повторения по запросу или подмножеству вместо только готового Deck
+= EB-3: Сессия повторения по не-due подмножеству (Library / несколько дек / ручной набор)
 :status: open
 :area: practice
 
 Триггер / что разблокирует::
-Нужна для запуска повторения из `Home` (CTA «Повторить сегодня» по due-подмножеству)
-и из Practice по выбранным материалам `Library`. Сейчас сессия строится только из
-готового `Deck`: `DeckPracticeLogic` грузит deck целиком, а `PracticeSessionPolicy`
-определяет лишь подачу карт внутри сессии, а не её состав. Реализация переиспользует
-единственный планировщик FSRS (ADR-004), без второго источника расписания.
-В целевой модели сессия = **список `sense_id`** (due / подмножество деки / несколько дек
-вперемешку / ручной набор), ничего не персистит (опц. дескриптор для resume), кросс-origin ок;
-SRS — **на `sense_id`** (общий на наборы и сессии), так что состав сессии развязан с прогрессом.
+Due-источник реализован: `Home` запускает повторение по due-подмножеству
+(`PracticeConfig.DuePractice`), а сессия строится из выборки `sense_id` через
+`PracticeSessionSource.Due` → `DuePracticeRepository.dueCardIds` →
+`CatalogRepository.loadCards`, переиспользуя единственный планировщик FSRS (ADR-004).
+Остаётся обобщить выбор состава на не-due случаи: повторение по выбранным
+материалам `Library` (подмножество деки), несколько дек вперемешку, ручной набор и
+опциональный дескриптор для resume. `PracticeSessionSource` уже задаёт шов —
+нужно добавить новые варианты источника и их загрузку, без второго планировщика.
 
 Связи::
-* Сценарий: `docs/scenarios/home.feature`, `docs/scenarios/practice-deck.feature`
-* Код: `DeckPracticeLogic` (загрузка готового `Deck`), `PracticeSessionPolicy` (подача внутри сессии)
+* Сценарий: `docs/scenarios/home.feature` (due-источник реализован), `docs/scenarios/practice-deck.feature`
+* Код: `PracticeSessionSource` (шов состава сессии), `DeckPracticeLogic.loadSession` (ветвление по источнику), `PracticeSessionPolicy` (подача внутри сессии)
 * ADR: `docs/adr/0004-fsrs-is-single-scheduling-source-of-truth.adoc` (ADR-004)
-* arc42: `docs/arc42/sections/06_runtime_view.adoc` (CTA «Повторить сегодня»)
+* arc42: `docs/arc42/sections/06_runtime_view.adoc`

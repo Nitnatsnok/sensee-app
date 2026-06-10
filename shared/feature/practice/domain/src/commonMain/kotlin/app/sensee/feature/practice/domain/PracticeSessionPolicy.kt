@@ -19,6 +19,14 @@ public object PracticeSessionPolicy {
     public const val MAX_PRESENTATIONS_PER_CARD: Int = 8
 
     /**
+     * Upper bound on cards pulled into a single "due now" session — a safety net for a large
+     * backlog (e.g. after a long absence). The Home «Стоит повторить» widget caps its due count
+     * to the same limit and renders it as "N+", so the widget never promises more than one
+     * session delivers.
+     */
+    public const val DUE_SESSION_LIMIT: Int = 60
+
+    /**
      * Whether the just-reviewed card should be shown again later in this same session.
      *
      * A card FSRS leaves in [SrsCardState.Learning] / [SrsCardState.Relearning] is still being

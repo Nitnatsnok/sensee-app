@@ -324,9 +324,22 @@ private fun isAllowedPresentationImplFeatureDependency(
 ): Boolean {
     // Practice UI consumes Library's catalog read contract to load decks/cards;
     // review writes still go through Practice domain/data and SRS.
-    return ownerFeature == "practice" &&
-        (
-            importedPath == "app.sensee.feature.library.domain" ||
-                importedPath.startsWith("app.sensee.feature.library.domain.")
-        )
+    val practiceReadsLibraryCatalog =
+        ownerFeature == "practice" &&
+            importedPath.isInPackage("app.sensee.feature.library.domain")
+
+    // Home is a cross-section dashboard (it owns no domain): it reads the due count
+    // through Practice's narrow DuePracticeRepository contract and navigates into the
+    // due session via Practice's navigation config. The session's scheduling still
+    // lives in Practice/SRS (ADR-004).
+    val homeReadsPracticeDueAndNav =
+        ownerFeature == "home" &&
+            (
+                importedPath.isInPackage("app.sensee.feature.practice.domain") ||
+                    importedPath.isInPackage("app.sensee.feature.practice.presentation.navigationApi")
+            )
+
+    return practiceReadsLibraryCatalog || homeReadsPracticeDueAndNav
 }
+
+private fun String.isInPackage(packageName: String): Boolean = this == packageName || startsWith("$packageName.")

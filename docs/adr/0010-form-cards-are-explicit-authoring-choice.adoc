@@ -25,7 +25,7 @@ SRS seat для form card создаётся только в явном write-с
 Последствия (реализованные)::
 
 * `SenseCatalogProjection` проецирует Confirmed Personal material в captured deck как одну карточку на `sense_id`; `:form:` остаётся только reserved id scheme.
-* Каталожные read API (`capturedDeck`, `selectDeckWithCards`, `selectCard`) не создают SRS rows при чтении. Missing SRS seat создаётся в явном write path практики перед `submitReview`.
+* Каталожные read API (`capturedDeck`, `selectDeckWithCards`, `selectCards`) не создают SRS rows при чтении. Missing SRS seat создаётся в явном write path практики перед `submitReview`.
 * LikeC4, arc42, доменная информационная модель и глоссарий описывают form cards как planned authoring choice, а не реализованную auto-projection.
 
 Последствия (ожидаемые)::

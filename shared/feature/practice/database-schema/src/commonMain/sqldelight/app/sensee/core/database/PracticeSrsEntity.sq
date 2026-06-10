@@ -70,13 +70,15 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 -- "Due" predicate: not suspended, has a due time, and it has arrived. Kept in
 -- sync with countDue below — SQLite has no parameterized view to share a WHERE,
 -- so a change to one of these clauses must be mirrored in the other.
+-- card_id breaks ties so the LIMIT cap is deterministic when several cards share
+-- the same due time (e.g. a batch that fell due at the same instant).
 selectDuePracticeSrsCards:
 SELECT *
 FROM practice_srs_card
 WHERE state != 'Suspended'
   AND due_at_epoch_ms IS NOT NULL
   AND due_at_epoch_ms <= ?
-ORDER BY due_at_epoch_ms ASC
+ORDER BY due_at_epoch_ms ASC, card_id ASC
 LIMIT ?;
 
 -- Count of the same "due" set as selectDuePracticeSrsCards above; keep the two

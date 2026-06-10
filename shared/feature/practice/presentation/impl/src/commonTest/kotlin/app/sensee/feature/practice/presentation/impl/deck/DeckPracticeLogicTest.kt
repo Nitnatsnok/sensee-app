@@ -1,5 +1,6 @@
 package app.sensee.feature.practice.presentation.impl.deck
 
+import app.sensee.core.presentation.DataLoadingState
 import app.sensee.core.testKit.immediateAppDispatchers
 import app.sensee.core.testKit.noOpAppDiagnostics
 import app.sensee.feature.library.domain.Card
@@ -12,14 +13,17 @@ import app.sensee.feature.library.domain.DeckWithCards
 import app.sensee.feature.library.domain.Lemma
 import app.sensee.feature.library.domain.LemmaId
 import app.sensee.feature.practice.domain.CardReview
+import app.sensee.feature.practice.domain.DuePracticeRepository
 import app.sensee.feature.practice.domain.PracticeReviewRepository
 import app.sensee.feature.practice.domain.PracticeSessionPolicy
+import app.sensee.feature.practice.domain.PracticeSessionSource
 import app.sensee.feature.practice.domain.ReviewOutcome
 import app.sensee.feature.practice.presentation.api.DeckPracticeAction
 import app.sensee.feature.practice.presentation.api.DeckPracticeRatingAction
 import app.sensee.grammar.domain.GrammarLabels
 import app.sensee.grammar.domain.GrammarLabelsProvider
 import app.sensee.grammar.domain.GrammarUnitType
+import app.sensee.srs.core.id.SrsCardId
 import app.sensee.srs.core.model.SrsCardSnapshot
 import app.sensee.srs.testKit.SrsTestCards
 import kotlinx.coroutines.CompletableDeferred
@@ -30,8 +34,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
 class DeckPracticeLogicTest {
     @Test
@@ -180,12 +186,78 @@ class DeckPracticeLogicTest {
         assertEquals(1, repository.submitCount, "the in-flight review is not re-submitted")
     }
 
-    private fun newLogic(repository: FakeDecksRepository): DeckPracticeLogic =
+    @Test
+    fun `a due session loads the queried due cards in due order`() {
+        val repository = FakeDecksRepository(deckOf("ignored"))
+        repository.duePool = listOf(card("d2"), card("d1"), card("d3"))
+        repository.dueIds = listOf(SrsCardId("d2"), SrsCardId("d1"), SrsCardId("d3"))
+        val logic = newLogic(repository, source = PracticeSessionSource.Due)
+
+        assertEquals(
+            listOf("d2", "d1", "d3"),
+            logic.uiState.value.cards
+                .map { it.id },
+            "a due session plays the due cards in the order the due query returned",
+        )
+    }
+
+    @Test
+    fun `a due session with no due cards finishes empty without an error`() {
+        val repository = FakeDecksRepository(deckOf("ignored"))
+        repository.dueIds = emptyList()
+        val logic = newLogic(repository, source = PracticeSessionSource.Due)
+
+        assertTrue(
+            logic.uiState.value.cards
+                .isEmpty(),
+            "nothing is due",
+        )
+        assertEquals(
+            DataLoadingState.Success,
+            logic.uiState.value.loadingState,
+            "an empty due session is a valid finished session, not an error",
+        )
+    }
+
+    @Test
+    fun `a due session requests at most the shared due session limit`() {
+        val repository = FakeDecksRepository(deckOf("ignored"))
+        repository.dueIds = listOf(SrsCardId("d1"))
+        newLogic(repository, source = PracticeSessionSource.Due)
+
+        assertEquals(
+            PracticeSessionPolicy.DUE_SESSION_LIMIT,
+            repository.requestedDueLimit,
+            "the session caps to the same limit the Home widget counts against",
+        )
+    }
+
+    @Test
+    fun `a due session reviews through the single FSRS scheduler like a deck`() {
+        val repository = FakeDecksRepository(deckOf("ignored"))
+        repository.duePool = listOf(card("d1"), card("d2"))
+        repository.dueIds = listOf(SrsCardId("d1"), SrsCardId("d2"))
+        val logic = newLogic(repository, source = PracticeSessionSource.Due)
+
+        repository.nextSrs = review()
+        logic.onAction(DeckPracticeAction.SubmitReview("d1", DeckPracticeRatingAction.Good))
+
+        val cards = logic.uiState.value.cards
+        assertEquals(1, repository.submitCount, "the due card is scheduled through PracticeReviewRepository")
+        assertTrue(cards.none { it.id == "d1" }, "a graduated due card leaves the session, same as a deck card")
+    }
+
+    private fun newLogic(
+        repository: FakeDecksRepository,
+        source: PracticeSessionSource = PracticeSessionSource.Deck("deck"),
+    ): DeckPracticeLogic =
         DeckPracticeLogic(
-            deckId = "deck",
+            source = source,
             catalogRepository = repository,
             reviewRepository = repository,
+            duePracticeRepository = repository,
             grammarLabelsProvider = GrammarLabelsProvider { GrammarLabels.EMPTY },
+            clock = FixedClock,
             appDispatchers = immediateAppDispatchers(),
             appDiagnostics = noOpAppDiagnostics(),
         )
@@ -196,9 +268,18 @@ class DeckPracticeLogicTest {
         private val deck: DeckWithCards,
         private val gate: CompletableDeferred<Unit>? = null,
     ) : CatalogRepository,
-        PracticeReviewRepository {
+        PracticeReviewRepository,
+        DuePracticeRepository {
         var nextSrs: SrsCardSnapshot = learning(intervalMinutes = 1)
         var submitCount = 0
+
+        // Due-source inputs: the ids the due query returns and the card pool to resolve them.
+        var dueIds: List<SrsCardId> = emptyList()
+        var duePool: List<Card> = emptyList()
+
+        // The limit the logic asked the due query for — pins it to the shared session cap.
+        var requestedDueLimit: Int? = null
+            private set
 
         override fun observeOwnedMaterial(): Flow<List<Deck>> = flowOf(listOf(deck.deck))
 
@@ -210,6 +291,11 @@ class DeckPracticeLogicTest {
 
         override suspend fun loadCard(cardId: CardId): Card = deck.cards.first { it.id == cardId }
 
+        override suspend fun loadCards(cardIds: List<CardId>): List<Card> {
+            val pool = (deck.cards + duePool).associateBy { it.id }
+            return cardIds.mapNotNull { pool[it] }
+        }
+
         override suspend fun loadLemma(lemmaId: LemmaId): Lemma = Lemma(lemmaId, lemmaId.value, emptyList())
 
         override suspend fun submitReview(review: CardReview): ReviewOutcome {
@@ -217,6 +303,22 @@ class DeckPracticeLogicTest {
             gate?.await()
             return ReviewOutcome(srs = nextSrs)
         }
+
+        override suspend fun countDue(now: Instant): Int = dueIds.size
+
+        override fun observeDueCount(now: Instant): Flow<Int> = flowOf(dueIds.size)
+
+        override suspend fun dueCardIds(
+            now: Instant,
+            limit: Int,
+        ): List<SrsCardId> {
+            requestedDueLimit = limit
+            return dueIds.take(limit)
+        }
+    }
+
+    private object FixedClock : Clock {
+        override fun now(): Instant = Instant.fromEpochMilliseconds(0L)
     }
 
     private companion object {

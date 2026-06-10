@@ -13,7 +13,7 @@
 [options="header",cols="1,4,1"]
 |===
 |ID|Доработка|Область
-| link:EB-3-sampled-practice-session.adoc[EB-3] | Сессия повторения по запросу или подмножеству вместо только готового `Deck` | practice
+| link:EB-3-sampled-practice-session.adoc[EB-3] | Сессия повторения по не-due подмножеству (`Library` / несколько дек / ручной набор); due-источник из `Home` реализован | practice
 | link:EB-5-card-transcription-field.adoc[EB-5] | Поле транскрипции в модели карты | practice
 | link:EB-6-abandoned-draft-cleanup.adoc[EB-6] | Уборка брошенных `Draft` по таймстемпу | vocabulary
 | link:EB-7-vocabulary-editor-deep-link.adoc[EB-7] | Прямая ссылка на редактор слова через web-навигацию | navigation
