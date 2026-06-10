@@ -11,7 +11,6 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,14 +25,13 @@ public class ProfileAppSettingsLogic(
         public fun create(): ProfileAppSettingsLogic
     }
 
-    private val mutableUiState = MutableStateFlow(ProfileAppSettingsUiState())
-
-    public val uiState: StateFlow<ProfileAppSettingsUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<ProfileAppSettingsUiState>
+        field = MutableStateFlow(ProfileAppSettingsUiState())
 
     init {
         logicScope.launch {
             settingsRepository.observeSettings().collect { snapshot ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         themeMode = snapshot.app.themeMode,
                         hapticFeedbackEnabled = snapshot.app.hapticFeedbackEnabled,
@@ -44,7 +42,7 @@ public class ProfileAppSettingsLogic(
     }
 
     public fun setThemeMode(themeMode: AppThemeMode) {
-        if (themeMode == mutableUiState.value.themeMode) {
+        if (themeMode == uiState.value.themeMode) {
             return
         }
         logicScope.launch {
@@ -57,7 +55,7 @@ public class ProfileAppSettingsLogic(
     }
 
     public fun setHapticFeedbackEnabled(enabled: Boolean) {
-        if (enabled == mutableUiState.value.hapticFeedbackEnabled) {
+        if (enabled == uiState.value.hapticFeedbackEnabled) {
             return
         }
         logicScope.launch {

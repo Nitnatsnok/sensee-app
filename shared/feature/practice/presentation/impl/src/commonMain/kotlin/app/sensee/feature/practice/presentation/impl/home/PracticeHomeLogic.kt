@@ -15,7 +15,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -33,10 +32,10 @@ public class PracticeHomeLogic(
         public fun create(): PracticeHomeLogic
     }
 
-    private val mutableUiState = MutableStateFlow(PracticeHomeUiState())
     private var observationJob: Job? = null
 
-    public val uiState: StateFlow<PracticeHomeUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<PracticeHomeUiState>
+        field = MutableStateFlow(PracticeHomeUiState())
 
     init {
         observe()
@@ -49,7 +48,7 @@ public class PracticeHomeLogic(
             catalogRepository
                 .observeOwnedMaterial()
                 .onEach { decks ->
-                    mutableUiState.update {
+                    uiState.update {
                         PracticeHomeUiState(
                             loadingState = DataLoadingState.Success,
                             decks = decks.map(Deck::toUi).toPersistentList(),
@@ -65,7 +64,7 @@ public class PracticeHomeLogic(
                                 "operation" to "observe_decks",
                             ),
                     )
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }.launchIn(logicScope)
     }
 
@@ -81,7 +80,7 @@ public class PracticeHomeLogic(
                     logger.error(throwable) { "Practice remote refresh failed" }
                     // The stream keeps serving the local cache, so only surface the error
                     // when there is nothing else to show.
-                    mutableUiState.update { state ->
+                    uiState.update { state ->
                         if (state.decks.isEmpty()) {
                             state.copy(loadingState = DataLoadingState.Error(throwable))
                         } else {

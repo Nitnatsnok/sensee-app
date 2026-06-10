@@ -21,7 +21,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 @AssistedInject
 public class DefaultHomeSectionComponent(
@@ -31,7 +30,6 @@ public class DefaultHomeSectionComponent(
 ) : HomeSectionComponent,
     AppComponentContext by componentContext {
     private val stackNavigation = StackNavigation<ScreenConfig>()
-    private val showBottomBarState = MutableStateFlow(true)
 
     override val stack: Value<ChildStack<ScreenConfig, AppComponent>> =
         appChildStack(
@@ -43,7 +41,8 @@ public class DefaultHomeSectionComponent(
             childFactory = ::createChild,
         )
 
-    override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
+    override val showBottomBar: StateFlow<Boolean>
+        field = MutableStateFlow(true)
 
     override fun open(
         target: ScreenConfig,

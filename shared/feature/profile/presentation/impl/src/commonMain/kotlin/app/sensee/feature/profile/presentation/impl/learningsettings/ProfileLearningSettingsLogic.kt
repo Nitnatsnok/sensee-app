@@ -15,7 +15,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,9 +31,8 @@ public class ProfileLearningSettingsLogic(
         public fun create(): ProfileLearningSettingsLogic
     }
 
-    private val mutableUiState = MutableStateFlow(ProfileLearningSettingsUiState())
-
-    public val uiState: StateFlow<ProfileLearningSettingsUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<ProfileLearningSettingsUiState>
+        field = MutableStateFlow(ProfileLearningSettingsUiState())
 
     init {
         loadCatalog()
@@ -42,7 +40,7 @@ public class ProfileLearningSettingsLogic(
         // trigger-row summary in sync regardless of who toggled.
         logicScope.launch {
             settingsRepository.observeSettings().collectLatest { snapshot ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(selectedTopicIds = snapshot.learning.preferredTopicIds.toPersistentSet())
                 }
             }
@@ -55,10 +53,10 @@ public class ProfileLearningSettingsLogic(
 
     private fun loadCatalog() {
         logicScope.launch {
-            mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading) }
+            uiState.update { it.copy(loadingState = DataLoadingState.Loading) }
             runCatchingCancellable { topicCatalog.topics() }
                 .onSuccess { topics ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             loadingState = DataLoadingState.Success,
                             topics = topics.toPersistentList(),
@@ -66,7 +64,7 @@ public class ProfileLearningSettingsLogic(
                     }
                 }.onFailure { failure ->
                     logger.error(failure) { "Failed to load topic catalog" }
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             loadingState = DataLoadingState.Error(failure),
                             topics = persistentListOf(),

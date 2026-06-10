@@ -13,7 +13,6 @@ import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
@@ -40,10 +39,10 @@ public class HomeLogic(
         public fun create(): HomeLogic
     }
 
-    private val mutableUiState = MutableStateFlow(HomeUiState())
     private var observationJob: Job? = null
 
-    public val uiState: StateFlow<HomeUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<HomeUiState>
+        field = MutableStateFlow(HomeUiState())
 
     /**
      * Subscribe (or re-subscribe) the aggregate streams, reading "due as of now". There is no
@@ -77,14 +76,14 @@ public class HomeLogic(
                     dueExceedsSessionLimit = dueCount > PracticeSessionPolicy.DUE_SESSION_LIMIT,
                     dailyGoal = dailyGoal,
                 )
-            }.onEach { state -> mutableUiState.update { state } }
+            }.onEach { state -> uiState.update { state } }
                 .catch { throwable ->
                     logger.error(throwable) { "Home aggregates stream failed" }
                     crashReporter.recordException(
                         throwable,
                         attributes = mapOf("area" to "home", "operation" to "observe_home_aggregates"),
                     )
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }.launchIn(logicScope)
     }
 }

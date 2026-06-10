@@ -17,7 +17,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
@@ -48,10 +47,10 @@ public class LibraryHomeLogic(
         public fun create(): LibraryHomeLogic
     }
 
-    private val mutableUiState = MutableStateFlow(LibraryHomeUiState())
     private var observationJob: Job? = null
 
-    public val uiState: StateFlow<LibraryHomeUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<LibraryHomeUiState>
+        field = MutableStateFlow(LibraryHomeUiState())
 
     init {
         observe()
@@ -74,7 +73,7 @@ public class LibraryHomeLogic(
                     suggested = suggested.map { it.toUi(canUnAdopt = false) }.toPersistentList(),
                     owned = owned.map { it.toUi(canUnAdopt = it.id.value in detachableIds) }.toPersistentList(),
                 )
-            }.onEach { next -> mutableUiState.update { next } }
+            }.onEach { next -> uiState.update { next } }
                 .catch { throwable ->
                     logger.error(throwable) { "Library stream failed" }
                     crashReporter.recordException(
@@ -85,7 +84,7 @@ public class LibraryHomeLogic(
                                 "operation" to "observe_home",
                             ),
                     )
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }.launchIn(logicScope)
     }
 
@@ -111,7 +110,7 @@ public class LibraryHomeLogic(
                     logger.error(throwable) { "Library remote refresh failed" }
                     // The stream keeps serving the local cache, so surface the error only
                     // when there is nothing to fall back on (initial empty state).
-                    mutableUiState.update { state ->
+                    uiState.update { state ->
                         if (state.owned.isEmpty() && state.suggested.isEmpty()) {
                             state.copy(loadingState = DataLoadingState.Error(throwable))
                         } else {
@@ -127,7 +126,7 @@ public class LibraryHomeLogic(
             runCatchingCancellable { block() }
                 .onFailure { throwable ->
                     logger.error(throwable) { "Library adoption change failed" }
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }
         }
     }

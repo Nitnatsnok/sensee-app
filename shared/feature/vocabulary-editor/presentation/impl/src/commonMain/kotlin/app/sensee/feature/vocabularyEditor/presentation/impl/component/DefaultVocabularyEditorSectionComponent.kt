@@ -14,7 +14,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 @AssistedInject
@@ -27,9 +26,9 @@ public class DefaultVocabularyEditorSectionComponent(
     override val capture: VocabularyCaptureComponent = captureComponentFactory.create(componentContext)
 
     private val configState = MutableStateFlow(target ?: VocabularyEditorConfig.QuickCapture)
-    private val showBottomBarState = MutableStateFlow(false)
 
-    override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
+    override val showBottomBar: StateFlow<Boolean>
+        field = MutableStateFlow(false)
 
     override fun open(
         target: ScreenConfig,
@@ -49,7 +48,7 @@ public class DefaultVocabularyEditorSectionComponent(
     private fun applyConfig(target: ScreenConfig): Boolean {
         if (target !is VocabularyEditorConfig) return false
         configState.update { target }
-        showBottomBarState.update { false }
+        showBottomBar.update { false }
         return true
     }
 

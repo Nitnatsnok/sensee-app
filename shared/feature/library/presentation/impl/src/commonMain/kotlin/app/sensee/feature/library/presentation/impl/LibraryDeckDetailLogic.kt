@@ -20,7 +20,6 @@ import dev.zacsweers.metro.AssistedInject
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -44,10 +43,9 @@ public class LibraryDeckDetailLogic(
         public fun create(deckId: String): LibraryDeckDetailLogic
     }
 
-    private val mutableUiState =
+    public val uiState: StateFlow<LibraryDeckDetailUiState>
+        field =
         MutableStateFlow(LibraryDeckDetailUiState(grammarLabels = grammarLabelsProvider.cachedLabels()))
-
-    public val uiState: StateFlow<LibraryDeckDetailUiState> = mutableUiState.asStateFlow()
 
     init {
         load()
@@ -60,18 +58,18 @@ public class LibraryDeckDetailLogic(
         logicScope.launch {
             val result = grammarLabelsProvider.awaitLabels()
             if (result is GrammarLabelsLoadResult.Loaded) {
-                mutableUiState.update { it.copy(grammarLabels = result.labels) }
+                uiState.update { it.copy(grammarLabels = result.labels) }
             }
         }
     }
 
     public fun load() {
         logicScope.launch {
-            mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading, adoptError = null) }
+            uiState.update { it.copy(loadingState = DataLoadingState.Loading, adoptError = null) }
             runCatchingCancellable { catalogRepository.previewDeck(DeckId(deckId)) }
                 .onSuccess { deck ->
                     // copy (not a fresh state) so an already-resolved grammarLabels survives.
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             loadingState = DataLoadingState.Success,
                             title = deck.deck.title,
@@ -91,23 +89,23 @@ public class LibraryDeckDetailLogic(
                                 "operation" to "preview_deck",
                             ),
                     )
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }
         }
     }
 
     public fun adopt() {
         logicScope.launch {
-            mutableUiState.update { it.copy(adopting = true, adoptError = null) }
+            uiState.update { it.copy(adopting = true, adoptError = null) }
             runCatchingCancellable { adoptionRepository.adopt(DeckId(deckId)) }
                 .onSuccess {
                     // The deck is now owned material; drop the Service affordance in place.
-                    mutableUiState.update { state ->
+                    uiState.update { state ->
                         state.copy(isService = false, adopting = false, adoptError = null)
                     }
                 }.onFailure { throwable ->
                     logger.error(throwable) { "Failed to adopt deck $deckId" }
-                    mutableUiState.update { it.copy(adopting = false, adoptError = throwable) }
+                    uiState.update { it.copy(adopting = false, adoptError = throwable) }
                 }
         }
     }

@@ -14,7 +14,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -185,17 +184,17 @@ class DeckPracticeSpeechControllerTest {
     }
 
     private class FakeSpeechHandle : SpeechHandle {
-        private val mutableState = MutableStateFlow<SpeechState>(SpeechState.Loading)
-        override val state: StateFlow<SpeechState> = mutableState.asStateFlow()
+        override val state: StateFlow<SpeechState>
+            field = MutableStateFlow<SpeechState>(SpeechState.Loading)
         var cancelCount = 0
 
-        fun update(state: SpeechState) {
-            mutableState.value = state
+        fun update(next: SpeechState) {
+            state.value = next
         }
 
         override fun cancel() {
             cancelCount++
-            mutableState.value = SpeechState.Failed(TtsError.Cancelled())
+            state.value = SpeechState.Failed(TtsError.Cancelled())
         }
     }
 }

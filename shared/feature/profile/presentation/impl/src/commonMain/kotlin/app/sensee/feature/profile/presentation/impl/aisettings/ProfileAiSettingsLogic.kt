@@ -30,7 +30,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -48,9 +47,8 @@ public class ProfileAiSettingsLogic(
         public fun create(): ProfileAiSettingsLogic
     }
 
-    private val mutableUiState = MutableStateFlow(ProfileAiSettingsUiState())
-
-    public val uiState: StateFlow<ProfileAiSettingsUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<ProfileAiSettingsUiState>
+        field = MutableStateFlow(ProfileAiSettingsUiState())
 
     // A slow verify must not resurrect a stale Valid/model list after the user
     // changed the provider (or the inherit choice); cancel the in-flight one.
@@ -85,11 +83,11 @@ public class ProfileAiSettingsLogic(
 
     public fun load() {
         logicScope.launch {
-            mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading) }
+            uiState.update { it.copy(loadingState = DataLoadingState.Loading) }
             runCatchingCancellable { settingsRepository.readSettings().ai }
                 .onSuccess { ai ->
                     val snapshot = ai.toProfileSnapshot()
-                    mutableUiState.update {
+                    uiState.update {
                         ProfileAiSettingsUiState(
                             loadingState = DataLoadingState.Success,
                             draftSnapshot = snapshot,
@@ -109,7 +107,7 @@ public class ProfileAiSettingsLogic(
                     }
                 }.onFailure { throwable ->
                     logger.error(throwable) { "Failed to read integration settings" }
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }
         }
     }
@@ -120,7 +118,7 @@ public class ProfileAiSettingsLogic(
         // also dies because inherit may flip with the AI provider.
         aiVerifyJob?.cancel()
         ttsVerifyJob?.cancel()
-        mutableUiState.update { state ->
+        uiState.update { state ->
             val newDraft =
                 state.draftSnapshot
                     .copy(aiProvider = provider, aiModel = "")
@@ -141,7 +139,7 @@ public class ProfileAiSettingsLogic(
 
     private fun applyTtsProviderChange(provider: TtsProvider) {
         ttsVerifyJob?.cancel()
-        mutableUiState.update { state ->
+        uiState.update { state ->
             val newDraft =
                 state.draftSnapshot
                     .copy(ttsProvider = provider, ttsModel = "", ttsVoiceId = "")
@@ -159,7 +157,7 @@ public class ProfileAiSettingsLogic(
 
     private fun applyTtsSeparateKeyChange(value: Boolean) {
         ttsVerifyJob?.cancel()
-        mutableUiState.update { state ->
+        uiState.update { state ->
             val newDraft = state.draftSnapshot.copy(ttsSeparateKey = value).normalizedForInherit()
             state.copy(
                 draftSnapshot = newDraft,
@@ -175,11 +173,11 @@ public class ProfileAiSettingsLogic(
     // No runCatchingCancellable: the AI/TTS seam never throws across its
     // boundary by contract (ADR-005), it returns a typed Invalid result.
     public fun verifyAiKey() {
-        val draft = mutableUiState.value.draftSnapshot
+        val draft = uiState.value.draftSnapshot
         val apiKey = draft.aiApiKey.trim()
         if (apiKey.isEmpty()) return
         val provider = draft.aiProvider
-        mutableUiState.update {
+        uiState.update {
             it.copy(
                 aiKeyCheck = KeyCheckStatus.Checking,
                 aiKeyCheckedAgainst = null,
@@ -192,7 +190,7 @@ public class ProfileAiSettingsLogic(
                 val target = AiVerifyTarget(apiKey, provider)
                 when (val result = modelCatalog.verifyKey(provider.baseUrl, apiKey)) {
                     is AiKeyCheck.Valid ->
-                        mutableUiState.update {
+                        uiState.update {
                             it.copy(
                                 aiKeyCheck = KeyCheckStatus.Valid,
                                 aiKeyCheckedAgainst = target,
@@ -201,7 +199,7 @@ public class ProfileAiSettingsLogic(
                         }
 
                     is AiKeyCheck.Invalid ->
-                        mutableUiState.update {
+                        uiState.update {
                             it.copy(
                                 aiKeyCheck = KeyCheckStatus.Invalid(result.reason),
                                 aiKeyCheckedAgainst = target,
@@ -213,11 +211,11 @@ public class ProfileAiSettingsLogic(
     }
 
     public fun verifyTtsKey() {
-        val draft = mutableUiState.value.draftSnapshot
+        val draft = uiState.value.draftSnapshot
         val apiKey = draft.ttsApiKey.trim()
         if (apiKey.isEmpty()) return
         val provider = draft.ttsProvider
-        mutableUiState.update {
+        uiState.update {
             it.copy(
                 ttsKeyCheck = KeyCheckStatus.Checking,
                 ttsKeyCheckedAgainst = null,
@@ -244,7 +242,7 @@ public class ProfileAiSettingsLogic(
         val request = TtsKeyVerificationRequest(providerId = TtsProvider.ElevenLabs.id, apiKey = apiKey)
         when (val result = ttsCatalog.verifyKey(request)) {
             is TtsKeyCheck.Valid ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         ttsKeyCheck = KeyCheckStatus.Valid,
                         ttsKeyCheckedAgainst = target,
@@ -254,7 +252,7 @@ public class ProfileAiSettingsLogic(
                 }
 
             is TtsKeyCheck.Invalid ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         ttsKeyCheck = KeyCheckStatus.Invalid(result.reason),
                         ttsKeyCheckedAgainst = target,
@@ -271,7 +269,7 @@ public class ProfileAiSettingsLogic(
     ) {
         when (val result = modelCatalog.verifyKey(TtsProvider.OpenAi.baseUrl, apiKey)) {
             is AiKeyCheck.Valid ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         ttsKeyCheck = KeyCheckStatus.Valid,
                         ttsKeyCheckedAgainst = target,
@@ -281,7 +279,7 @@ public class ProfileAiSettingsLogic(
                 }
 
             is AiKeyCheck.Invalid ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         ttsKeyCheck = KeyCheckStatus.Invalid(result.reason),
                         ttsKeyCheckedAgainst = target,
@@ -297,12 +295,12 @@ public class ProfileAiSettingsLogic(
         // edits the user makes while it's in-flight: if draft moves during
         // save, we keep that draft (and skip the Saved indicator) instead of
         // overwriting with the just-persisted snapshot.
-        val initial = mutableUiState.value.draftSnapshot
+        val initial = uiState.value.draftSnapshot
         logicScope.launch {
             runCatchingCancellable { saveIntegrationSettings(initial.toIntegrationDraft()) }
                 .onSuccess { ai ->
                     val newSaved = ai.toProfileSnapshot()
-                    mutableUiState.update { state ->
+                    uiState.update { state ->
                         val unchangedDuringSave = state.draftSnapshot == initial
                         state.copy(
                             savedSnapshot = newSaved,
@@ -333,7 +331,7 @@ public class ProfileAiSettingsLogic(
     //    value (downstream → TextFieldState → snapshotFlow → upstream Set*) is
     //    idempotent for isSaved.
     private inline fun updateDraft(transform: (ProfileAiSettingsSnapshot) -> ProfileAiSettingsSnapshot) {
-        mutableUiState.update { state ->
+        uiState.update { state ->
             val newDraft = transform(state.draftSnapshot).normalizedForInherit()
             if (newDraft == state.draftSnapshot) {
                 state

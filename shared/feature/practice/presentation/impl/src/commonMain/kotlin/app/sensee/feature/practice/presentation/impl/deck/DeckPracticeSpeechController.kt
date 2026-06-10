@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
@@ -21,8 +20,8 @@ import kotlinx.coroutines.launch
 internal class DeckPracticeSpeechController(
     private val speaker: Speaker,
 ) {
-    private val mutableState = MutableStateFlow(DeckPracticeSpeechUiState())
-    val state: StateFlow<DeckPracticeSpeechUiState> = mutableState.asStateFlow()
+    val state: StateFlow<DeckPracticeSpeechUiState>
+        field = MutableStateFlow(DeckPracticeSpeechUiState())
 
     private var currentHandle: SpeechHandle? = null
     private var currentStateJob: Job? = null
@@ -34,7 +33,7 @@ internal class DeckPracticeSpeechController(
         scope: CoroutineScope,
     ) {
         if (text.isBlank()) return
-        val current = mutableState.value
+        val current = state.value
         if (current.activeTargetId == targetId && current.phase != DeckPracticeSpeechPhase.Idle) {
             stop()
             return
@@ -44,7 +43,7 @@ internal class DeckPracticeSpeechController(
 
         val handle = speaker.speak(SpeechRequest(text = text, locale = locale))
         currentHandle = handle
-        mutableState.update {
+        state.update {
             DeckPracticeSpeechUiState(
                 activeTargetId = targetId,
                 phase = DeckPracticeSpeechPhase.Loading,
@@ -55,7 +54,7 @@ internal class DeckPracticeSpeechController(
 
     fun stop() {
         cancelCurrentHandle()
-        mutableState.update { DeckPracticeSpeechUiState() }
+        state.update { DeckPracticeSpeechUiState() }
     }
 
     fun stopAll() {
@@ -84,7 +83,7 @@ internal class DeckPracticeSpeechController(
                 if (currentHandle === handle) {
                     currentHandle = null
                     currentStateJob = null
-                    mutableState.update { DeckPracticeSpeechUiState() }
+                    state.update { DeckPracticeSpeechUiState() }
                 }
             }
     }
@@ -92,11 +91,11 @@ internal class DeckPracticeSpeechController(
     private fun updateFromHandle(
         handle: SpeechHandle,
         targetId: String,
-        state: SpeechState,
+        speechState: SpeechState,
     ) {
         if (currentHandle !== handle) return
         val phase =
-            when (state) {
+            when (speechState) {
                 SpeechState.Loading -> DeckPracticeSpeechPhase.Loading
                 SpeechState.Speaking -> DeckPracticeSpeechPhase.Speaking
                 SpeechState.Idle,
@@ -104,7 +103,7 @@ internal class DeckPracticeSpeechController(
                 is SpeechState.Failed,
                 -> return
             }
-        mutableState.update {
+        state.update {
             DeckPracticeSpeechUiState(
                 activeTargetId = targetId,
                 phase = phase,

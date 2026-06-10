@@ -27,7 +27,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 @OptIn(ExperimentalDecomposeApi::class)
 @AssistedInject
@@ -39,7 +38,6 @@ public class DefaultLibrarySectionComponent(
 ) : LibrarySectionComponent,
     AppComponentContext by componentContext {
     private val panelsNavigation = PanelsNavigation<LibraryConfig.Home, LibraryConfig.DeckDetail, Nothing>()
-    private val showBottomBarState = MutableStateFlow(true)
 
     override val panels: Value<LibraryChildPanels> =
         appChildPanels(
@@ -69,7 +67,8 @@ public class DefaultLibrarySectionComponent(
             },
         )
 
-    override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
+    override val showBottomBar: StateFlow<Boolean>
+        field = MutableStateFlow(true)
 
     // System back closes the open deck only in single-pane (where the detail covers the list).
     // In list-detail the list stays visible, so the press falls through to the shell.

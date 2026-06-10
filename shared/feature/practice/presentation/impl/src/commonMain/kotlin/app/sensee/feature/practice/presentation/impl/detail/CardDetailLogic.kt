@@ -21,7 +21,6 @@ import dev.zacsweers.metro.AssistedInject
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -38,7 +37,8 @@ public class CardDetailLogic(
         public fun create(cardId: String): CardDetailLogic
     }
 
-    private val mutableUiState =
+    public val uiState: StateFlow<CardDetailUiState>
+        field =
         grammarLabelsProvider.cachedLabels().let { initial ->
             MutableStateFlow(
                 CardDetailUiState(
@@ -47,8 +47,6 @@ public class CardDetailLogic(
                 ),
             )
         }
-
-    public val uiState: StateFlow<CardDetailUiState> = mutableUiState.asStateFlow()
 
     init {
         load()
@@ -59,17 +57,17 @@ public class CardDetailLogic(
 
     private fun loadGrammarLabels() {
         logicScope.launch {
-            mutableUiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
+            uiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
             when (val result = grammarLabelsProvider.awaitLabels()) {
                 is GrammarLabelsLoadResult.Loaded ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             grammarLabels = result.labels,
                             grammarLabelsState = DataLoadingState.Success,
                         )
                     }
                 is GrammarLabelsLoadResult.Failed ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             grammarLabelsState =
                                 DataLoadingState.Error(
@@ -83,13 +81,13 @@ public class CardDetailLogic(
 
     public fun load() {
         logicScope.launch {
-            mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading) }
+            uiState.update { it.copy(loadingState = DataLoadingState.Loading) }
             runCatchingCancellable {
                 val card = catalogRepository.loadCard(CardId(cardId))
                 val lemma = catalogRepository.loadLemma(card.lemmaId)
                 card to lemma
             }.onSuccess { (card, lemma) ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         loadingState = DataLoadingState.Success,
                         card = card.toUi(),
@@ -102,7 +100,7 @@ public class CardDetailLogic(
                 }
             }.onFailure { throwable ->
                 logger.error(throwable) { "Failed to load card $cardId" }
-                mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
             }
         }
     }

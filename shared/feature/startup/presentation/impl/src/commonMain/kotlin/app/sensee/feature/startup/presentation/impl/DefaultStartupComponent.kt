@@ -24,7 +24,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** State-machine [StartupComponent]: drives [state] from `Loading` to either `Loaded` or `Failed`. */
@@ -43,8 +43,8 @@ public class DefaultStartupComponent(
 
     private val logger: AppLogger = appDiagnostics.logger.tag("StartupComponent")
 
-    private val mutableState = MutableStateFlow<StartupState>(StartupState.Loading)
-    override val state: StateFlow<StartupState> = mutableState.asStateFlow()
+    override val state: StateFlow<StartupState>
+        field = MutableStateFlow<StartupState>(StartupState.Loading)
 
     private var preloadJob: Job? = null
 
@@ -54,7 +54,7 @@ public class DefaultStartupComponent(
     }
 
     override fun retry() {
-        if (mutableState.value !is StartupState.Failed) return
+        if (state.value !is StartupState.Failed) return
         startPreload()
     }
 
@@ -64,7 +64,7 @@ public class DefaultStartupComponent(
 
     private fun startPreload() {
         preloadJob?.cancel()
-        mutableState.value = StartupState.Loading
+        state.update { StartupState.Loading }
         preloadJob =
             componentScope.launch {
                 try {
@@ -72,7 +72,7 @@ public class DefaultStartupComponent(
                         tracer.span("startup.awaitReady") {
                             tracer.span("startup.preload") { preloadAppStartup() }
                         }
-                    mutableState.value =
+                    state.update {
                         if (outcome.isFullSuccess) {
                             StartupState.Loaded
                         } else {
@@ -82,6 +82,7 @@ public class DefaultStartupComponent(
                             }
                             StartupState.Failed(outcome)
                         }
+                    }
                 } catch (cancellation: CancellationException) {
                     throw cancellation
                 } catch (throwable: Throwable) {
@@ -89,10 +90,11 @@ public class DefaultStartupComponent(
                     // is the last-resort safety net for a bug — surface a
                     // retry instead of leaving the splash frozen.
                     logger.error(throwable) { "Startup preload threw unexpectedly" }
-                    mutableState.value =
+                    state.update {
                         StartupState.Failed(
                             outcome = PreloadOutcome(grammarLabelsLoaded = false, taxonomyInvariantsLoaded = false),
                         )
+                    }
                 }
             }
     }

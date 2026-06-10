@@ -5,7 +5,6 @@ import app.sensee.tts.core.SpeechState
 import app.sensee.tts.core.TtsError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 
@@ -13,11 +12,11 @@ internal class MutableSpeechHandle(
     initialState: SpeechState = SpeechState.Idle,
     private val onCancel: () -> Unit = {},
 ) : SpeechHandle {
-    private val mutable = MutableStateFlow(initialState)
-    override val state: StateFlow<SpeechState> = mutable.asStateFlow()
+    override val state: StateFlow<SpeechState>
+        field = MutableStateFlow(initialState)
 
     fun update(next: SpeechState) {
-        mutable.update { next }
+        state.update { next }
     }
 
     override fun cancel() {
@@ -26,7 +25,7 @@ internal class MutableSpeechHandle(
         // state with getAndUpdate and fire onCancel() exactly once — for the single caller
         // that observed a non-terminal previous state.
         val previous =
-            mutable.getAndUpdate { current ->
+            state.getAndUpdate { current ->
                 if (current is SpeechState.Done || current is SpeechState.Failed) {
                     current
                 } else {

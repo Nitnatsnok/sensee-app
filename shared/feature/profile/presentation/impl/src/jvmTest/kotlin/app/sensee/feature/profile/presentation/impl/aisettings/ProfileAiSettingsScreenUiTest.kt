@@ -43,7 +43,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlin.test.Test
@@ -253,16 +252,16 @@ class ProfileAiSettingsScreenUiTest {
     private class FakeProfileAiSettingsComponent(
         initialState: ProfileAiSettingsUiState = ProfileAiSettingsUiState(loadingState = DataLoadingState.Success),
     ) : ProfileAiSettingsComponent {
-        private val state = MutableStateFlow(initialState)
         val dispatched: MutableList<ProfileAiSettingsAction> = mutableListOf()
 
-        override val uiState: StateFlow<ProfileAiSettingsUiState> = state.asStateFlow()
+        override val uiState: StateFlow<ProfileAiSettingsUiState>
+            field = MutableStateFlow(initialState)
 
         override fun onAction(action: ProfileAiSettingsAction) {
             dispatched += action
         }
 
-        fun update(transform: (ProfileAiSettingsUiState) -> ProfileAiSettingsUiState) = state.update(transform)
+        fun update(transform: (ProfileAiSettingsUiState) -> ProfileAiSettingsUiState) = uiState.update(transform)
     }
 
     private class LiveProfileAiSettingsComponent(

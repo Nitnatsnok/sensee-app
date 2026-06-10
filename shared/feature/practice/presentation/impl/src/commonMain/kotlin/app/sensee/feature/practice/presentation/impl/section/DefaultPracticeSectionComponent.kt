@@ -30,7 +30,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 @AssistedInject
@@ -43,7 +42,6 @@ public class DefaultPracticeSectionComponent(
 ) : PracticeSectionComponent,
     AppComponentContext by componentContext {
     private val stackNavigation = StackNavigation<ScreenConfig>()
-    private val showBottomBarState = MutableStateFlow((target ?: PracticeConfig.Home).showsBottomBar)
 
     override val stack: Value<ChildStack<ScreenConfig, AppComponent>> =
         appChildStack(
@@ -75,12 +73,13 @@ public class DefaultPracticeSectionComponent(
             },
         )
 
-    override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
+    override val showBottomBar: StateFlow<Boolean>
+        field = MutableStateFlow((target ?: PracticeConfig.Home).showsBottomBar)
 
     init {
         val stackSubscription =
             stack.subscribe { childStack ->
-                showBottomBarState.update {
+                showBottomBar.update {
                     (childStack.active.configuration as? PracticeConfig)?.showsBottomBar ?: true
                 }
             }

@@ -17,7 +17,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -35,11 +34,11 @@ public class ProfileTopicPickerLogic(
         public fun create(): ProfileTopicPickerLogic
     }
 
-    private val mutableUiState = MutableStateFlow(ProfileTopicPickerUiState())
     private var lastPersistedTopicIds: PersistentSet<String> = persistentSetOf()
     private var saveGeneration: Int = 0
 
-    public val uiState: StateFlow<ProfileTopicPickerUiState> = mutableUiState.asStateFlow()
+    public val uiState: StateFlow<ProfileTopicPickerUiState>
+        field = MutableStateFlow(ProfileTopicPickerUiState())
 
     init {
         load()
@@ -47,14 +46,14 @@ public class ProfileTopicPickerLogic(
 
     public fun load() {
         logicScope.launch {
-            mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading) }
+            uiState.update { it.copy(loadingState = DataLoadingState.Loading) }
             runCatchingCancellable {
                 val topics = topicCatalog.topics()
                 val settings = settingsRepository.readSettings()
                 topics to settings
             }.onSuccess { (topics, settings) ->
                 lastPersistedTopicIds = settings.learning.preferredTopicIds.toPersistentSet()
-                mutableUiState.update {
+                uiState.update {
                     ProfileTopicPickerUiState(
                         loadingState = DataLoadingState.Success,
                         topics = topics.toPersistentList(),
@@ -63,7 +62,7 @@ public class ProfileTopicPickerLogic(
                 }
             }.onFailure { failure ->
                 logger.error(failure) { "Failed to load topic catalog" }
-                mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(failure)) }
+                uiState.update { it.copy(loadingState = DataLoadingState.Error(failure)) }
             }
         }
     }
@@ -72,13 +71,13 @@ public class ProfileTopicPickerLogic(
     // background, and on the latest failed persist the state rolls back to
     // what the repository actually holds.
     public fun toggleTopic(id: String) {
-        val previous = mutableUiState.value.selectedTopicIds
+        val previous = uiState.value.selectedTopicIds
         val next = if (id in previous) previous.remove(id) else previous.add(id)
         if (next == previous) {
             return
         }
         val generation = ++saveGeneration
-        mutableUiState.update { it.copy(selectedTopicIds = next) }
+        uiState.update { it.copy(selectedTopicIds = next) }
         appCoroutineScopes.applicationScope.launch(appDispatchers.main.immediate) {
             runCatchingCancellable {
                 settingsRepository.updateLearningSettings { learning ->
@@ -88,12 +87,12 @@ public class ProfileTopicPickerLogic(
                 val persisted = snapshot.learning.preferredTopicIds.toPersistentSet()
                 lastPersistedTopicIds = persisted
                 if (shouldApplySaveResult(generation)) {
-                    mutableUiState.update { it.copy(selectedTopicIds = persisted) }
+                    uiState.update { it.copy(selectedTopicIds = persisted) }
                 }
             }.onFailure { throwable ->
                 logger.error(throwable) { "Failed to persist preferred topic ids" }
                 if (shouldApplySaveResult(generation)) {
-                    mutableUiState.update { it.copy(selectedTopicIds = readPersistedTopicIds()) }
+                    uiState.update { it.copy(selectedTopicIds = readPersistedTopicIds()) }
                 }
             }
         }

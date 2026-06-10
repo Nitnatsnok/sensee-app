@@ -17,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -147,13 +146,13 @@ public class OpenAiSpeaker(
 }
 
 private class OpenAiSpeechHandle : SpeechHandle {
-    private val mutable = MutableStateFlow<SpeechState>(SpeechState.Idle)
-    override val state: StateFlow<SpeechState> = mutable.asStateFlow()
+    override val state: StateFlow<SpeechState>
+        field = MutableStateFlow<SpeechState>(SpeechState.Idle)
     private var job: Job? = null
     private var player: AudioPlayer? = null
 
     fun update(next: SpeechState) {
-        mutable.update { next }
+        state.update { next }
     }
 
     fun attachJob(job: Job) {

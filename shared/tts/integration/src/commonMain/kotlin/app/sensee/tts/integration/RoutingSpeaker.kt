@@ -17,7 +17,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
@@ -130,13 +129,13 @@ public class RoutingSpeaker(
 }
 
 private class RoutingSpeechHandle : SpeechHandle {
-    private val mutable = MutableStateFlow<SpeechState>(SpeechState.Idle)
-    override val state: StateFlow<SpeechState> = mutable.asStateFlow()
+    override val state: StateFlow<SpeechState>
+        field = MutableStateFlow<SpeechState>(SpeechState.Idle)
     private var job: Job? = null
     private var delegate: SpeechHandle? = null
 
     fun update(next: SpeechState) {
-        mutable.update { next }
+        state.update { next }
     }
 
     fun attachJob(job: Job) {

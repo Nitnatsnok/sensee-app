@@ -27,7 +27,6 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -44,7 +43,8 @@ public class VocabularyCaptureLogic(
         public fun create(): VocabularyCaptureLogic
     }
 
-    private val mutableUiState =
+    public val uiState: StateFlow<VocabularyCaptureUiState>
+        field =
         grammarLabelsProvider.cachedLabels().let { initial ->
             MutableStateFlow(
                 VocabularyCaptureUiState(
@@ -53,7 +53,6 @@ public class VocabularyCaptureLogic(
                 ),
             )
         }
-    public val uiState: StateFlow<VocabularyCaptureUiState> = mutableUiState.asStateFlow()
 
     // Guards a re-entrant confirm: a second tap before the first confirmAll
     // round-trip resolves would write the same senses twice.
@@ -68,17 +67,17 @@ public class VocabularyCaptureLogic(
 
     private fun loadGrammarLabels() {
         logicScope.launch {
-            mutableUiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
+            uiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
             when (val result = grammarLabelsProvider.awaitLabels()) {
                 is GrammarLabelsLoadResult.Loaded ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             grammarLabels = result.labels,
                             grammarLabelsState = DataLoadingState.Success,
                         )
                     }
                 is GrammarLabelsLoadResult.Failed ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             grammarLabelsState =
                                 DataLoadingState.Error(
@@ -94,7 +93,7 @@ public class VocabularyCaptureLogic(
         val trimmed = term.trim()
         if (trimmed.isEmpty()) return
         logicScope.launch {
-            mutableUiState.update {
+            uiState.update {
                 VocabularyCaptureUiState(
                     term = trimmed,
                     loadingState = DataLoadingState.Loading,
@@ -107,7 +106,7 @@ public class VocabularyCaptureLogic(
             runCatchingCancellable {
                 suggestSenses(term = trimmed)
             }.onSuccess { suggestion ->
-                mutableUiState.update {
+                uiState.update {
                     it.copy(
                         loadingState = DataLoadingState.Success,
                         candidates =
@@ -119,7 +118,7 @@ public class VocabularyCaptureLogic(
                 }
             }.onFailure { throwable ->
                 logger.error(throwable) { "Capture suggestion failed" }
-                mutableUiState.update {
+                uiState.update {
                     it.copy(loadingState = DataLoadingState.Error(throwable))
                 }
             }
@@ -127,7 +126,7 @@ public class VocabularyCaptureLogic(
     }
 
     public fun toggleCandidate(contentKey: String) {
-        mutableUiState.update { state ->
+        uiState.update { state ->
             if (state.candidates.none { it.contentKey == contentKey }) return@update state
             state.copy(candidates = state.candidates.toggleSelection(contentKey))
         }
@@ -163,11 +162,11 @@ public class VocabularyCaptureLogic(
                 source = CaptureSenseSource.Manual,
                 presentationKey = nextManualPresentationKey(),
             )
-        mutableUiState.update { it.copy(manualSenses = it.manualSenses + manual) }
+        uiState.update { it.copy(manualSenses = it.manualSenses + manual) }
     }
 
     public fun completeManualWithAssistant(manualIndex: Int) {
-        val state = mutableUiState.value
+        val state = uiState.value
         val manual = state.manualSenses.getOrNull(manualIndex) ?: return
         if (manual.status == CaptureSenseStatus.Completing) return
         // The studied unit to enrich: the user's surface form if given, else the
@@ -216,7 +215,7 @@ public class VocabularyCaptureLogic(
     }
 
     public fun confirmSelected() {
-        val state = mutableUiState.value
+        val state = uiState.value
         // Keep only confirmable senses — a thin manual sense with no example cannot
         // be confirmed and stays in the form — then dedup before write: two
         // selections sharing a content key are the same sense, so persisting both
@@ -237,7 +236,7 @@ public class VocabularyCaptureLogic(
                     // domain use-case; a re-capture reuses each sense_id (keeps its SRS).
                     confirmSenses(senses)
                 }.onSuccess {
-                    mutableUiState.update { state -> state.freshSessionState(confirmedTerm = confirmedTerm) }
+                    uiState.update { state -> state.freshSessionState(confirmedTerm = confirmedTerm) }
                 }.onFailure { throwable ->
                     logger.error(throwable) { "Confirming senses failed" }
                     crashReporter.recordException(
@@ -257,14 +256,14 @@ public class VocabularyCaptureLogic(
     }
 
     public fun reset() {
-        mutableUiState.update { it.freshSessionState() }
+        uiState.update { it.freshSessionState() }
     }
 
     private inline fun updateManual(
         index: Int,
         transform: (CaptureSense) -> CaptureSense,
     ) {
-        mutableUiState.update { state ->
+        uiState.update { state ->
             if (index !in state.manualSenses.indices) return@update state
             state.copy(
                 manualSenses =

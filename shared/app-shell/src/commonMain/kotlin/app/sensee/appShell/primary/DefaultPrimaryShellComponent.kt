@@ -47,7 +47,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
@@ -63,7 +62,6 @@ public class DefaultPrimaryShellComponent(
 ) : PrimaryShellComponent,
     AppComponentContext by componentContext {
     private val initialSectionConfig = target.toPrimarySectionConfig()
-    private val selectedSectionState = MutableStateFlow(initialSectionConfig.toPrimarySection())
     private val stackNavigation = StackNavigation<NodeConfig<ScreenConfig>>()
     private val componentScope = CoroutineScope(appDispatchers.main.immediate + SupervisorJob())
 
@@ -100,7 +98,8 @@ public class DefaultPrimaryShellComponent(
             childSelector = { child -> child.instance as? WebNavigationOwner },
         )
 
-    override val selectedSection: StateFlow<PrimarySection> = selectedSectionState.asStateFlow()
+    override val selectedSection: StateFlow<PrimarySection>
+        field = MutableStateFlow(initialSectionConfig.toPrimarySection())
 
     // Derived, not pushed: each section owns its own `BottomBarVisibilityOwner`; sections
     // without one keep the bar shown.
@@ -127,7 +126,7 @@ public class DefaultPrimaryShellComponent(
                 homeRootBackCallback.isEnabled =
                     primaryShellBackAction(stack.items.map { it.configuration.destination }) ==
                     PrimaryShellBackAction.ReplaceWithHomeRoot
-                selectedSectionState.update {
+                selectedSection.update {
                     stack.active.configuration.destination
                         .toPrimarySection()
                 }

@@ -32,7 +32,6 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -53,7 +52,8 @@ public class DeckPracticeLogic(
         public fun create(source: PracticeSessionSource): DeckPracticeLogic
     }
 
-    private val mutableUiState =
+    public val uiState: StateFlow<DeckPracticeUiState>
+        field =
         grammarLabelsProvider.cachedLabels().let { initial ->
             MutableStateFlow(
                 DeckPracticeUiState(
@@ -62,8 +62,6 @@ public class DeckPracticeLogic(
                 ),
             )
         }
-
-    public val uiState: StateFlow<DeckPracticeUiState> = mutableUiState.asStateFlow()
 
     // How many times each card has been *shown* this session. Drives the alternating
     // EN <-> RU direction and the safety cap below. Mutated only from `logicScope`
@@ -83,17 +81,17 @@ public class DeckPracticeLogic(
 
     private fun loadGrammarLabels() {
         logicScope.launch {
-            mutableUiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
+            uiState.update { it.copy(grammarLabelsState = DataLoadingState.Loading) }
             when (val result = grammarLabelsProvider.awaitLabels()) {
                 is GrammarLabelsLoadResult.Loaded ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             grammarLabels = result.labels,
                             grammarLabelsState = DataLoadingState.Success,
                         )
                     }
                 is GrammarLabelsLoadResult.Failed ->
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             grammarLabelsState =
                                 DataLoadingState.Error(
@@ -110,7 +108,7 @@ public class DeckPracticeLogic(
             DeckPracticeAction.Retry -> load()
             DeckPracticeAction.RetryGrammarLabels -> retryGrammarLabels()
             DeckPracticeAction.ToggleTapToFlip ->
-                mutableUiState.update { it.copy(tapToFlipEnabled = !it.tapToFlipEnabled) }
+                uiState.update { it.copy(tapToFlipEnabled = !it.tapToFlipEnabled) }
             is DeckPracticeAction.SubmitReview -> submitReview(action.cardId, action.rating)
             is DeckPracticeAction.FocusCard,
             DeckPracticeAction.DismissDetails,
@@ -123,12 +121,12 @@ public class DeckPracticeLogic(
 
     private fun load() {
         logicScope.launch {
-            mutableUiState.update { it.copy(loadingState = DataLoadingState.Loading) }
+            uiState.update { it.copy(loadingState = DataLoadingState.Loading) }
             runCatchingCancellable { loadSession() }
                 .onSuccess { session ->
                     presentationCounts.clear()
                     session.cards.forEach { presentationCounts[it.id.value] = 0 }
-                    mutableUiState.update {
+                    uiState.update {
                         it.copy(
                             loadingState = DataLoadingState.Success,
                             deckTitle = session.title,
@@ -141,7 +139,7 @@ public class DeckPracticeLogic(
                     }
                 }.onFailure { throwable ->
                     logger.error(throwable) { "Failed to load practice session ${source.key}" }
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }
         }
     }
@@ -188,7 +186,7 @@ public class DeckPracticeLogic(
                     val shownCount = (presentationCounts[cardId] ?: 0) + 1
                     presentationCounts[cardId] = shownCount
                     val reinject = PracticeSessionPolicy.shouldReinject(outcome.srs, shownCount)
-                    mutableUiState.update { state ->
+                    uiState.update { state ->
                         state.withReviewedCard(
                             cardId = cardId,
                             srs = outcome.srs,
@@ -199,7 +197,7 @@ public class DeckPracticeLogic(
                 }.onFailure { throwable ->
                     logger.error(throwable) { "Failed to submit review for card $cardId" }
                     reportReviewFailure(throwable, cardId, rating)
-                    mutableUiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
+                    uiState.update { it.copy(loadingState = DataLoadingState.Error(throwable)) }
                 }
             } finally {
                 inFlightReviews.remove(cardId)

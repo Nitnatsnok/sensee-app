@@ -33,7 +33,6 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 @OptIn(ExperimentalDecomposeApi::class)
 @AssistedInject
@@ -49,7 +48,6 @@ public class DefaultProfileSectionComponent(
     AppComponentContext by componentContext {
     private val panelsNavigation =
         PanelsNavigation<ProfileConfig.Home, ProfileConfig.Settings, ProfileExtraConfig>()
-    private val showBottomBarState = MutableStateFlow(true)
     private var lastSettingsDetail = target as? ProfileConfig.Settings ?: DefaultSettingsConfig
 
     override val panels: Value<ProfileChildPanels> =
@@ -78,7 +76,8 @@ public class DefaultProfileSectionComponent(
             extraFactory = ::createExtra,
         )
 
-    override val showBottomBar: StateFlow<Boolean> = showBottomBarState.asStateFlow()
+    override val showBottomBar: StateFlow<Boolean>
+        field = MutableStateFlow(true)
 
     // System back cascades through the panels: close extra (picker) first, then
     // compact detail, before letting the press fall through to the shell.
